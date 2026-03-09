@@ -1,0 +1,189 @@
+"""
+THAMAN API — Unit Tests
+========================
+Run with:  pytest tests/ -v
+"""
+
+import pytest
+from fastapi.testclient import TestClient
+from api.main import app
+
+client = TestClient(app)
+
+# ── Fixtures ──────────────────────────────────────────────────────────
+
+BROOKLYN_A1 = {
+    "latitude":          40.6892,
+    "longitude":        -73.9442,
+    "gross_square_feet": 1800,
+    "building_age":      55,
+    "bldgclass":         "A1",
+    "borough":           3,
+    "numfloors":         2,
+    "residential_units": 1,
+}
+
+MANHATTAN_D4 = {
+    "latitude":          40.7589,
+    "longitude":        -73.9851,
+    "gross_square_feet": 950,
+    "building_age":      40,
+    "bldgclass":         "D4",
+    "borough":           1,
+    "numfloors":         12,
+    "residential_units": 1,
+}
+
+# ── Info endpoints ────────────────────────────────────────────────────
+
+def test_root_redirects():
+    """GET / should redirect to /ui."""
+    response = client.get("/", follow_redirects=False)
+    assert response.status_code in (301, 302, 307, 308)
+
+
+def test_api_info():
+    """GET /api returns version and endpoint list."""
+    response = client.get("/api")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["version"] == "2.1.0"
+    assert "endpoints" in data
+
+
+def test_health_ok():
+    """GET /health returns model_loaded and spatial_loaded flags."""
+    response = client.get("/health")
+    assert response.status_code == 200
+    data = response.json()
+    assert "model_loaded"   in data
+    assert "spatial_loaded" in data
+    assert "status"         in data
+
+
+def test_bldgclasses_returns_list():
+    """GET /bldgclasses returns a non-empty list of codes."""
+    response = client.get("/bldgclasses")
+    assert response.status_code == 200
+    data = response.json()
+    assert "bldgclasses" in data
+    assert len(data["bldgclasses"]) > 10
+    assert "A1" in data["bldgclasses"]
+
+
+# ── Prediction endpoint ───────────────────────────────────────────────
+
+def test_predict_brooklyn_a1():
+    """Brooklyn A1 should return a realistic price ($300K–$3M)."""
+    response = client.post("/predict", json=BROOKLYN_A1)
+    assert response.status_code == 200
+    data = response.json()
+    assert "predicted_price"  in data
+    assert "confidence_low"   in data
+    assert "confidence_high"  in data
+    assert "top_drivers"      in data
+    assert 300_000 < data["predicted_price"] < 3_000_000
+
+
+def test_predict_confidence_range():
+    """Confidence low < predicted < high."""
+    response = client.post("/predict", json=BROOKLYN_A1)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["confidence_low"] < data["predicted_price"] < data["confidence_high"]
+
+
+def test_predict_manhattan_d4():
+    """Manhattan D4 elevator building should be > Brooklyn A1."""
+    r_bk = client.post("/predict", json=BROOKLYN_A1).json()
+    r_mn = client.post("/predict", json=MANHATTAN_D4).json()
+    assert r_mn["predicted_price"] > r_bk["predicted_price"]
+
+
+def test_predict_shap_drivers():
+    """top_drivers should contain feature, impact, direction."""
+    response = client.post("/predict", json=BROOKLYN_A1)
+    data = response.json()
+    assert len(data["top_drivers"]) > 0
+    for d in data["top_drivers"]:
+        assert "feature"   in d
+        assert "impact"    in d
+        assert "direction" in d
+        assert d["direction"] in ("positive", "negative")
+
+
+def test_predict_spatial_features():
+    """spatial_features should include subway and income keys."""
+    response = client.post("/predict", json=BROOKLYN_A1)
+    sf = response.json()["spatial_features"]
+    assert "dist_subway_m"    in sf
+    assert "median_income_nta" in sf
+    assert sf["dist_subway_m"] > 0
+
+
+def test_predict_invalid_out_of_nyc():
+    """Coordinates outside NYC bounding box should return 422."""
+    payload = {**BROOKLYN_A1, "latitude": 51.5074, "longitude": -0.1278}  # London
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 422
+
+
+def test_predict_missing_required_field():
+    """Missing required field should return 422."""
+    payload = {k: v for k, v in BROOKLYN_A1.items() if k != "bldgclass"}
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 422
+
+
+def test_predict_negative_sqft():
+    """Negative gross_square_feet should return 422."""
+    payload = {**BROOKLYN_A1, "gross_square_feet": -100}
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 422
+
+
+# ── Batch endpoint ────────────────────────────────────────────────────
+
+def test_batch_two_properties():
+    """Batch endpoint returns results for each property."""
+    response = client.post("/batch", json=[BROOKLYN_A1, MANHATTAN_D4])
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 2
+    assert all("predicted_price" in r for r in data["results"])
+
+
+def test_batch_too_many():
+    """Batch size > 50 should return 400."""
+    payload = [BROOKLYN_A1] * 51
+    response = client.post("/batch", json=payload)
+    assert response.status_code == 400
+
+
+# ── Nearby endpoint ───────────────────────────────────────────────────
+
+def test_nearby_returns_sales():
+    """GET /nearby should return at least 1 sale near Brooklyn."""
+    response = client.get("/nearby?lat=40.6892&lon=-73.9442")
+    assert response.status_code == 200
+    data = response.json()
+    assert "nearby" in data
+    assert data["count"] > 0
+
+
+def test_nearby_fields():
+    """Each nearby sale should have required fields."""
+    response = client.get("/nearby?lat=40.6892&lon=-73.9442&limit=3")
+    data = response.json()
+    for sale in data["nearby"]:
+        assert "sale_price"  in sale
+        assert "distance_m"  in sale
+        assert "bldgclass"   in sale
+        assert sale["sale_price"] > 0
+        assert sale["distance_m"] >= 0
+
+
+def test_nearby_invalid_coords():
+    """Invalid coordinates should return 422."""
+    response = client.get("/nearby?lat=999&lon=999")
+    assert response.status_code == 422

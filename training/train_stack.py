@@ -26,7 +26,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 warnings.filterwarnings("ignore")
 
-BASE      = os.path.dirname(os.path.abspath(__file__))
+BASE      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROC      = os.path.join(BASE, "data", "processed")
 SPLIT_DIR = os.path.join(BASE, "data", "splits")
 MODEL_DIR = os.path.join(BASE, "models")

@@ -2,7 +2,14 @@
 THAMAN — Feature Engineering Pipeline
 Builds the full feature matrix from raw data sources.
 Output: data/processed/features.csv
+
+Run from project root:  python training/feature_engineering.py
 """
+
+import os, sys
+# Ensure project root is on path when run from training/
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+os.chdir(_ROOT)   # all relative paths resolve from project root
 
 import pandas as pd
 import numpy as np

@@ -306,6 +306,7 @@ predictForm.addEventListener('submit', async (e) => {
 
     const data = await res.json();
     renderResults(data);
+    fetchNearby(lat, lon);
 
   } catch (err) {
     console.error(err);
@@ -315,17 +316,21 @@ predictForm.addEventListener('submit', async (e) => {
   }
 });
 
-// ── Loading state ─────────────────────────────────────────────────────
+// ── Loading state (with skeleton cards) ───────────────────────────────
 function setLoading(on) {
   submitBtn.disabled = on;
-  btnText.textContent = on ? 'Estimating…' : '🔍  Estimate Price';
+  btnText.textContent = on ? TR[currentLang].estimating : '🔍 ' + TR[currentLang].estimateBtn;
   spinner.style.display = on ? 'inline-block' : 'none';
+  ['skeletonResult','skeletonShap','skeletonSpatial'].forEach(id => {
+    document.getElementById(id).style.display = on ? 'block' : 'none';
+  });
 }
 
 function hideResults() {
   resultCard.style.display  = 'none';
   shapCard.style.display    = 'none';
   spatialCard.style.display = 'none';
+  document.getElementById('nearbyCard').style.display = 'none';
 }
 
 // ── Render results ────────────────────────────────────────────────────
@@ -441,3 +446,205 @@ document.addEventListener('keydown', (e) => {
     predictForm.requestSubmit();
   }
 });
+
+// ── Nearby sales markers (green circles on map) ───────────────────────
+let _nearbyMarkers = [];
+
+async function fetchNearby(lat, lon) {
+  try {
+    const res  = await fetch(`${API_BASE}/nearby?lat=${lat}&lon=${lon}&limit=5`);
+    if (!res.ok) return;
+    const data = await res.json();
+    renderNearby(data.nearby || []);
+  } catch (_) { /* silently skip if endpoint unavailable */ }
+}
+
+function renderNearby(sales) {
+  // Clear old markers
+  _nearbyMarkers.forEach(m => map.removeLayer(m));
+  _nearbyMarkers = [];
+
+  if (!sales || sales.length === 0) return;
+
+  const nearbyIcon = L.divIcon({
+    html: '<div style="width:12px;height:12px;background:#059669;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>',
+    iconSize:  [12, 12],
+    iconAnchor: [6, 6],
+    className: '',
+  });
+
+  sales.forEach((s, i) => {
+    const m = L.marker([s.latitude, s.longitude], { icon: nearbyIcon })
+      .addTo(map)
+      .bindPopup(
+        `<div class="map-popup">
+          <strong>${fmt$(s.sale_price)}</strong>
+          ${s.bldgclass} · ${s.gross_square_feet.toLocaleString()} sq ft<br>
+          <small>${s.address || ''}</small>
+        </div>`,
+        { maxWidth: 200 }
+      );
+    _nearbyMarkers.push(m);
+  });
+
+  const T = TR[currentLang];
+  const nearbyCard = document.getElementById('nearbyCard');
+  const nearbyList = document.getElementById('nearbyList');
+
+  nearbyList.innerHTML = sales.map((s, i) => `
+    <div class="nearby-item">
+      <div class="nearby-dot">${i + 1}</div>
+      <div class="nearby-info">
+        <div class="nearby-address">${s.address || T.unknownAddr}</div>
+        <div class="nearby-meta">${s.bldgclass} · ${s.gross_square_feet.toLocaleString()} sq ft · ${s.sale_date || ''}</div>
+      </div>
+      <div>
+        <div class="nearby-price">${fmt$(s.sale_price)}</div>
+        <div class="nearby-dist">${fmtDist(s.distance_m)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  nearbyCard.style.display = 'block';
+}
+
+// ── i18n — Translations ───────────────────────────────────────────────
+const TR = {
+  en: {
+    estimateBtn:    'Estimate Price',
+    estimating:     'Estimating…',
+    selectFirst:    '📍 Select a location first',
+    howToUse:       'How to use',
+    step1:          'Click the map to set the property location',
+    step2:          'Fill in the property details below',
+    step3Btn:       'Estimate Price',
+    formTitle:      'Property Details',
+    noLocation:     'No location selected — click the map',
+    lblBorough:     'Borough',
+    lblBldgType:    'Building Type',
+    lblSqft:        'Building Size (sq ft)',
+    lblAge:         'Building Age (years)',
+    lblFloors:      'Floors',
+    lblUnits:       'Residential Units',
+    advancedLabel:  'Advanced options (optional)',
+    lblLand:        'Land Size (sq ft)',
+    lblRenov:       'Renovated since 2018?',
+    lblYear:        'Valuation Year',
+    lblMonth:       'Sale Month',
+    lblPrior:       'Prior Sale Price ($)',
+    disclaimer:     'Predictions are based on NYC property sales 2025–2026. Model accuracy: median error ±18.83%.',
+    resultTitle:    'Estimated Value',
+    confMid:        'Predicted',
+    shapTitle:      'Price Drivers',
+    shapSub:        'What factors most influenced this estimate',
+    spatialTitle:   'Location Details',
+    spatialSub:     'Auto-computed from coordinates',
+    nearbyTitle:    'Nearby Sales',
+    nearbySub:      'Recent sales within 800m',
+    unknownAddr:    'Unknown address',
+    analytics:      'Analytics',
+    mapHint:        'Click anywhere in New York City to place a pin',
+    tagline:        'NYC Property Valuation · AI-Powered',
+  },
+  ar: {
+    estimateBtn:    'تقدير السعر',
+    estimating:     'جارٍ التقدير…',
+    selectFirst:    '📍 حدد موقعاً أولاً',
+    howToUse:       'كيفية الاستخدام',
+    step1:          'انقر على الخريطة لتحديد موقع العقار',
+    step2:          'أدخل تفاصيل العقار أدناه',
+    step3Btn:       'تقدير السعر',
+    formTitle:      'تفاصيل العقار',
+    noLocation:     'لم يتم تحديد موقع — انقر على الخريطة',
+    lblBorough:     'الحي الإداري',
+    lblBldgType:    'نوع المبنى',
+    lblSqft:        'مساحة المبنى (قدم مربع)',
+    lblAge:         'عمر المبنى (سنة)',
+    lblFloors:      'عدد الطوابق',
+    lblUnits:       'الوحدات السكنية',
+    advancedLabel:  'خيارات متقدمة (اختياري)',
+    lblLand:        'مساحة الأرض (قدم مربع)',
+    lblRenov:       'جُدِّد منذ 2018؟',
+    lblYear:        'سنة التقييم',
+    lblMonth:       'شهر البيع',
+    lblPrior:       'سعر البيع السابق ($)',
+    disclaimer:     'التوقعات مبنية على مبيعات العقارات في مدينة نيويورك 2025–2026. دقة النموذج: متوسط الخطأ ±18.83٪.',
+    resultTitle:    'القيمة التقديرية',
+    confMid:        'التقدير',
+    shapTitle:      'محركات السعر',
+    shapSub:        'العوامل الأكثر تأثيراً في هذا التقدير',
+    spatialTitle:   'تفاصيل الموقع',
+    spatialSub:     'محسوبة تلقائياً من الإحداثيات',
+    nearbyTitle:    'المبيعات القريبة',
+    nearbySub:      'مبيعات حديثة في نطاق 800 متر',
+    unknownAddr:    'عنوان غير معروف',
+    analytics:      'التحليلات',
+    mapHint:        'انقر في أي مكان بمدينة نيويورك لوضع الدبوس',
+    tagline:        'تقييم عقارات نيويورك · مدعوم بالذكاء الاصطناعي',
+  },
+};
+
+let currentLang = 'en';
+
+function setLang(lang) {
+  currentLang = lang;
+  const T = TR[lang];
+  const isAr = lang === 'ar';
+
+  // RTL / LTR
+  document.documentElement.dir  = isAr ? 'rtl' : 'ltr';
+  document.documentElement.lang = lang;
+
+  // Toggle button styles
+  document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+  document.getElementById('btnAR').classList.toggle('active', lang === 'ar');
+
+  // Header
+  document.getElementById('headerTagline').textContent = T.tagline;
+  document.getElementById('analyticsLabel').textContent = T.analytics;
+  document.getElementById('mapHintText').textContent   = T.mapHint;
+
+  // How-to card
+  document.getElementById('howToTitle').textContent = T.howToUse;
+  document.getElementById('step1').textContent      = T.step1;
+  document.getElementById('step2').textContent      = T.step2;
+  document.getElementById('step3Btn').textContent   = T.step3Btn;
+
+  // Form card
+  document.getElementById('formTitle').textContent    = T.formTitle;
+  document.getElementById('lblBorough').textContent   = T.lblBorough;
+  document.getElementById('lblBldgType').textContent  = T.lblBldgType;
+  document.getElementById('lblSqft').textContent      = T.lblSqft;
+  document.getElementById('lblAge').textContent       = T.lblAge;
+  document.getElementById('lblFloors').textContent    = T.lblFloors;
+  document.getElementById('lblUnits').textContent     = T.lblUnits;
+  document.getElementById('advancedLabel').textContent = T.advancedLabel;
+  document.getElementById('lblLand').textContent      = T.lblLand;
+  document.getElementById('lblRenov').textContent     = T.lblRenov;
+  document.getElementById('lblYear').textContent      = T.lblYear;
+  document.getElementById('lblMonth').textContent     = T.lblMonth;
+  document.getElementById('lblPrior').textContent     = T.lblPrior;
+  document.getElementById('disclaimer').textContent   = T.disclaimer;
+
+  // Location text (only if not selected)
+  if (!latInput.value) {
+    document.getElementById('locationText').textContent = T.noLocation;
+  }
+
+  // Submit button text
+  if (!submitBtn.disabled) {
+    btnText.textContent = '🔍 ' + T.estimateBtn;
+  } else if (btnText.textContent.includes('Select') || btnText.textContent.includes('حدد')) {
+    btnText.textContent = T.selectFirst;
+  }
+
+  // Results (if visible)
+  document.getElementById('resultTitle').textContent   = T.resultTitle;
+  document.getElementById('confMidLabel').textContent  = T.confMid;
+  document.getElementById('shapTitle').textContent     = T.shapTitle;
+  document.getElementById('shapSubtitle').textContent  = T.shapSub;
+  document.getElementById('spatialTitle').textContent  = T.spatialTitle;
+  document.getElementById('spatialSubtitle').textContent = T.spatialSub;
+  document.getElementById('nearbyTitle').textContent   = T.nearbyTitle;
+  document.getElementById('nearbySubtitle').textContent = T.nearbySub;
+}
