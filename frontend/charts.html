@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>THAMAN — Model Analytics v2.1</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="/ui/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <style>
     html, body { overflow: auto; background: var(--gray-100); }
@@ -195,14 +195,18 @@
   <header class="header">
     <div class="header-left">
       <span class="logo">🏙️ THAMAN</span>
-      <span class="tagline">Model Analytics Dashboard v2.1</span>
+      <span class="tagline" id="chartsTagline">Model Analytics Dashboard v2.1</span>
     </div>
     <div class="header-badges">
       <span class="badge badge-green">Stack v2.1</span>
       <span class="badge badge-blue">R² = 0.591</span>
-      <span class="badge badge-purple">70 Features</span>
+      <span class="badge badge-purple" id="chartsFeaturesBadge">70 Features</span>
       <span class="badge badge-gray">Spatial CV</span>
-      <a href="/ui" class="back-link">← Back to Map</a>
+      <div class="lang-toggle">
+        <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+        <button class="lang-btn"        id="btnAR" onclick="setLang('ar')">ع</button>
+      </div>
+      <a href="/ui" class="back-link" id="backLink">← Back to Map</a>
     </div>
   </header>
 
@@ -211,8 +215,8 @@
 
     <!-- Title -->
     <div class="page-title">
-      <h1>THAMAN v2.1 — NYC Property Valuation Stack</h1>
-      <p>XGBoost + LightGBM + Ridge meta · 70 features · Spatial GroupKFold CV · Honest time-based holdout · 36K NYC sales</p>
+      <h1 id="pageTitle">THAMAN v2.1 — NYC Property Valuation Stack</h1>
+      <p id="pageSubtitle">XGBoost + LightGBM + Ridge meta · 70 features · Spatial GroupKFold CV · Honest time-based holdout · 36K NYC sales</p>
     </div>
 
     <!-- ── KPI Metric Cards ───────────────────────────────── -->
@@ -220,45 +224,45 @@
       <div class="metric-card">
         <div class="metric-icon">🎯</div>
         <div class="metric-value blue-val">0.591</div>
-        <div class="metric-label">R² Stack Holdout</div>
+        <div class="metric-label" id="kpi1Label">R² Stack Holdout</div>
         <div class="metric-sub">XGB: 0.5918 · LGB: 0.5840 · CAT: 0.5798</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">📊</div>
         <div class="metric-value green-val">18.83%</div>
-        <div class="metric-label">Median APE</div>
-        <div class="metric-sub">±18.83% confidence interval</div>
+        <div class="metric-label" id="kpi2Label">Median APE</div>
+        <div class="metric-sub" id="kpi2Sub">±18.83% confidence interval</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">💵</div>
         <div class="metric-value orange-val">$390K</div>
-        <div class="metric-label">Mean Abs Error</div>
-        <div class="metric-sub">v1 was $727K (−46%)</div>
+        <div class="metric-label" id="kpi3Label">Mean Abs Error</div>
+        <div class="metric-sub" id="kpi3Sub">v1 was $727K (−46%)</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">🎲</div>
         <div class="metric-value teal-val">71.1%</div>
-        <div class="metric-label">Tier Accuracy</div>
-        <div class="metric-sub">Within-1-tier: 96.7%</div>
+        <div class="metric-label" id="kpi4Label">Tier Accuracy</div>
+        <div class="metric-sub" id="kpi4Sub">Within-1-tier: 96.7%</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">🌳</div>
         <div class="metric-value dark-val">1,986</div>
-        <div class="metric-label">Boosting Rounds</div>
-        <div class="metric-sub">v1: 917 rounds</div>
+        <div class="metric-label" id="kpi5Label">Boosting Rounds</div>
+        <div class="metric-sub" id="kpi5Sub">v1: 917 rounds</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">⚙️</div>
         <div class="metric-value purple-val">70</div>
-        <div class="metric-label">Features</div>
-        <div class="metric-sub">v1: 50 features (+20 new)</div>
+        <div class="metric-label" id="kpi6Label">Features</div>
+        <div class="metric-sub" id="kpi6Sub">v1: 50 features (+20 new)</div>
       </div>
     </div>
 
     <!-- ── Chart 0: Model Comparison — Full width ──────── -->
     <div class="chart-card span-2">
-      <h2>⚖️ Stack v2.1 — Base Learner Comparison (XGB + LGB + CatBoost)</h2>
-      <div class="chart-sub">Holdout R² and MedAPE for each base model vs the 3-model Ridge stack — CatBoost adds diversity; stack reduces MedAPE by 0.74pp vs XGBoost alone</div>
+      <h2 id="c0Title">⚖️ Stack v2.1 — Base Learner Comparison (XGB + LGB + CatBoost)</h2>
+      <div class="chart-sub" id="c0Sub">Holdout R² and MedAPE for each base model vs the 3-model Ridge stack — CatBoost adds diversity; stack reduces MedAPE by 0.74pp vs XGBoost alone</div>
       <div class="chart-wrap" style="height:200px">
         <canvas id="stackCompareChart"></canvas>
       </div>
@@ -266,8 +270,8 @@
 
     <!-- ── Chart 1: SHAP Top 20 — Full width ────────────── -->
     <div class="chart-card span-2">
-      <h2>🔍 SHAP Feature Importance — Top 20 (v2)</h2>
-      <div class="chart-sub">Mean |SHAP| on holdout set — target-encoded bldgclass is now the strongest predictor, replacing raw building size</div>
+      <h2 id="c1Title">🔍 SHAP Feature Importance — Top 20 (v2)</h2>
+      <div class="chart-sub" id="c1Sub">Mean |SHAP| on holdout set — target-encoded bldgclass is now the strongest predictor, replacing raw building size</div>
       <div class="chart-wrap" style="height:460px">
         <canvas id="shapChart"></canvas>
       </div>
@@ -275,8 +279,8 @@
 
     <!-- ── Chart 2: v1 vs v2 vs v2.1 vs Baseline ─────────── -->
     <div class="chart-card">
-      <h2>⚡ Baseline → v1 → v2 → Stack v2.1</h2>
-      <div class="chart-sub">v2.1 stack improves R² from 0.544 → 0.593 and reduces MedAPE from 18.98% → 18.83% over single XGBoost</div>
+      <h2 id="c2Title">⚡ Baseline → v1 → v2 → Stack v2.1</h2>
+      <div class="chart-sub" id="c2Sub">v2.1 stack improves R² from 0.544 → 0.593 and reduces MedAPE from 18.98% → 18.83% over single XGBoost</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="baselineChart"></canvas>
       </div>
@@ -284,8 +288,8 @@
 
     <!-- ── Chart 3: Train / Val / Test / CV R² ──────────── -->
     <div class="chart-card">
-      <h2>📈 Train · Val · Holdout · Spatial CV</h2>
-      <div class="chart-sub">Spatial CV (0.523±0.18) is the true generalisation estimate — fold variance reveals borough-level difficulty</div>
+      <h2 id="c3Title">📈 Train · Val · Holdout · Spatial CV</h2>
+      <div class="chart-sub" id="c3Sub">Spatial CV (0.523±0.18) is the true generalisation estimate — fold variance reveals borough-level difficulty</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="trainTestChart"></canvas>
       </div>
@@ -293,8 +297,8 @@
 
     <!-- ── Chart 4: Feature Categories Donut ────────────── -->
     <div class="chart-card">
-      <h2>🗂️ Feature Categories Breakdown (70 Features)</h2>
-      <div class="chart-sub">v2 adds 9 log-distances, 4 urban gravity centres, 3 interactions, walk-score proxy, and 2 target-encoded codes</div>
+      <h2 id="c4Title">🗂️ Feature Categories Breakdown (70 Features)</h2>
+      <div class="chart-sub" id="c4Sub">v2 adds 9 log-distances, 4 urban gravity centres, 3 interactions, walk-score proxy, and 2 target-encoded codes</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="categoryDonut"></canvas>
       </div>
@@ -302,8 +306,8 @@
 
     <!-- ── Chart 5: SHAP by Category ────────────────────── -->
     <div class="chart-card">
-      <h2>📦 SHAP Importance by Feature Group</h2>
-      <div class="chart-sub">Target encoding + urban gravity now dominate — together accounting for >50% of total model explanation</div>
+      <h2 id="c5Title">📦 SHAP Importance by Feature Group</h2>
+      <div class="chart-sub" id="c5Sub">Target encoding + urban gravity now dominate — together accounting for >50% of total model explanation</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="categoryShap"></canvas>
       </div>
@@ -311,13 +315,13 @@
 
     <!-- ── Confusion Matrix — Full width ─────────────────── -->
     <div class="chart-card span-2">
-      <h2>🔲 Price Tier Confusion Matrix (Holdout: 5,256 properties)</h2>
-      <div class="chart-sub">Rows = actual price tier · Columns = predicted tier · Diagonal = correct · Green outline = diagonal · Cell color = % of row total</div>
+      <h2 id="c6Title">🔲 Price Tier Confusion Matrix (Holdout: 5,256 properties)</h2>
+      <div class="chart-sub" id="c6Sub">Rows = actual price tier · Columns = predicted tier · Diagonal = correct · Green outline = diagonal · Cell color = % of row total</div>
       <div class="cm-wrap">
         <table class="cm-table" id="cmTable">
           <thead>
             <tr>
-              <th style="text-align:right; padding-right:12px;">Actual ↓ / Predicted →</th>
+              <th style="text-align:right; padding-right:12px;" id="cmHeader">Actual ↓ / Predicted →</th>
               <th>&lt;$500K</th>
               <th>$500K–1M</th>
               <th>$1M–3M</th>
@@ -355,8 +359,8 @@
 
     <!-- ── Chart 6: Per-Tier Classification ─────────────── -->
     <div class="chart-card">
-      <h2>📋 Per-Tier Classification Metrics</h2>
-      <div class="chart-sub">Precision, Recall and F1-score for each price tier — $3M–10M is hardest (low recall: 41.4%)</div>
+      <h2 id="c7Title">📋 Per-Tier Classification Metrics</h2>
+      <div class="chart-sub" id="c7Sub">Precision, Recall and F1-score for each price tier — $3M–10M is hardest (low recall: 41.4%)</div>
       <div class="chart-wrap" style="height:280px">
         <canvas id="tierMetricsChart"></canvas>
       </div>
@@ -364,8 +368,8 @@
 
     <!-- ── Chart 7: By Borough MedAPE ───────────────────── -->
     <div class="chart-card">
-      <h2>🗺️ MedAPE by Borough (Holdout)</h2>
-      <div class="chart-sub">Manhattan is 2× harder to predict than Staten Island — high price heterogeneity within NTAs drives the gap</div>
+      <h2 id="c8Title">🗺️ MedAPE by Borough (Holdout)</h2>
+      <div class="chart-sub" id="c8Sub">Manhattan is 2× harder to predict than Staten Island — high price heterogeneity within NTAs drives the gap</div>
       <div class="chart-wrap" style="height:280px">
         <canvas id="boroughChart"></canvas>
       </div>
@@ -373,8 +377,8 @@
 
     <!-- ── Chart 8: Hyperparameter Radar ────────────────── -->
     <div class="chart-card">
-      <h2>🎛️ Hyperparameter Profile (v2)</h2>
-      <div class="chart-sub">v2 is more regularised: LR ↓(0.05→0.03), λ ↑(1→2), α ↑(0.1→0.5), MinChild ↑(5→10), Subsample/Col ↓(0.8→0.7)</div>
+      <h2 id="c9Title">🎛️ Hyperparameter Profile (v2)</h2>
+      <div class="chart-sub" id="c9Sub">v2 is more regularised: LR ↓(0.05→0.03), λ ↑(1→2), α ↑(0.1→0.5), MinChild ↑(5→10), Subsample/Col ↓(0.8→0.7)</div>
       <div class="chart-wrap" style="height:280px">
         <canvas id="radarChart"></canvas>
       </div>
@@ -382,8 +386,8 @@
 
     <!-- ── Chart 9: Error Metrics ────────────────────────── -->
     <div class="chart-card">
-      <h2>📉 Error Metric Comparison (v2 vs v1)</h2>
-      <div class="chart-sub">v2 MAE drops 46% ($727K→$395K) thanks to $10M luxury cap — MedAPE slightly increases due to honest spatial evaluation</div>
+      <h2 id="c10Title">📉 Error Metric Comparison (v2 vs v1)</h2>
+      <div class="chart-sub" id="c10Sub">v2 MAE drops 46% ($727K→$395K) thanks to $10M luxury cap — MedAPE slightly increases due to honest spatial evaluation</div>
       <div class="chart-wrap" style="height:280px">
         <canvas id="errorChart"></canvas>
       </div>
@@ -391,8 +395,8 @@
 
     <!-- ── Chart 10: Winsorization ───────────────────────── -->
     <div class="chart-card span-2">
-      <h2>🗺️ QoL Winsorization Thresholds (p99)</h2>
-      <div class="chart-sub">Three Quality-of-Life features are capped at their 99th percentile — outlier NTAs (high crime/noise) are clipped to prevent dominating predictions</div>
+      <h2 id="c11Title">🗺️ QoL Winsorization Thresholds (p99)</h2>
+      <div class="chart-sub" id="c11Sub">Three Quality-of-Life features are capped at their 99th percentile — outlier NTAs (high crime/noise) are clipped to prevent dominating predictions</div>
       <div class="chart-wrap" style="height:200px">
         <canvas id="winsorizationChart"></canvas>
       </div>
@@ -400,8 +404,8 @@
 
     <!-- ── Chart 11: ACRIS Medians ───────────────────────── -->
     <div class="chart-card">
-      <h2>💰 ACRIS Missing-Value Imputation</h2>
-      <div class="chart-sub">When prior-sale data is absent, v2 training-set medians are used — applied to ~30% of properties with no prior-sale record</div>
+      <h2 id="c12Title">💰 ACRIS Missing-Value Imputation</h2>
+      <div class="chart-sub" id="c12Sub">When prior-sale data is absent, v2 training-set medians are used — applied to ~30% of properties with no prior-sale record</div>
       <div class="chart-wrap" style="height:230px">
         <canvas id="acrisChart"></canvas>
       </div>
@@ -409,8 +413,8 @@
 
     <!-- ── Chart 12: Luxury Cap Experiment ──────────────── -->
     <div class="chart-card">
-      <h2>🚀 Luxury Cap Experiment (Spatial CV)</h2>
-      <div class="chart-sub">Capping sales at $10M reduces MedAPE from 22.4%→20.8% and improves R² — luxury outliers hurt generalisation</div>
+      <h2 id="c13Title">🚀 Luxury Cap Experiment (Spatial CV)</h2>
+      <div class="chart-sub" id="c13Sub">Capping sales at $10M reduces MedAPE from 22.4%→20.8% and improves R² — luxury outliers hurt generalisation</div>
       <div class="chart-wrap" style="height:230px">
         <canvas id="capChart"></canvas>
       </div>
@@ -1197,6 +1201,148 @@
     }
   });
 
+  </script>
+
+  <!-- ── Arabic / English i18n ──────────────────────────── -->
+  <script>
+  'use strict';
+
+  const CHARTS_TR = {
+    en: {
+      tagline:    'Model Analytics Dashboard v2.1',
+      backLink:   '← Back to Map',
+      features:   '70 Features',
+      pageTitle:  'THAMAN v2.1 — NYC Property Valuation Stack',
+      pageSub:    'XGBoost + LightGBM + Ridge meta · 70 features · Spatial GroupKFold CV · Honest time-based holdout · 36K NYC sales',
+      kpi1: 'R² Stack Holdout',
+      kpi2: 'Median APE',       kpi2s: '±18.83% confidence interval',
+      kpi3: 'Mean Abs Error',   kpi3s: 'v1 was $727K (−46%)',
+      kpi4: 'Tier Accuracy',    kpi4s: 'Within-1-tier: 96.7%',
+      kpi5: 'Boosting Rounds',  kpi5s: 'v1: 917 rounds',
+      kpi6: 'Features',         kpi6s: 'v1: 50 features (+20 new)',
+      c0t: '⚖️ Stack v2.1 — Base Learner Comparison (XGB + LGB + CatBoost)',
+      c0s: 'Holdout R² and MedAPE for each base model vs the 3-model Ridge stack — CatBoost adds diversity; stack reduces MedAPE by 0.74pp vs XGBoost alone',
+      c1t: '🔍 SHAP Feature Importance — Top 20 (v2)',
+      c1s: 'Mean |SHAP| on holdout set — target-encoded bldgclass is now the strongest predictor, replacing raw building size',
+      c2t: '⚡ Baseline → v1 → v2 → Stack v2.1',
+      c2s: 'v2.1 stack improves R² from 0.544 → 0.593 and reduces MedAPE from 18.98% → 18.83% over single XGBoost',
+      c3t: '📈 Train · Val · Holdout · Spatial CV',
+      c3s: 'Spatial CV (0.523±0.18) is the true generalisation estimate — fold variance reveals borough-level difficulty',
+      c4t: '🗂️ Feature Categories Breakdown (70 Features)',
+      c4s: 'v2 adds 9 log-distances, 4 urban gravity centres, 3 interactions, walk-score proxy, and 2 target-encoded codes',
+      c5t: '📦 SHAP Importance by Feature Group',
+      c5s: 'Target encoding + urban gravity now dominate — together accounting for >50% of total model explanation',
+      c6t: '🔲 Price Tier Confusion Matrix (Holdout: 5,256 properties)',
+      c6s: 'Rows = actual price tier · Columns = predicted tier · Diagonal = correct · Green outline = diagonal · Cell color = % of row total',
+      c7t: '📋 Per-Tier Classification Metrics',
+      c7s: 'Precision, Recall and F1-score for each price tier — $3M–10M is hardest (low recall: 41.4%)',
+      c8t: '🗺️ MedAPE by Borough (Holdout)',
+      c8s: 'Manhattan is 2× harder to predict than Staten Island — high price heterogeneity within NTAs drives the gap',
+      c9t: '🎛️ Hyperparameter Profile (v2)',
+      c9s: 'v2 is more regularised: LR ↓(0.05→0.03), λ ↑(1→2), α ↑(0.1→0.5), MinChild ↑(5→10), Subsample/Col ↓(0.8→0.7)',
+      c10t: '📉 Error Metric Comparison (v2 vs v1)',
+      c10s: 'v2 MAE drops 46% ($727K→$395K) thanks to $10M luxury cap — MedAPE slightly increases due to honest spatial evaluation',
+      c11t: '🗺️ QoL Winsorization Thresholds (p99)',
+      c11s: 'Three Quality-of-Life features are capped at their 99th percentile — outlier NTAs (high crime/noise) are clipped to prevent dominating predictions',
+      c12t: '💰 ACRIS Missing-Value Imputation',
+      c12s: 'When prior-sale data is absent, v2 training-set medians are used — applied to ~30% of properties with no prior-sale record',
+      c13t: '🚀 Luxury Cap Experiment (Spatial CV)',
+      c13s: 'Capping sales at $10M reduces MedAPE from 22.4%→20.8% and improves R² — luxury outliers hurt generalisation',
+      cmH:  'Actual ↓ / Predicted →',
+    },
+    ar: {
+      tagline:    'لوحة تحليلات النموذج v2.1',
+      backLink:   'الخريطة →',
+      features:   '70 ميزة',
+      pageTitle:  'ثمن v2.1 — نظام تقييم عقارات نيويورك',
+      pageSub:    'XGBoost + LightGBM + Ridge · 70 ميزة · تحقق مكاني · 36 ألف صفقة عقارية',
+      kpi1: 'دقة النموذج R²',
+      kpi2: 'متوسط الخطأ المئوي',  kpi2s: 'فاصل ثقة ±18.83%',
+      kpi3: 'متوسط الخطأ المطلق',  kpi3s: 'النموذج القديم $727K (−46%)',
+      kpi4: 'دقة فئة السعر',       kpi4s: 'ضمن فئة واحدة: 96.7%',
+      kpi5: 'جولات التدريب',       kpi5s: 'النموذج القديم: 917 جولة',
+      kpi6: 'الميزات',             kpi6s: 'النموذج القديم: 50 ميزة (+20 جديدة)',
+      c0t: '⚖️ مقارنة نماذج التكديس v2.1 (XGB + LGB + CatBoost)',
+      c0s: 'R² ومتوسط الخطأ لكل نموذج أساسي مقارنة بنموذج Ridge المُجمَّع — CatBoost يضيف تنوعاً ويقلل الخطأ بـ 0.74%',
+      c1t: '🔍 أهمية المتغيرات (SHAP) — أعلى 20 ميزة',
+      c1s: 'متوسط |SHAP| على بيانات الاختبار — الترميز المستهدف لفئة المبنى أصبح أقوى متنبئ',
+      c2t: '⚡ التطور: النموذج الأساسي → v1 → v2 → التكديس v2.1',
+      c2s: 'التكديس v2.1 يحسّن R² من 0.544 إلى 0.593 ويخفض متوسط الخطأ من 18.98% إلى 18.83%',
+      c3t: '📈 التدريب · التحقق · الاختبار · التحقق المكاني',
+      c3s: 'التحقق المكاني (0.523±0.18) هو المقياس الحقيقي للتعميم — تباين الطيات يكشف صعوبة كل منطقة',
+      c4t: '🗂️ توزيع فئات الميزات (70 ميزة)',
+      c4s: 'v2 يضيف 9 مسافات لوغاريتمية، 4 مراكز جاذبية حضرية، 3 تفاعلات، مؤشر قابلية المشي، وترميزين مستهدفين',
+      c5t: '📦 أهمية SHAP حسب مجموعة الميزات',
+      c5s: 'الترميز المستهدف + الجاذبية الحضرية يهيمنان معاً بأكثر من 50% من تفسير النموذج',
+      c6t: '🔲 مصفوفة الارتباك لفئات الأسعار (الاختبار: 5,256 عقار)',
+      c6s: 'الصفوف = الفئة الفعلية · الأعمدة = الفئة المتوقعة · القطر = التنبؤ الصحيح',
+      c7t: '📋 مقاييس التصنيف لكل فئة سعرية',
+      c7s: 'الدقة والاستدعاء وF1 لكل فئة — $3M-10M هي الأصعب (استدعاء منخفض: 41.4%)',
+      c8t: '🗺️ متوسط الخطأ حسب المنطقة الإدارية',
+      c8s: 'منهاتن أصعب ضعفين من ستاتن آيلاند — تنوع الأسعار الكبير داخل المناطق يزيد الخطأ',
+      c9t: '🎛️ ملف المعاملات الفائقة (v2)',
+      c9s: 'v2 أكثر انتظاماً: معدل التعلم أقل، عقوبات أعلى، الحد الأدنى للعينات أعلى',
+      c10t: '📉 مقارنة مقاييس الخطأ (v2 مقابل v1)',
+      c10s: 'متوسط الخطأ المطلق انخفض 46% بفضل سقف $10M — متوسط الخطأ المئوي ارتفع قليلاً لأمانة التقييم المكاني',
+      c11t: '🗺️ حدود ضبط مؤشرات جودة الحياة (p99)',
+      c11s: 'ثلاثة مؤشرات لجودة الحياة تُقيَّد عند النسيل المئوي 99 — المناطق الشاذة (جريمة عالية/ضجيج) تُقلَّص لمنع هيمنتها',
+      c12t: '💰 تعويض القيم المفقودة (ACRIS)',
+      c12s: 'عند غياب بيانات البيع السابق تُستخدم متوسطات بيانات التدريب — تُطبَّق على ~30% من العقارات',
+      c13t: '🚀 تجربة سقف الرفاهية (التحقق المكاني)',
+      c13s: 'تحديد السقف عند $10M يخفض متوسط الخطأ من 22.4% إلى 20.8% ويحسّن R²',
+      cmH:  'الفعلي ↓ / المتوقع →',
+    },
+  };
+
+  function setLang(lang) {
+    const T  = CHARTS_TR[lang];
+    const isAr = lang === 'ar';
+    localStorage.setItem('thamanLang', lang);
+
+    document.documentElement.lang = lang;
+    document.documentElement.dir  = isAr ? 'rtl' : 'ltr';
+
+    document.getElementById('btnEN').classList.toggle('active', lang === 'en');
+    document.getElementById('btnAR').classList.toggle('active', lang === 'ar');
+
+    document.getElementById('chartsTagline').textContent     = T.tagline;
+    document.getElementById('backLink').textContent          = T.backLink;
+    document.getElementById('chartsFeaturesBadge').textContent = T.features;
+    document.getElementById('pageTitle').textContent         = T.pageTitle;
+    document.getElementById('pageSubtitle').textContent      = T.pageSub;
+
+    // KPI cards
+    document.getElementById('kpi1Label').textContent = T.kpi1;
+    document.getElementById('kpi2Label').textContent = T.kpi2;
+    document.getElementById('kpi2Sub').textContent   = T.kpi2s;
+    document.getElementById('kpi3Label').textContent = T.kpi3;
+    document.getElementById('kpi3Sub').textContent   = T.kpi3s;
+    document.getElementById('kpi4Label').textContent = T.kpi4;
+    document.getElementById('kpi4Sub').textContent   = T.kpi4s;
+    document.getElementById('kpi5Label').textContent = T.kpi5;
+    document.getElementById('kpi5Sub').textContent   = T.kpi5s;
+    document.getElementById('kpi6Label').textContent = T.kpi6;
+    document.getElementById('kpi6Sub').textContent   = T.kpi6s;
+
+    // Chart titles + subs
+    for (let i = 0; i <= 13; i++) {
+      const tEl = document.getElementById('c' + i + 'Title');
+      const sEl = document.getElementById('c' + i + 'Sub');
+      if (tEl) tEl.textContent = T['c' + i + 't'];
+      if (sEl) sEl.textContent = T['c' + i + 's'];
+    }
+
+    // Confusion matrix header
+    const cmH = document.getElementById('cmHeader');
+    if (cmH) {
+      cmH.textContent = T.cmH;
+      cmH.style.textAlign = isAr ? 'left' : 'right';
+    }
+  }
+
+  // Restore saved language on load
+  const savedLang = localStorage.getItem('thamanLang') || 'en';
+  if (savedLang === 'ar') setLang('ar');
   </script>
 </body>
 </html>
