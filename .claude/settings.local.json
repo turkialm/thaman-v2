@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip3 install pypdf pdfplumber --quiet)",
+      "Bash(python3 -c \":*)",
+      "Bash(python3 -c \"import osmnx; print\\(osmnx.__version__\\)\")",
+      "Bash(pip3 install osmnx --quiet)",
+      "Bash(python3 -c \"import pyarrow; import geopandas; print\\(''ok''\\)\")",
+      "WebFetch(domain:leafmap.org)",
+      "WebFetch(domain:popfactfinder.planning.nyc.gov)",
+      "Bash(python3 -:*)",
+      "Bash(python3 train_v2.py)",
+      "Bash(__NEW_LINE_d69aa0c69236f56c__ echo \"=== Test 2: Queens A1 \\(single family\\) ===\")",
+      "Bash(curl -s -X POST http://localhost:8000/predict -H \"Content-Type: application/json\" -d '{\"\"latitude\"\":40.7282,\"\"longitude\"\":-73.7949,\"\"gross_square_feet\"\":1600,\"\"building_age\"\":60,\"\"bldgclass\"\":\"\"A1\"\",\"\"borough\"\":4,\"\"numfloors\"\":2,\"\"residential_units\"\":1}' )",
+      "Bash(__NEW_LINE_cae0fbbae054ef5e__ echo \"=== Test 3: Bronx B2 \\(2-family frame\\) ===\")",
+      "Bash(curl -s -X POST http://localhost:8000/predict -H \"Content-Type: application/json\" -d '{\"\"latitude\"\":40.8448,\"\"longitude\"\":-73.8648,\"\"gross_square_feet\"\":2400,\"\"building_age\"\":70,\"\"bldgclass\"\":\"\"B2\"\",\"\"borough\"\":2,\"\"numfloors\"\":2,\"\"residential_units\"\":2}' )",
+      "Bash(curl -s http://localhost:8000/api)",
+      "Bash(python3 -m json.tool)",
+      "Bash(python3 -c \"import lightgbm; print\\(''LightGBM:'', lightgbm.__version__\\)\")",
+      "Bash(python3 -c \"import joblib; print\\(''joblib:'', joblib.__version__\\)\")",
+      "Bash(python3 -c \"import pandas as pd; df=pd.read_csv\\(''data/processed/features.csv''\\); print\\(''features.csv rows:'', len\\(df\\), ''| cols:'', len\\(df.columns\\)\\)\")"
+    ]
+  }
+}

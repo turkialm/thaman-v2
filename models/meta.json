@@ -1,0 +1,636 @@
+{
+  "feature_names": [
+    "latitude",
+    "longitude",
+    "borough",
+    "building_age",
+    "numfloors",
+    "gross_square_feet",
+    "land_square_feet",
+    "residential_units",
+    "dist_subway_m",
+    "dist_school_m",
+    "dist_park_m",
+    "dist_hospital_m",
+    "poi_count_500m",
+    "crime_rate_nta",
+    "noise_density_nta",
+    "population_2020",
+    "median_income_nta",
+    "dist_bus_m",
+    "renovated_since_2018",
+    "years_since_renovation",
+    "dist_waterfront_m",
+    "dist_bike_lane_m",
+    "dist_elem_school_m",
+    "dist_express_subway_m",
+    "nearest_station_is_express",
+    "livability_complaint_rate",
+    "borough_income_deviation",
+    "sale_year",
+    "sale_month_sin",
+    "sale_month_cos",
+    "mortgage_rate_30yr",
+    "builtfar",
+    "residfar",
+    "commfar",
+    "facilfar",
+    "maxallwfar",
+    "far_utilization",
+    "has_elevator",
+    "is_condo",
+    "is_multifamily",
+    "is_single_fam",
+    "is_mixed_use",
+    "airbnb_count_500m",
+    "prior_sale_price",
+    "price_appreciation",
+    "years_since_prior_sale",
+    "is_flip",
+    "school_district",
+    "district_avg_score",
+    "district_school_count",
+    "has_prior_sale",
+    "log_dist_subway_m",
+    "log_dist_school_m",
+    "log_dist_park_m",
+    "log_dist_hospital_m",
+    "log_dist_bus_m",
+    "log_dist_waterfront_m",
+    "log_dist_bike_lane_m",
+    "log_dist_elem_school_m",
+    "log_dist_express_subway_m",
+    "dist_midtown_manhattan_m",
+    "dist_downtown_manhattan_m",
+    "dist_downtown_brooklyn_m",
+    "dist_long_island_city_m",
+    "is_manhattan",
+    "crime_x_manhattan",
+    "crime_x_non_manhattan",
+    "walk_score_proxy",
+    "bldgclass_encoded",
+    "borough_bldg_encoded"
+  ],
+  "n_features": 70,
+  "bldgclass_classes": [],
+  "winsorize_p99": {
+    "crime_rate_nta": 222.13507888148172,
+    "noise_density_nta": 179.697069279718,
+    "livability_complaint_rate": 59.3041992832425
+  },
+  "acris_medians": {
+    "prior_sale_price": 665000.0,
+    "price_appreciation": 0.4196428571428571,
+    "years_since_prior_sale": 3.2060232717316905
+  },
+  "bldgclass_means": {
+    "A0": 13.595954,
+    "A1": 13.629347,
+    "A2": 13.503209,
+    "A3": 14.437898,
+    "A4": 15.306871,
+    "A5": 13.488041,
+    "A6": 12.8596,
+    "A7": 15.436929,
+    "A8": 13.243227,
+    "A9": 13.632205,
+    "B1": 13.87334,
+    "B2": 13.728916,
+    "B3": 13.791494,
+    "B9": 13.861702,
+    "C0": 14.040276,
+    "C1": 14.602679,
+    "C2": 14.238421,
+    "C3": 14.193006,
+    "C4": 14.686123,
+    "C5": 14.789361,
+    "C6": 13.025793,
+    "C7": 15.089729,
+    "C8": 13.825198,
+    "C9": 14.602896,
+    "D0": 14.433574,
+    "D1": 15.522269,
+    "D2": 17.034386,
+    "D3": 15.241771,
+    "D4": 13.389216,
+    "D5": 16.99936,
+    "D6": 16.162675,
+    "D7": 15.420924,
+    "D8": 19.911586,
+    "D9": 15.395507,
+    "DB": 14.781272,
+    "E1": 15.316735,
+    "E2": 14.07765,
+    "E7": 17.251828,
+    "E9": 15.238057,
+    "F1": 15.002063,
+    "F2": 16.176365,
+    "F4": 15.101784,
+    "F5": 14.729532,
+    "F9": 15.09585,
+    "G0": 13.486438,
+    "G1": 14.941711,
+    "G2": 14.654974,
+    "G4": 14.062887,
+    "G6": 16.285093,
+    "G7": 14.818429,
+    "G8": 15.062573,
+    "G9": 14.960809,
+    "GU": 15.725465,
+    "GW": 14.745388,
+    "H1": 19.258837,
+    "H2": 17.786776,
+    "H3": 16.593413,
+    "H4": 14.979951,
+    "H7": 14.916713,
+    "H9": 16.125386,
+    "HB": 17.695744,
+    "HR": 15.89994,
+    "I5": 15.346667,
+    "I6": 17.02068,
+    "I7": 15.529399,
+    "I9": 15.363073,
+    "J7": 15.424949,
+    "J8": 15.752236,
+    "K1": 14.591649,
+    "K2": 15.259494,
+    "K3": 17.442671,
+    "K4": 14.741938,
+    "K5": 15.258732,
+    "K6": 16.920807,
+    "K7": 15.382911,
+    "K9": 15.636223,
+    "M1": 14.437505,
+    "M3": 15.864062,
+    "M4": 13.837558,
+    "M9": 14.455771,
+    "N2": 15.835662,
+    "N9": 13.734252,
+    "O1": 13.882976,
+    "O2": 15.139775,
+    "O3": 15.676962,
+    "O4": 18.039619,
+    "O5": 15.929091,
+    "O6": 16.366383,
+    "O7": 14.349422,
+    "O8": 14.318403,
+    "O9": 15.388479,
+    "P2": 14.359186,
+    "P5": 14.146083,
+    "P8": 15.882373,
+    "P9": 15.288657,
+    "Q9": 15.137267,
+    "QG": 14.538217,
+    "S0": 14.364739,
+    "S1": 13.896715,
+    "S2": 14.218999,
+    "S3": 14.54924,
+    "S4": 14.940238,
+    "S5": 14.753664,
+    "S9": 14.529077,
+    "V0": 13.250651,
+    "V1": 14.684647,
+    "V2": 12.736704,
+    "V3": 9.538564,
+    "VC": 14.077106,
+    "W1": 16.349711,
+    "W2": 15.821986,
+    "W3": 17.605284,
+    "W4": 16.300417,
+    "W7": 17.088344,
+    "W8": 14.729903,
+    "W9": 15.591045,
+    "Y4": 14.508658,
+    "Z0": 14.161652,
+    "Z9": 14.355768
+  },
+  "borough_bldg_means": {
+    "1_A": 15.870765,
+    "1_B": 14.967739,
+    "1_C": 13.845693,
+    "1_D": 13.820328,
+    "1_E": 16.27724,
+    "1_G": 15.452165,
+    "1_H": 16.821265,
+    "1_I": 15.009433,
+    "1_J": 15.588592,
+    "1_K": 16.080657,
+    "1_M": 15.240707,
+    "1_N": 16.516872,
+    "1_O": 16.46571,
+    "1_P": 16.087295,
+    "1_Q": 14.538217,
+    "1_S": 15.464383,
+    "1_V": 15.75798,
+    "1_W": 17.476049,
+    "1_Z": 14.900042,
+    "2_A": 13.365119,
+    "2_B": 13.533492,
+    "2_C": 13.714798,
+    "2_D": 12.748163,
+    "2_E": 14.833922,
+    "2_F": 14.522287,
+    "2_G": 14.63472,
+    "2_H": 15.440698,
+    "2_I": 15.520744,
+    "2_K": 14.640707,
+    "2_M": 14.141103,
+    "2_N": 13.734252,
+    "2_O": 14.373683,
+    "2_P": 14.021527,
+    "2_Q": 15.137267,
+    "2_S": 13.849596,
+    "2_V": 13.524971,
+    "2_W": 15.960083,
+    "2_Z": 14.000011,
+    "3_A": 13.861923,
+    "3_B": 13.98259,
+    "3_C": 14.114714,
+    "3_D": 13.405983,
+    "3_E": 15.481721,
+    "3_F": 15.003012,
+    "3_G": 14.635073,
+    "3_H": 15.787539,
+    "3_I": 15.623678,
+    "3_K": 14.738086,
+    "3_M": 14.606628,
+    "3_N": 15.154451,
+    "3_O": 14.837392,
+    "3_P": 14.359186,
+    "3_S": 14.414101,
+    "3_V": 13.736693,
+    "3_W": 14.983364,
+    "3_Y": 14.508658,
+    "3_Z": 15.200076,
+    "4_A": 13.601649,
+    "4_B": 13.755718,
+    "4_C": 13.33353,
+    "4_D": 13.02068,
+    "4_E": 15.33538,
+    "4_F": 15.050913,
+    "4_G": 14.514836,
+    "4_H": 16.525743,
+    "4_I": 16.715055,
+    "4_K": 14.65452,
+    "4_M": 14.321922,
+    "4_O": 14.993156,
+    "4_P": 12.468441,
+    "4_S": 14.026332,
+    "4_V": 13.64052,
+    "4_W": 15.790761,
+    "4_Z": 13.686765,
+    "5_A": 13.442794,
+    "5_B": 13.617697,
+    "5_C": 13.137602,
+    "5_D": 12.311834,
+    "5_E": 14.625615,
+    "5_F": 14.86654,
+    "5_G": 13.983676,
+    "5_H": 15.89994,
+    "5_I": 14.924025,
+    "5_K": 14.223695,
+    "5_M": 13.737959,
+    "5_O": 13.845657,
+    "5_S": 13.552957,
+    "5_V": 13.132593,
+    "5_W": 14.664006,
+    "5_Z": 13.849965
+  },
+  "global_mean_log": 13.696237,
+  "use_price_cap": true,
+  "price_cap": 10000000,
+  "n_train": 25498,
+  "n_val": 4500,
+  "n_holdout": 5256,
+  "baseline": {
+    "r2": 0.2382,
+    "mae": 1230842,
+    "mape": 86.14
+  },
+  "xgboost": {
+    "best_round": 1986,
+    "r2_test": 0.5438,
+    "r2_train": 0.829,
+    "r2_val": 0.703,
+    "cv_r2_mean": 0.5231,
+    "cv_r2_std": 0.1794,
+    "cv_medape_mean": 22.42,
+    "rmse_test": 0.569,
+    "mae_test": 394758.0,
+    "mape_test": 61.51,
+    "medape_test": 18.98,
+    "params": {
+      "objective": "reg:squarederror",
+      "eval_metric": "rmse",
+      "n_estimators": 2000,
+      "learning_rate": 0.03,
+      "max_depth": 5,
+      "min_child_weight": 10,
+      "subsample": 0.7,
+      "colsample_bytree": 0.7,
+      "gamma": 0.2,
+      "reg_alpha": 0.5,
+      "reg_lambda": 2.0,
+      "random_state": 42,
+      "n_jobs": -1
+    }
+  },
+  "luxury_cap_experiment": {
+    "no_cap": {
+      "R\u00b2": 0.5231,
+      "MedAPE": 22.42,
+      "n": 30773
+    },
+    "cap_10M": {
+      "R\u00b2": 0.5442,
+      "MedAPE": 20.77,
+      "n": 29998
+    }
+  },
+  "classification": {
+    "tier_labels": [
+      "<$500K",
+      "$500K\u20131M",
+      "$1M\u20133M",
+      "$3M\u201310M",
+      "$10M+"
+    ],
+    "tier_bins": [
+      0,
+      500000,
+      1000000,
+      3000000,
+      10000000
+    ],
+    "accuracy": 0.7112,
+    "within_1_tier": 0.9665,
+    "macro_precision": 0.5767,
+    "macro_recall": 0.519,
+    "macro_f1": 0.5385,
+    "per_tier": {
+      "<$500K": {
+        "precision": 0.7704,
+        "recall": 0.6986,
+        "f1": 0.7327,
+        "support": 1244
+      },
+      "$500K\u20131M": {
+        "precision": 0.6999,
+        "recall": 0.7631,
+        "f1": 0.7301,
+        "support": 2035
+      },
+      "$1M\u20133M": {
+        "precision": 0.6858,
+        "recall": 0.7195,
+        "f1": 0.7022,
+        "support": 1629
+      },
+      "$3M\u201310M": {
+        "precision": 0.7273,
+        "recall": 0.4138,
+        "f1": 0.5275,
+        "support": 348
+      },
+      "$10M+": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 0
+      }
+    },
+    "confusion_matrix": [
+      [
+        869,
+        275,
+        90,
+        10,
+        0
+      ],
+      [
+        202,
+        1553,
+        278,
+        2,
+        0
+      ],
+      [
+        41,
+        374,
+        1172,
+        42,
+        0
+      ],
+      [
+        16,
+        17,
+        169,
+        144,
+        2
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ]
+  },
+  "shap_top20": [
+    {
+      "feature": "bldgclass_encoded",
+      "mean_shap": 0.2121
+    },
+    {
+      "feature": "borough_bldg_encoded",
+      "mean_shap": 0.11884
+    },
+    {
+      "feature": "gross_square_feet",
+      "mean_shap": 0.09798
+    },
+    {
+      "feature": "prior_sale_price",
+      "mean_shap": 0.07496
+    },
+    {
+      "feature": "dist_downtown_manhattan_m",
+      "mean_shap": 0.07246
+    },
+    {
+      "feature": "latitude",
+      "mean_shap": 0.05846
+    },
+    {
+      "feature": "land_square_feet",
+      "mean_shap": 0.05378
+    },
+    {
+      "feature": "price_appreciation",
+      "mean_shap": 0.03668
+    },
+    {
+      "feature": "has_prior_sale",
+      "mean_shap": 0.0335
+    },
+    {
+      "feature": "builtfar",
+      "mean_shap": 0.03235
+    },
+    {
+      "feature": "dist_downtown_brooklyn_m",
+      "mean_shap": 0.03179
+    },
+    {
+      "feature": "median_income_nta",
+      "mean_shap": 0.03053
+    },
+    {
+      "feature": "dist_long_island_city_m",
+      "mean_shap": 0.02671
+    },
+    {
+      "feature": "building_age",
+      "mean_shap": 0.02405
+    },
+    {
+      "feature": "residential_units",
+      "mean_shap": 0.02289
+    },
+    {
+      "feature": "crime_rate_nta",
+      "mean_shap": 0.02233
+    },
+    {
+      "feature": "borough_income_deviation",
+      "mean_shap": 0.0223
+    },
+    {
+      "feature": "is_single_fam",
+      "mean_shap": 0.02207
+    },
+    {
+      "feature": "crime_x_non_manhattan",
+      "mean_shap": 0.02036
+    },
+    {
+      "feature": "numfloors",
+      "mean_shap": 0.0203
+    }
+  ],
+  "segment_by_borough": {
+    "Bronx": {
+      "n": 544,
+      "medape": 18.25,
+      "mae": 293551.0
+    },
+    "Brooklyn": {
+      "n": 1424,
+      "medape": 20.53,
+      "mae": 508050.0
+    },
+    "Manhattan": {
+      "n": 963,
+      "medape": 34.22,
+      "mae": 725413.0
+    },
+    "Queens": {
+      "n": 1892,
+      "medape": 15.0,
+      "mae": 209665.0
+    },
+    "Staten Island": {
+      "n": 433,
+      "medape": 13.79,
+      "mae": 222717.0
+    }
+  },
+  "segment_by_tier": {
+    "<$500K": {
+      "n": 1244,
+      "medape": 26.25,
+      "mae": 222900.0
+    },
+    "$500K\u20131M": {
+      "n": 2035,
+      "medape": 14.01,
+      "mae": 168921.0
+    },
+    "$1M\u20133M": {
+      "n": 1629,
+      "medape": 19.49,
+      "mae": 447199.0
+    },
+    "$3M\u201310M": {
+      "n": 348,
+      "medape": 41.92,
+      "mae": 2084255.0
+    }
+  },
+  "walk_score_scaler": {
+    "transit": {
+      "data_min": 9.887027912855196e-05,
+      "data_max": 0.06849422713956875,
+      "scale": 14.620875537508876
+    },
+    "bus": {
+      "data_min": 3.730258767117793e-05,
+      "data_max": 0.11718516228110214,
+      "scale": 8.536220829103843
+    },
+    "amenities": {
+      "data_min": 2.0,
+      "data_max": 11051.0,
+      "scale": 9.050592813829306e-05
+    },
+    "bike": {
+      "data_min": 0.00026148950394366794,
+      "data_max": 0.0556022478550019,
+      "scale": 18.069864414513898
+    },
+    "park": {
+      "data_min": 0.0002985557469967687,
+      "data_max": 0.1548183948805389,
+      "scale": 6.471660892267437
+    }
+  },
+  "stack": {
+    "version": "v2",
+    "base_learners": [
+      "xgboost",
+      "lightgbm",
+      "catboost"
+    ],
+    "xgboost": {
+      "r2_holdout": 0.5918,
+      "mae_holdout": 1474350.0,
+      "medape_holdout": 19.57,
+      "best_round": 2000
+    },
+    "lightgbm": {
+      "r2_holdout": 0.584,
+      "mae_holdout": 1515229.0,
+      "medape_holdout": 19.92,
+      "best_round": 960
+    },
+    "catboost": {
+      "r2_holdout": 0.5798,
+      "mae_holdout": 1524120.0,
+      "medape_holdout": 20.26,
+      "best_round": 1998
+    },
+    "ridge": {
+      "coef_xgb": 0.244277,
+      "coef_lgb": 0.456515,
+      "coef_cat": 0.291285,
+      "intercept": 0.157928,
+      "alpha": 1.0
+    },
+    "r2_holdout": 0.5912,
+    "mae_holdout": 1486379.0,
+    "medape_holdout": 18.83,
+    "r2_improvement": -0.0007,
+    "medape_improvement": 0.73
+  }
+}

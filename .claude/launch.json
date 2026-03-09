@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "thaman-api",
+      "runtimeExecutable": "uvicorn",
+      "runtimeArgs": ["api.main:app", "--port", "8000"],
+      "cwd": "/Users/totam/Desktop/new_try",
+      "port": 8000
+    }
+  ]
+}

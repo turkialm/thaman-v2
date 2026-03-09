@@ -1,0 +1,44 @@
+# ── Large training-only data files ─────────────────────────────────────
+data/raw/overture_places.geojson
+data/raw/road_network/
+data/raw/nyc_pluto_25v4_csv/
+data/raw/sales_geocoded.csv
+data/raw/noise_complaints.parquet
+data/raw/census_tracts/
+data/raw/nypd_crimes.parquet
+data/raw/export-2.geojson
+data/raw/Parks_Properties_20260308.csv
+data/raw/livability_complaints.parquet
+data/raw/rollingsales_*.xlsx
+data/raw/dob_permits.csv
+data/raw/census_tract_income.csv
+data/raw/census_tract_population.csv
+
+# ── Training artifacts (not needed for API) ─────────────────────────────
+models/X_train.npy
+models/X_test.npy
+models/y_train.npy
+models/y_test.npy
+models/*.png
+
+# ── Cache / build dirs ──────────────────────────────────────────────────
+cache/
+catboost_info/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ── Python env ──────────────────────────────────────────────────────────
+.env
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# ── OS ──────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
