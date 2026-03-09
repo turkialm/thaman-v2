@@ -27,7 +27,7 @@ import pandas as pd
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
 # ── Path setup ────────────────────────────────────────────────────────
@@ -318,9 +318,13 @@ def _get_shap_drivers(feat_dict: dict) -> list[FeatureDriver]:
 # ── Routes ────────────────────────────────────────────────────────────
 
 @app.get("/", tags=["Info"], include_in_schema=False)
+@app.get("/ui", tags=["Info"], include_in_schema=False)
 def root():
-    """Redirect browser visitors to the map UI."""
-    return RedirectResponse(url="/ui")
+    """Serve the map UI directly (no redirect chain that breaks HF Spaces iframe)."""
+    index_path = os.path.join(_FRONTEND_DIR, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path, media_type="text/html")
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/api", tags=["Info"])
