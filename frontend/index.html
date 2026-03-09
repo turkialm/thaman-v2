@@ -1,13 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>THAMAN — NYC Property Valuation</title>
-
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- App styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -16,14 +13,19 @@
   <header class="header">
     <div class="header-left">
       <span class="logo">🏙️ THAMAN</span>
-      <span class="tagline">NYC Property Valuation · AI-Powered</span>
+      <span class="tagline" id="headerTagline">NYC Property Valuation · AI-Powered</span>
     </div>
     <div class="header-badges">
       <span class="badge badge-green">Stack v2.1</span>
       <span class="badge badge-blue">R² = 0.591</span>
       <span class="badge badge-purple">MedAPE 18.83%</span>
-      <a href="/ui/charts.html" class="badge badge-gray">📊 Analytics</a>
+      <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
       <a href="/docs" target="_blank" class="badge badge-gray">API Docs ↗</a>
+      <!-- Language Toggle -->
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+        <button class="lang-btn"        id="btnAR" onclick="setLang('ar')">ع</button>
+      </div>
     </div>
   </header>
 
@@ -33,9 +35,7 @@
     <!-- ── Left: Map ──────────────────────────────────────────────── -->
     <section class="map-section">
       <div id="map"></div>
-      <div class="map-hint" id="mapHint">
-        📍 Click anywhere in New York City to place a pin
-      </div>
+      <div class="map-hint" id="mapHint">📍 <span id="mapHintText">Click anywhere in New York City to place a pin</span></div>
     </section>
 
     <!-- ── Right: Sidebar ─────────────────────────────────────────── -->
@@ -43,33 +43,30 @@
 
       <!-- How to use -->
       <div class="card card-howto">
-        <h3 class="card-title">How to use</h3>
+        <h3 class="card-title" id="howToTitle">How to use</h3>
         <ol class="steps">
-          <li><span class="step-num">1</span> Click the map to set the property location</li>
-          <li><span class="step-num">2</span> Fill in the property details below</li>
-          <li><span class="step-num">3</span> Click <strong>Estimate Price</strong></li>
+          <li><span class="step-num">1</span> <span id="step1">Click the map to set the property location</span></li>
+          <li><span class="step-num">2</span> <span id="step2">Fill in the property details below</span></li>
+          <li><span class="step-num">3</span> <span id="step3">Click <strong id="step3Btn">Estimate Price</strong></span></li>
         </ol>
       </div>
 
       <!-- Property Form -->
       <div class="card" id="formCard">
-        <h3 class="card-title">Property Details</h3>
+        <h3 class="card-title" id="formTitle">Property Details</h3>
 
-        <!-- Location display -->
         <div class="location-display" id="locationDisplay">
           <span class="location-icon">📍</span>
           <span id="locationText" class="location-text">No location selected — click the map</span>
         </div>
 
         <form id="predictForm" novalidate>
-          <!-- Hidden lat/lng -->
-          <input type="hidden" id="latitude" name="latitude" />
+          <input type="hidden" id="latitude"  name="latitude" />
           <input type="hidden" id="longitude" name="longitude" />
 
-          <!-- Borough -->
           <div class="field-row">
             <div class="field">
-              <label for="borough">Borough</label>
+              <label for="borough" id="lblBorough">Borough</label>
               <select id="borough" name="borough" required>
                 <option value="">Select…</option>
                 <option value="1">Manhattan</option>
@@ -80,7 +77,7 @@
               </select>
             </div>
             <div class="field">
-              <label for="bldgSearchInput">Building Type</label>
+              <label for="bldgSearchInput" id="lblBldgType">Building Type</label>
               <div class="bldg-search-wrap" id="bldgSearchWrap">
                 <input type="text" id="bldgSearchInput" placeholder="Type code or name, e.g. A1, D4…" autocomplete="off" />
                 <input type="hidden" id="bldgclass" name="bldgclass" />
@@ -89,59 +86,56 @@
             </div>
           </div>
 
-          <!-- Size & Age -->
           <div class="field-row">
             <div class="field">
-              <label for="gross_square_feet">Building Size (sq ft)</label>
+              <label for="gross_square_feet" id="lblSqft">Building Size (sq ft)</label>
               <input type="number" id="gross_square_feet" name="gross_square_feet"
                      placeholder="e.g. 1800" min="100" max="5000000" required />
             </div>
             <div class="field">
-              <label for="building_age">Building Age (years)</label>
+              <label for="building_age" id="lblAge">Building Age (years)</label>
               <input type="number" id="building_age" name="building_age"
                      placeholder="e.g. 55" min="0" max="200" required />
             </div>
           </div>
 
-          <!-- Floors & Units -->
           <div class="field-row">
             <div class="field">
-              <label for="numfloors">Floors</label>
+              <label for="numfloors" id="lblFloors">Floors</label>
               <input type="number" id="numfloors" name="numfloors"
                      placeholder="e.g. 2" min="1" max="200" required />
             </div>
             <div class="field">
-              <label for="residential_units">Residential Units</label>
+              <label for="residential_units" id="lblUnits">Residential Units</label>
               <input type="number" id="residential_units" name="residential_units"
                      placeholder="e.g. 1" min="0" max="10000" required />
             </div>
           </div>
 
-          <!-- Advanced toggle -->
           <button type="button" class="advanced-toggle" id="advancedToggle">
-            <span id="advancedArrow">▶</span> Advanced options (optional)
+            <span id="advancedArrow">▶</span> <span id="advancedLabel">Advanced options (optional)</span>
           </button>
 
           <div class="advanced-panel" id="advancedPanel">
             <div class="field-row">
               <div class="field">
-                <label for="land_square_feet">Land Size (sq ft)</label>
+                <label for="land_square_feet" id="lblLand">Land Size (sq ft)</label>
                 <input type="number" id="land_square_feet" name="land_square_feet"
                        placeholder="Auto-estimated" min="0" />
               </div>
             </div>
             <div class="field-row">
               <div class="field">
-                <label for="renovated_since_2018">Renovated since 2018?</label>
+                <label for="renovated_since_2018" id="lblRenov">Renovated since 2018?</label>
                 <select id="renovated_since_2018" name="renovated_since_2018">
-                  <option value="0">No</option>
-                  <option value="1">Yes</option>
+                  <option value="0" id="optNo">No</option>
+                  <option value="1" id="optYes">Yes</option>
                 </select>
               </div>
               <div class="field">
-                <label for="sale_year">Valuation Year</label>
+                <label for="sale_year" id="lblYear">Valuation Year</label>
                 <select id="sale_year" name="sale_year">
-                  <option value="">Current year</option>
+                  <option value="" id="optCurrentYear">Current year</option>
                   <option value="2026">2026</option>
                   <option value="2025">2025</option>
                   <option value="2024">2024</option>
@@ -151,25 +145,19 @@
             </div>
             <div class="field-row">
               <div class="field">
-                <label for="sale_month">Sale Month</label>
+                <label for="sale_month" id="lblMonth">Sale Month</label>
                 <select id="sale_month" name="sale_month">
                   <option value="">Current month</option>
-                  <option value="1">January</option>
-                  <option value="2">February</option>
-                  <option value="3">March</option>
-                  <option value="4">April</option>
-                  <option value="5">May</option>
-                  <option value="6">June</option>
-                  <option value="7">July</option>
-                  <option value="8">August</option>
-                  <option value="9">September</option>
-                  <option value="10">October</option>
-                  <option value="11">November</option>
-                  <option value="12">December</option>
+                  <option value="1">January</option><option value="2">February</option>
+                  <option value="3">March</option><option value="4">April</option>
+                  <option value="5">May</option><option value="6">June</option>
+                  <option value="7">July</option><option value="8">August</option>
+                  <option value="9">September</option><option value="10">October</option>
+                  <option value="11">November</option><option value="12">December</option>
                 </select>
               </div>
               <div class="field">
-                <label for="prior_sale_price_wrap">Prior Sale Price ($)
+                <label for="prior_sale_price_wrap" id="lblPrior">Prior Sale Price ($)
                   <a id="acrisLink" class="acris-link" href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" title="Look up prior sale on NYC ACRIS">ACRIS ↗</a>
                 </label>
                 <input type="number" id="prior_sale_price" name="prior_sale_price"
@@ -178,24 +166,48 @@
             </div>
           </div>
 
-          <!-- Submit -->
           <button type="submit" class="btn-predict" id="submitBtn" disabled>
             <span id="btnText">📍 Select a location first</span>
             <span class="spinner" id="spinner" style="display:none">⟳</span>
           </button>
 
-          <p class="disclaimer">
+          <p class="disclaimer" id="disclaimer">
             Predictions are based on NYC property sales 2025–2026.
             Model accuracy: median error ±18.83% (MedAPE, spatial CV validated).
           </p>
         </form>
       </div>
 
-      <!-- Results (hidden until prediction) -->
-      <div class="card card-result" id="resultCard" style="display:none">
-        <h3 class="card-title">Estimated Value</h3>
+      <!-- ── Skeleton cards (visible during loading) ───────────────── -->
+      <div class="card" id="skeletonResult" style="display:none">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-price"></div>
+        <div class="skel skel-line medium" style="margin:6px auto;width:55%"></div>
+        <div class="skel skel-bar" style="margin-top:14px"></div>
+      </div>
 
-        <!-- Price + Tier badge -->
+      <div class="card" id="skeletonShap" style="display:none">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line medium"></div>
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line medium"></div>
+        <div class="skel skel-line narrow"></div>
+      </div>
+
+      <div class="card" id="skeletonSpatial" style="display:none">
+        <div class="skel skel-title"></div>
+        <div class="skel-grid">
+          <div class="skel skel-block"></div>
+          <div class="skel skel-block"></div>
+          <div class="skel skel-block"></div>
+          <div class="skel skel-block"></div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="card card-result" id="resultCard" style="display:none">
+        <h3 class="card-title" id="resultTitle">Estimated Value</h3>
         <div class="price-block">
           <div class="price-main" id="priceMain">—</div>
           <div class="price-range" id="priceRange">—</div>
@@ -204,12 +216,10 @@
             <div class="tier-badge" id="tierBadge" style="display:none"></div>
           </div>
         </div>
-
-        <!-- Confidence bar -->
         <div class="confidence-bar-wrap" id="confBarWrap" style="display:none">
           <div class="conf-label">
             <span id="confLow">—</span>
-            <span class="conf-mid-label">Predicted</span>
+            <span class="conf-mid-label" id="confMidLabel">Predicted</span>
             <span id="confHigh">—</span>
           </div>
           <div class="confidence-bar">
@@ -222,8 +232,8 @@
       <!-- SHAP Drivers -->
       <div class="card card-shap" id="shapCard" style="display:none">
         <h3 class="card-title">
-          Price Drivers
-          <span class="card-subtitle">What factors most influenced this estimate</span>
+          <span id="shapTitle">Price Drivers</span>
+          <span class="card-subtitle" id="shapSubtitle">What factors most influenced this estimate</span>
         </h3>
         <div id="shapBars"></div>
       </div>
@@ -231,18 +241,25 @@
       <!-- Spatial Features -->
       <div class="card card-spatial" id="spatialCard" style="display:none">
         <h3 class="card-title">
-          Location Details
-          <span class="card-subtitle">Auto-computed from coordinates</span>
+          <span id="spatialTitle">Location Details</span>
+          <span class="card-subtitle" id="spatialSubtitle">Auto-computed from coordinates</span>
         </h3>
         <div class="spatial-grid" id="spatialGrid"></div>
+      </div>
+
+      <!-- Nearby Sales -->
+      <div class="card card-nearby" id="nearbyCard" style="display:none">
+        <h3 class="card-title">
+          <span id="nearbyTitle">Nearby Sales</span>
+          <span class="card-subtitle" id="nearbySubtitle">Recent sales within 800m</span>
+        </h3>
+        <div id="nearbyList"></div>
       </div>
 
     </aside>
   </main>
 
-  <!-- ── Leaflet JS ──────────────────────────────────────────────── -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- ── App JS ──────────────────────────────────────────────────── -->
   <script src="app.js"></script>
 </body>
 </html>

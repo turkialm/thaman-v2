@@ -43,19 +43,41 @@ from api.models import (
 
 
 # ── Global state ──────────────────────────────────────────────────────
-_scorer:  ThamanScorer  | None = None
-_spatial: SpatialLookup | None = None
+_scorer:      ThamanScorer  | None = None
+_spatial:     SpatialLookup | None = None
+_nearby_df                         = None   # pd.DataFrame — runtime sales lookup
+_nearby_tree                       = None   # scipy cKDTree for nearby queries
+
+_NEARBY_COLS = [
+    "latitude", "longitude", "sale_price", "address",
+    "bldgclass", "gross_square_feet", "building_age", "sale_date",
+]
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load model + spatial data once at startup."""
-    global _scorer, _spatial
+    global _scorer, _spatial, _nearby_df, _nearby_tree
     print("=" * 60)
     print("THAMAN API — Starting up (v2)")
     print("=" * 60)
     _scorer  = ThamanScorer()
     _spatial = SpatialLookup()
+
+    # Load lightweight nearby-sales index (subset of features.csv)
+    try:
+        from scipy.spatial import cKDTree as _KDTree
+        _nearby_path = os.path.join(BASE, "data", "processed", "features.csv")
+        available    = [c for c in _NEARBY_COLS
+                        if c in pd.read_csv(_nearby_path, nrows=0).columns]
+        df = pd.read_csv(_nearby_path, usecols=available)
+        df = df.dropna(subset=["latitude", "longitude", "sale_price"])
+        _nearby_df   = df.reset_index(drop=True)
+        _nearby_tree = _KDTree(_nearby_df[["latitude", "longitude"]].values)
+        print(f"  Nearby index: {len(_nearby_df):,} sales loaded")
+    except Exception as e:
+        print(f"  [nearby] Could not load nearby index: {e}")
+
     print("=" * 60)
     print("THAMAN API — Ready at http://localhost:8000")
     print("Docs:        http://localhost:8000/docs")
@@ -462,3 +484,50 @@ def predict_batch(requests: list[PredictRequest]):
             results.append({"index": i, "error": str(e)})
 
     return {"count": len(results), "results": results}
+
+
+@app.get("/nearby", tags=["Reference"])
+def nearby_sales(lat: float, lon: float, radius_m: int = 800, limit: int = 5):
+    """
+    Return up to `limit` recent property sales within `radius_m` metres of (lat, lon).
+    Falls back to the nearest `limit` sales if none found within radius.
+    """
+    if _nearby_df is None or _nearby_tree is None:
+        raise HTTPException(status_code=503, detail="Nearby index not loaded.")
+    if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+        raise HTTPException(status_code=422, detail="Invalid coordinates.")
+
+    limit = min(max(1, limit), 20)
+
+    # Search within radius (degree approximation: 1° ≈ 111 km)
+    radius_deg = radius_m / 111_000.0
+    idxs = _nearby_tree.query_ball_point([lat, lon], radius_deg)
+
+    if not idxs:
+        # Fallback: return nearest regardless of distance
+        k = min(limit, len(_nearby_df))
+        _, idxs = _nearby_tree.query([lat, lon], k=k)
+        idxs = idxs.tolist() if hasattr(idxs, 'tolist') else list(idxs)
+
+    subset = _nearby_df.iloc[idxs].copy()
+    subset["_dist_deg"] = (
+        (subset["latitude"] - lat) ** 2 + (subset["longitude"] - lon) ** 2
+    ) ** 0.5
+    subset["distance_m"] = (subset["_dist_deg"] * 111_000).round().astype(int)
+    subset = subset.sort_values("_dist_deg").head(limit)
+
+    nearby = []
+    for _, row in subset.iterrows():
+        nearby.append({
+            "address":          str(row.get("address", ""))[:80],
+            "sale_price":       int(row["sale_price"]),
+            "bldgclass":        str(row.get("bldgclass", "")),
+            "gross_square_feet":int(row.get("gross_square_feet", 0)),
+            "building_age":     int(row.get("building_age", 0)),
+            "sale_date":        str(row.get("sale_date", ""))[:10],
+            "distance_m":       int(row["distance_m"]),
+            "latitude":         float(row["latitude"]),
+            "longitude":        float(row["longitude"]),
+        })
+
+    return {"count": len(nearby), "nearby": nearby}
