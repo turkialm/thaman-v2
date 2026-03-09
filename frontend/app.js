@@ -151,6 +151,8 @@ document.addEventListener('click', (e) => {
 });
 
 loadBldgClasses();
+// Restore saved language on page load
+if (currentLang === 'ar') setLang('ar');
 
 // ── Borough auto-detection from lat/lng (rough bounding boxes) ────────
 function guessBoroughFromCoords(lat, lon) {
@@ -584,10 +586,11 @@ const TR = {
   },
 };
 
-let currentLang = 'en';
+let currentLang = localStorage.getItem('thamanLang') || 'en';
 
 function setLang(lang) {
   currentLang = lang;
+  localStorage.setItem('thamanLang', lang);
   const T = TR[lang];
   const isAr = lang === 'ar';
 
