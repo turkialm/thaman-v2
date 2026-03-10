@@ -1,0 +1,5 @@
+# Files not needed in Hugging Face Spaces deployment
+docs/
+*.pptx
+*.docx
+notebooks/
