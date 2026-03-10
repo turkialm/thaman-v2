@@ -8,8 +8,6 @@ import pytest
 from fastapi.testclient import TestClient
 from api.main import app
 
-client = TestClient(app)
-
 # ── Fixtures ──────────────────────────────────────────────────────────
 
 BROOKLYN_A1 = {
@@ -36,13 +34,13 @@ MANHATTAN_D4 = {
 
 # ── Info endpoints ────────────────────────────────────────────────────
 
-def test_root_redirects():
-    """GET / should redirect to /ui."""
+def test_root_serves_ui(client):
+    """GET / should serve the map UI directly (200)."""
     response = client.get("/", follow_redirects=False)
-    assert response.status_code in (301, 302, 307, 308)
+    assert response.status_code == 200
 
 
-def test_api_info():
+def test_api_info(client):
     """GET /api returns version and endpoint list."""
     response = client.get("/api")
     assert response.status_code == 200
@@ -51,7 +49,7 @@ def test_api_info():
     assert "endpoints" in data
 
 
-def test_health_ok():
+def test_health_ok(client):
     """GET /health returns model_loaded and spatial_loaded flags."""
     response = client.get("/health")
     assert response.status_code == 200
@@ -61,7 +59,7 @@ def test_health_ok():
     assert "status"         in data
 
 
-def test_bldgclasses_returns_list():
+def test_bldgclasses_returns_list(client):
     """GET /bldgclasses returns a non-empty list of codes."""
     response = client.get("/bldgclasses")
     assert response.status_code == 200
@@ -73,7 +71,7 @@ def test_bldgclasses_returns_list():
 
 # ── Prediction endpoint ───────────────────────────────────────────────
 
-def test_predict_brooklyn_a1():
+def test_predict_brooklyn_a1(client):
     """Brooklyn A1 should return a realistic price ($300K–$3M)."""
     response = client.post("/predict", json=BROOKLYN_A1)
     assert response.status_code == 200
@@ -85,7 +83,7 @@ def test_predict_brooklyn_a1():
     assert 300_000 < data["predicted_price"] < 3_000_000
 
 
-def test_predict_confidence_range():
+def test_predict_confidence_range(client):
     """Confidence low < predicted < high."""
     response = client.post("/predict", json=BROOKLYN_A1)
     assert response.status_code == 200
@@ -93,14 +91,14 @@ def test_predict_confidence_range():
     assert data["confidence_low"] < data["predicted_price"] < data["confidence_high"]
 
 
-def test_predict_manhattan_d4():
+def test_predict_manhattan_d4(client):
     """Manhattan D4 elevator building should be > Brooklyn A1."""
     r_bk = client.post("/predict", json=BROOKLYN_A1).json()
     r_mn = client.post("/predict", json=MANHATTAN_D4).json()
     assert r_mn["predicted_price"] > r_bk["predicted_price"]
 
 
-def test_predict_shap_drivers():
+def test_predict_shap_drivers(client):
     """top_drivers should contain feature, impact, direction."""
     response = client.post("/predict", json=BROOKLYN_A1)
     data = response.json()
@@ -112,7 +110,7 @@ def test_predict_shap_drivers():
         assert d["direction"] in ("positive", "negative")
 
 
-def test_predict_spatial_features():
+def test_predict_spatial_features(client):
     """spatial_features should include subway and income keys."""
     response = client.post("/predict", json=BROOKLYN_A1)
     sf = response.json()["spatial_features"]
@@ -121,21 +119,21 @@ def test_predict_spatial_features():
     assert sf["dist_subway_m"] > 0
 
 
-def test_predict_invalid_out_of_nyc():
+def test_predict_invalid_out_of_nyc(client):
     """Coordinates outside NYC bounding box should return 422."""
     payload = {**BROOKLYN_A1, "latitude": 51.5074, "longitude": -0.1278}  # London
     response = client.post("/predict", json=payload)
     assert response.status_code == 422
 
 
-def test_predict_missing_required_field():
+def test_predict_missing_required_field(client):
     """Missing required field should return 422."""
     payload = {k: v for k, v in BROOKLYN_A1.items() if k != "bldgclass"}
     response = client.post("/predict", json=payload)
     assert response.status_code == 422
 
 
-def test_predict_negative_sqft():
+def test_predict_negative_sqft(client):
     """Negative gross_square_feet should return 422."""
     payload = {**BROOKLYN_A1, "gross_square_feet": -100}
     response = client.post("/predict", json=payload)
@@ -144,7 +142,7 @@ def test_predict_negative_sqft():
 
 # ── Batch endpoint ────────────────────────────────────────────────────
 
-def test_batch_two_properties():
+def test_batch_two_properties(client):
     """Batch endpoint returns results for each property."""
     response = client.post("/batch", json=[BROOKLYN_A1, MANHATTAN_D4])
     assert response.status_code == 200
@@ -153,7 +151,7 @@ def test_batch_two_properties():
     assert all("predicted_price" in r for r in data["results"])
 
 
-def test_batch_too_many():
+def test_batch_too_many(client):
     """Batch size > 50 should return 400."""
     payload = [BROOKLYN_A1] * 51
     response = client.post("/batch", json=payload)
@@ -162,7 +160,7 @@ def test_batch_too_many():
 
 # ── Nearby endpoint ───────────────────────────────────────────────────
 
-def test_nearby_returns_sales():
+def test_nearby_returns_sales(client):
     """GET /nearby should return at least 1 sale near Brooklyn."""
     response = client.get("/nearby?lat=40.6892&lon=-73.9442")
     assert response.status_code == 200
@@ -171,7 +169,7 @@ def test_nearby_returns_sales():
     assert data["count"] > 0
 
 
-def test_nearby_fields():
+def test_nearby_fields(client):
     """Each nearby sale should have required fields."""
     response = client.get("/nearby?lat=40.6892&lon=-73.9442&limit=3")
     data = response.json()
@@ -183,7 +181,7 @@ def test_nearby_fields():
         assert sale["distance_m"] >= 0
 
 
-def test_nearby_invalid_coords():
+def test_nearby_invalid_coords(client):
     """Invalid coordinates should return 422."""
     response = client.get("/nearby?lat=999&lon=999")
     assert response.status_code == 422

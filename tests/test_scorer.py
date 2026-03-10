@@ -25,8 +25,8 @@ def test_scorer_loads(scorer):
 
 
 def test_scorer_has_feature_names(scorer):
-    """Scorer should have 70 feature names."""
-    assert len(scorer.feature_names) == 70
+    """Scorer should have 71 feature names."""
+    assert len(scorer.feature_names) == 71
 
 
 def test_scorer_has_bldgclass_means(scorer):
@@ -139,5 +139,5 @@ def test_explain_returns_shap_df(scorer):
     })
     df       = pd.DataFrame([defaults])
     shap_df  = scorer.explain(df)
-    assert shap_df.shape == (1, 70)
+    assert shap_df.shape == (1, 71)
     assert list(shap_df.columns) == scorer.feature_names

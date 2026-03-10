@@ -1,6 +1,6 @@
 # THAMAN — Project Status
 > AI-Powered PropTech System for Property Valuation
-> Last updated: 2026-03-09
+> Last updated: 2026-03-10
 
 ---
 
@@ -13,9 +13,9 @@ Interactive web application built and served from FastAPI at `http://localhost:8
 #### How to Launch
 
 ```bash
-cd "new try"
+cd new_try
 python3 -m uvicorn api.main:app --port 8000
-# Then open: http://localhost:8000/ui
+# Then open: http://localhost:8000/
 ```
 
 #### Files
@@ -44,7 +44,7 @@ python3 -m uvicorn api.main:app --port 8000
 
 ```
 ┌─ Header ─────────────────────────────────────────────────────────────┐
-│  🏙️ THAMAN  ·  NYC Property Valuation  |  XGBoost  R²=0.735  API Docs│
+│  🏙️ THAMAN  ·  NYC Property Valuation  |  Stack v2.1  R²=0.651  API Docs│
 ├─ Map (flex-grow) ─────────────────────┬─ Sidebar (380px) ────────────┤
 │                                       │  📋 How to use (3 steps)     │
 │  Leaflet.js + OpenStreetMap           │                               │
@@ -125,7 +125,7 @@ FastAPI server built, tested, and running. All endpoints functional.
 #### How to Start
 
 ```bash
-cd "new try"
+cd new_try
 python3 -m uvicorn api.main:app --reload --port 8000
 ```
 
@@ -153,10 +153,10 @@ POST /predict
   "predicted_price": 1307229,
   "confidence_low": 1074542,
   "confidence_high": 1539915,
-  "confidence_note": "±17.8% MedAPE confidence interval",
-  "model": "XGBoost",
-  "r2_test": 0.7354,
-  "medape_pct": 17.78,
+  "confidence_note": "±20.29% MedAPE confidence interval",
+  "model": "XGBoost + LightGBM Stack",
+  "r2_test": 0.6509,
+  "medape_pct": 20.29,
   "borough_name": "Brooklyn",
   "bldgclass_description": "Two story detached - small or moderate",
   "spatial_features": {
@@ -232,19 +232,29 @@ POST /predict
 
 ### Phase 3 — Model Training (DONE)
 
-#### Results Summary
+#### v2.1 Stack Results (Current — 185K rows, 2022–2026)
 
-| Metric | Baseline (Ridge) | XGBoost | Improvement |
+| Metric | XGBoost base | LGB base | Stack v2.1 (XGB+LGB+CAT+Ridge) |
+|---|---|---|---|
+| R² (holdout) | 0.6537 | 0.6511 | **0.6509** |
+| MedAPE | 20.48% | 20.35% | **20.29%** |
+| MAE (raw $) | — | — | **$1,056,000** |
+| Features | 71 | 71 | 71 |
+| Training rows | 185,092 | 185,092 | 185,092 |
+
+> Training used Spatial GroupKFold CV (5 folds by NTA) to prevent geographic data leakage.
+> MedAPE (20.29%) is the key metric — MAPE is inflated by extreme outliers.
+
+#### v1 Results (Original — 36K rows, 2025 only)
+
+| Metric | Baseline (Ridge) | XGBoost v1 | Improvement |
 |---|---|---|---|
 | R² (log scale) | 0.238 | **0.735** | +0.497 |
 | MAE (raw $) | $1,230,842 | **$726,593** | −$504,249 |
-| MAPE | 86.1% | 50.1% | −36% |
 | MedAPE | — | **17.8%** | — |
-| RMSE (log) | — | 0.497 | — |
-| Train R² | — | 0.894 | gap=0.159 (moderate overfit) |
 | Best round | — | 917 / 2000 | early stopping |
 
-> MedAPE (17.8%) is the key metric — MAPE is inflated by extreme outliers (max sale = $1.08B).
+> v1 MedAPE appears lower (17.8%) because it trained/tested on a single year without geographic CV, which overstates generalizability.
 
 #### Top 10 Features by SHAP Importance
 
@@ -265,13 +275,13 @@ POST /predict
 
 | File | Description | Size |
 |---|---|---|
-| `models/xgboost_model.json` | Trained XGBoost model (917 trees) | 4.9 MB |
-| `models/scorer.py` | `ThamanScorer` class for inference | 5.4 KB |
-| `models/meta.json` | Feature names, encoders, metrics | 4.9 KB |
+| `models/xgboost_model.json` | Trained XGBoost model (base learner) | ~5 MB |
+| `models/thaman_stack.pkl` | LGB + CatBoost + Ridge meta-learner (joblib) | 3.4 MB |
+| `models/scorer.py` | `ThamanScorer` class — handles 2 or 3 model stack | ~5 KB |
+| `models/meta.json` | 71 feature names, encoders, stack metrics | ~5 KB |
 | `models/shap_importance.png` | Top 20 SHAP feature importance bar chart | 79 KB |
 | `models/actual_vs_predicted.png` | Actual vs Predicted scatter plot | 124 KB |
 | `models/error_by_borough.png` | % Error distribution by borough (boxplot) | 52 KB |
-| `models/X_train/test.npy` | Pre-processed train/test arrays | 14 MB |
 
 #### Pre-processing Steps Applied Before Training
 
@@ -289,7 +299,7 @@ All 24 data sources downloaded and verified on disk.
 
 | # | Dataset | File | Records | Size |
 |---|---|---|---|---|
-| 1 | Property Sales | `data/raw/sales_geocoded.csv` | 81,305 (36,203 filtered) | 14.6 MB |
+| 1 | Property Sales | `data/raw/sales_geocoded.csv` | 185,092+ rows (2022–2026) | ~80 MB |
 | 2 | PLUTO Building Data | `data/raw/nyc_pluto_25v4_csv/pluto_25v4.csv` | 858,644 parcels | 385.9 MB |
 | 3 | Overture Maps POIs | `data/raw/overture_places.geojson` | 425,387 places | 618.9 MB |
 | 4 | MTA Subway Stations | `data/raw/MTA_Subway_Stations_20260308.csv` | 496 stations | 0.1 MB |
@@ -320,8 +330,8 @@ All 24 data sources downloaded and verified on disk.
 Feature matrix built, audited, and all quality issues fixed.
 
 **File:** `data/processed/features.csv`
-**Shape:** 36,203 rows × 61 columns
-**Memory:** ~30 MB
+**Shape:** 185,092 rows × 62 columns
+**Memory:** ~130 MB
 
 #### Feature Groups
 
@@ -389,6 +399,7 @@ The core system is fully functional. Potential improvements for future versions:
 
 | Enhancement | Effort | Impact |
 |---|---|---|
+| Address search (geocode & auto-fill lat/lng) | Low | High UX |
 | Mapbox GL JS (3D buildings, satellite view) | Medium | High UX |
 | Heat-map overlay of predicted prices across NYC | High | Unique feature |
 | Comparison mode (side-by-side two properties) | Medium | Useful |
@@ -396,8 +407,7 @@ The core system is fully functional. Potential improvements for future versions:
 | Deploy to cloud (Render, Railway, Fly.io) | Low | Accessibility |
 | EPA Air Quality data (skipped — needs API key) | Low | Model accuracy |
 | FEMA flood zone risk overlay | Medium | Risk signal |
-| Model re-training with newer sales data | Low | Accuracy |
-| LightGBM / stacking ensemble | Medium | R² improvement |
+| Regenerate SHAP figures on v2.1 model | Low | Accuracy |
 
 ---
 
@@ -483,25 +493,34 @@ shap.summary_plot(shap_values, X_test)
 ## 📁 File Tree
 
 ```
-new try/
-├── frontend/                      ← Phase 5 Map UI ★ NEW
-│   ├── index.html                 ← Main page (map + sidebar, 250 lines)
-│   ├── style.css                  ← Full stylesheet (CSS vars, grid, animations, 380 lines)
-│   └── app.js                     ← Leaflet + form + API fetch + render (270 lines)
-├── api/                           ← Phase 4 FastAPI backend
+new_try/
+├── frontend/                      ← Map UI
+│   ├── index.html                 ← Main page (map + sidebar)
+│   ├── style.css                  ← Full stylesheet (CSS vars, grid, animations)
+│   ├── app.js                     ← Leaflet + form + API fetch + render
+│   ├── charts.html                ← Analytics dashboard (Chart.js, EN+AR i18n)
+│   └── nyc_boundary.geojson       ← NYC borough boundary for pin validation
+├── api/                           ← FastAPI backend
 │   ├── __init__.py
-│   ├── main.py                    ← FastAPI app (routes, lifespan, CORS, StaticFiles /ui)
+│   ├── main.py                    ← FastAPI app (routes, lifespan, CORS, StaticFiles)
 │   ├── spatial.py                 ← SpatialLookup class (KD-tree, BallTree, NTA)
 │   └── models.py                  ← Pydantic schemas (PredictRequest, PredictResponse)
 ├── models/
-│   ├── xgboost_model.json         ← Trained XGBoost (917 trees, 4.9 MB)
+│   ├── xgboost_model.json         ← Trained XGBoost base learner (~5 MB, Git LFS)
+│   ├── thaman_stack.pkl           ← LGB + CatBoost + Ridge meta (3.4 MB, Git LFS)
 │   ├── scorer.py                  ← ThamanScorer class for inference
-│   ├── meta.json                  ← Feature names, encoders, metrics
+│   ├── meta.json                  ← 71 feature names, encoders, stack metrics
 │   ├── shap_importance.png        ← SHAP top-20 bar chart
 │   ├── actual_vs_predicted.png    ← Scatter plot (capped $10M)
-│   ├── error_by_borough.png       ← % Error boxplot by borough
-│   ├── X_train/test.npy           ← Pre-processed arrays (14 MB)
-│   └── y_train/test.npy
+│   └── error_by_borough.png       ← % Error boxplot by borough
+├── training/
+│   └── train_stack_v2.py          ← Trains XGB+LGB+CatBoost stack (current)
+├── scripts/
+│   └── download_more_sales.py     ← Downloads additional sales years from NYC Open Data
+├── tests/
+│   ├── conftest.py                ← pytest fixtures (module-scoped FastAPI client)
+│   ├── test_api.py                ← 17 API endpoint tests
+│   └── test_scorer.py             ← 10 ThamanScorer unit tests
 ├── data/
 │   ├── raw/
 │   │   ├── sales_geocoded.csv
@@ -523,8 +542,9 @@ new try/
 │   │   ├── mortgage_rates.csv
 │   │   └── airbnb_listings.csv
 │   └── processed/
-│       └── features.csv           ← 36,203 × 61 cols ★
-├── feature_engineering.py
-├── DATA_CATALOG.md
-└── PROJECT_STATUS.md              ← this file
+│       └── features.csv           ← 185,092 × 62 cols ★
+├── docs/
+│   ├── DATA_CATALOG.md
+│   └── PROJECT_STATUS.md          ← this file
+└── feature_engineering.py
 ```
