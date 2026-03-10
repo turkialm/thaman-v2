@@ -90,42 +90,8 @@ function showMapError(lat, lng, msg) {
   setTimeout(() => map.closePopup(p), 2600);
 }
 
-// Draw ONE unified NYC boundary.
-// NYC has 4 separate land masses — Brooklyn+Queens merged into one shape
-// so there is NO internal border between boroughs. All pieces same style.
-const NYC_OUTER_SHAPES = [
-  BOROUGHS['1'].coords,   // Manhattan island
-  BOROUGHS['2'].coords,   // Bronx (mainland)
-  // Brooklyn + Queens — single merged outer boundary, no internal dividing line
-  [[40.7025,-73.9720],[40.7280,-73.9480],[40.7776,-73.9179],
-   [40.8073,-73.8300],[40.7661,-73.7098],[40.7273,-73.7009],
-   [40.6620,-73.7329],[40.5880,-73.7485],[40.5430,-73.7600],
-   [40.5800,-73.8170],[40.5770,-73.9490],[40.5730,-74.0167],
-   [40.6197,-74.0338],[40.6456,-74.0319],[40.6920,-74.0207]],
-  BOROUGHS['5'].coords,   // Staten Island
-];
-
-NYC_OUTER_SHAPES.forEach(coords => {
-  L.polygon(coords, {
-    color: '#2563eb', weight: 2.5, opacity: 0.80,
-    fillColor: '#2563eb', fillOpacity: 0.06,
-    interactive: false,
-  }).addTo(map);
-});
-
-// Borough name labels (per-borough so users know where to click)
+// Borough labels + polygon data kept for point-in-polygon detection only (no visual border)
 let _boroughLabelEls = {};
-Object.entries(BOROUGHS).forEach(([code, b]) => {
-  const labelDiv = document.createElement('div');
-  labelDiv.className = 'borough-label';
-  labelDiv.textContent = b.name;
-  _boroughLabelEls[code] = labelDiv;
-
-  L.marker(b.center, {
-    icon: L.divIcon({ html: labelDiv, className:'', iconSize:[130,22], iconAnchor:[65,11] }),
-    interactive: false,
-  }).addTo(map);
-});
 
 // ── Pin marker (emoji-based, no image dependency) ──────────────────────
 let lastValidPos = null;   // last accepted pin position (for snap-back on drag)
@@ -764,12 +730,6 @@ function setLang(lang) {
     opt.textContent = (boroughNames[lang] || boroughNames.en)[i] ?? opt.textContent;
   });
 
-  // Borough map labels
-  Object.entries(BOROUGHS).forEach(([code, b]) => {
-    if (_boroughLabelEls[code]) {
-      _boroughLabelEls[code].textContent = isAr ? b.nameAr : b.name;
-    }
-  });
 
 }
 
