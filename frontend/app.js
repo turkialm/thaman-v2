@@ -25,9 +25,10 @@ const map = L.map('map', {
   zoomControl: true,
 });
 
-// OpenStreetMap tile layer (free, no API key)
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+// CartoDB Voyager — cleaner, more professional than raw OSM (free, no API key)
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: 'abcd',
   maxZoom: 19,
 }).addTo(map);
 
@@ -93,20 +94,72 @@ function showMapError(lat, lng, msg) {
 // Borough polygon data kept for point-in-polygon detection only (no visual border)
 let _boroughLabelEls = {};
 
-// ── Inverse mask: red overlay over the whole world EXCEPT NYC bounding box ──
-// Outer ring = giant world rectangle; inner ring (hole) = NYC bbox → NYC appears clear
-L.polygon([
-  // Outer ring — covers the entire world
-  [[ 90, -180], [ 90,  180], [-90,  180], [-90, -180]],
-  // Hole — NYC official bounding box (this area stays clear)
-  [[40.477399, -74.25909], [40.477399, -73.700272],
-   [40.917577, -73.700272], [40.917577, -74.25909]],
-], {
-  stroke: false,
-  fillColor: '#ef4444',
-  fillOpacity: 0.25,
-  interactive: false,
-}).addTo(map);
+// ── Real NYC boundary — loaded once, used for both mask and validation ──
+// coords: MultiPolygon [ [ [outerRing], [hole?], ... ], ... ] in GeoJSON [lng,lat] order
+let nycBoundaryCoords = null;
+
+// Ray-cast inside a single GeoJSON ring ([lng,lat] pairs)
+function pointInGeoRing(lng, lat, ring) {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i]; // xi=lng, yi=lat
+    const [xj, yj] = ring[j];
+    if (((yi > lat) !== (yj > lat)) &&
+        (lng < (xj - xi) * (lat - yi) / (yj - yi) + xi)) inside = !inside;
+  }
+  return inside;
+}
+
+// Returns true if (lat,lng) is inside the real NYC boundary (handles holes).
+// Falls back to rough BOROUGHS check while GeoJSON is still loading.
+function isInNYC(lat, lng) {
+  if (!nycBoundaryCoords) return getBoroughCode(lat, lng) !== null;
+  for (const polygon of nycBoundaryCoords) {
+    if (pointInGeoRing(lng, lat, polygon[0])) {          // inside outer ring
+      let inHole = false;
+      for (let h = 1; h < polygon.length; h++) {
+        if (pointInGeoRing(lng, lat, polygon[h])) { inHole = true; break; }
+      }
+      if (!inHole) return true;
+    }
+  }
+  return false;
+}
+
+// ── Inverse mask: red overlay over whole world EXCEPT real NYC boundary ──
+// Fetches nyc_boundary.geojson (MultiPolygon dissolved from NTA data).
+// Each NYC land-mass polygon becomes a "hole" in the world rectangle.
+fetch('/ui/nyc_boundary.geojson')
+  .then(r => r.json())
+  .then(data => {
+    // GeoJSON uses [lng, lat]; Leaflet uses [lat, lng]
+    const toLflt = ring => ring.map(([lng, lat]) => [lat, lng]);
+
+    const geom = data.geometry || (data.type === 'MultiPolygon' ? data : null);
+    nycBoundaryCoords = geom ? geom.coordinates : null;   // store for isInNYC()
+    const coords = nycBoundaryCoords || [];
+
+    // Build rings: world outer rect + one hole per NYC land-mass polygon
+    const rings = [
+      [[ 90, -180], [ 90,  180], [-90,  180], [-90, -180]], // world
+      ...coords.map(poly => toLflt(poly[0])),                // NYC holes
+    ];
+
+    L.polygon(rings, {
+      stroke:      false,
+      fillColor:   '#ef4444',
+      fillOpacity: 0.25,
+      interactive: false,
+    }).addTo(map);
+  })
+  .catch(() => {
+    // Fallback: simple bounding-box hole if GeoJSON fails to load
+    L.polygon([
+      [[ 90, -180], [ 90,  180], [-90,  180], [-90, -180]],
+      [[40.477399, -74.25909], [40.477399, -73.700272],
+       [40.917577, -73.700272], [40.917577, -74.25909]],
+    ], { stroke:false, fillColor:'#ef4444', fillOpacity:0.25, interactive:false }).addTo(map);
+  });
 
 // ── Pin marker (emoji-based, no image dependency) ──────────────────────
 let lastValidPos = null;   // last accepted pin position (for snap-back on drag)
@@ -239,9 +292,8 @@ loadBldgClasses();
 map.on('click', (e) => {
   const { lat, lng } = e.latlng;
 
-  // Reject clicks outside NYC boroughs
-  const boroughCode = getBoroughCode(lat, lng);
-  if (!boroughCode) {
+  // Reject clicks outside the real NYC boundary (uses GeoJSON, falls back to polygons)
+  if (!isInNYC(lat, lng)) {
     showMapError(lat, lng, TR[currentLang].outOfNYC);
     return;
   }
@@ -264,8 +316,7 @@ map.on('click', (e) => {
     // Draggable marker: snap back if dragged outside NYC
     marker.on('dragend', (ev) => {
       const pos = ev.target.getLatLng();
-      const bc  = getBoroughCode(pos.lat, pos.lng);
-      if (!bc) {
+      if (!isInNYC(pos.lat, pos.lng)) {
         if (lastValidPos) marker.setLatLng(lastValidPos);
         showMapError(pos.lat, pos.lng, TR[currentLang].outOfNYC);
         return;
@@ -274,12 +325,14 @@ map.on('click', (e) => {
       latInput.value = pos.lat.toFixed(6);
       lonInput.value = pos.lng.toFixed(6);
       locationText.textContent = `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`;
-      boroughSel.value = bc;   // always auto-update borough on drag
+      const bc = getBoroughCode(pos.lat, pos.lng);
+      if (bc) boroughSel.value = bc;   // auto-update borough on drag
     });
   }
 
-  // Always auto-set borough from polygon (precise, not bounding box)
-  boroughSel.value = boroughCode;
+  // Auto-set borough from rough polygons (best-effort; user can correct manually)
+  const boroughCode = getBoroughCode(lat, lng);
+  if (boroughCode) boroughSel.value = boroughCode;
 
   // Enable button, hide map hint
   submitBtn.disabled = false;
@@ -615,7 +668,7 @@ const TR = {
     lblYear:        'Valuation Year',
     lblMonth:       'Sale Month',
     lblPrior:       'Prior Sale Price ($)',
-    disclaimer:     'Predictions are based on NYC property sales 2025–2026. Model accuracy: median error ±18.83%.',
+    disclaimer:     'Predictions are based on NYC property sales 2022–2026. Model accuracy: median error ±20.29%.',
     resultTitle:    'Estimated Value',
     confMid:        'Predicted',
     shapTitle:      'Price Drivers',
@@ -652,7 +705,7 @@ const TR = {
     lblYear:        'سنة التقييم',
     lblMonth:       'شهر البيع',
     lblPrior:       'سعر البيع السابق ($)',
-    disclaimer:     'التوقعات مبنية على مبيعات العقارات في مدينة نيويورك 2025–2026. دقة النموذج: متوسط الخطأ ±18.83٪.',
+    disclaimer:     'التوقعات مبنية على مبيعات العقارات في مدينة نيويورك 2022–2026. دقة النموذج: متوسط الخطأ ±20.29٪.',
     resultTitle:    'القيمة التقديرية',
     confMid:        'التقدير',
     shapTitle:      'محركات السعر',

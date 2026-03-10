@@ -199,8 +199,8 @@
     </div>
     <div class="header-badges">
       <span class="badge badge-green">Stack v2.1</span>
-      <span class="badge badge-blue">R² = 0.591</span>
-      <span class="badge badge-purple" id="chartsFeaturesBadge">70 Features</span>
+      <span class="badge badge-blue">R² = 0.651</span>
+      <span class="badge badge-purple" id="chartsFeaturesBadge">71 Features</span>
       <span class="badge badge-gray">Spatial CV</span>
       <div class="lang-toggle">
         <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
@@ -216,26 +216,26 @@
     <!-- Title -->
     <div class="page-title">
       <h1 id="pageTitle">THAMAN v2.1 — NYC Property Valuation Stack</h1>
-      <p id="pageSubtitle">XGBoost + LightGBM + Ridge meta · 70 features · Spatial GroupKFold CV · Honest time-based holdout · 36K NYC sales</p>
+      <p id="pageSubtitle">XGBoost + LightGBM + CatBoost + Ridge meta · 71 features · Spatial GroupKFold CV · Honest time-based holdout · 185K NYC sales</p>
     </div>
 
     <!-- ── KPI Metric Cards ───────────────────────────────── -->
     <div class="metrics-row">
       <div class="metric-card">
         <div class="metric-icon">🎯</div>
-        <div class="metric-value blue-val">0.591</div>
+        <div class="metric-value blue-val">0.651</div>
         <div class="metric-label" id="kpi1Label">R² Stack Holdout</div>
-        <div class="metric-sub">XGB: 0.5918 · LGB: 0.5840 · CAT: 0.5798</div>
+        <div class="metric-sub">XGB: 0.6537 · LGB: 0.6511 · CAT: 0.6446</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">📊</div>
-        <div class="metric-value green-val">18.83%</div>
+        <div class="metric-value green-val">20.29%</div>
         <div class="metric-label" id="kpi2Label">Median APE</div>
-        <div class="metric-sub" id="kpi2Sub">±18.83% confidence interval</div>
+        <div class="metric-sub" id="kpi2Sub">±20.29% confidence interval</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">💵</div>
-        <div class="metric-value orange-val">$390K</div>
+        <div class="metric-value orange-val">$1,056K</div>
         <div class="metric-label" id="kpi3Label">Mean Abs Error</div>
         <div class="metric-sub" id="kpi3Sub">v1 was $727K (−46%)</div>
       </div>
@@ -247,13 +247,13 @@
       </div>
       <div class="metric-card">
         <div class="metric-icon">🌳</div>
-        <div class="metric-value dark-val">1,986</div>
+        <div class="metric-value dark-val">2,000</div>
         <div class="metric-label" id="kpi5Label">Boosting Rounds</div>
         <div class="metric-sub" id="kpi5Sub">v1: 917 rounds</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">⚙️</div>
-        <div class="metric-value purple-val">70</div>
+        <div class="metric-value purple-val">71</div>
         <div class="metric-label" id="kpi6Label">Features</div>
         <div class="metric-sub" id="kpi6Sub">v1: 50 features (+20 new)</div>
       </div>
@@ -280,7 +280,7 @@
     <!-- ── Chart 2: v1 vs v2 vs v2.1 vs Baseline ─────────── -->
     <div class="chart-card">
       <h2 id="c2Title">⚡ Baseline → v1 → v2 → Stack v2.1</h2>
-      <div class="chart-sub" id="c2Sub">v2.1 stack improves R² from 0.544 → 0.593 and reduces MedAPE from 18.98% → 18.83% over single XGBoost</div>
+      <div class="chart-sub" id="c2Sub">v2.1 stack on 185K rows achieves R²=0.651 vs baseline R²=0.238 — 5× more data drove R² from 0.591 → 0.651</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="baselineChart"></canvas>
       </div>
@@ -297,7 +297,7 @@
 
     <!-- ── Chart 4: Feature Categories Donut ────────────── -->
     <div class="chart-card">
-      <h2 id="c4Title">🗂️ Feature Categories Breakdown (70 Features)</h2>
+      <h2 id="c4Title">🗂️ Feature Categories Breakdown (71 Features)</h2>
       <div class="chart-sub" id="c4Sub">v2 adds 9 log-distances, 4 urban gravity centres, 3 interactions, walk-score proxy, and 2 target-encoded codes</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="categoryDonut"></canvas>
@@ -468,7 +468,7 @@
       datasets: [
         {
           label: 'R² Holdout',
-          data: [0.5918, 0.5840, 0.5798, 0.5912],
+          data: [0.6537, 0.6511, 0.6446, 0.6509],
           backgroundColor: [C.blueLt, C.tealLt, C.purpleLt, C.greenLt],
           borderColor:     [C.blue,   C.teal,   C.purple,   C.green],
           borderWidth: 2.5,
@@ -477,7 +477,7 @@
         },
         {
           label: 'MedAPE (%)',
-          data: [19.57, 19.92, 20.26, 18.83],
+          data: [20.48, 20.35, 21.21, 20.29],
           type: 'line',
           borderColor: C.orange,
           backgroundColor: 'transparent',
@@ -505,14 +505,14 @@
       },
       scales: {
         y: {
-          min: 0.55, max: 0.61,
+          min: 0.62, max: 0.67,
           title: { display: true, text: 'R² Score', color: C.gray },
           grid: { color: 'rgba(0,0,0,.05)' },
           ticks: { callback: v => v.toFixed(3) },
         },
         y2: {
           position: 'right',
-          min: 18.0, max: 21.0,
+          min: 19.5, max: 22.0,
           title: { display: true, text: 'MedAPE (%)', color: C.orange },
           grid: { display: false },
           ticks: { callback: v => v.toFixed(2) + '%' },
@@ -617,7 +617,7 @@
         },
         {
           label: 'THAMAN v2.1 Stack ✓',
-          data:  [0.5912, 0.390, 18.83],
+          data:  [0.6509, 1.056, 20.29],
           backgroundColor: [C.tealLt, C.tealLt, C.tealLt],
           borderColor:     [C.teal,   C.teal,   C.teal],
           borderWidth: 2.5,
@@ -657,7 +657,7 @@
       datasets: [
         {
           label: 'v2.1 Stack',
-          data: [0.829, 0.703, 0.5912, 0.5231],
+          data: [0.829, 0.703, 0.6509, 0.5585],
           backgroundColor: [C.blueLt, C.tealLt, C.greenLt, C.orangeLt],
           borderColor:     [C.blue,   C.teal,   C.green,   C.orange],
           borderWidth: 2,
@@ -691,7 +691,7 @@
   });
 
   // ────────────────────────────────────────────────────────────────
-  // 4. Feature Category Donut — 70 features, 11 groups
+  // 4. Feature Category Donut — 71 features, 11 groups
   // ────────────────────────────────────────────────────────────────
   new Chart(ctx('categoryDonut'), {
     type: 'doughnut',
@@ -1026,7 +1026,7 @@
         },
         {
           label: 'v2.1 Stack',
-          data: [0.390, 61.51, 18.83],
+          data: [1.056, 61.51, 20.29],
           backgroundColor: [C.greenLt, C.redLt, C.tealLt],
           borderColor:     [C.green,   C.red,   C.teal],
           borderWidth: 2,
@@ -1211,24 +1211,24 @@
     en: {
       tagline:    'Model Analytics Dashboard v2.1',
       backLink:   '← Back to Map',
-      features:   '70 Features',
+      features:   '71 Features',
       pageTitle:  'THAMAN v2.1 — NYC Property Valuation Stack',
-      pageSub:    'XGBoost + LightGBM + Ridge meta · 70 features · Spatial GroupKFold CV · Honest time-based holdout · 36K NYC sales',
+      pageSub:    'XGBoost + LightGBM + CatBoost + Ridge meta · 71 features · Spatial GroupKFold CV · Honest time-based holdout · 185K NYC sales',
       kpi1: 'R² Stack Holdout',
-      kpi2: 'Median APE',       kpi2s: '±18.83% confidence interval',
-      kpi3: 'Mean Abs Error',   kpi3s: 'v1 was $727K (−46%)',
+      kpi2: 'Median APE',       kpi2s: '±20.29% confidence interval',
+      kpi3: 'Mean Abs Error',   kpi3s: 'holdout set (185K rows)',
       kpi4: 'Tier Accuracy',    kpi4s: 'Within-1-tier: 96.7%',
       kpi5: 'Boosting Rounds',  kpi5s: 'v1: 917 rounds',
       kpi6: 'Features',         kpi6s: 'v1: 50 features (+20 new)',
       c0t: '⚖️ Stack v2.1 — Base Learner Comparison (XGB + LGB + CatBoost)',
-      c0s: 'Holdout R² and MedAPE for each base model vs the 3-model Ridge stack — CatBoost adds diversity; stack reduces MedAPE by 0.74pp vs XGBoost alone',
+      c0s: 'Holdout R² and MedAPE for each base model vs the 3-model Ridge stack — CatBoost adds diversity; stack reduces MedAPE by 0.19pp vs XGBoost alone',
       c1t: '🔍 SHAP Feature Importance — Top 20 (v2)',
       c1s: 'Mean |SHAP| on holdout set — target-encoded bldgclass is now the strongest predictor, replacing raw building size',
       c2t: '⚡ Baseline → v1 → v2 → Stack v2.1',
-      c2s: 'v2.1 stack improves R² from 0.544 → 0.593 and reduces MedAPE from 18.98% → 18.83% over single XGBoost',
+      c2s: 'v2.1 stack on 185K rows achieves R²=0.651 vs baseline R²=0.238 — 5× more data drove R² from 0.591 → 0.651',
       c3t: '📈 Train · Val · Holdout · Spatial CV',
-      c3s: 'Spatial CV (0.523±0.18) is the true generalisation estimate — fold variance reveals borough-level difficulty',
-      c4t: '🗂️ Feature Categories Breakdown (70 Features)',
+      c3s: 'Spatial CV (0.559±0.06) is the true generalisation estimate — fold variance reveals borough-level difficulty',
+      c4t: '🗂️ Feature Categories Breakdown (71 Features)',
       c4s: 'v2 adds 9 log-distances, 4 urban gravity centres, 3 interactions, walk-score proxy, and 2 target-encoded codes',
       c5t: '📦 SHAP Importance by Feature Group',
       c5s: 'Target encoding + urban gravity now dominate — together accounting for >50% of total model explanation',
@@ -1253,24 +1253,24 @@
     ar: {
       tagline:    'لوحة تحليلات النموذج v2.1',
       backLink:   'الخريطة →',
-      features:   '70 ميزة',
+      features:   '71 ميزة',
       pageTitle:  'ثمن v2.1 — نظام تقييم عقارات نيويورك',
-      pageSub:    'XGBoost + LightGBM + Ridge · 70 ميزة · تحقق مكاني · 36 ألف صفقة عقارية',
+      pageSub:    'XGBoost + LightGBM + CatBoost + Ridge · 71 ميزة · تحقق مكاني · 185 ألف صفقة عقارية',
       kpi1: 'دقة النموذج R²',
-      kpi2: 'متوسط الخطأ المئوي',  kpi2s: 'فاصل ثقة ±18.83%',
-      kpi3: 'متوسط الخطأ المطلق',  kpi3s: 'النموذج القديم $727K (−46%)',
+      kpi2: 'متوسط الخطأ المئوي',  kpi2s: 'فاصل ثقة ±20.29%',
+      kpi3: 'متوسط الخطأ المطلق',  kpi3s: 'مجموعة الاختبار (185 ألف صف)',
       kpi4: 'دقة فئة السعر',       kpi4s: 'ضمن فئة واحدة: 96.7%',
       kpi5: 'جولات التدريب',       kpi5s: 'النموذج القديم: 917 جولة',
       kpi6: 'الميزات',             kpi6s: 'النموذج القديم: 50 ميزة (+20 جديدة)',
       c0t: '⚖️ مقارنة نماذج التكديس v2.1 (XGB + LGB + CatBoost)',
-      c0s: 'R² ومتوسط الخطأ لكل نموذج أساسي مقارنة بنموذج Ridge المُجمَّع — CatBoost يضيف تنوعاً ويقلل الخطأ بـ 0.74%',
+      c0s: 'R² ومتوسط الخطأ لكل نموذج أساسي مقارنة بنموذج Ridge المُجمَّع — CatBoost يضيف تنوعاً ويقلل الخطأ بـ 0.19%',
       c1t: '🔍 أهمية المتغيرات (SHAP) — أعلى 20 ميزة',
       c1s: 'متوسط |SHAP| على بيانات الاختبار — الترميز المستهدف لفئة المبنى أصبح أقوى متنبئ',
       c2t: '⚡ التطور: النموذج الأساسي → v1 → v2 → التكديس v2.1',
-      c2s: 'التكديس v2.1 يحسّن R² من 0.544 إلى 0.593 ويخفض متوسط الخطأ من 18.98% إلى 18.83%',
+      c2s: 'التكديس v2.1 على 185 ألف صف يحقق R²=0.651 مقابل النموذج الأساسي 0.238 — 5× بيانات رفعت R² من 0.591 إلى 0.651',
       c3t: '📈 التدريب · التحقق · الاختبار · التحقق المكاني',
-      c3s: 'التحقق المكاني (0.523±0.18) هو المقياس الحقيقي للتعميم — تباين الطيات يكشف صعوبة كل منطقة',
-      c4t: '🗂️ توزيع فئات الميزات (70 ميزة)',
+      c3s: 'التحقق المكاني (0.559±0.06) هو المقياس الحقيقي للتعميم — تباين الطيات يكشف صعوبة كل منطقة',
+      c4t: '🗂️ توزيع فئات الميزات (71 ميزة)',
       c4s: 'v2 يضيف 9 مسافات لوغاريتمية، 4 مراكز جاذبية حضرية، 3 تفاعلات، مؤشر قابلية المشي، وترميزين مستهدفين',
       c5t: '📦 أهمية SHAP حسب مجموعة الميزات',
       c5s: 'الترميز المستهدف + الجاذبية الحضرية يهيمنان معاً بأكثر من 50% من تفسير النموذج',

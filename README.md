@@ -26,9 +26,9 @@ pinned: false
 
 | Metric | Value |
 |---|---|
-| R² (test set) | 0.5912 |
-| MedAPE | 18.83% |
-| Features | 70 |
+| R² (holdout) | 0.6509 |
+| MedAPE | 20.29% |
+| Features | 71 |
 | CV Strategy | Spatial GroupKFold |
 | Stack | XGBoost + LightGBM + CatBoost + Ridge meta |
 
@@ -124,8 +124,8 @@ curl -X POST http://localhost:8000/predict \
   "confidence_low": 1061969,
   "confidence_high": 1552489,
   "model": "XGBoost + LightGBM Stack",
-  "r2_test": 0.5912,
-  "medape_pct": 18.83,
+  "r2_test": 0.6509,
+  "medape_pct": 20.29,
   "borough_name": "Brooklyn",
   "top_drivers": [
     { "feature": "bldgclass", "impact": 0.149, "direction": "positive" },
