@@ -90,8 +90,23 @@ function showMapError(lat, lng, msg) {
   setTimeout(() => map.closePopup(p), 2600);
 }
 
-// Borough labels + polygon data kept for point-in-polygon detection only (no visual border)
+// Borough polygon data kept for point-in-polygon detection only (no visual border)
 let _boroughLabelEls = {};
+
+// ── Inverse mask: red overlay over the whole world EXCEPT NYC bounding box ──
+// Outer ring = giant world rectangle; inner ring (hole) = NYC bbox → NYC appears clear
+L.polygon([
+  // Outer ring — covers the entire world
+  [[ 90, -180], [ 90,  180], [-90,  180], [-90, -180]],
+  // Hole — NYC official bounding box (this area stays clear)
+  [[40.477399, -74.25909], [40.477399, -73.700272],
+   [40.917577, -73.700272], [40.917577, -74.25909]],
+], {
+  stroke: false,
+  fillColor: '#ef4444',
+  fillOpacity: 0.25,
+  interactive: false,
+}).addTo(map);
 
 // ── Pin marker (emoji-based, no image dependency) ──────────────────────
 let lastValidPos = null;   // last accepted pin position (for snap-back on drag)
