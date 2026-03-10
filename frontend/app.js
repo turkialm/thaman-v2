@@ -15,6 +15,9 @@
 // ── API Base URL (same origin since served by FastAPI) ────────────────
 const API_BASE = '';   // e.g. '' means same-origin; change to 'http://localhost:8000' for dev
 
+// ── Language (declared early — used before i18n block) ────────────────
+let currentLang = localStorage.getItem('thamanLang') || 'en';
+
 // ── Map init ──────────────────────────────────────────────────────────
 const map = L.map('map', {
   center:      [40.7128, -74.0060],   // NYC
@@ -151,8 +154,6 @@ document.addEventListener('click', (e) => {
 });
 
 loadBldgClasses();
-// Restore saved language on page load
-if (currentLang === 'ar') setLang('ar');
 
 // ── Borough auto-detection from lat/lng (rough bounding boxes) ────────
 function guessBoroughFromCoords(lat, lon) {
@@ -586,8 +587,6 @@ const TR = {
   },
 };
 
-let currentLang = localStorage.getItem('thamanLang') || 'en';
-
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('thamanLang', lang);
@@ -651,3 +650,6 @@ function setLang(lang) {
   document.getElementById('nearbyTitle').textContent   = T.nearbyTitle;
   document.getElementById('nearbySubtitle').textContent = T.nearbySub;
 }
+
+// Restore saved language on page load (called after setLang is defined)
+if (currentLang === 'ar') setLang('ar');
