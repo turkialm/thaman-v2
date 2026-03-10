@@ -1,5 +1,5 @@
 """
-THAMAN Property Valuation API  (v2 — 70 features)
+THAMAN Property Valuation API  (v2 — 71 features)
 ==============================
 FastAPI backend for the THAMAN AI-powered PropTech system.
 
@@ -92,8 +92,8 @@ app = FastAPI(
     description=(
         "AI-powered NYC property price estimator. "
         "Combines structural attributes + Quality-of-Life indicators "
-        "using GIS spatial lookups + XGBoost+LightGBM+CatBoost Stack (R²=0.591, MedAPE=18.83%, "
-        "70 features, spatial CV validated)."
+        "using GIS spatial lookups + XGBoost+LightGBM+CatBoost Stack (R²=0.651, MedAPE=20.29%, "
+        "71 features, spatial CV validated)."
     ),
     version="2.1.0",
     lifespan=lifespan,
@@ -133,7 +133,7 @@ _DIST_COLS = [
 def _build_feature_row(req: PredictRequest, spatial_feats: dict) -> dict:
     """
     Merge spatial auto-features with user-provided property attributes.
-    Returns a flat dict matching feature_names from meta.json (v2 — 70 features).
+    Returns a flat dict matching feature_names from meta.json (v2 — 71 features).
     """
     feat = dict(spatial_feats)          # start with spatial features
     bc   = req.bldgclass.upper().strip()
@@ -334,13 +334,13 @@ def api_info():
         "name":        "THAMAN Property Valuation API",
         "version":     "2.1.0",
         "description": "AI-powered NYC property price estimator",
-        "model":       "XGBoost + LightGBM Stack (70 features, spatial CV validated)",
+        "model":       "XGBoost + LightGBM + CatBoost Stack (71 features, spatial CV validated)",
         "performance": {
-            "R2_test":      0.5933,
-            "MedAPE_pct":   18.83,
-            "MAE_usd":      1487386,
-            "base_xgb_r2":  0.5918,
-            "base_lgb_r2":  0.5840,
+            "R2_holdout":   0.6509,
+            "MedAPE_pct":   20.29,
+            "MAE_usd":      1055713,
+            "base_xgb_r2":  0.6537,
+            "base_lgb_r2":  0.6511,
         },
         "endpoints": {
             "GET  /api":         "API info (this response)",
@@ -396,7 +396,7 @@ def predict(req: PredictRequest):
     All spatial features (subway distance, crime rate, school district, etc.)
     are automatically computed from the lat/lng coordinates.
 
-    Returns predicted price with ±18.98% confidence interval and top SHAP drivers.
+    Returns predicted price with ±20.29% confidence interval and top SHAP drivers.
     """
     if not _scorer or not _spatial:
         raise HTTPException(status_code=503, detail="Model not loaded. Please wait for startup.")
@@ -425,29 +425,41 @@ def predict(req: PredictRequest):
         f"Building class {req.bldgclass.upper()}"
     )
 
+    def _safe_int(v, default=0):
+        try:
+            return int(v) if v is not None and not (isinstance(v, float) and np.isnan(v)) else default
+        except (ValueError, TypeError):
+            return default
+
+    def _safe_round(v, n=0, default=0.0):
+        try:
+            return round(float(v), n) if v is not None and not (isinstance(v, float) and np.isnan(v)) else default
+        except (ValueError, TypeError):
+            return default
+
     # Spatial summary (human-readable subset)
     spatial_summary = {
-        "dist_subway_m":              round(spatial_feats["dist_subway_m"]),
-        "dist_bus_m":                 round(spatial_feats["dist_bus_m"]),
-        "dist_park_m":                round(spatial_feats["dist_park_m"]),
-        "dist_school_m":              round(spatial_feats["dist_school_m"]),
-        "dist_hospital_m":            round(spatial_feats["dist_hospital_m"]),
-        "nearest_station_is_express": int(spatial_feats["nearest_station_is_express"]),
-        "airbnb_count_500m":          int(spatial_feats["airbnb_count_500m"]),
-        "poi_count_500m":             round(spatial_feats["poi_count_500m"]),
-        "crime_rate_nta":             round(spatial_feats["crime_rate_nta"], 1),
-        "noise_density_nta":          round(spatial_feats["noise_density_nta"], 1),
-        "median_income_nta":          round(spatial_feats["median_income_nta"]),
-        "school_district":            int(spatial_feats["school_district"]),
-        "district_avg_score":         round(spatial_feats["district_avg_score"], 1),
-        "mortgage_rate_30yr":         spatial_feats["mortgage_rate_30yr"],
+        "dist_subway_m":              _safe_round(spatial_feats.get("dist_subway_m")),
+        "dist_bus_m":                 _safe_round(spatial_feats.get("dist_bus_m")),
+        "dist_park_m":                _safe_round(spatial_feats.get("dist_park_m")),
+        "dist_school_m":              _safe_round(spatial_feats.get("dist_school_m")),
+        "dist_hospital_m":            _safe_round(spatial_feats.get("dist_hospital_m")),
+        "nearest_station_is_express": _safe_int(spatial_feats.get("nearest_station_is_express")),
+        "airbnb_count_500m":          _safe_int(spatial_feats.get("airbnb_count_500m")),
+        "poi_count_500m":             _safe_round(spatial_feats.get("poi_count_500m")),
+        "crime_rate_nta":             _safe_round(spatial_feats.get("crime_rate_nta"), 1),
+        "noise_density_nta":          _safe_round(spatial_feats.get("noise_density_nta"), 1),
+        "median_income_nta":          _safe_round(spatial_feats.get("median_income_nta")),
+        "school_district":            _safe_int(spatial_feats.get("school_district")),
+        "district_avg_score":         _safe_round(spatial_feats.get("district_avg_score"), 1),
+        "mortgage_rate_30yr":         spatial_feats.get("mortgage_rate_30yr", 0.0),
     }
 
     return {
         "predicted_price":    result["predicted_price"],
         "confidence_low":     result["confidence_low"],
         "confidence_high":    result["confidence_high"],
-        "confidence_note":    "±18.83% MedAPE confidence interval",
+        "confidence_note":    "±20.29% MedAPE confidence interval",
         "model":              result["model"],
         "r2_test":            result["r2_test"],
         "medape_pct":         result["medape_test_pct"],

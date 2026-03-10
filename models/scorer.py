@@ -1,7 +1,7 @@
 """
 THAMAN Property Price Scorer
 ============================
-Loads XGBoost v2 (70 features, target-encoded bldgclass).
+Loads XGBoost v2 (71 features, target-encoded bldgclass).
 When thaman_stack.pkl is present, uses XGB + LGB + Ridge meta-learner.
 
 Usage:

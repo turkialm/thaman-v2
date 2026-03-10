@@ -49,6 +49,41 @@ df["sale_date"] = pd.to_datetime(df["sale_date"], errors="coerce")
 df = df.dropna(subset=["sale_date", "sale_price", "latitude", "longitude"])
 print(f"  Rows: {len(df):,}  |  Cols: {df.shape[1]}")
 
+# ── 1b. Join PLUTO assessed values (assesstot / assessland) ────────
+# assesstot: city's assessed total value — strongly correlated with price
+# assessland: land component — useful for land-vs-building split
+# If feature_engineering.py already populated these columns, we just fill any
+# remaining NaNs from PLUTO (coalesce) rather than overwriting good values.
+_PLUTO_PATH = os.path.join(BASE, "data", "raw", "nyc_pluto_25v4_csv", "pluto_25v4.csv")
+if os.path.exists(_PLUTO_PATH):
+    print("  Joining PLUTO for assesstot / assessland (coalesce) …")
+    _pluto_assmt = pd.read_csv(
+        _PLUTO_PATH, usecols=["bbl", "assesstot", "assessland"], low_memory=False
+    )
+    _pluto_assmt["bbl"] = pd.to_numeric(_pluto_assmt["bbl"], errors="coerce")
+    _pluto_assmt = _pluto_assmt.dropna(subset=["bbl"])
+    _pluto_assmt["bbl"] = _pluto_assmt["bbl"].astype("int64")
+    _bbl_int = pd.to_numeric(df["bbl"], errors="coerce").fillna(0).astype("int64")
+    df = df.assign(_bbl_int=_bbl_int).merge(
+        _pluto_assmt.rename(columns={"bbl": "_bbl_int",
+                                      "assesstot":  "_assesstot_p",
+                                      "assessland": "_assessland_p"}),
+        on="_bbl_int", how="left"
+    ).drop(columns=["_bbl_int"])
+    # Coalesce: keep existing value; fill nulls from PLUTO
+    for _col, _pcol in [("assesstot","_assesstot_p"), ("assessland","_assessland_p")]:
+        if _col not in df.columns:
+            df[_col] = np.nan
+        df[_col] = df[_col].combine_first(df[_pcol])
+        df.drop(columns=[_pcol], inplace=True)
+    cov = df["assesstot"].notna().mean() * 100
+    print(f"  assesstot coverage: {cov:.1f}%  "
+          f"(median: ${df['assesstot'].median():,.0f})")
+else:
+    if "assesstot"  not in df.columns: df["assesstot"]  = np.nan
+    if "assessland" not in df.columns: df["assessland"] = np.nan
+    print("  ⚠  PLUTO file not found — assesstot set to NaN")
+
 # ── 2. Feature engineering (identical to v2) ──────────────────────
 print("\n[2/8] Engineering features …")
 
@@ -117,6 +152,46 @@ df_work   = df_sorted.iloc[:-n_hold].copy()
 df_hold   = df_sorted.iloc[-n_hold:].copy()
 print(f"  Work: {len(df_work):,}  |  Hold: {len(df_hold):,}")
 
+# ── 3b. Impute prior_sale_price nulls via assesstot × borough ratio ──
+# prior_sale_price is the 4th most important SHAP feature but 86% null.
+# Filling with 0 (the old default) creates a strong outlier signal.
+# Better: estimate from assessed value using a per-borough calibration ratio.
+# Ratio is computed on the WORK set only → no data leakage.
+print("\n  Imputing prior_sale_price nulls via assesstot calibration …")
+_has_both = df_work[
+    (df_work["prior_sale_price"] > 0) &
+    df_work["assesstot"].notna() & (df_work["assesstot"] > 0)
+]
+_ratio_by_boro = {
+    int(b): float((g["prior_sale_price"] / g["assesstot"]).median())
+    for b, g in _has_both.groupby("borough")
+}
+_global_ratio = float(
+    (_has_both["prior_sale_price"] / _has_both["assesstot"]).median()
+) if len(_has_both) else 10.0
+
+def _impute_prior(frame):
+    """Fill missing prior_sale_price with assesstot × per-borough ratio."""
+    frame = frame.copy()
+    _null_mask = (frame["prior_sale_price"].isna() | (frame["prior_sale_price"] == 0))
+    _assmt_ok  = frame["assesstot"].notna() & (frame["assesstot"] > 0)
+    _fill_mask = _null_mask & _assmt_ok
+    frame.loc[_fill_mask, "prior_sale_price"] = (
+        frame.loc[_fill_mask, "assesstot"] *
+        frame.loc[_fill_mask, "borough"].map(_ratio_by_boro).fillna(_global_ratio)
+    )
+    return frame
+
+df_work = _impute_prior(df_work)
+df_hold = _impute_prior(df_hold)
+_filled_w = (df_work["prior_sale_price"] > 0).sum()
+_filled_h = (df_hold["prior_sale_price"] > 0).sum()
+print(f"  prior_sale_price coverage — "
+      f"work: {_filled_w}/{len(df_work)} ({_filled_w/len(df_work)*100:.1f}%)  "
+      f"hold: {_filled_h}/{len(df_hold)} ({_filled_h/len(df_hold)*100:.1f}%)")
+for b, r in sorted(_ratio_by_boro.items()):
+    print(f"    Borough {b}: assesstot × {r:.1f} = prior price estimate")
+
 # ── 4. Target encoding (no leakage — fit on work set only) ───────
 print("\n[4/8] Target encoding …")
 LOG_TARGET      = "log_price"
@@ -162,6 +237,9 @@ KEEP_FROM_V1 = [
     "prior_sale_price","price_appreciation","years_since_prior_sale",
     "is_flip","school_district","district_avg_score","district_school_count",
     "has_prior_sale",
+    # ── v3 additions ────────────────────────────────────────────────
+    "assesstot",        # city assessed total value (strong price proxy)
+    "assessland",       # city assessed land value (land-vs-building split)
 ]
 NEW_FEATURES = [
     *[f"log_{c}" for c in dist_cols],
@@ -353,6 +431,10 @@ meta_path = os.path.join(MODEL_DIR, "meta.json")
 with open(meta_path) as f:
     meta = json.load(f)
 
+meta["feature_names"]     = FEATURE_NAMES
+meta["n_features"]        = len(FEATURE_NAMES)
+meta["n_train"]           = len(df_work)
+meta["n_holdout"]         = len(df_hold)
 meta["walk_score_scaler"] = walk_score_scaler_params
 meta["bldgclass_means"]   = {k: round(float(v), 6) for k, v in bldg_means.items()}
 meta["borough_bldg_means"]= {k: round(float(v), 6) for k, v in bb_means.items()}
