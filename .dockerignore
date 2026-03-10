@@ -1,0 +1,29 @@
+# Training data (too large for Docker image)
+data/raw/overture_places.geojson
+data/raw/road_network/
+data/raw/nyc_pluto_25v4_csv/
+data/raw/sales_geocoded.csv
+data/raw/noise_complaints.parquet
+data/raw/nypd_crimes.parquet
+data/raw/livability_complaints.parquet
+data/raw/census_tract_income.csv
+data/raw/census_tract_population.csv
+data/raw/dob_permits.csv
+data/raw/rollingsales_*.xlsx
+data/splits/
+
+# Dev / test artifacts
+__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+tests/
+training/
+scripts/
+docs/
+notebooks/
+*.ipynb
+
+# Local config
+.claude/
+.env

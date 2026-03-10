@@ -816,3 +816,56 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   .header-badges .badge:not(.badge-blue) { display: none; }
   :root { --sidebar-w: 100%; }
 }
+
+/* ── Address Search ──────────────────────────────────────────────────── */
+.addr-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  position: relative;
+}
+.addr-search-wrap input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  transition: border-color .2s, box-shadow .2s;
+}
+.addr-search-wrap input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+}
+.addr-btn {
+  padding: 8px 12px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  flex-shrink: 0;
+}
+.addr-btn:hover  { background: var(--accent-dark, #2563eb); }
+.addr-btn:active { transform: scale(.96); }
+.addr-btn.loading { opacity: .6; pointer-events: none; }
+.addr-error {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 3px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+  z-index: 10;
+}
+[dir="rtl"] .addr-search-wrap { flex-direction: row-reverse; }
