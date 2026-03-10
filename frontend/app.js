@@ -207,6 +207,104 @@ const confMarker     = document.getElementById('confMarker');
 const shapBars       = document.getElementById('shapBars');
 const spatialGrid    = document.getElementById('spatialGrid');
 
+// ── Address search (Nominatim geocoding — free, no API key) ───────────
+const addrInput = document.getElementById('addrInput');
+const addrBtn   = document.getElementById('addrBtn');
+const addrError = document.getElementById('addrError');
+
+function showAddrError(msg) {
+  addrError.textContent = msg;
+  addrError.style.display = 'block';
+  setTimeout(() => { addrError.style.display = 'none'; }, 4000);
+}
+
+async function geocodeAddress() {
+  const q = addrInput.value.trim();
+  if (!q) return;
+
+  addrBtn.classList.add('loading');
+  addrError.style.display = 'none';
+
+  try {
+    // Restrict to NYC bounding box to avoid false matches
+    const url = `https://nominatim.openstreetmap.org/search?` +
+      `q=${encodeURIComponent(q + ', New York City')}&format=json&limit=1` +
+      `&countrycodes=us&bounded=1&viewbox=-74.26,40.47,-73.70,40.92`;
+
+    const res  = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      showAddrError(TR[currentLang].addrNotFound);
+      return;
+    }
+
+    const lat = parseFloat(data[0].lat);
+    const lng = parseFloat(data[0].lon);
+
+    if (!isInNYC(lat, lng)) {
+      showAddrError(TR[currentLang].addrOutOfNYC);
+      return;
+    }
+
+    // Place pin — reuse same logic as map click
+    latInput.value = lat.toFixed(6);
+    lonInput.value = lng.toFixed(6);
+    lastValidPos   = [lat, lng];
+    locationText.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    locationText.classList.add('selected');
+
+    if (marker) {
+      marker.setLatLng([lat, lng]);
+    } else {
+      marker = L.marker([lat, lng], { icon: pinIcon, draggable: true }).addTo(map);
+      marker.on('dragend', (ev) => {
+        const pos = ev.target.getLatLng();
+        if (!isInNYC(pos.lat, pos.lng)) {
+          if (lastValidPos) marker.setLatLng(lastValidPos);
+          showMapError(pos.lat, pos.lng, TR[currentLang].outOfNYC);
+          return;
+        }
+        lastValidPos = [pos.lat, pos.lng];
+        latInput.value = pos.lat.toFixed(6);
+        lonInput.value = pos.lng.toFixed(6);
+        locationText.textContent = `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`;
+        const bc = getBoroughCode(pos.lat, pos.lng);
+        if (bc) boroughSel.value = bc;
+      });
+    }
+
+    const bc = getBoroughCode(lat, lng);
+    if (bc) boroughSel.value = bc;
+
+    submitBtn.disabled = false;
+    btnText.textContent = '🔍  ' + TR[currentLang].estimateBtn;
+    mapHint.classList.add('hidden');
+
+    map.setView([lat, lng], 15, { animate: true });
+
+    // Show brief tooltip with found address
+    if (marker) {
+      marker.bindPopup(
+        `<div class="map-popup"><small>📍 ${data[0].display_name.split(',').slice(0,3).join(',')}</small></div>`,
+        { maxWidth: 220 }
+      ).openPopup();
+      setTimeout(() => marker.closePopup(), 3000);
+    }
+
+  } catch (err) {
+    showAddrError(TR[currentLang].addrError);
+    console.error('Geocoding error:', err);
+  } finally {
+    addrBtn.classList.remove('loading');
+  }
+}
+
+addrBtn.addEventListener('click', geocodeAddress);
+addrInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); geocodeAddress(); }
+});
+
 // ── Building class searchable dropdown ────────────────────────────────
 let _bldgClasses = [];   // [{code, desc}]
 let _bldgDescs   = {};   // code → description (from /bldgclasses common_examples)
@@ -682,6 +780,10 @@ const TR = {
     mapHint:        'Click anywhere in New York City to place a pin',
     tagline:        'NYC Property Valuation · AI-Powered',
     outOfNYC:       'Click within New York City boundaries',
+    addrPlaceholder:'Search address, e.g. 350 5th Ave, Manhattan…',
+    addrNotFound:   'Address not found in NYC. Try a more specific address.',
+    addrOutOfNYC:   'Address is outside New York City boundaries.',
+    addrError:      'Geocoding failed. Check your connection and try again.',
   },
   ar: {
     estimateBtn:    'تقدير السعر',
@@ -719,6 +821,10 @@ const TR = {
     mapHint:        'انقر في أي مكان بمدينة نيويورك لوضع الدبوس',
     tagline:        'تقييم عقارات نيويورك · مدعوم بالذكاء الاصطناعي',
     outOfNYC:       'انقر داخل حدود مدينة نيويورك',
+    addrPlaceholder:'ابحث عن عنوان، مثل: 350 5th Ave, Manhattan…',
+    addrNotFound:   'لم يُعثر على العنوان في نيويورك. حاول بعنوان أكثر تفصيلاً.',
+    addrOutOfNYC:   'العنوان خارج حدود مدينة نيويورك.',
+    addrError:      'فشل البحث عن العنوان. تحقق من اتصالك وحاول مجدداً.',
   },
 };
 
@@ -766,6 +872,9 @@ function setLang(lang) {
   document.getElementById('lblMonth').textContent     = T.lblMonth;
   document.getElementById('lblPrior').textContent     = T.lblPrior;
   document.getElementById('disclaimer').textContent   = T.disclaimer;
+
+  // Address search placeholder
+  document.getElementById('addrInput').placeholder = T.addrPlaceholder;
 
   // Location text (only if not selected)
   if (!latInput.value) {

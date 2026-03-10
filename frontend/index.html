@@ -55,9 +55,17 @@
       <div class="card" id="formCard">
         <h3 class="card-title" id="formTitle">Property Details</h3>
 
+        <!-- Address search -->
+        <div class="addr-search-wrap" id="addrSearchWrap">
+          <input type="text" id="addrInput" autocomplete="off"
+                 placeholder="Search address, e.g. 350 5th Ave, Manhattan…" />
+          <button type="button" id="addrBtn" class="addr-btn">🔍</button>
+          <div class="addr-error" id="addrError" style="display:none"></div>
+        </div>
+
         <div class="location-display" id="locationDisplay">
           <span class="location-icon">📍</span>
-          <span id="locationText" class="location-text">No location selected — click the map</span>
+          <span id="locationText" class="location-text">No location selected — click the map or search above</span>
         </div>
 
         <form id="predictForm" novalidate>

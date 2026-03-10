@@ -27,7 +27,7 @@ models/X_train.npy
 models/X_test.npy
 models/y_train.npy
 models/y_test.npy
-models/*.png
+# models/*.png — tracked (SHAP figures)
 catboost_info/
 
 # ── Cache / build dirs ───────────────────────────────────────────────────
