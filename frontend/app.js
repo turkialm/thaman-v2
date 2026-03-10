@@ -90,17 +90,32 @@ function showMapError(lat, lng, msg) {
   setTimeout(() => map.closePopup(p), 2600);
 }
 
-// Draw ONE unified NYC boundary (all boroughs same style = looks like one city outline)
-// Labels still shown per-borough so users know where to click
-let _boroughLabelEls = {};
-Object.entries(BOROUGHS).forEach(([code, b]) => {
-  // All polygons share the same blue border — reads as one unified NYC boundary
-  L.polygon(b.coords, {
-    color: '#2563eb', weight: 2.5, opacity: 0.75,
+// Draw ONE unified NYC boundary.
+// NYC has 4 separate land masses — Brooklyn+Queens merged into one shape
+// so there is NO internal border between boroughs. All pieces same style.
+const NYC_OUTER_SHAPES = [
+  BOROUGHS['1'].coords,   // Manhattan island
+  BOROUGHS['2'].coords,   // Bronx (mainland)
+  // Brooklyn + Queens — single merged outer boundary, no internal dividing line
+  [[40.7025,-73.9720],[40.7280,-73.9480],[40.7776,-73.9179],
+   [40.8073,-73.8300],[40.7661,-73.7098],[40.7273,-73.7009],
+   [40.6620,-73.7329],[40.5880,-73.7485],[40.5430,-73.7600],
+   [40.5800,-73.8170],[40.5770,-73.9490],[40.5730,-74.0167],
+   [40.6197,-74.0338],[40.6456,-74.0319],[40.6920,-74.0207]],
+  BOROUGHS['5'].coords,   // Staten Island
+];
+
+NYC_OUTER_SHAPES.forEach(coords => {
+  L.polygon(coords, {
+    color: '#2563eb', weight: 2.5, opacity: 0.80,
     fillColor: '#2563eb', fillOpacity: 0.06,
     interactive: false,
   }).addTo(map);
+});
 
+// Borough name labels (per-borough so users know where to click)
+let _boroughLabelEls = {};
+Object.entries(BOROUGHS).forEach(([code, b]) => {
   const labelDiv = document.createElement('div');
   labelDiv.className = 'borough-label';
   labelDiv.textContent = b.name;
