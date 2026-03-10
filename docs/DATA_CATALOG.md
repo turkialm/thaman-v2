@@ -44,15 +44,24 @@
 | 2026-03-09 | `frontend/index.html` | Map UI created — Leaflet.js NYC map + property form + result/SHAP/spatial panels served at `/ui` |
 | 2026-03-09 | `frontend/style.css` | Full UI stylesheet — CSS variables, 2-col layout, animated cards, SHAP bars, responsive at 768px |
 | 2026-03-09 | `frontend/app.js` | Browser JS — map click, borough auto-detect, form validation, fetch `/predict`, SHAP bar + spatial grid render |
-| 2026-03-09 | `api/main.py` | Added `StaticFiles` mount at `/ui` → `frontend/`; root `/` now redirects to `/ui`; API info moved to `/api` |
+| 2026-03-09 | `api/main.py` | Added `StaticFiles` mount at `/ui` → `frontend/`; root `/` now serves `index.html` directly; API info moved to `/api` |
+| 2026-03-09 | `data/processed/features.csv` | Expanded dataset 5× — from 36,203 rows (2025 only) to 185,092 rows (2022–2026) via `scripts/download_more_sales.py`. Added 1 new column: `assesstot` (PLUTO total assessed value) for prior_sale_price imputation (62 cols total) |
+| 2026-03-09 | `data/processed/features.csv` | Prior sale coverage improved from 13.7% → ~99% using `assesstot` ratios to estimate prior_sale_price for properties without ACRIS history |
+| 2026-03-09 | `models/xgboost_model.json` | Retrained XGBoost base learner on 185K rows with Spatial GroupKFold CV (5 folds by NTA) |
+| 2026-03-09 | `models/thaman_stack.pkl` | Trained stacking ensemble v2.1: XGBoost + LightGBM + CatBoost base learners + Ridge meta-learner. R²=0.6509, MedAPE=20.29% on spatial holdout |
+| 2026-03-09 | `models/meta.json` | Updated to 71 feature names (added log-dist + target-encoded cols), stack metrics, `bldgclass_means`, `borough_bldg_means`, `walk_score_scaler` |
+| 2026-03-09 | `api/main.py` | Fixed 500 error on `/predict` — `int(NaN)` on `school_district` spatial lookup. Added `_safe_int()` and `_safe_round()` helpers. Updated metrics to v2.1 |
+| 2026-03-10 | `tests/conftest.py` | Created module-scoped pytest fixture — `with TestClient(app) as c` triggers FastAPI lifespan (model + spatial data load) for test suite |
+| 2026-03-10 | `tests/test_api.py` | Fixed 17 test functions to use `client` fixture; renamed `test_root_redirects` → `test_root_serves_ui` (root now returns 200, not redirect) |
+| 2026-03-10 | `tests/test_scorer.py` | Fixed hardcoded feature counts: 70 → 71 (2 assertions) |
 
 ---
 
 ## Feature Matrix (Model Input)
 **File:** `data/processed/features.csv`
-**Rows:** 36,203 properties | **Columns:** 61
+**Rows:** 185,092 properties | **Columns:** 62
 **Target variable:** `sale_price` (log-transform required — raw skewness: 54.9)
-**Sale date range:** Feb 2025 – Jan 2026 (NYC Rolling Sales last 12 months)
+**Sale date range:** 2022 – 2026 (NYC Rolling Sales, 4 years)
 
 | Column | Type | Null % | Notes |
 |---|---|---|---|
@@ -115,8 +124,8 @@
 
 ### 1. Property Sales
 **File:** `data/raw/sales_geocoded.csv`
-**Records:** 81,305 total | 59,730 geocoded | 36,203 filtered (price > $10k)
-**Description:** NYC property sale transactions across all 5 boroughs. Includes address, sale price, sale date, building class, and structural attributes joined from PLUTO via BBL.
+**Records:** 185,092 filtered (price > $10k) across 2022–2026 | originally 81,305 (2025 only)
+**Description:** NYC property sale transactions across all 5 boroughs. Includes address, sale price, sale date, building class, and structural attributes joined from PLUTO via BBL. Expanded from 1 year (2025) to 4 years (2022–2026) using `scripts/download_more_sales.py`.
 **Source:** [NYC Rolling Calendar Sales — NYC Open Data](https://www.nyc.gov/site/finance/property/property-rolling-sales-data.page)
 
 ---
@@ -326,7 +335,7 @@ Used to normalize crime and noise rates per 1,000 residents.
 
 ## Data Quality Notes
 
-> **Last audit:** 2026-03-08 — All 24 raw sources present on disk ✓ | Feature matrix: 36,203 × 61 cols
+> **Last audit:** 2026-03-10 — All 24 raw sources present on disk ✓ | Feature matrix: 185,092 × 62 cols
 
 | Issue | Detail | Status | Action Taken |
 |---|---|---|---|
@@ -352,14 +361,14 @@ Used to normalize crime and noise rates per 1,000 residents.
 | Check | Status | Notes |
 |---|---|---|
 | All raw files on disk | ✅ 19/19 files present | Road network = 10 GraphML files |
-| Feature matrix shape | ✅ 36,203 × 61 cols | Includes 1 new `has_prior_sale` flag |
+| Feature matrix shape | ✅ 185,092 × 62 cols | Expanded to 4 years of sales (2022–2026) |
 | Non-ACRIS nulls | ✅ 0% null | All columns except ACRIS prior-sale group fully populated |
-| ACRIS null group | ⚠️ 86.3% null | `prior_sale_price`, `prior_sale_date`, `price_appreciation`, `years_since_prior_sale` — use `has_prior_sale` to condition |
+| ACRIS prior sale coverage | ✅ ~99% | `prior_sale_price` coverage improved using `assesstot` ratios for properties without ACRIS history |
 | Target variable | ✅ Ready | Apply `log1p()` before training (skewness 54.86 → 0.78) |
-| Categorical encoding | ⚠️ Needs encoding | `bldgclass` (str), `ntacode` (str), `borough` (int) — use one-hot or ordinal |
-| NTA outliers | ⚠️ Needs winsorizing | `noise_density_nta` max=2,711, `crime_rate_nta` max=460 |
-| Train/test split | ✅ Done | 80/20 stratified by `borough` — 28,962 train / 7,241 test |
-| Model baseline | ✅ Done | Ridge R²=0.238 | XGBoost R²=0.735 | MedAPE=17.8% |
+| Categorical encoding | ✅ Done | `bldgclass` → target-encoded `bldgclass_encoded` + `borough_bldg_encoded` (cross-feature) |
+| NTA outliers | ✅ Done | Winsorized at 99th percentile (`crime_rate_nta`, `noise_density_nta`, `livability_complaint_rate`) |
+| Train/test split | ✅ Done | Spatial GroupKFold CV (5 folds by NTA) — prevents geographic leakage |
+| Model | ✅ Done | Stack v2.1: XGB + LGB + CatBoost + Ridge meta | R²=0.6509 | MedAPE=20.29% |
 
 ---
 
