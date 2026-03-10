@@ -584,6 +584,36 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   filter: drop-shadow(0 2px 4px rgba(37,99,235,.5));
 }
 
+/* ── Borough map labels ──────────────────────────────────────────────── */
+.borough-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .4px;
+  color: rgba(15,23,42,.45);
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  font-family: var(--font);
+  text-shadow: 0 0 4px #fff, 0 0 4px #fff, 0 0 4px #fff;
+}
+
+/* ── Out-of-bounds popup ─────────────────────────────────────────────── */
+.oob-popup .leaflet-popup-content-wrapper {
+  background: #fef2f2;
+  border: 1.5px solid #fca5a5;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.15);
+  padding: 0;
+}
+.oob-popup .leaflet-popup-content {
+  margin: 8px 14px;
+  font-size: .82rem;
+  font-weight: 600;
+  color: #dc2626;
+  white-space: nowrap;
+}
+.oob-popup .leaflet-popup-tip-container { display: none; }
+
 /* ── Borough color pills ─────────────────────────────────────────────── */
 .borough-pill {
   display: inline-block;
