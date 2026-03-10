@@ -31,6 +31,90 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
 }).addTo(map);
 
+// ── NYC Borough boundary polygons ─────────────────────────────────────
+// Simplified polygons used for (1) visual border on map, (2) borough auto-detection
+const BOROUGHS = {
+  '1': { name:'Manhattan',    nameAr:'مانهاتن',      color:'#3b82f6', center:[40.790,-73.965],
+    coords:[[40.7001,-74.0168],[40.7551,-74.0080],[40.8007,-73.9579],
+            [40.8691,-73.9220],[40.8799,-73.9072],[40.8610,-73.9108],
+            [40.7960,-73.9314],[40.7487,-73.9714],[40.7050,-73.9764],
+            [40.6997,-74.0136]] },
+  '2': { name:'Bronx',        nameAr:'برونكس',        color:'#10b981', center:[40.855,-73.866],
+    coords:[[40.7960,-73.9314],[40.8180,-73.9265],[40.8556,-73.9137],
+            [40.8799,-73.9072],[40.9001,-73.9100],[40.9179,-73.9093],
+            [40.9161,-73.8455],[40.9095,-73.8160],[40.8730,-73.7810],
+            [40.8054,-73.8280],[40.7962,-73.8615]] },
+  '3': { name:'Brooklyn',     nameAr:'بروكلين',       color:'#f59e0b', center:[40.638,-73.944],
+    coords:[[40.7025,-73.9720],[40.7150,-73.9200],[40.6977,-73.8786],
+            [40.6756,-73.8613],[40.6420,-73.8555],[40.5990,-73.8080],
+            [40.5770,-73.9490],[40.5730,-74.0167],[40.6197,-74.0338],
+            [40.6456,-74.0319],[40.6920,-74.0207]] },
+  '4': { name:'Queens',       nameAr:'كوينز',         color:'#8b5cf6', center:[40.700,-73.820],
+    coords:[[40.7776,-73.9179],[40.8073,-73.8300],[40.7661,-73.7098],
+            [40.7273,-73.7009],[40.6620,-73.7329],[40.5880,-73.7485],
+            [40.5430,-73.7600],[40.5800,-73.8170],[40.5990,-73.8080],
+            [40.6420,-73.8555],[40.6756,-73.8613],[40.6977,-73.8786],
+            [40.7150,-73.9200],[40.7280,-73.9480]] },
+  '5': { name:'Staten Island', nameAr:'ستاتن آيلاند', color:'#ef4444', center:[40.579,-74.151],
+    coords:[[40.6456,-74.0319],[40.6456,-74.1320],[40.5775,-74.1899],
+            [40.5100,-74.2498],[40.4780,-74.2190],[40.4965,-74.1380],
+            [40.5540,-74.0580],[40.6197,-74.0338]] },
+};
+
+// Ray-casting point-in-polygon check
+function pointInPolygon(lat, lng, coords) {
+  let inside = false;
+  for (let i = 0, j = coords.length - 1; i < coords.length; j = i++) {
+    const [xi, yi] = coords[i];
+    const [xj, yj] = coords[j];
+    if (((yi > lng) !== (yj > lng)) &&
+        (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi)) inside = !inside;
+  }
+  return inside;
+}
+
+// Returns borough code ('1'–'5') or null if outside NYC
+function getBoroughCode(lat, lng) {
+  for (const [code, b] of Object.entries(BOROUGHS)) {
+    if (pointInPolygon(lat, lng, b.coords)) return code;
+  }
+  return null;
+}
+
+// Show a brief red error popup on the map
+function showMapError(lat, lng, msg) {
+  const p = L.popup({ closeButton:false, className:'oob-popup', autoPan:false })
+    .setLatLng([lat, lng])
+    .setContent(`<span>⚠️ ${msg}</span>`)
+    .openOn(map);
+  setTimeout(() => map.closePopup(p), 2600);
+}
+
+// Draw ONE unified NYC boundary (all boroughs same style = looks like one city outline)
+// Labels still shown per-borough so users know where to click
+let _boroughLabelEls = {};
+Object.entries(BOROUGHS).forEach(([code, b]) => {
+  // All polygons share the same blue border — reads as one unified NYC boundary
+  L.polygon(b.coords, {
+    color: '#2563eb', weight: 2.5, opacity: 0.75,
+    fillColor: '#2563eb', fillOpacity: 0.06,
+    interactive: false,
+  }).addTo(map);
+
+  const labelDiv = document.createElement('div');
+  labelDiv.className = 'borough-label';
+  labelDiv.textContent = b.name;
+  _boroughLabelEls[code] = labelDiv;
+
+  L.marker(b.center, {
+    icon: L.divIcon({ html: labelDiv, className:'', iconSize:[130,22], iconAnchor:[65,11] }),
+    interactive: false,
+  }).addTo(map);
+});
+
+// ── Pin marker (emoji-based, no image dependency) ──────────────────────
+let lastValidPos = null;   // last accepted pin position (for snap-back on drag)
+
 // Pin marker (emoji-based, no image dependency)
 const pinIcon = L.divIcon({
   html:      '<div class="pin-icon">📍</div>',
@@ -155,27 +239,21 @@ document.addEventListener('click', (e) => {
 
 loadBldgClasses();
 
-// ── Borough auto-detection from lat/lng (rough bounding boxes) ────────
-function guessBoroughFromCoords(lat, lon) {
-  // Very rough bounding boxes — just to pre-fill the dropdown helpfully
-  if (lat > 40.700 && lat < 40.880 && lon > -74.020 && lon < -73.907) {
-    // Manhattan (narrow island)
-    if (lon > -74.020 && lon < -73.907 && lat > 40.700 && lat < 40.880) return '1';
-  }
-  if (lat > 40.785 && lat < 40.915 && lon > -73.934 && lon < -73.766) return '2'; // Bronx
-  if (lat > 40.570 && lat < 40.739 && lon > -74.042 && lon < -73.834) return '3'; // Brooklyn
-  if (lat > 40.541 && lat < 40.800 && lon > -73.962 && lon < -73.700) return '4'; // Queens
-  if (lat > 40.477 && lat < 40.651 && lon > -74.259 && lon < -74.034) return '5'; // Staten Island
-  return '';
-}
-
 // ── Map click ─────────────────────────────────────────────────────────
 map.on('click', (e) => {
   const { lat, lng } = e.latlng;
 
+  // Reject clicks outside NYC boroughs
+  const boroughCode = getBoroughCode(lat, lng);
+  if (!boroughCode) {
+    showMapError(lat, lng, TR[currentLang].outOfNYC);
+    return;
+  }
+
   // Update hidden inputs
   latInput.value = lat.toFixed(6);
   lonInput.value = lng.toFixed(6);
+  lastValidPos   = [lat, lng];
 
   // Update location display
   locationText.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
@@ -187,23 +265,29 @@ map.on('click', (e) => {
   } else {
     marker = L.marker([lat, lng], { icon: pinIcon, draggable: true }).addTo(map);
 
-    // Draggable marker: update inputs when dragged
+    // Draggable marker: snap back if dragged outside NYC
     marker.on('dragend', (ev) => {
       const pos = ev.target.getLatLng();
+      const bc  = getBoroughCode(pos.lat, pos.lng);
+      if (!bc) {
+        if (lastValidPos) marker.setLatLng(lastValidPos);
+        showMapError(pos.lat, pos.lng, TR[currentLang].outOfNYC);
+        return;
+      }
+      lastValidPos = [pos.lat, pos.lng];
       latInput.value = pos.lat.toFixed(6);
       lonInput.value = pos.lng.toFixed(6);
       locationText.textContent = `${pos.lat.toFixed(5)}, ${pos.lng.toFixed(5)}`;
-      boroughSel.value = guessBoroughFromCoords(pos.lat, pos.lng) || boroughSel.value;
+      boroughSel.value = bc;   // always auto-update borough on drag
     });
   }
 
-  // Auto-guess borough
-  const guessed = guessBoroughFromCoords(lat, lng);
-  if (guessed && !boroughSel.value) boroughSel.value = guessed;
+  // Always auto-set borough from polygon (precise, not bounding box)
+  boroughSel.value = boroughCode;
 
   // Enable button, hide map hint
   submitBtn.disabled = false;
-  btnText.textContent = '🔍  Estimate Price';
+  btnText.textContent = '🔍  ' + TR[currentLang].estimateBtn;
   mapHint.classList.add('hidden');
 });
 
@@ -548,6 +632,7 @@ const TR = {
     analytics:      'Analytics',
     mapHint:        'Click anywhere in New York City to place a pin',
     tagline:        'NYC Property Valuation · AI-Powered',
+    outOfNYC:       'Click within New York City boundaries',
   },
   ar: {
     estimateBtn:    'تقدير السعر',
@@ -584,6 +669,7 @@ const TR = {
     analytics:      'التحليلات',
     mapHint:        'انقر في أي مكان بمدينة نيويورك لوضع الدبوس',
     tagline:        'تقييم عقارات نيويورك · مدعوم بالذكاء الاصطناعي',
+    outOfNYC:       'انقر داخل حدود مدينة نيويورك',
   },
 };
 
@@ -610,7 +696,11 @@ function setLang(lang) {
   document.getElementById('howToTitle').textContent = T.howToUse;
   document.getElementById('step1').textContent      = T.step1;
   document.getElementById('step2').textContent      = T.step2;
-  document.getElementById('step3Btn').textContent   = T.step3Btn;
+  // step3 — rebuild innerHTML so step3Btn id always exists for this call
+  const s3 = document.getElementById('step3');
+  if (s3) s3.innerHTML = isAr
+    ? 'انقر على <strong id="step3Btn">تقدير السعر</strong>'
+    : 'Click <strong id="step3Btn">Estimate Price</strong>';
 
   // Form card
   document.getElementById('formTitle').textContent    = T.formTitle;
@@ -649,6 +739,23 @@ function setLang(lang) {
   document.getElementById('spatialSubtitle').textContent = T.spatialSub;
   document.getElementById('nearbyTitle').textContent   = T.nearbyTitle;
   document.getElementById('nearbySubtitle').textContent = T.nearbySub;
+
+  // Borough select options
+  const boroughNames = {
+    en: ['Select…', 'Manhattan', 'Bronx', 'Brooklyn', 'Queens', 'Staten Island'],
+    ar: ['اختر…',   'مانهاتن',  'برونكس', 'بروكلين', 'كوينز', 'ستاتن آيلاند'],
+  };
+  Array.from(boroughSel.options).forEach((opt, i) => {
+    opt.textContent = (boroughNames[lang] || boroughNames.en)[i] ?? opt.textContent;
+  });
+
+  // Borough map labels
+  Object.entries(BOROUGHS).forEach(([code, b]) => {
+    if (_boroughLabelEls[code]) {
+      _boroughLabelEls[code].textContent = isAr ? b.nameAr : b.name;
+    }
+  });
+
 }
 
 // Restore saved language on page load (called after setLang is defined)
