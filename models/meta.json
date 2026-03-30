@@ -70,9 +70,13 @@
     "crime_x_non_manhattan",
     "walk_score_proxy",
     "bldgclass_encoded",
-    "borough_bldg_encoded"
+    "borough_bldg_encoded",
+    "tree_count_200m",
+    "pm25_mean",
+    "no2_mean",
+    "hpd_viol_rate_nta"
   ],
-  "n_features": 71,
+  "n_features": 75,
   "bldgclass_classes": [],
   "winsorize_p99": {
     "crime_rate_nta": 222.13507888148172,
@@ -679,34 +683,34 @@
       "catboost"
     ],
     "xgboost": {
-      "r2_holdout": 0.6537,
-      "mae_holdout": 1033289.0,
-      "medape_holdout": 20.48,
-      "best_round": 2000
+      "r2_holdout": 0.6539,
+      "mae_holdout": 1043574.0,
+      "medape_holdout": 20.32,
+      "best_round": 1999
     },
     "lightgbm": {
-      "r2_holdout": 0.6511,
-      "mae_holdout": 1051136.0,
-      "medape_holdout": 20.35,
-      "best_round": 1694
+      "r2_holdout": 0.6505,
+      "mae_holdout": 1046633.0,
+      "medape_holdout": 20.51,
+      "best_round": 1692
     },
     "catboost": {
       "r2_holdout": 0.6446,
-      "mae_holdout": 1057121.0,
-      "medape_holdout": 21.21,
+      "mae_holdout": 1069775.0,
+      "medape_holdout": 21.14,
       "best_round": 2000
     },
     "ridge": {
-      "coef_xgb": 0.085756,
-      "coef_lgb": 0.954841,
-      "coef_cat": -0.05671,
-      "intercept": 0.224627,
+      "coef_xgb": 0.288028,
+      "coef_lgb": 0.730546,
+      "coef_cat": -0.037077,
+      "intercept": 0.257092,
       "alpha": 1.0
     },
-    "r2_holdout": 0.6509,
-    "mae_holdout": 1055713.0,
-    "medape_holdout": 20.29,
-    "r2_improvement": -0.0028,
-    "medape_improvement": 0.19
+    "r2_holdout": 0.6516,
+    "mae_holdout": 1050050.0,
+    "medape_holdout": 20.42,
+    "r2_improvement": -0.0023,
+    "medape_improvement": -0.09
   }
 }
