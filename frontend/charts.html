@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>THAMAN — Model Analytics v2.1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/ui/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
   <style>
@@ -168,15 +171,20 @@
 
     /* ── Back link ───────────────────────────────────────────── */
     .back-link {
-      color: #94a3b8;
-      font-size: .82rem;
+      color: var(--white);
+      font-size: .78rem;
+      font-weight: 600;
       text-decoration: none;
       display: flex;
       align-items: center;
       gap: 5px;
-      transition: color .15s;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: rgba(37,99,235,.25);
+      border: 1px solid rgba(37,99,235,.4);
+      transition: background .15s, border-color .15s;
     }
-    .back-link:hover { color: var(--white); }
+    .back-link:hover { background: var(--blue); border-color: var(--blue); }
 
     /* ── Responsive ──────────────────────────────────────────── */
     @media (max-width: 900px) {
@@ -199,8 +207,8 @@
     </div>
     <div class="header-badges">
       <span class="badge badge-green">Stack v2.1</span>
-      <span class="badge badge-blue">R² = 0.651</span>
-      <span class="badge badge-purple" id="chartsFeaturesBadge">71 Features</span>
+      <span class="badge badge-blue">R² = 0.6511</span>
+      <span class="badge badge-purple" id="chartsFeaturesBadge">81 Features</span>
       <span class="badge badge-gray">Spatial CV</span>
       <div class="lang-toggle">
         <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
@@ -216,22 +224,22 @@
     <!-- Title -->
     <div class="page-title">
       <h1 id="pageTitle">THAMAN v2.1 — NYC Property Valuation Stack</h1>
-      <p id="pageSubtitle">XGBoost + LightGBM + CatBoost + Ridge meta · 71 features · Spatial GroupKFold CV · Honest time-based holdout · 185K NYC sales</p>
+      <p id="pageSubtitle">XGBoost + LightGBM + CatBoost + Ridge meta · 81 features · Spatial GroupKFold CV · Honest time-based holdout · 185K NYC sales</p>
     </div>
 
     <!-- ── KPI Metric Cards ───────────────────────────────── -->
     <div class="metrics-row">
       <div class="metric-card">
         <div class="metric-icon">🎯</div>
-        <div class="metric-value blue-val">0.651</div>
+        <div class="metric-value blue-val">0.6511</div>
         <div class="metric-label" id="kpi1Label">R² Stack Holdout</div>
         <div class="metric-sub">XGB: 0.6537 · LGB: 0.6511 · CAT: 0.6446</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">📊</div>
-        <div class="metric-value green-val">20.29%</div>
+        <div class="metric-value green-val">20.80%</div>
         <div class="metric-label" id="kpi2Label">Median APE</div>
-        <div class="metric-sub" id="kpi2Sub">±20.29% confidence interval</div>
+        <div class="metric-sub" id="kpi2Sub">±20.80% confidence interval</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">💵</div>
@@ -253,7 +261,7 @@
       </div>
       <div class="metric-card">
         <div class="metric-icon">⚙️</div>
-        <div class="metric-value purple-val">71</div>
+        <div class="metric-value purple-val">81</div>
         <div class="metric-label" id="kpi6Label">Features</div>
         <div class="metric-sub" id="kpi6Sub">v1: 50 features (+20 new)</div>
       </div>
@@ -297,7 +305,7 @@
 
     <!-- ── Chart 4: Feature Categories Donut ────────────── -->
     <div class="chart-card">
-      <h2 id="c4Title">🗂️ Feature Categories Breakdown (71 Features)</h2>
+      <h2 id="c4Title">🗂️ Feature Categories Breakdown (81 Features)</h2>
       <div class="chart-sub" id="c4Sub">v2 adds 9 log-distances, 4 urban gravity centres, 3 interactions, walk-score proxy, and 2 target-encoded codes</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="categoryDonut"></canvas>
