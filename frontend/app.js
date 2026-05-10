@@ -680,14 +680,21 @@ function renderSalesBubbles(sales) {
     const psf = s.gross_square_feet > 0
       ? `$${Math.round(s.sale_price / s.gross_square_feet).toLocaleString()}/sqft` : '';
     const m = L.marker([s.latitude, s.longitude], { icon: buildSaleIcon(s.sale_price) });
+    let vsBadge = '';
+    if (_lastPrediction && _lastPrediction.price) {
+      const pct = ((s.sale_price - _lastPrediction.price) / _lastPrediction.price * 100);
+      const sign = pct >= 0 ? '+' : '';
+      const cls  = pct >= 5 ? 'delta-above' : pct <= -5 ? 'delta-below' : 'delta-neutral';
+      vsBadge = `<span class="delta-badge ${cls}" style="margin-left:4px">${sign}${pct.toFixed(0)}% vs est.</span>`;
+    }
     m.bindPopup(
       `<div class="sale-popup">
-        <strong>${formatBubblePrice(s.sale_price)}</strong>
+        <strong>${formatBubblePrice(s.sale_price)}${vsBadge}</strong>
         <div class="sale-popup-addr">${s.address || ''}</div>
         <div class="sale-popup-meta">${s.bldgclass || ''} · ${(s.gross_square_feet || 0).toLocaleString()} sqft${psf ? ' · ' + psf : ''}</div>
         <div class="sale-popup-date">Sold ${s.sale_date || ''}</div>
       </div>`,
-      { maxWidth: 210 }
+      { maxWidth: 220 }
     );
     _salesCluster.addLayer(m);
   });
@@ -802,6 +809,19 @@ function hideResults() {
 }
 
 // ── Render results ────────────────────────────────────────────────────
+function animatePrice(el, target) {
+  const start = target * 0.72;
+  const dur   = 600;
+  const t0    = performance.now();
+  function tick(now) {
+    const p    = Math.min((now - t0) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = '$' + Math.round(start + (target - start) * ease).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
 function renderResults(data) {
   _lastPrediction = { price: data.predicted_price, sqft: null };  // sqft filled below
 
@@ -810,11 +830,11 @@ function renderResults(data) {
   if (lat && lng) map.flyTo([lat, lng], 15, { duration: 1.2, easeLinearity: 0.4 });
 
   // ── Price card ────────────────────────────────────────────────────
-  priceMain.textContent    = `$${data.predicted_price.toLocaleString()}`;
-  // Price reveal animation
+  // Price reveal + count-up animation
   priceMain.classList.remove('price-reveal');
   void priceMain.offsetWidth;
   priceMain.classList.add('price-reveal');
+  animatePrice(priceMain, data.predicted_price);
   priceRange.textContent   = `Range: ${fmt$(data.confidence_low)} – ${fmt$(data.confidence_high)}`;
   priceContext.textContent = `🏠 ${data.borough_name} · ${data.bldgclass_description}`;
 
@@ -903,15 +923,22 @@ function renderResults(data) {
     { icon: '📈', label: 'Mortgage',    value: `${sf.mortgage_rate_30yr}%`,    unit: '30-yr rate' },
   ];
 
-  spatialGrid.innerHTML = spatialItems.map(item => `
+  const crimeMax = 80, noiseMax = 60;
+  const crimePct = Math.min(100, (sf.crime_rate_nta / crimeMax) * 100).toFixed(0);
+  const noisePct = Math.min(100, (sf.noise_density_nta / noiseMax) * 100).toFixed(0);
+  spatialGrid.innerHTML = spatialItems.map(item => {
+    let barAttr = '';
+    if (item.label === 'Crime rate') barAttr = `data-bar="${crimePct}" style="--bar:${crimePct}%"`;
+    if (item.label === 'Noise')      barAttr = `data-bar="${noisePct}" style="--bar:${noisePct}%"`;
+    return `
     <div class="spatial-item">
       <div class="spatial-item-icon">${item.icon}</div>
       <div class="spatial-item-label">${item.label}</div>
-      <div class="spatial-item-value">${item.value}
+      <div class="spatial-item-value" ${barAttr}>${item.value}
         ${item.unit ? `<span class="spatial-item-unit">${item.unit}</span>` : ''}
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
   spatialCard.style.display = 'block';
 
   // Scroll sidebar to results
