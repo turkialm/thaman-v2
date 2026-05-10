@@ -7,7 +7,7 @@ Run with:  pytest tests/ -v
 
 import pytest
 import numpy as np
-import pandas as pd
+import polars as pl
 from models.scorer import ThamanScorer
 
 
@@ -25,8 +25,8 @@ def test_scorer_loads(scorer):
 
 
 def test_scorer_has_feature_names(scorer):
-    """Scorer should have 75 feature names (v3: +4 QoL features)."""
-    assert len(scorer.feature_names) == 75
+    """Scorer should have 81 feature names (v4: +6 POI + waterfront + bike + luxury)."""
+    assert len(scorer.feature_names) == 81
 
 
 def test_scorer_has_bldgclass_means(scorer):
@@ -106,7 +106,7 @@ def test_manhattan_more_expensive_than_staten_island(scorer):
 # ── predict (batch) ───────────────────────────────────────────────────
 
 def test_predict_batch(scorer):
-    """predict() on a DataFrame should return array of prices."""
+    """predict() on a polars DataFrame should return array of prices."""
     rows = []
     for _ in range(3):
         defaults = {feat: 0.0 for feat in scorer.feature_names}
@@ -119,7 +119,7 @@ def test_predict_batch(scorer):
         })
         rows.append(defaults)
 
-    df     = pd.DataFrame(rows)
+    df     = pl.from_dicts(rows)
     prices = scorer.predict(df)
     assert len(prices) == 3
     assert all(p > 0 for p in prices)
@@ -128,7 +128,7 @@ def test_predict_batch(scorer):
 # ── explain (SHAP) ────────────────────────────────────────────────────
 
 def test_explain_returns_shap_df(scorer):
-    """explain() should return a DataFrame with feature importances."""
+    """explain() should return a polars DataFrame with 81 feature importances."""
     defaults = {feat: 0.0 for feat in scorer.feature_names}
     defaults.update({
         "latitude": 40.6892, "longitude": -73.9442,
@@ -137,7 +137,7 @@ def test_explain_returns_shap_df(scorer):
         "bldgclass_encoded": scorer.global_mean_log,
         "borough_bldg_encoded": scorer.global_mean_log,
     })
-    df       = pd.DataFrame([defaults])
+    df       = pl.from_dicts([defaults])
     shap_df  = scorer.explain(df)
-    assert shap_df.shape == (1, 75)
+    assert shap_df.shape == (1, 81)
     assert list(shap_df.columns) == scorer.feature_names
