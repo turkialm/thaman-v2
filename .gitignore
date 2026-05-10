@@ -54,3 +54,5 @@ Thumbs.db
 data/raw/hpd_violations.csv
 data/raw/street_trees_2015.csv
 data/processed/features_v3.csv
+config.env
+data/raw/nyc_waterfront.geojson

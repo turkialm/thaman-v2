@@ -17,7 +17,7 @@ Usage:
 import json, os
 import joblib
 import numpy as np
-import pandas as pd
+import polars as pl
 import xgboost as xgb
 
 _DIR = os.path.dirname(os.path.abspath(__file__))
@@ -52,19 +52,36 @@ class ThamanScorer:
         else:
             print(f"  [scorer] Stack not found — using XGBoost only")
 
+        # Luxury sub-model (Manhattan $3M+) — optional
+        luxury_path = os.path.join(_DIR, "luxury_model.json")
+        self._luxury = None
+        self._luxury_threshold = self.meta.get("luxury_threshold", 2_000_000)
+        if self.meta.get("has_luxury_model") and os.path.exists(luxury_path):
+            self._luxury = xgb.Booster()
+            self._luxury.load_model(luxury_path)
+            print(f"  [scorer] Luxury model loaded (blend ≥ ${self._luxury_threshold/1e6:.0f}M)")
+
     # ── Internal: preprocess feature matrix ────────────────────────
-    def _prepare(self, df: pd.DataFrame) -> np.ndarray:
-        X = df[self.feature_names].copy()
-        for col, cap in self.winsorize.items():
-            if col in X.columns:
-                X[col] = X[col].clip(upper=cap)
-        for col, med in self.acris_medians.items():
-            if col in X.columns:
-                X[col] = X[col].fillna(med)
-        return X.fillna(0).values.astype(np.float32)
+    def _prepare(self, df: pl.DataFrame) -> np.ndarray:
+        X = df.select(self.feature_names)
+        clip_exprs = [
+            pl.col(col).clip(upper_bound=cap)
+            for col, cap in self.winsorize.items()
+            if col in X.columns
+        ]
+        if clip_exprs:
+            X = X.with_columns(clip_exprs)
+        fill_exprs = [
+            pl.col(col).fill_null(float(med)).fill_nan(float(med))
+            for col, med in self.acris_medians.items()
+            if col in X.columns
+        ]
+        if fill_exprs:
+            X = X.with_columns(fill_exprs)
+        return X.fill_null(0).fill_nan(0.0).to_numpy().astype(np.float32)
 
     # ── Main prediction method ──────────────────────────────────────
-    def predict(self, df: pd.DataFrame) -> np.ndarray:
+    def predict(self, df: pl.DataFrame) -> np.ndarray:
         """
         Predict prices for a DataFrame. Returns USD array.
         Uses stack (XGB + LGB + Ridge) when available, else XGB alone.
@@ -84,7 +101,18 @@ class ThamanScorer:
         else:
             log_final = log_xgb
 
-        return np.expm1(log_final)
+        stack_prices = np.expm1(log_final)
+
+        # Luxury blend: soft ramp from threshold → threshold*2 for Manhattan $3M+
+        if self._luxury is not None:
+            log_lux     = self._luxury.predict(dmat).astype(np.float32)
+            lux_prices  = np.expm1(log_lux)
+            lo          = float(self._luxury_threshold)
+            hi          = lo * 2.0
+            alpha       = np.clip((stack_prices - lo) / (hi - lo), 0.0, 1.0)
+            return (1.0 - alpha) * stack_prices + alpha * lux_prices
+
+        return stack_prices
 
     # ── Single property convenience method ─────────────────────────
     def predict_single(self, **kwargs) -> dict:
@@ -93,10 +121,15 @@ class ThamanScorer:
         """
         defaults = {feat: 0.0 for feat in self.feature_names}
         for col in self.acris_medians:
-            defaults[col] = np.nan
-        defaults.update(kwargs)
+            defaults[col] = None  # polars null
+        # Convert any np.nan in kwargs to None
+        clean_kwargs = {
+            k: (None if (isinstance(v, float) and np.isnan(v)) else v)
+            for k, v in kwargs.items()
+        }
+        defaults.update(clean_kwargs)
 
-        row   = pd.DataFrame([defaults])
+        row   = pl.from_dicts([defaults])
         price = float(self.predict(row)[0])
 
         if self._stack is not None and "stack" in self.meta:
@@ -119,25 +152,34 @@ class ThamanScorer:
         }
 
     # ── SHAP explanation for one property ──────────────────────────
-    def explain(self, df: pd.DataFrame, top_n: int = 10) -> pd.DataFrame:
+    def explain(self, df: pl.DataFrame, top_n: int = 10) -> pl.DataFrame:
         """
         Returns SHAP-based feature contributions for each row.
         Requires: pip install shap
         """
         import shap
-        X = df[self.feature_names].copy()
-        for col, cap in self.winsorize.items():
-            if col in X.columns:
-                X[col] = X[col].clip(upper=cap)
-        for col, med in self.acris_medians.items():
-            if col in X.columns:
-                X[col] = X[col].fillna(med)
-        X = X.fillna(0)
+        X = df.select(self.feature_names)
+        clip_exprs = [
+            pl.col(col).clip(upper_bound=cap)
+            for col, cap in self.winsorize.items()
+            if col in X.columns
+        ]
+        if clip_exprs:
+            X = X.with_columns(clip_exprs)
+        fill_exprs = [
+            pl.col(col).fill_null(float(med)).fill_nan(float(med))
+            for col, med in self.acris_medians.items()
+            if col in X.columns
+        ]
+        if fill_exprs:
+            X = X.with_columns(fill_exprs)
+        X_np = X.fill_null(0).fill_nan(0.0).to_numpy()
 
         explainer   = shap.TreeExplainer(self.model)
-        shap_values = explainer.shap_values(X.values)
-        shap_df     = pd.DataFrame(shap_values, columns=self.feature_names)
-        return shap_df
+        shap_values = explainer.shap_values(X_np)
+        return pl.DataFrame(
+            {col: shap_values[:, i] for i, col in enumerate(self.feature_names)}
+        )
 
 
 # ── Quick test ─────────────────────────────────────────────────────
