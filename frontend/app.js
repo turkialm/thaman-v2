@@ -248,6 +248,10 @@ function showLayer(metricId) {
         `<b>${feat.properties.ntaname || ''}</b><br>${meta.label}: ${fmtVal} ${meta.unit}`,
         { sticky: true, opacity: 0.92 }
       );
+      layer.on({
+        mouseover: e => { e.target.setStyle({ weight: 2, color: '#1d4ed8', fillOpacity: 0.82 }); e.target.bringToFront(); },
+        mouseout:  e => { if (_activeLayer) _activeLayer.resetStyle(e.target); },
+      });
     },
   }).addTo(map);
 
@@ -275,7 +279,7 @@ let lastValidPos = null;   // last accepted pin position (for snap-back on drag)
 
 // Pin marker (emoji-based, no image dependency)
 const pinIcon = L.divIcon({
-  html:      '<div class="pin-icon">📍</div>',
+  html:      '<div class="pin-icon pin-drop">📍</div>',
   iconSize:  [32, 32],
   iconAnchor:[16, 28],
   className: '',
@@ -390,7 +394,7 @@ async function geocodeAddress() {
     btnText.textContent = '🔍  ' + TR[currentLang].estimateBtn;
     mapHint.classList.add('hidden');
 
-    map.setView([lat, lng], 15, { animate: true });
+    map.flyTo([lat, lng], 15, { duration: 1.2, easeLinearity: 0.4 });
 
     // Show brief tooltip with found address
     if (marker) {
@@ -469,6 +473,8 @@ function showBldgDropdown(query) {
       bldgSearchInput.value = `${code} — ${_bldgDescs[code] || code}`;
       bldgSearchInput.classList.remove('invalid');
       bldgDropdown.style.display = 'none';
+      // Clear card selection since advanced search takes precedence
+      document.querySelectorAll('.bldgtype-card').forEach(c => c.classList.remove('selected'));
     });
   });
 }
@@ -494,6 +500,32 @@ document.addEventListener('click', (e) => {
 });
 
 loadBldgClasses();
+
+// ── Building type card selector ───────────────────────────────────────
+function initBldgTypeCards() {
+  const cards = document.querySelectorAll('.bldgtype-card');
+  const grid  = document.getElementById('bldgTypeGrid');
+
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      cards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      bldgHidden.value = card.dataset.code;
+      bldgSearchInput.value = '';
+      grid.classList.remove('invalid');
+    });
+  });
+
+  document.getElementById('bldgAdvToggle').addEventListener('click', () => {
+    const panel = document.getElementById('bldgAdvPanel');
+    panel.classList.toggle('open');
+    // Update the arrow character only (first text node), preserve inner span
+    document.getElementById('bldgAdvToggle').childNodes[0].textContent =
+      panel.classList.contains('open') ? '▼ ' : '▶ ';
+  });
+}
+
+initBldgTypeCards();
 
 // ── Map click ─────────────────────────────────────────────────────────
 map.on('click', (e) => {
@@ -547,6 +579,25 @@ map.on('click', (e) => {
   mapHint.classList.add('hidden');
 });
 
+// ── Map moveend: refresh sale bubbles (debounced) ─────────────────────
+map.on('moveend', () => {
+  clearTimeout(_salesTimer);
+  _salesTimer = setTimeout(fetchSalesForView, 600);
+});
+
+// Initial bubble load
+fetchSalesForView();
+
+// ── Geolocation button ────────────────────────────────────────────────
+document.getElementById('geolocBtn').addEventListener('click', () => {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    p => map.flyTo([p.coords.latitude, p.coords.longitude], 15, { duration: 1.0 }),
+    () => {},
+    { timeout: 6000 }
+  );
+});
+
 // ── Advanced toggle ───────────────────────────────────────────────────
 advancedToggle.addEventListener('click', () => {
   advancedPanel.classList.toggle('open');
@@ -581,6 +632,79 @@ function fmtDist(m) {
   return m >= 1000 ? `${(m/1000).toFixed(1)} km` : `${Math.round(m)} m`;
 }
 
+// ── Bubble price label ($850k / $1.2M) ───────────────────────────────
+function formatBubblePrice(n) {
+  if (n >= 1e6) return '$' + (n / 1e6).toFixed(1) + 'M';
+  if (n >= 1e5) return '$' + Math.round(n / 1e3) + 'k';
+  return '$' + n.toLocaleString();
+}
+
+// ── Bubble colour: neutral, or green/red relative to prediction ───────
+function bubbleColor(salePrice) {
+  if (!_lastPrediction) return '#4b6bfb';
+  const r = salePrice / _lastPrediction.price;
+  if (r >= 1.05) return '#dc2626';
+  if (r <= 0.95) return '#059669';
+  return '#6366f1';
+}
+
+function buildSaleIcon(price) {
+  return L.divIcon({
+    html:       `<div class="sale-bubble" style="background:${bubbleColor(price)}">${formatBubblePrice(price)}</div>`,
+    className:  '',
+    iconAnchor: [20, 10],
+  });
+}
+
+function radiusForZoom(z) {
+  if (z <= 11) return 2000;
+  if (z <= 13) return 900;
+  if (z >= 15) return 400;
+  return 600;
+}
+
+// ── Render sale bubbles on map ────────────────────────────────────────
+function renderSalesBubbles(sales) {
+  if (_salesCluster) map.removeLayer(_salesCluster);
+  _salesCluster = L.markerClusterGroup({
+    maxClusterRadius:     40,
+    showCoverageOnHover:  false,
+    iconCreateFunction: c => L.divIcon({
+      html:       `<div class="cluster-bubble">${c.getChildCount()}</div>`,
+      className:  '',
+      iconAnchor: [18, 18],
+    }),
+  });
+  (sales || []).forEach(s => {
+    if (!s.latitude || !s.longitude) return;
+    const psf = s.gross_square_feet > 0
+      ? `$${Math.round(s.sale_price / s.gross_square_feet).toLocaleString()}/sqft` : '';
+    const m = L.marker([s.latitude, s.longitude], { icon: buildSaleIcon(s.sale_price) });
+    m.bindPopup(
+      `<div class="sale-popup">
+        <strong>${formatBubblePrice(s.sale_price)}</strong>
+        <div class="sale-popup-addr">${s.address || ''}</div>
+        <div class="sale-popup-meta">${s.bldgclass || ''} · ${(s.gross_square_feet || 0).toLocaleString()} sqft${psf ? ' · ' + psf : ''}</div>
+        <div class="sale-popup-date">Sold ${s.sale_date || ''}</div>
+      </div>`,
+      { maxWidth: 210 }
+    );
+    _salesCluster.addLayer(m);
+  });
+  map.addLayer(_salesCluster);
+}
+
+// ── Fetch recent sales for current map view ───────────────────────────
+async function fetchSalesForView() {
+  const c = map.getCenter(), z = map.getZoom();
+  try {
+    const r = await fetch(`${API_BASE}/nearby?lat=${c.lat}&lon=${c.lng}&radius_m=${radiusForZoom(z)}&limit=25`);
+    if (!r.ok) return;
+    const d = await r.json();
+    renderSalesBubbles(d.nearby || []);
+  } catch (_) {}
+}
+
 // ── Submit ─────────────────────────────────────────────────────────────
 predictForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -598,7 +722,7 @@ predictForm.addEventListener('submit', async (e) => {
   let valid = true;
   if (!lat || !lon)    { valid = false; }
   if (!borough)        { markInvalid('borough'); valid = false; }
-  if (!bldg)           { bldgSearchInput.classList.add('invalid'); valid = false; }
+  if (!bldg)           { bldgSearchInput.classList.add('invalid'); document.getElementById('bldgTypeGrid').classList.add('invalid'); valid = false; }
   if (!sqft || sqft <= 0) { markInvalid('gross_square_feet'); valid = false; }
   if (age == null || age < 0) { markInvalid('building_age'); valid = false; }
   if (!floors || floors <= 0) { markInvalid('numfloors'); valid = false; }
@@ -681,8 +805,16 @@ function hideResults() {
 function renderResults(data) {
   _lastPrediction = { price: data.predicted_price, sqft: null };  // sqft filled below
 
+  // Fly to pin
+  const lat = parseFloat(latInput.value), lng = parseFloat(lonInput.value);
+  if (lat && lng) map.flyTo([lat, lng], 15, { duration: 1.2, easeLinearity: 0.4 });
+
   // ── Price card ────────────────────────────────────────────────────
   priceMain.textContent    = `$${data.predicted_price.toLocaleString()}`;
+  // Price reveal animation
+  priceMain.classList.remove('price-reveal');
+  void priceMain.offsetWidth;
+  priceMain.classList.add('price-reveal');
   priceRange.textContent   = `Range: ${fmt$(data.confidence_low)} – ${fmt$(data.confidence_high)}`;
   priceContext.textContent = `🏠 ${data.borough_name} · ${data.bldgclass_description}`;
 
@@ -793,6 +925,10 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// ── Sales bubble cluster layer (Zillow-style price bubbles) ──────────
+let _salesCluster = null;   // L.markerClusterGroup
+let _salesTimer   = null;   // debounce handle
+
 // ── Nearby sales markers (green circles on map) ───────────────────────
 let _nearbyMarkers = [];
 
@@ -803,36 +939,14 @@ async function fetchNearby(lat, lon, sqft) {
     if (!res.ok) return;
     const data = await res.json();
     renderNearby(data.nearby || []);
+    renderSalesBubbles(data.nearby || []);  // refresh colours with prediction context
   } catch (_) { /* silently skip if endpoint unavailable */ }
 }
 
 function renderNearby(sales) {
-  // Clear old markers
-  _nearbyMarkers.forEach(m => map.removeLayer(m));
-  _nearbyMarkers = [];
-
+  // Map markers are now handled by renderSalesBubbles (price bubbles)
+  // This function only updates the sidebar list
   if (!sales || sales.length === 0) return;
-
-  const nearbyIcon = L.divIcon({
-    html: '<div style="width:12px;height:12px;background:#059669;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.3)"></div>',
-    iconSize:  [12, 12],
-    iconAnchor: [6, 6],
-    className: '',
-  });
-
-  sales.forEach((s) => {
-    const m = L.marker([s.latitude, s.longitude], { icon: nearbyIcon })
-      .addTo(map)
-      .bindPopup(
-        `<div class="map-popup">
-          <strong>${fmt$(s.sale_price)}</strong>
-          ${s.bldgclass} · ${s.gross_square_feet.toLocaleString()} sq ft<br>
-          <small>${s.address || ''}</small>
-        </div>`,
-        { maxWidth: 200 }
-      );
-    _nearbyMarkers.push(m);
-  });
 
   const T = TR[currentLang];
   const nearbyCard    = document.getElementById('marketCard');
@@ -1126,6 +1240,7 @@ const TR = {
     tabNearby:      '📍 Nearby Sales',
     tabComps:       '🏛 Area Comps',
     trendHeader:    '📈 Price Trend (last 24 mo)',
+    bldgAdvLabel:   'Advanced: search all codes',
   },
   ar: {
     estimateBtn:    'تقدير السعر',
@@ -1181,6 +1296,7 @@ const TR = {
     tabNearby:      '📍 المبيعات القريبة',
     tabComps:       '🏛 مقارنات المنطقة',
     trendHeader:    '📈 اتجاه السعر (آخر 24 شهرًا)',
+    bldgAdvLabel:   'متقدم: البحث في جميع الرموز',
   },
 };
 
@@ -1222,6 +1338,8 @@ function setLang(lang) {
   document.getElementById('lblFloors').textContent    = T.lblFloors;
   document.getElementById('lblUnits').textContent     = T.lblUnits;
   document.getElementById('advancedLabel').textContent = T.advancedLabel;
+  const bldgAdvLabelEl = document.getElementById('bldgAdvLabel');
+  if (bldgAdvLabelEl) bldgAdvLabelEl.textContent = T.bldgAdvLabel || 'Advanced: search all codes';
   document.getElementById('lblLand').textContent      = T.lblLand;
   document.getElementById('lblRenov').textContent     = T.lblRenov;
   document.getElementById('lblYear').textContent      = T.lblYear;
