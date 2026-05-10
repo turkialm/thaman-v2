@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>THAMAN — NYC Property Valuation</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <link rel="stylesheet" href="/ui/style.css" />
 </head>
 <body>
@@ -52,6 +54,7 @@
         <span class="legend-label" id="legendLabel"></span>
       </div>
       <div id="map"></div>
+      <button id="geolocBtn" class="map-ctrl-btn" title="Zoom to my location">📍 Me</button>
       <div class="map-hint" id="mapHint">📍 <span id="mapHintText">Click anywhere in New York City to place a pin</span></div>
     </section>
 
@@ -90,7 +93,7 @@
           <input type="hidden" id="longitude" name="longitude" />
 
           <div class="field-row">
-            <div class="field">
+            <div class="field field-full">
               <label for="borough" id="lblBorough">Borough</label>
               <select id="borough" name="borough" required>
                 <option value="">Select…</option>
@@ -101,14 +104,29 @@
                 <option value="5">Staten Island</option>
               </select>
             </div>
-            <div class="field">
-              <label for="bldgSearchInput" id="lblBldgType">Building Type</label>
+          </div>
+
+          <div class="field field-full" style="margin-bottom:12px">
+            <label id="lblBldgType">Building Type</label>
+            <div class="bldgtype-grid" id="bldgTypeGrid" role="group" aria-label="Building type">
+              <button type="button" class="bldgtype-card" data-code="A1"><span class="bti">🏠</span><span class="btl">Single Family</span></button>
+              <button type="button" class="bldgtype-card" data-code="B2"><span class="bti">🏡</span><span class="btl">2-Family</span></button>
+              <button type="button" class="bldgtype-card" data-code="C0"><span class="bti">🏘</span><span class="btl">3-Family</span></button>
+              <button type="button" class="bldgtype-card" data-code="A5"><span class="bti">🏙</span><span class="btl">Row House</span></button>
+              <button type="button" class="bldgtype-card" data-code="R1"><span class="bti">🏢</span><span class="btl">Condo</span></button>
+              <button type="button" class="bldgtype-card" data-code="D4"><span class="bti">🏗</span><span class="btl">Elevator Apt</span></button>
+              <button type="button" class="bldgtype-card" data-code="C1"><span class="bti">🏠</span><span class="btl">Walk-up Apt</span></button>
+              <button type="button" class="bldgtype-card" data-code="C6"><span class="bti">🤝</span><span class="btl">Co-op</span></button>
+              <button type="button" class="bldgtype-card" data-code="S1"><span class="bti">🏪</span><span class="btl">Mixed Use</span></button>
+            </div>
+            <button type="button" class="adv-toggle" id="bldgAdvToggle">▶ <span id="bldgAdvLabel">Advanced: search all codes</span></button>
+            <div class="adv-panel" id="bldgAdvPanel">
               <div class="bldg-search-wrap" id="bldgSearchWrap">
                 <input type="text" id="bldgSearchInput" placeholder="Type code or name, e.g. A1, D4…" autocomplete="off" />
-                <input type="hidden" id="bldgclass" name="bldgclass" />
                 <div class="bldg-dropdown" id="bldgDropdown"></div>
               </div>
             </div>
+            <input type="hidden" id="bldgclass" name="bldgclass" />
           </div>
 
           <div class="field-row">
@@ -301,6 +319,7 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script src="/ui/app.js"></script>
 </body>

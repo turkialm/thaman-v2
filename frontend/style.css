@@ -224,7 +224,13 @@ html, body {
   padding: 14px 16px;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--gray-200);
+  transition: box-shadow .2s, transform .2s;
 }
+.card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,.11), 0 2px 6px rgba(0,0,0,.06);
+  transform: translateY(-2px);
+}
+#formCard:hover { transform: none; }
 
 .card-title {
   font-size: .9rem;
@@ -384,7 +390,7 @@ select optgroup { color: var(--gray-500); font-style: normal; }
 .btn-predict {
   width: 100%;
   padding: 11px;
-  background: var(--blue);
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
   color: var(--white);
   border: none;
   border-radius: 8px;
@@ -401,9 +407,9 @@ select optgroup { color: var(--gray-500); font-style: normal; }
 }
 
 .btn-predict:hover:not(:disabled) {
-  background: var(--blue-dark);
-  box-shadow: 0 4px 14px rgba(37,99,235,.35);
-  transform: translateY(-1px);
+  background: linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%);
+  box-shadow: 0 6px 20px rgba(37,99,235,.4);
+  transform: translateY(-2px);
 }
 
 .btn-predict:active:not(:disabled) { transform: translateY(0); }
@@ -645,7 +651,6 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   font-size: 28px;
   line-height: 1;
   text-shadow: 0 2px 6px rgba(0,0,0,.3);
-  filter: drop-shadow(0 2px 4px rgba(37,99,235,.5));
 }
 
 /* ── Borough map labels ──────────────────────────────────────────────── */
@@ -1039,6 +1044,86 @@ select optgroup { color: var(--gray-500); font-style: normal; }
 [dir="rtl"] .shap-row { flex-direction: row-reverse; }
 [dir="rtl"] .shap-impact { text-align: left; }
 [dir="rtl"] .conf-label { flex-direction: row-reverse; }
+[dir="rtl"] .bldgtype-grid { direction: rtl; }
+[dir="rtl"] .map-ctrl-btn  { right: auto; left: 10px; }
+
+/* ── Sale price bubble markers ───────────────────────────────────────── */
+.sale-bubble {
+  padding: 3px 8px; border-radius: 12px;
+  font-size: .67rem; font-weight: 700; color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.28); border: 1.5px solid rgba(255,255,255,.5);
+  white-space: nowrap; cursor: pointer; font-feature-settings: "tnum"; line-height: 1;
+  transition: transform .1s;
+}
+.sale-bubble:hover { transform: scale(1.12); }
+.cluster-bubble {
+  width: 36px; height: 36px; border-radius: 50%; background: #4b6bfb;
+  border: 2.5px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.22); color: #fff;
+  font-size: .75rem; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.sale-popup strong { font-size: .95rem; color: var(--gray-900); display: block; }
+.sale-popup-addr { font-size: .76rem; color: var(--gray-700); margin-top: 3px; }
+.sale-popup-meta { font-size: .7rem; color: var(--gray-500); margin-top: 2px; }
+.sale-popup-date { font-size: .65rem; color: var(--gray-400); margin-top: 2px; }
+
+/* ── Building type card grid ─────────────────────────────────────────── */
+.field-full { grid-column: 1 / -1; width: 100%; }
+.bldgtype-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px;
+}
+.bldgtype-grid.invalid .bldgtype-card:not(.selected) {
+  border-color: var(--red); box-shadow: 0 0 0 2px rgba(220,38,38,.12);
+}
+.bldgtype-card {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px;
+  border: 1.5px solid var(--gray-200); border-radius: 8px; background: var(--white); cursor: pointer;
+  transition: border-color .15s, background .15s, transform .1s; font-family: var(--font);
+}
+.bldgtype-card:hover { border-color: var(--blue); background: #eff6ff; transform: translateY(-1px); }
+.bldgtype-card.selected { border-color: var(--blue); background: var(--blue); box-shadow: 0 2px 8px rgba(37,99,235,.3); }
+.bldgtype-card.selected .btl { color: #fff; }
+.bti { font-size: 1.35rem; line-height: 1; pointer-events: none; }
+.btl {
+  font-size: .63rem; font-weight: 600; color: var(--gray-700);
+  text-align: center; text-transform: uppercase; line-height: 1.2; pointer-events: none;
+}
+.adv-panel { display: none; margin-top: 4px; }
+.adv-panel.open { display: block; }
+.adv-toggle {
+  font-size: .72rem; color: var(--gray-400); background: none; border: none;
+  cursor: pointer; padding: 2px 0; margin-bottom: 2px; text-align: left;
+}
+.adv-toggle:hover { color: var(--blue); }
+
+/* ── Pin drop + pulse animations ────────────────────────────────────── */
+@keyframes pinDrop {
+  0%   { opacity: 0; transform: translateY(-24px) scale(.7); }
+  60%  { transform: translateY(4px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes pinPulse {
+  0%   { filter: drop-shadow(0 2px 4px rgba(37,99,235,.5)); }
+  50%  { filter: drop-shadow(0 0 14px rgba(37,99,235,.9)); }
+  100% { filter: drop-shadow(0 2px 4px rgba(37,99,235,.5)); }
+}
+.pin-drop { animation: pinDrop .4s cubic-bezier(.34,1.56,.64,1) forwards; }
+.pin-icon  { animation: pinPulse 1.4s ease-in-out .4s 3; }
+
+/* ── Price reveal animation ──────────────────────────────────────────── */
+@keyframes priceReveal {
+  from { opacity: 0; transform: translateY(8px) scale(.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.price-reveal { animation: priceReveal .4s cubic-bezier(.34,1.2,.64,1) both; }
+
+/* ── Geolocation button ──────────────────────────────────────────────── */
+.map-ctrl-btn {
+  position: absolute; bottom: 80px; right: 10px; z-index: 1000;
+  background: var(--white); border: 1.5px solid var(--gray-200); border-radius: 8px;
+  padding: 6px 11px; font-size: .74rem; font-weight: 600; color: var(--gray-700);
+  cursor: pointer; box-shadow: var(--shadow-sm); transition: background .15s, box-shadow .15s;
+}
+.map-ctrl-btn:hover { background: #eff6ff; border-color: var(--blue); color: var(--blue-dark); box-shadow: var(--shadow-md); }
 
 /* ── Responsive tweaks ───────────────────────────────────────────────── */
 @media (max-width: 768px) {
