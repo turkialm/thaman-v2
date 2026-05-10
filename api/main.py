@@ -20,14 +20,19 @@ Then open: http://localhost:8000/docs
 
 import sys
 import os
+import json
+import time
+import asyncio
 import datetime
 
 import numpy as np
-import pandas as pd
+import polars as pl
+import httpx as _httpx
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse, FileResponse
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import JSONResponse, RedirectResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 # ── Path setup ────────────────────────────────────────────────────────
@@ -45,8 +50,13 @@ from api.models import (
 # ── Global state ──────────────────────────────────────────────────────
 _scorer:      ThamanScorer  | None = None
 _spatial:     SpatialLookup | None = None
-_nearby_df                         = None   # pd.DataFrame — runtime sales lookup
+_nearby_df                         = None   # pl.DataFrame — runtime sales lookup
 _nearby_tree                       = None   # scipy cKDTree for nearby queries
+_nta_geojson_cache: str | None     = None   # pre-built NTA choropleth GeoJSON
+
+# ── Comps cache (zip_code → (result_dict, unix_timestamp)) ────────────
+_comps_cache: dict[str, tuple[dict, float]] = {}
+_COMPS_TTL   = 86_400   # 24 h
 
 _NEARBY_COLS = [
     "latitude", "longitude", "sale_price", "address",
@@ -54,10 +64,55 @@ _NEARBY_COLS = [
 ]
 
 
+def _build_nta_geojson() -> str:
+    """Build NTA boundary GeoJSON enriched with per-NTA statistics from features CSV."""
+    geojson_path = os.path.join(BASE, "data", "raw", "nta_boundaries.geojson")
+    if not os.path.exists(geojson_path):
+        return ""
+
+    with open(geojson_path, "r") as f:
+        geojson = json.load(f)
+
+    # Aggregate per-NTA stats from features files
+    stats: dict[str, dict] = {}
+    for csv_path, extra_cols in [
+        (os.path.join(BASE, "data", "processed", "features.csv"),
+         ["median_income_nta", "crime_rate_nta", "noise_density_nta",
+          "livability_complaint_rate", "price_appreciation"]),
+        (os.path.join(BASE, "data", "processed", "features_v3.csv"),
+         ["tree_count_200m", "pm25_mean"]),
+    ]:
+        if not os.path.exists(csv_path):
+            continue
+        cols_needed = ["ntacode"] + [c for c in extra_cols]
+        try:
+            df = pl.read_csv(csv_path, columns=[c for c in cols_needed
+                             if c in pl.read_csv(csv_path, n_rows=0).columns])
+            for col in [c for c in extra_cols if c in df.columns]:
+                agg = (df.group_by("ntacode")
+                         .agg(pl.col(col).cast(pl.Float64, strict=False).median().alias(col)))
+                for row in agg.iter_rows(named=True):
+                    code = row["ntacode"]
+                    if code not in stats:
+                        stats[code] = {}
+                    if row[col] is not None:
+                        stats[code][col] = round(float(row[col]), 4)
+        except Exception:
+            pass
+
+    # Merge stats into GeoJSON feature properties
+    for feat in geojson.get("features", []):
+        code = feat.get("properties", {}).get("ntacode", "")
+        if code in stats:
+            feat["properties"].update(stats[code])
+
+    return json.dumps(geojson)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load model + spatial data once at startup."""
-    global _scorer, _spatial, _nearby_df, _nearby_tree
+    global _scorer, _spatial, _nearby_df, _nearby_tree, _nta_geojson_cache
     print("=" * 60)
     print("THAMAN API — Starting up (v2)")
     print("=" * 60)
@@ -69,14 +124,25 @@ async def lifespan(app: FastAPI):
         from scipy.spatial import cKDTree as _KDTree
         _nearby_path = os.path.join(BASE, "data", "processed", "features.csv")
         available    = [c for c in _NEARBY_COLS
-                        if c in pd.read_csv(_nearby_path, nrows=0).columns]
-        df = pd.read_csv(_nearby_path, usecols=available)
-        df = df.dropna(subset=["latitude", "longitude", "sale_price"])
-        _nearby_df   = df.reset_index(drop=True)
-        _nearby_tree = _KDTree(_nearby_df[["latitude", "longitude"]].values)
+                        if c in pl.read_csv(_nearby_path, n_rows=0).columns]
+        _nearby_df   = (
+            pl.read_csv(_nearby_path, columns=available)
+            .drop_nulls(subset=["latitude", "longitude", "sale_price"])
+        )
+        _nearby_tree = _KDTree(_nearby_df.select(["latitude", "longitude"]).to_numpy())
         print(f"  Nearby index: {len(_nearby_df):,} sales loaded")
     except Exception as e:
         print(f"  [nearby] Could not load nearby index: {e}")
+
+    # Build NTA choropleth GeoJSON cache
+    try:
+        _nta_geojson_cache = _build_nta_geojson()
+        if _nta_geojson_cache:
+            print(f"  NTA layer: GeoJSON built ({len(_nta_geojson_cache)//1024} KB)")
+        else:
+            print("  NTA layer: nta_boundaries.geojson not found — /layers/nta unavailable")
+    except Exception as e:
+        print(f"  NTA layer: build failed — {e}")
 
     print("=" * 60)
     print("THAMAN API — Ready at http://localhost:8000")
@@ -92,13 +158,14 @@ app = FastAPI(
     description=(
         "AI-powered NYC property price estimator. "
         "Combines structural attributes + Quality-of-Life indicators "
-        "using GIS spatial lookups + XGBoost+LightGBM+CatBoost Stack (R²=0.651, MedAPE=20.29%, "
-        "71 features, spatial CV validated)."
+        "using GIS spatial lookups + XGBoost+LightGBM+CatBoost Stack (R²=0.651, MedAPE=20.80%, "
+        "81 features, spatial CV validated, luxury sub-model for Manhattan $3M+)."
     ),
-    version="2.1.0",
+    version="4.0.0",
     lifespan=lifespan,
 )
 
+app.add_middleware(GZipMiddleware, minimum_size=1_000)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -269,26 +336,21 @@ def _get_shap_drivers(feat_dict: dict) -> list[FeatureDriver]:
     for k in _scorer.feature_names:
         val = feat_dict.get(k, 0)
         if k in acris_cols and (val is None or (isinstance(val, float) and np.isnan(val))):
-            row_dict[k] = np.nan          # scorer will fill with training median
+            row_dict[k] = None          # scorer will fill with training median
         elif val is None:
-            row_dict[k] = np.nan
+            row_dict[k] = None
         else:
             row_dict[k] = val
 
-    df_row = pd.DataFrame([row_dict])
+    df_row = pl.from_dicts([row_dict])
 
     try:
         shap_df   = _scorer.explain(df_row)
-        shap_vals = shap_df.iloc[0]
-        top_feats = (
-            shap_vals.abs()
-            .sort_values(ascending=False)
-            .head(10)
-            .index.tolist()
-        )
+        row_vals  = {col: float(shap_df[col][0]) for col in shap_df.columns}
+        top_feats = sorted(row_vals, key=lambda k: abs(row_vals[k]), reverse=True)[:10]
         drivers = []
         for fname in top_feats:
-            impact  = float(shap_vals[fname])
+            impact  = row_vals[fname]
             raw_val = feat_dict.get(fname, 0)
 
             if raw_val is None or (isinstance(raw_val, float) and np.isnan(raw_val)):
@@ -459,7 +521,7 @@ def predict(req: PredictRequest):
         "predicted_price":    result["predicted_price"],
         "confidence_low":     result["confidence_low"],
         "confidence_high":    result["confidence_high"],
-        "confidence_note":    "±20.29% MedAPE confidence interval",
+        "confidence_note":    "±20.80% MedAPE confidence interval",
         "model":              result["model"],
         "r2_test":            result["r2_test"],
         "medape_pct":         result["medape_test_pct"],
@@ -503,7 +565,7 @@ def predict_batch(requests: list[PredictRequest]):
 
 
 @app.get("/nearby", tags=["Reference"])
-def nearby_sales(lat: float, lon: float, radius_m: int = 800, limit: int = 5):
+def nearby_sales(lat: float, lon: float, radius_m: int = 800, limit: int = 8):
     """
     Return up to `limit` recent property sales within `radius_m` metres of (lat, lon).
     Falls back to the nearest `limit` sales if none found within radius.
@@ -525,25 +587,172 @@ def nearby_sales(lat: float, lon: float, radius_m: int = 800, limit: int = 5):
         _, idxs = _nearby_tree.query([lat, lon], k=k)
         idxs = idxs.tolist() if hasattr(idxs, 'tolist') else list(idxs)
 
-    subset = _nearby_df.iloc[idxs].copy()
-    subset["_dist_deg"] = (
-        (subset["latitude"] - lat) ** 2 + (subset["longitude"] - lon) ** 2
-    ) ** 0.5
-    subset["distance_m"] = (subset["_dist_deg"] * 111_000).round().astype(int)
-    subset = subset.sort_values("_dist_deg").head(limit)
+    subset = (
+        _nearby_df[idxs]
+        .with_columns(
+            (((pl.col("latitude") - lat) ** 2 + (pl.col("longitude") - lon) ** 2) ** 0.5)
+            .alias("_dist_deg")
+        )
+        .with_columns(
+            (pl.col("_dist_deg") * 111_000).round(0).cast(pl.Int64).alias("distance_m")
+        )
+        .sort("_dist_deg")
+        .head(limit)
+    )
 
     nearby = []
-    for _, row in subset.iterrows():
+    for row in subset.iter_rows(named=True):
         nearby.append({
-            "address":          str(row.get("address", ""))[:80],
+            "address":          str(row.get("address") or "")[:80],
             "sale_price":       int(row["sale_price"]),
-            "bldgclass":        str(row.get("bldgclass", "")),
-            "gross_square_feet":int(row.get("gross_square_feet", 0)),
-            "building_age":     int(row.get("building_age", 0)),
-            "sale_date":        str(row.get("sale_date", ""))[:10],
+            "bldgclass":        str(row.get("bldgclass") or ""),
+            "gross_square_feet":int(row.get("gross_square_feet") or 0),
+            "building_age":     int(row.get("building_age") or 0),
+            "sale_date":        str(row.get("sale_date") or "")[:10],
             "distance_m":       int(row["distance_m"]),
             "latitude":         float(row["latitude"]),
             "longitude":        float(row["longitude"]),
         })
 
     return {"count": len(nearby), "nearby": nearby}
+
+
+@app.get("/market/comps", tags=["Reference"])
+async def market_comps(lat: float, lon: float):
+    """
+    Fetch recent comparable sales from NYC DOF (official records) for the
+    zip code nearest the given coordinates.
+    - Nominatim + DOF calls run concurrently via asyncio.gather
+    - Results cached 24 h per zip code (in-process dict)
+    """
+    import statistics
+
+    if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+        raise HTTPException(status_code=422, detail="Invalid coordinates.")
+
+    # ── Step 1: reverse-geocode (async) ──────────────────────────────
+    zip_code = ""
+    try:
+        async with _httpx.AsyncClient() as client:
+            geo_r = await client.get(
+                "https://nominatim.openstreetmap.org/reverse",
+                params={"lat": lat, "lon": lon, "format": "json"},
+                headers={"User-Agent": "THAMAN-BSc-PropTech/1.0"},
+                timeout=6,
+            )
+        zip_code = geo_r.json().get("address", {}).get("postcode", "")
+    except Exception:
+        pass
+
+    if not zip_code:
+        return {"available": False, "reason": "Could not determine zip code for this location."}
+
+    # ── Step 2: cache hit? ────────────────────────────────────────────
+    cached = _comps_cache.get(zip_code)
+    if cached and (time.time() - cached[1]) < _COMPS_TTL:
+        return cached[0]
+
+    # ── Step 3: query NYC DOF — comps (18 mo) + trend (24 mo) in parallel ──
+    cutoff_comps = (datetime.datetime.now() - datetime.timedelta(days=548)).strftime("%Y-%m-%d")
+    cutoff_trend = (datetime.datetime.now() - datetime.timedelta(days=730)).strftime("%Y-%m-%d")
+    rows: list = []
+    trend_rows: list = []
+    try:
+        async with _httpx.AsyncClient() as client:
+            comps_task = client.get(
+                "https://data.cityofnewyork.us/resource/usep-8jbt.json",
+                params={
+                    "$where": (f"zip_code='{zip_code}' AND sale_date >= '{cutoff_comps}'"
+                               " AND sale_price > '100000'"),
+                    "$order": "sale_date DESC",
+                    "$limit": 20,
+                    "$select": ("address,zip_code,neighborhood,sale_price,sale_date,"
+                                "building_class_at_present,gross_square_feet,"
+                                "year_built,residential_units"),
+                },
+                headers={"User-Agent": "THAMAN-BSc-PropTech/1.0"},
+                timeout=8,
+            )
+            trend_task = client.get(
+                "https://data.cityofnewyork.us/resource/usep-8jbt.json",
+                params={
+                    "$where": (f"zip_code='{zip_code}' AND sale_date >= '{cutoff_trend}'"
+                               " AND sale_price > '100000' AND gross_square_feet > '0'"),
+                    "$order": "sale_date ASC",
+                    "$limit": 300,
+                    "$select": "sale_price,sale_date,gross_square_feet",
+                },
+                headers={"User-Agent": "THAMAN-BSc-PropTech/1.0"},
+                timeout=8,
+            )
+            comps_r, trend_r = await asyncio.gather(comps_task, trend_task, return_exceptions=True)
+        rows       = comps_r.json() if not isinstance(comps_r, Exception) and comps_r.is_success else []
+        trend_rows = trend_r.json() if not isinstance(trend_r, Exception) and trend_r.is_success else []
+    except Exception:
+        pass
+
+    if not rows:
+        return {"available": False, "reason": f"No recent sales found in zip code {zip_code}."}
+
+    # ── Step 4: build comps + summary ────────────────────────────────
+    comps: list[dict] = []
+    prices, psf_list = [], []
+    for row in rows[:5]:
+        price = int(row.get("sale_price") or 0)
+        sqft  = int(row.get("gross_square_feet") or 0)
+        psf   = round(price / sqft, 0) if sqft > 0 else None
+        prices.append(price)
+        if psf:
+            psf_list.append(psf)
+        comps.append({
+            "address":      row.get("address", ""),
+            "neighborhood": row.get("neighborhood", ""),
+            "sale_price":   price,
+            "sale_date":    str(row.get("sale_date", ""))[:10],
+            "bldgclass":    row.get("building_class_at_present", ""),
+            "sqft":         sqft or None,
+            "psf":          psf,
+            "year_built":   row.get("year_built"),
+        })
+
+    # ── Step 4b: build monthly price trend ───────────────────────────
+    monthly: dict[str, list] = {}
+    for row in trend_rows:
+        d = str(row.get("sale_date", ""))[:7]   # "YYYY-MM"
+        if not d or len(d) < 7:
+            continue
+        price = int(row.get("sale_price") or 0)
+        if price > 0:
+            monthly.setdefault(d, []).append(price)
+    trend = [
+        {"month": m, "count": len(ps), "median": int(statistics.median(ps))}
+        for m, ps in sorted(monthly.items())
+        if len(ps) >= 2
+    ]
+
+    result = {
+        "available": True,
+        "summary": {
+            "zip_code":     zip_code,
+            "comp_count":   len(comps),
+            "median_price": int(statistics.median(prices)) if prices else None,
+            "median_psf":   int(statistics.median(psf_list)) if psf_list else None,
+            "source":       "NYC Dept of Finance — Official Property Sales Records",
+            "source_url":   "https://data.cityofnewyork.us/d/usep-8jbt",
+            "period":       f"Last 18 months in zip {zip_code}",
+        },
+        "comps": comps,
+        "trend": trend,
+    }
+
+    # ── Step 5: cache and return ──────────────────────────────────────
+    _comps_cache[zip_code] = (result, time.time())
+    return result
+
+
+@app.get("/layers/nta", tags=["Reference"])
+def nta_layer():
+    """Return NTA boundary GeoJSON enriched with per-NTA statistics for map choropleth layers."""
+    if not _nta_geojson_cache:
+        raise HTTPException(status_code=503, detail="NTA layer not available.")
+    return Response(content=_nta_geojson_cache, media_type="application/json")

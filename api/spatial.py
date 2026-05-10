@@ -18,8 +18,9 @@ Data loaded (all from local raw/ files):
 
 import os
 import json
+import math
 import numpy as np
-import pandas as pd
+import polars as pl
 import geopandas as gpd
 from scipy.spatial import cKDTree
 from sklearn.neighbors import BallTree
@@ -109,6 +110,16 @@ FEATURE_DESCRIPTIONS = {
 }
 
 
+OVERTURE_BUCKETS = {
+    "cafe":       {"cafe", "coffee_shop"},
+    "restaurant": {"restaurant", "casual_eatery", "fast_food_restaurant", "pizzaria"},
+    "gym":        {"gym", "fitness_center", "yoga_studio", "martial_arts_club"},
+    "grocery":    {"grocery_store", "supermarket", "convenience_store"},
+    "bar":        {"bar", "cocktail_bar", "night_club"},
+    "pharmacy":   {"pharmacy", "drug_store"},
+}
+
+
 class SpatialLookup:
     """
     Load all spatial reference data once at startup; serve fast lookups at request time.
@@ -122,89 +133,186 @@ class SpatialLookup:
         self._load_schools()
         self._load_parks()
         self._load_airbnb()
+        self._load_waterfront()
+        self._load_bike_lanes()
+        self._load_poi_buckets()
         self._load_mortgage_rate()
         print("[SpatialLookup] All data loaded. Ready.")
 
     # ── Loaders ────────────────────────────────────────────────────────
 
     def _load_nta_stats(self):
-        """Precompute per-NTA medians from features.csv + load NTA boundaries."""
-        features = pd.read_csv(os.path.join(PROC, "features.csv"))
+        """Precompute per-NTA medians from features_v4.csv + load NTA boundaries."""
+        feat_path = os.path.join(PROC, "features_v4.csv")
+        if not os.path.exists(feat_path):
+            feat_path = os.path.join(PROC, "features.csv")
+        features = pl.read_csv(feat_path)
 
         NTA_STAT_COLS = [
             "crime_rate_nta", "noise_density_nta", "livability_complaint_rate",
             "population_2020", "median_income_nta", "borough_income_deviation",
             "school_district", "district_avg_score", "district_school_count",
             "poi_count_500m", "dist_hospital_m", "dist_waterfront_m", "dist_bike_lane_m",
+            "poi_cafe_500m", "poi_restaurant_500m", "poi_gym_500m",
+            "poi_grocery_500m", "poi_bar_500m", "poi_pharmacy_500m",
             "builtfar", "residfar", "commfar", "facilfar", "maxallwfar", "far_utilization",
         ]
         available = [c for c in NTA_STAT_COLS if c in features.columns]
 
-        nta_stats = features.groupby("ntacode")[available].median().reset_index()
-        self._nta_stats      = nta_stats.set_index("ntacode").to_dict("index")
-        self._global_medians = {c: float(features[c].median()) for c in available}
+        nta_stats = features.group_by("ntacode").agg(
+            [pl.col(c).median() for c in available]
+        )
+        self._nta_stats = {
+            row["ntacode"]: {k: v for k, v in row.items() if k != "ntacode"}
+            for row in nta_stats.iter_rows(named=True)
+        }
+        self._global_medians = {c: float(features[c].median() or 0.0) for c in available}
 
         # Borough-level income for borough_income_deviation fallback
-        self._borough_median_income = features.groupby("borough")["median_income_nta"].median().to_dict()
+        self._borough_median_income = {
+            row["borough"]: row["median_income_nta"]
+            for row in features.group_by("borough")
+            .agg(pl.col("median_income_nta").median())
+            .iter_rows(named=True)
+        }
 
         # NTA GeoDataFrame for point-in-polygon
         self._nta_gdf = gpd.read_file(os.path.join(RAW, "nta_boundaries.geojson"))
         print(f"  NTA stats: {len(self._nta_stats)} NTAs | global medians computed")
 
     def _load_subway(self):
-        subway = pd.read_csv(os.path.join(RAW, "MTA_Subway_Stations_20260308.csv"))
-        subway = subway.dropna(subset=["GTFS Latitude", "GTFS Longitude"])
-        subway["GTFS Latitude"]  = pd.to_numeric(subway["GTFS Latitude"],  errors="coerce")
-        subway["GTFS Longitude"] = pd.to_numeric(subway["GTFS Longitude"], errors="coerce")
-        subway = subway.dropna(subset=["GTFS Latitude", "GTFS Longitude"])
+        subway = (
+            pl.read_csv(os.path.join(RAW, "MTA_Subway_Stations_20260308.csv"))
+            .with_columns([
+                pl.col("GTFS Latitude").cast(pl.Float64, strict=False),
+                pl.col("GTFS Longitude").cast(pl.Float64, strict=False),
+            ])
+            .drop_nulls(subset=["GTFS Latitude", "GTFS Longitude"])
+        )
 
-        all_coords = subway[["GTFS Latitude", "GTFS Longitude"]].values
+        all_coords = subway.select(["GTFS Latitude", "GTFS Longitude"]).to_numpy()
         self._subway_tree = cKDTree(all_coords)
 
         # Express: any station whose Daytime Routes overlap with EXPRESS_ROUTES
         def is_express(routes_str):
-            if pd.isna(routes_str):
+            if routes_str is None:
                 return False
             return bool(set(str(routes_str).split()) & EXPRESS_ROUTES)
 
-        express_mask    = subway["Daytime Routes"].apply(is_express)
-        express_coords  = subway.loc[express_mask, ["GTFS Latitude", "GTFS Longitude"]].values
+        routes       = subway["Daytime Routes"].to_list()
+        express_mask = pl.Series([is_express(r) for r in routes])
+        express_coords = (
+            subway.filter(express_mask)
+            .select(["GTFS Latitude", "GTFS Longitude"])
+            .to_numpy()
+        )
         self._express_tree = cKDTree(express_coords) if len(express_coords) > 0 else self._subway_tree
         print(f"  Subway: {len(all_coords)} stations | express: {len(express_coords)}")
 
     def _load_bus(self):
-        bus = pd.read_csv(os.path.join(RAW, "mta_bus_stops.csv"))
-        bus = bus.dropna(subset=["latitude", "longitude"])
-        bus["latitude"]  = pd.to_numeric(bus["latitude"],  errors="coerce")
-        bus["longitude"] = pd.to_numeric(bus["longitude"], errors="coerce")
-        bus = bus.dropna(subset=["latitude", "longitude"])
-        self._bus_tree = cKDTree(bus[["latitude", "longitude"]].values)
+        bus = (
+            pl.read_csv(os.path.join(RAW, "mta_bus_stops.csv"))
+            .with_columns([
+                pl.col("latitude").cast(pl.Float64, strict=False),
+                pl.col("longitude").cast(pl.Float64, strict=False),
+            ])
+            .drop_nulls(subset=["latitude", "longitude"])
+        )
+        self._bus_tree = cKDTree(bus.select(["latitude", "longitude"]).to_numpy())
         print(f"  Bus stops: {len(bus)}")
 
     def _load_schools(self):
-        hs   = pd.read_csv(os.path.join(RAW, "schools.csv")).dropna(subset=["latitude", "longitude"])
-        elem = pd.read_csv(os.path.join(RAW, "elementary_schools.csv")).dropna(subset=["latitude", "longitude"])
-        self._hs_tree   = cKDTree(hs[["latitude",   "longitude"]].values)
-        self._elem_tree = cKDTree(elem[["latitude", "longitude"]].values)
+        hs   = pl.read_csv(os.path.join(RAW, "schools.csv")).drop_nulls(subset=["latitude", "longitude"])
+        elem = pl.read_csv(os.path.join(RAW, "elementary_schools.csv")).drop_nulls(subset=["latitude", "longitude"])
+        self._hs_tree   = cKDTree(hs.select(["latitude", "longitude"]).to_numpy())
+        self._elem_tree = cKDTree(elem.select(["latitude", "longitude"]).to_numpy())
         print(f"  Schools: {len(hs)} HS | {len(elem)} elementary")
 
     def _load_parks(self):
-        parks = pd.read_csv(os.path.join(RAW, "parks_with_coords.csv")).dropna(subset=["latitude", "longitude"])
-        self._park_tree = cKDTree(parks[["latitude", "longitude"]].values)
+        parks = pl.read_csv(os.path.join(RAW, "parks_with_coords.csv"), ignore_errors=True).drop_nulls(subset=["latitude", "longitude"])
+        self._park_tree = cKDTree(parks.select(["latitude", "longitude"]).to_numpy())
         print(f"  Parks: {len(parks)}")
 
     def _load_airbnb(self):
-        airbnb = pd.read_csv(os.path.join(RAW, "airbnb_listings.csv")).dropna(subset=["latitude", "longitude"])
-        airbnb["latitude"]  = pd.to_numeric(airbnb["latitude"],  errors="coerce")
-        airbnb["longitude"] = pd.to_numeric(airbnb["longitude"], errors="coerce")
-        airbnb = airbnb.dropna(subset=["latitude", "longitude"])
-        coords_rad = np.radians(airbnb[["latitude", "longitude"]].values)
+        airbnb = (
+            pl.read_csv(os.path.join(RAW, "airbnb_listings.csv"))
+            .with_columns([
+                pl.col("latitude").cast(pl.Float64, strict=False),
+                pl.col("longitude").cast(pl.Float64, strict=False),
+            ])
+            .drop_nulls(subset=["latitude", "longitude"])
+        )
+        coords_rad = np.radians(airbnb.select(["latitude", "longitude"]).to_numpy())
         self._airbnb_balltree = BallTree(coords_rad, metric="haversine")
         print(f"  Airbnb: {len(airbnb)} listings")
 
+    def _load_waterfront(self):
+        wf_path = os.path.join(RAW, "nyc_coastline_pts.npy")
+        if os.path.exists(wf_path):
+            pts = np.load(wf_path)
+            self._waterfront_tree = cKDTree(pts)
+            print(f"  Waterfront: {len(pts)} coastline points")
+        else:
+            self._waterfront_tree = None
+            print("  Waterfront: coastline file missing — will use NTA median fallback")
+
+    def _load_bike_lanes(self):
+        import json as _json
+        bike_path = os.path.join(RAW, "nyc_bike_lanes.geojson")
+        if os.path.exists(bike_path):
+            with open(bike_path) as f:
+                gj = _json.load(f)
+            pts = []
+            for feat in gj.get("features", []):
+                geom = feat.get("geometry") or {}
+                coords = geom.get("coordinates", [])
+                gtype  = geom.get("type", "")
+                if gtype == "LineString":
+                    for c in coords[::3]:
+                        pts.append((c[1], c[0]))
+                elif gtype == "MultiLineString":
+                    for line in coords:
+                        for c in line[::3]:
+                            pts.append((c[1], c[0]))
+            if pts:
+                self._bike_tree = cKDTree(np.array(pts, dtype=np.float64))
+                print(f"  Bike lanes: {len(pts)} sampled vertices")
+            else:
+                self._bike_tree = None
+                print("  Bike lanes: no features parsed — will use NTA median fallback")
+        else:
+            self._bike_tree = None
+            print("  Bike lanes: file missing — will use NTA median fallback")
+
+    def _load_poi_buckets(self):
+        import json as _json
+        op_path = os.path.join(RAW, "overture_places.geojson")
+        self._poi_balltrees: dict[str, BallTree | None] = {}
+        if not os.path.exists(op_path):
+            print("  POI buckets: overture_places.geojson missing — counts will be 0")
+            for bname in OVERTURE_BUCKETS:
+                self._poi_balltrees[bname] = None
+            return
+        with open(op_path) as f:
+            op = _json.load(f)
+        for bname, cats in OVERTURE_BUCKETS.items():
+            bpts = []
+            for feat in op["features"]:
+                bc = feat.get("properties", {}).get("basic_category", "")
+                if bc in cats:
+                    c = feat.get("geometry", {}).get("coordinates", [])
+                    if c and len(c) >= 2:
+                        bpts.append([c[1], c[0]])
+            if bpts:
+                arr = np.array(bpts, dtype=np.float64)
+                self._poi_balltrees[bname] = BallTree(np.radians(arr), metric="haversine")
+            else:
+                self._poi_balltrees[bname] = None
+            print(f"  POI {bname}: {len(bpts):,}")
+
     def _load_mortgage_rate(self):
-        mort = pd.read_csv(os.path.join(RAW, "mortgage_rates.csv"))
-        self._mortgage_rate = float(mort["mortgage_rate_30yr"].dropna().iloc[-1])
+        mort = pl.read_csv(os.path.join(RAW, "mortgage_rates.csv"))
+        self._mortgage_rate = float(mort["mortgage_rate_30yr"].drop_nulls()[-1])
         print(f"  Mortgage rate (latest): {self._mortgage_rate}%")
 
     # ── KD-tree helper ─────────────────────────────────────────────────
@@ -226,7 +334,7 @@ class SpatialLookup:
             )
             joined = gpd.sjoin(pt, self._nta_gdf[["ntacode", "geometry"]], how="left", predicate="within")
             ntacode = joined["ntacode"].iloc[0]
-            return ntacode if pd.notna(ntacode) else None
+            return ntacode if (ntacode is not None and not (isinstance(ntacode, float) and math.isnan(ntacode))) else None
         except Exception:
             return None
 
@@ -258,15 +366,37 @@ class SpatialLookup:
         )
         feats["airbnb_count_500m"] = int(cnt[0])
 
-        # ── NTA-level features ─────────────────────────────────────────
+        # ── Waterfront distance (real per-point) ───────────────────────
         ntacode  = self._nta_for_point(lat, lon)
         nta_data = self._nta_stats.get(ntacode, {}) if ntacode else {}
 
+        if self._waterfront_tree is not None:
+            feats["dist_waterfront_m"] = self._kdtree_dist_m(self._waterfront_tree, lat, lon)
+        else:
+            feats["dist_waterfront_m"] = nta_data.get("dist_waterfront_m", self._global_medians.get("dist_waterfront_m", 1414.0))
+
+        # ── Bike lane distance (real per-point) ────────────────────────
+        if self._bike_tree is not None:
+            feats["dist_bike_lane_m"] = self._kdtree_dist_m(self._bike_tree, lat, lon)
+        else:
+            feats["dist_bike_lane_m"] = nta_data.get("dist_bike_lane_m", self._global_medians.get("dist_bike_lane_m", 152.0))
+
+        # ── POI category counts within 500m (real per-point) ──────────
+        radius_rad_poi = 500.0 / 6_371_000.0
+        for bname, bt in self._poi_balltrees.items():
+            col = f"poi_{bname}_500m"
+            if bt is not None:
+                cnt = bt.query_radius(np.radians([[lat, lon]]), r=radius_rad_poi, count_only=True)
+                feats[col] = int(cnt[0])
+            else:
+                feats[col] = int(nta_data.get(col, self._global_medians.get(col, 0)))
+
+        # ── NTA-level features ─────────────────────────────────────────
         for col in [
             "crime_rate_nta", "noise_density_nta", "livability_complaint_rate",
             "population_2020", "median_income_nta", "borough_income_deviation",
             "school_district", "district_avg_score", "district_school_count",
-            "poi_count_500m", "dist_hospital_m", "dist_waterfront_m", "dist_bike_lane_m",
+            "poi_count_500m", "dist_hospital_m",
             "builtfar", "residfar", "commfar", "facilfar", "maxallwfar", "far_utilization",
         ]:
             feats[col] = nta_data.get(col, self._global_medians.get(col, 0.0))

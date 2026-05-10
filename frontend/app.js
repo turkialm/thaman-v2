@@ -18,6 +18,24 @@ const API_BASE = '';   // e.g. '' means same-origin; change to 'http://localhost
 // ── Language (declared early — used before i18n block) ────────────────
 let currentLang = localStorage.getItem('thamanLang') || 'en';
 
+// ── Last prediction (used to compare against nearby comps) ────────────
+let _lastPrediction = null;  // { price, sqft }
+
+// ── NTA choropleth layers ─────────────────────────────────────────────
+let _ntaGeoJSON    = null;   // raw GeoJSON loaded once
+let _activeLayer   = null;   // current Leaflet GeoJSON layer on map
+let _activeMetric  = 'none'; // which layer is showing
+
+// ── Layer metadata ────────────────────────────────────────────────────
+const LAYER_META = {
+  income:  { key: 'median_income_nta',       label: 'Median Income',   unit: '/yr',    palette: 'green',  fmt: v => `$${(v/1000).toFixed(0)}k` },
+  crime:   { key: 'crime_rate_nta',          label: 'Crime Rate',      unit: '/1k res',palette: 'red',    fmt: v => v.toFixed(1) },
+  noise:   { key: 'noise_density_nta',       label: 'Noise Level',     unit: '/1k res',palette: 'orange', fmt: v => v.toFixed(1) },
+  air:     { key: 'pm25_mean',               label: 'PM2.5 Air Quality',unit: 'µg/m³', palette: 'purple', fmt: v => v.toFixed(2) },
+  trees:   { key: 'tree_count_200m',         label: 'Tree Cover',      unit: 'trees/200m',palette:'green',fmt: v => `~${Math.round(v)}` },
+  hotness: { key: 'price_appreciation',      label: 'Market Hotness',  unit: '% gain', palette: 'blue',   fmt: v => `${v > 0 ? '+' : ''}${(v*100).toFixed(0)}%` },
+};
+
 // ── Map init ──────────────────────────────────────────────────────────
 const map = L.map('map', {
   center:      [40.7128, -74.0060],   // NYC
@@ -160,6 +178,97 @@ fetch('/ui/nyc_boundary.geojson')
        [40.917577, -73.700272], [40.917577, -74.25909]],
     ], { stroke:false, fillColor:'#ef4444', fillOpacity:0.25, interactive:false }).addTo(map);
   });
+
+// ── NTA choropleth layer system ───────────────────────────────────────
+fetch(`${API_BASE}/layers/nta`)
+  .then(r => r.ok ? r.json() : null)
+  .then(data => {
+    if (data) {
+      _ntaGeoJSON = data;
+      document.getElementById('layerBar').style.display = 'flex';
+    }
+  })
+  .catch(() => {});
+
+// Colour palettes: each is [light, dark] for interpolation
+const _PALETTES = {
+  green:  ['#d1fae5', '#065f46'],
+  red:    ['#fee2e2', '#991b1b'],
+  orange: ['#ffedd5', '#9a3412'],
+  purple: ['#ede9fe', '#4c1d95'],
+  blue:   ['#dbeafe', '#1e3a8a'],
+};
+
+function _hexToRgb(hex) {
+  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  return [r, g, b];
+}
+function _rgbToHex(r, g, b) {
+  return '#' + [r,g,b].map(v => Math.round(v).toString(16).padStart(2,'0')).join('');
+}
+function colorScale(val, min, max, palette) {
+  if (val === null || val === undefined || isNaN(val)) return '#e5e7eb';
+  const t = max === min ? 0.5 : Math.max(0, Math.min(1, (val - min) / (max - min)));
+  const [c0, c1] = (_PALETTES[palette] || _PALETTES.blue).map(_hexToRgb);
+  return _rgbToHex(c0[0] + t*(c1[0]-c0[0]), c0[1] + t*(c1[1]-c0[1]), c0[2] + t*(c1[2]-c0[2]));
+}
+
+function showLayer(metricId) {
+  if (_activeLayer) { map.removeLayer(_activeLayer); _activeLayer = null; }
+  _activeMetric = metricId;
+
+  const legend = document.getElementById('layerLegend');
+  if (metricId === 'none' || !_ntaGeoJSON) { legend.style.display = 'none'; return; }
+
+  const meta   = LAYER_META[metricId];
+  if (!meta) return;
+
+  const values = _ntaGeoJSON.features
+    .map(f => f.properties[meta.key])
+    .filter(v => v !== null && v !== undefined && !isNaN(v));
+  if (!values.length) return;
+
+  const min = Math.min(...values), max = Math.max(...values);
+
+  _activeLayer = L.geoJSON(_ntaGeoJSON, {
+    style: feat => {
+      const v = feat.properties[meta.key];
+      return {
+        fillColor:   colorScale(v, min, max, meta.palette),
+        fillOpacity: 0.60,
+        weight:      0.8,
+        color:       '#ffffff',
+        opacity:     0.5,
+      };
+    },
+    onEachFeature: (feat, layer) => {
+      const v = feat.properties[meta.key];
+      const fmtVal = (v !== null && v !== undefined) ? meta.fmt(v) : 'N/A';
+      layer.bindTooltip(
+        `<b>${feat.properties.ntaname || ''}</b><br>${meta.label}: ${fmtVal} ${meta.unit}`,
+        { sticky: true, opacity: 0.92 }
+      );
+    },
+  }).addTo(map);
+
+  // Update legend
+  const [c0, c1] = (_PALETTES[meta.palette] || _PALETTES.blue);
+  document.getElementById('legendMin').textContent     = meta.fmt(min);
+  document.getElementById('legendMax').textContent     = meta.fmt(max);
+  document.getElementById('legendLabel').textContent   = meta.label;
+  document.getElementById('legendGradient').style.background =
+    `linear-gradient(to right, ${c0}, ${c1})`;
+  legend.style.display = 'flex';
+}
+
+// Layer bar click handler
+document.getElementById('layerBar').addEventListener('click', e => {
+  const btn = e.target.closest('.layer-btn');
+  if (!btn) return;
+  document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showLayer(btn.dataset.layer);
+});
 
 // ── Pin marker (emoji-based, no image dependency) ──────────────────────
 let lastValidPos = null;   // last accepted pin position (for snap-back on drag)
@@ -540,7 +649,7 @@ predictForm.addEventListener('submit', async (e) => {
 
     const data = await res.json();
     renderResults(data);
-    fetchNearby(lat, lon);
+    fetchNearby(lat, lon, sqft);
 
   } catch (err) {
     console.error(err);
@@ -564,11 +673,14 @@ function hideResults() {
   resultCard.style.display  = 'none';
   shapCard.style.display    = 'none';
   spatialCard.style.display = 'none';
-  document.getElementById('nearbyCard').style.display = 'none';
+  document.getElementById('marketCard').style.display  = 'none';
+  _compsLoaded = false;
 }
 
 // ── Render results ────────────────────────────────────────────────────
 function renderResults(data) {
+  _lastPrediction = { price: data.predicted_price, sqft: null };  // sqft filled below
+
   // ── Price card ────────────────────────────────────────────────────
   priceMain.textContent    = `$${data.predicted_price.toLocaleString()}`;
   priceRange.textContent   = `Range: ${fmt$(data.confidence_low)} – ${fmt$(data.confidence_high)}`;
@@ -684,9 +796,10 @@ document.addEventListener('keydown', (e) => {
 // ── Nearby sales markers (green circles on map) ───────────────────────
 let _nearbyMarkers = [];
 
-async function fetchNearby(lat, lon) {
+async function fetchNearby(lat, lon, sqft) {
+  if (_lastPrediction) _lastPrediction.sqft = sqft || null;
   try {
-    const res  = await fetch(`${API_BASE}/nearby?lat=${lat}&lon=${lon}&limit=5`);
+    const res  = await fetch(`${API_BASE}/nearby?lat=${lat}&lon=${lon}&limit=8`);
     if (!res.ok) return;
     const data = await res.json();
     renderNearby(data.nearby || []);
@@ -707,7 +820,7 @@ function renderNearby(sales) {
     className: '',
   });
 
-  sales.forEach((s, i) => {
+  sales.forEach((s) => {
     const m = L.marker([s.latitude, s.longitude], { icon: nearbyIcon })
       .addTo(map)
       .bindPopup(
@@ -722,24 +835,239 @@ function renderNearby(sales) {
   });
 
   const T = TR[currentLang];
-  const nearbyCard = document.getElementById('nearbyCard');
-  const nearbyList = document.getElementById('nearbyList');
+  const nearbyCard    = document.getElementById('marketCard');
+  const nearbyList    = document.getElementById('nearbyList');
+  const compareSummary = document.getElementById('nearbyCompareSummary');
 
-  nearbyList.innerHTML = sales.map((s, i) => `
-    <div class="nearby-item">
-      <div class="nearby-dot">${i + 1}</div>
-      <div class="nearby-info">
-        <div class="nearby-address">${s.address || T.unknownAddr}</div>
-        <div class="nearby-meta">${s.bldgclass} · ${s.gross_square_feet.toLocaleString()} sq ft · ${s.sale_date || ''}</div>
+  // ── Comparison summary ─────────────────────────────────────────────
+  const predicted = _lastPrediction ? _lastPrediction.price : null;
+  const predSqft  = _lastPrediction ? _lastPrediction.sqft  : null;
+
+  if (predicted && sales.length > 0) {
+    const prices  = sales.map(s => s.sale_price).sort((a, b) => a - b);
+    const minP    = prices[0];
+    const maxP    = prices[prices.length - 1];
+    const medP    = prices[Math.floor(prices.length / 2)];
+    const delta   = predicted - medP;
+    const deltaPct = ((delta / medP) * 100).toFixed(1);
+    const aboveBelow = delta > 0
+      ? `<span class="delta-badge delta-above">+${deltaPct}% ${T.aboveMedian || 'above median'}</span>`
+      : `<span class="delta-badge delta-below">${deltaPct}% ${T.belowMedian || 'below median'}</span>`;
+
+    // Position of predicted price on the min→max range bar (0–100%)
+    const range = maxP - minP || 1;
+    const predPct = Math.min(100, Math.max(0, Math.round(((predicted - minP) / range) * 100)));
+    const medPct  = Math.min(100, Math.max(0, Math.round(((medP   - minP) / range) * 100)));
+
+    compareSummary.innerHTML = `
+      <div class="comps-summary">
+        <div class="comps-stat">
+          <div class="comps-stat-label">${T.compMedian || 'Comp. median'}</div>
+          <div class="comps-stat-value">${fmt$(medP)}</div>
+        </div>
+        <div class="comps-stat comps-stat-est">
+          <div class="comps-stat-label">${T.yourEstimate || 'Your estimate'}</div>
+          <div class="comps-stat-value">${fmt$(predicted)}</div>
+        </div>
+        <div class="comps-stat">
+          <div class="comps-stat-label">${T.compRange || 'Sales range'}</div>
+          <div class="comps-stat-value comps-range-text">${fmt$(minP)} – ${fmt$(maxP)}</div>
+        </div>
       </div>
-      <div>
-        <div class="nearby-price">${fmt$(s.sale_price)}</div>
-        <div class="nearby-dist">${fmtDist(s.distance_m)}</div>
+      <div class="comps-bar-wrap">
+        <div class="comps-bar-track">
+          <div class="comps-bar-median" style="left:${medPct}%" title="${T.compMedian || 'Median'}: ${fmt$(medP)}"></div>
+          <div class="comps-bar-pred"   style="left:${predPct}%" title="${T.yourEstimate || 'Estimate'}: ${fmt$(predicted)}"></div>
+        </div>
+        <div class="comps-bar-labels">
+          <span>${fmt$(minP)}</span>
+          <span>${aboveBelow}</span>
+          <span>${fmt$(maxP)}</span>
+        </div>
       </div>
-    </div>
-  `).join('');
+    `;
+    compareSummary.style.display = 'block';
+  } else {
+    compareSummary.style.display = 'none';
+  }
+
+  // ── Sale rows ──────────────────────────────────────────────────────
+  nearbyList.innerHTML = sales.map((s, i) => {
+    const psf = (s.gross_square_feet > 0)
+      ? `<span class="nearby-psf">$${Math.round(s.sale_price / s.gross_square_feet).toLocaleString()}/sqft</span>`
+      : '';
+
+    let deltaBadge = '';
+    if (predicted) {
+      const pct = ((s.sale_price - predicted) / predicted * 100);
+      const abs = Math.abs(pct);
+      if (abs >= 3) {
+        const cls  = pct > 0 ? 'delta-above' : 'delta-below';
+        const sign = pct > 0 ? '+' : '';
+        deltaBadge = `<span class="delta-badge ${cls}">${sign}${pct.toFixed(0)}%</span>`;
+      } else {
+        deltaBadge = `<span class="delta-badge delta-neutral">~est.</span>`;
+      }
+    }
+
+    return `
+      <div class="nearby-item">
+        <div class="nearby-dot">${i + 1}</div>
+        <div class="nearby-info">
+          <div class="nearby-address">${s.address || T.unknownAddr}</div>
+          <div class="nearby-meta">${s.bldgclass} · ${s.gross_square_feet.toLocaleString()} sq ft · ${s.sale_date || ''}</div>
+        </div>
+        <div class="nearby-right">
+          <div class="nearby-price-row">
+            <div class="nearby-price">${fmt$(s.sale_price)}</div>
+            ${deltaBadge}
+          </div>
+          <div class="nearby-dist-row">
+            <div class="nearby-dist">${fmtDist(s.distance_m)}</div>
+            ${psf}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
 
   nearbyCard.style.display = 'block';
+}
+
+// ── Market Intelligence tab state ─────────────────────────────────────
+let _compsLoaded = false;
+let _trendChart  = null;
+
+// ── Market tab switching ──────────────────────────────────────────────
+document.getElementById('marketTabs').addEventListener('click', e => {
+  const btn = e.target.closest('.market-tab');
+  if (!btn) return;
+  const tab = btn.dataset.tab;
+  document.querySelectorAll('.market-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('marketNearby').style.display = tab === 'nearby' ? '' : 'none';
+  document.getElementById('marketComps').style.display  = tab === 'comps'  ? '' : 'none';
+  if (tab === 'comps' && !_compsLoaded) fetchAreaComps();
+});
+
+// ── NYC DOF area comps + trend fetch ─────────────────────────────────
+async function fetchAreaComps() {
+  const inner = document.getElementById('compsInner');
+  const T     = TR[currentLang];
+  const lat   = parseFloat(document.getElementById('latitude').value);
+  const lon   = parseFloat(document.getElementById('longitude').value);
+  if (!lat || !lon) return;
+
+  inner.innerHTML = `<div class="comps-loading"><span class="comps-spinner"></span> ${T.compsChecking || 'Fetching NYC records…'}</div>`;
+
+  try {
+    const res  = await fetch(`${API_BASE}/market/comps?lat=${lat}&lon=${lon}`);
+    const data = await res.json();
+
+    if (!data.available) {
+      inner.innerHTML = `<div class="comps-unavail">ℹ️ ${data.reason || 'No recent sales found.'}</div>`;
+    } else {
+      const { summary, comps, trend } = data;
+      const price = _lastPrediction ? _lastPrediction.price : null;
+      let deltaHtml = '';
+      if (summary.median_price && price) {
+        const pct  = ((price - summary.median_price) / summary.median_price * 100).toFixed(1);
+        const cls  = pct >= 0 ? 'delta-above' : 'delta-below';
+        const sign = pct >= 0 ? '+' : '';
+        deltaHtml  = `<span class="delta-badge ${cls}">${sign}${pct}% vs median</span>`;
+      }
+
+      const compsHtml = comps.map(c => `
+        <div class="comp-row">
+          <div class="comp-addr">${c.address}${c.neighborhood ? ' · ' + c.neighborhood : ''}</div>
+          <div class="comp-meta">
+            <span class="comp-price">${fmt$(c.sale_price)}</span>
+            ${c.psf ? `<span class="comp-psf">$${c.psf.toLocaleString()}/sqft</span>` : ''}
+            <span class="comp-date">${c.sale_date}</span>
+          </div>
+        </div>`).join('');
+
+      inner.innerHTML = `
+        <div class="comps-header">
+          <div class="comps-summary-row">
+            <div class="comps-stat">
+              <div class="comps-stat-label">${T.medianSale || 'Median Sale'}</div>
+              <div class="comps-stat-val">${summary.median_price ? fmt$(summary.median_price) : '—'}</div>
+              ${deltaHtml}
+            </div>
+            ${summary.median_psf ? `<div class="comps-stat">
+              <div class="comps-stat-label">${T.medianPsf || 'Median $/sqft'}</div>
+              <div class="comps-stat-val">$${summary.median_psf.toLocaleString()}</div>
+            </div>` : ''}
+          </div>
+          <div class="comps-period">${summary.period}</div>
+        </div>
+        <div class="comps-list">${compsHtml}</div>
+        <div class="comps-credit">
+          <a href="${summary.source_url}" target="_blank">🏛 ${summary.source}</a>
+        </div>`;
+
+      // Render trend chart if data available
+      if (trend && trend.length >= 3) {
+        renderTrendChart(trend);
+      }
+    }
+    _compsLoaded = true;
+  } catch (_) {
+    inner.innerHTML = `<div class="comps-unavail">⚠️ ${T.compsError || 'Could not reach NYC data service.'}</div>`;
+    _compsLoaded = true;
+  }
+}
+
+// ── Chart.js price trend ──────────────────────────────────────────────
+function renderTrendChart(trend) {
+  const wrap = document.getElementById('trendChart');
+  wrap.style.display = 'block';
+
+  const labels  = trend.map(t => t.month);
+  const medians = trend.map(t => t.median);
+
+  if (_trendChart) { _trendChart.destroy(); _trendChart = null; }
+
+  const ctx = document.getElementById('trendCanvas').getContext('2d');
+  _trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Median Sale Price',
+        data:  medians,
+        borderColor:     '#6366f1',
+        backgroundColor: 'rgba(99,102,241,0.08)',
+        pointRadius:     3,
+        pointHoverRadius:5,
+        tension:         0.35,
+        fill:            true,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `$${ctx.parsed.y.toLocaleString()}`,
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { maxTicksLimit: 8, font: { size: 10 } }, grid: { display: false } },
+        y: {
+          ticks: {
+            callback: v => `$${(v/1000).toFixed(0)}k`,
+            font: { size: 10 },
+            maxTicksLimit: 5,
+          },
+          grid: { color: 'rgba(0,0,0,0.06)' }
+        }
+      }
+    }
+  });
 }
 
 // ── i18n — Translations ───────────────────────────────────────────────
@@ -776,6 +1104,11 @@ const TR = {
     nearbyTitle:    'Nearby Sales',
     nearbySub:      'Recent sales within 800m',
     unknownAddr:    'Unknown address',
+    compMedian:     'Comp. median',
+    yourEstimate:   'Your estimate',
+    compRange:      'Sales range',
+    aboveMedian:    'above median',
+    belowMedian:    'below median',
     analytics:      'Analytics',
     mapHint:        'Click anywhere in New York City to place a pin',
     tagline:        'NYC Property Valuation · AI-Powered',
@@ -784,6 +1117,15 @@ const TR = {
     addrNotFound:   'Address not found in NYC. Try a more specific address.',
     addrOutOfNYC:   'Address is outside New York City boundaries.',
     addrError:      'Geocoding failed. Check your connection and try again.',
+    compsChecking:  'Fetching NYC records…',
+    compsError:     'Could not reach NYC data service.',
+    medianSale:     'Median Sale',
+    medianPsf:      'Median $/sqft',
+    marketTitle:    'Market Intelligence',
+    marketSub:      'Nearby sales & area comparables',
+    tabNearby:      '📍 Nearby Sales',
+    tabComps:       '🏛 Area Comps',
+    trendHeader:    '📈 Price Trend (last 24 mo)',
   },
   ar: {
     estimateBtn:    'تقدير السعر',
@@ -817,6 +1159,11 @@ const TR = {
     nearbyTitle:    'المبيعات القريبة',
     nearbySub:      'مبيعات حديثة في نطاق 800 متر',
     unknownAddr:    'عنوان غير معروف',
+    compMedian:     'الوسيط القريب',
+    yourEstimate:   'تقديرك',
+    compRange:      'نطاق المبيعات',
+    aboveMedian:    'فوق الوسيط',
+    belowMedian:    'تحت الوسيط',
     analytics:      'التحليلات',
     mapHint:        'انقر في أي مكان بمدينة نيويورك لوضع الدبوس',
     tagline:        'تقييم عقارات نيويورك · مدعوم بالذكاء الاصطناعي',
@@ -825,6 +1172,15 @@ const TR = {
     addrNotFound:   'لم يُعثر على العنوان في نيويورك. حاول بعنوان أكثر تفصيلاً.',
     addrOutOfNYC:   'العنوان خارج حدود مدينة نيويورك.',
     addrError:      'فشل البحث عن العنوان. تحقق من اتصالك وحاول مجدداً.',
+    compsChecking:  'جارٍ جلب سجلات نيويورك…',
+    compsError:     'تعذّر الوصول إلى خدمة بيانات نيويورك.',
+    medianSale:     'وسيط المبيعات',
+    medianPsf:      'وسيط $/قدم مربع',
+    marketTitle:    'ذكاء السوق',
+    marketSub:      'المبيعات القريبة ومقارنات المنطقة',
+    tabNearby:      '📍 المبيعات القريبة',
+    tabComps:       '🏛 مقارنات المنطقة',
+    trendHeader:    '📈 اتجاه السعر (آخر 24 شهرًا)',
   },
 };
 
@@ -895,8 +1251,16 @@ function setLang(lang) {
   document.getElementById('shapSubtitle').textContent  = T.shapSub;
   document.getElementById('spatialTitle').textContent  = T.spatialTitle;
   document.getElementById('spatialSubtitle').textContent = T.spatialSub;
-  document.getElementById('nearbyTitle').textContent   = T.nearbyTitle;
-  document.getElementById('nearbySubtitle').textContent = T.nearbySub;
+  if (document.getElementById('marketTitle'))
+    document.getElementById('marketTitle').textContent   = T.marketTitle;
+  if (document.getElementById('marketSubtitle'))
+    document.getElementById('marketSubtitle').textContent = T.marketSub;
+  if (document.getElementById('tabNearby'))
+    document.getElementById('tabNearby').textContent = T.tabNearby;
+  if (document.getElementById('tabComps'))
+    document.getElementById('tabComps').textContent  = T.tabComps;
+  if (document.getElementById('trendHeader'))
+    document.getElementById('trendHeader').textContent = T.trendHeader;
 
   // Borough select options
   const boroughNames = {

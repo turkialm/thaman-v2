@@ -16,9 +16,9 @@
       <span class="tagline" id="headerTagline">NYC Property Valuation · AI-Powered</span>
     </div>
     <div class="header-badges">
-      <span class="badge badge-green">Stack v2.1</span>
+      <span class="badge badge-green">Stack v4</span>
       <span class="badge badge-blue">R² = 0.651</span>
-      <span class="badge badge-purple">MedAPE 20.29%</span>
+      <span class="badge badge-purple">MedAPE 20.80%</span>
       <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
       <a href="/docs" target="_blank" class="badge badge-gray">API Docs ↗</a>
       <!-- Language Toggle -->
@@ -34,6 +34,23 @@
 
     <!-- ── Left: Map ──────────────────────────────────────────────── -->
     <section class="map-section">
+      <!-- Layer toggle bar -->
+      <div class="layer-bar" id="layerBar">
+        <button class="layer-btn active" data-layer="none">🗺 Default</button>
+        <button class="layer-btn" data-layer="income">💰 Income</button>
+        <button class="layer-btn" data-layer="crime">🔴 Crime</button>
+        <button class="layer-btn" data-layer="noise">🔊 Noise</button>
+        <button class="layer-btn" data-layer="air">💨 Air Quality</button>
+        <button class="layer-btn" data-layer="trees">🌳 Tree Cover</button>
+        <button class="layer-btn" data-layer="hotness">📈 Market</button>
+      </div>
+      <!-- Choropleth legend -->
+      <div class="layer-legend" id="layerLegend" style="display:none">
+        <span class="legend-min" id="legendMin"></span>
+        <div class="legend-gradient" id="legendGradient"></div>
+        <span class="legend-max" id="legendMax"></span>
+        <span class="legend-label" id="legendLabel"></span>
+      </div>
       <div id="map"></div>
       <div class="map-hint" id="mapHint">📍 <span id="mapHintText">Click anywhere in New York City to place a pin</span></div>
     </section>
@@ -255,19 +272,36 @@
         <div class="spatial-grid" id="spatialGrid"></div>
       </div>
 
-      <!-- Nearby Sales -->
-      <div class="card card-nearby" id="nearbyCard" style="display:none">
+      <!-- Market Intelligence (merged Nearby + Comps) -->
+      <div class="card card-market" id="marketCard" style="display:none">
         <h3 class="card-title">
-          <span id="nearbyTitle">Nearby Sales</span>
-          <span class="card-subtitle" id="nearbySubtitle">Recent sales within 800m</span>
+          <span id="marketTitle">Market Intelligence</span>
+          <span class="card-subtitle" id="marketSubtitle">Nearby sales &amp; area comparables</span>
         </h3>
-        <div id="nearbyList"></div>
+        <div class="market-tabs" id="marketTabs">
+          <button class="market-tab active" data-tab="nearby" id="tabNearby">📍 Nearby Sales</button>
+          <button class="market-tab" data-tab="comps" id="tabComps">🏛 Area Comps</button>
+        </div>
+        <!-- Nearby Sales panel -->
+        <div id="marketNearby">
+          <div id="nearbyCompareSummary" style="display:none"></div>
+          <div id="nearbyList"></div>
+        </div>
+        <!-- Area Comps panel -->
+        <div id="marketComps" style="display:none">
+          <div id="compsInner"></div>
+          <div id="trendChart" style="display:none">
+            <div class="trend-header" id="trendHeader">📈 Price Trend (last 24 mo)</div>
+            <canvas id="trendCanvas" height="160"></canvas>
+          </div>
+        </div>
       </div>
 
     </aside>
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script src="/ui/app.js"></script>
 </body>
 </html>
