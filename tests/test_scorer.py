@@ -25,8 +25,8 @@ def test_scorer_loads(scorer):
 
 
 def test_scorer_has_feature_names(scorer):
-    """Scorer should have 81 feature names (v4: +6 POI + waterfront + bike + luxury)."""
-    assert len(scorer.feature_names) == 81
+    """Scorer should have 85 feature names (v5: +4 interaction features over v4's 81)."""
+    assert len(scorer.feature_names) == 85
 
 
 def test_scorer_has_bldgclass_means(scorer):
@@ -139,7 +139,7 @@ def test_explain_returns_shap_df(scorer):
     })
     df       = pl.from_dicts([defaults])
     shap_df  = scorer.explain(df)
-    assert shap_df.shape == (1, 81)
+    assert shap_df.shape == (1, len(scorer.feature_names))
     assert list(shap_df.columns) == scorer.feature_names
 
 
