@@ -1245,6 +1245,270 @@ function renderTrendChart(trend) {
   });
 }
 
+// ── Property Comparison Tool ──────────────────────────────────────────
+let _compareResults = { A: null, B: null };
+
+function openCompare() {
+  // Reset state
+  _compareResults = { A: null, B: null };
+  document.getElementById('compareDeltaBanner').style.display = 'none';
+  ['A', 'B'].forEach(side => {
+    document.getElementById(`compareResult${side}`).classList.remove('visible');
+    document.getElementById(`compareErr${side}`).style.display = 'none';
+  });
+
+  // Pre-fill Property A from the most recent prediction
+  if (_lastPrediction && latInput.value && lonInput.value) {
+    document.getElementById('compareLatA').value = latInput.value;
+    document.getElementById('compareLonA').value = lonInput.value;
+    const copyNum = (srcId, dstId) => {
+      const v = document.getElementById(srcId)?.value;
+      if (v) document.getElementById(dstId).value = v;
+    };
+    copyNum('borough',           'compareBoroughA');
+    copyNum('gross_square_feet', 'compareSqftA');
+    copyNum('building_age',      'compareAgeA');
+    copyNum('numfloors',         'compareFloorsA');
+    copyNum('residential_units', 'compareUnitsA');
+    if (bldgHidden.value) document.getElementById('compareBldgA').value = bldgHidden.value;
+    if (addrInput.value)  document.getElementById('compareAddrA').value  = addrInput.value;
+  }
+
+  _populateCompareBldgSelects();
+  document.getElementById('compareOverlay').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCompare(e) {
+  // If triggered by overlay click, only close when clicking the backdrop itself
+  if (e && e.target.id !== 'compareOverlay') return;
+  document.getElementById('compareOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function _populateCompareBldgSelects() {
+  const codes = _bldgClasses.length > 0 ? _bldgClasses : [
+    { code:'A1', desc:'Two-story detached' }, { code:'A2', desc:'One-story detached' },
+    { code:'A5', desc:'Attached rowhouse' },  { code:'A7', desc:'Mansion / townhouse' },
+    { code:'B1', desc:'Two family brick' },   { code:'B2', desc:'Two family frame' },
+    { code:'C0', desc:'Three families' },     { code:'C2', desc:'Five–six families' },
+    { code:'C4', desc:'Old law tenement' },   { code:'C6', desc:'Cooperative walk-up' },
+    { code:'D1', desc:'Elevator apt (semi-fireproof)' }, { code:'D4', desc:'Elevator apt building' },
+    { code:'R1', desc:'Condo unit (elevator)' }, { code:'R4', desc:'Condo unit (walk-up)' },
+    { code:'S1', desc:'1-family + commercial' }, { code:'S2', desc:'2-family + commercial' },
+  ];
+  ['A', 'B'].forEach(side => {
+    const sel = document.getElementById(`compareBldg${side}`);
+    if (sel.options.length > 1) return;   // already populated
+    codes.slice(0, 50).forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.code;
+      opt.textContent = `${b.code} — ${b.desc}`;
+      sel.appendChild(opt);
+    });
+  });
+}
+
+async function geocodeForCompare(side) {
+  const addrEl  = document.getElementById(`compareAddr${side}`);
+  const errEl   = document.getElementById(`compareErr${side}`);
+  const sideBtn = document.querySelector(`#compareCol${side} .compare-addr-btn`);
+  const q = addrEl.value.trim();
+  if (!q) {
+    errEl.style.color = 'var(--red)';
+    errEl.textContent = 'Enter an address first.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  sideBtn.textContent = '…';
+  sideBtn.disabled    = true;
+
+  try {
+    const url = `https://nominatim.openstreetmap.org/search?` +
+      `q=${encodeURIComponent(q + ', New York City')}&format=json&limit=1` +
+      `&countrycodes=us&bounded=1&viewbox=-74.26,40.47,-73.70,40.92`;
+    const res  = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+    const data = await res.json();
+
+    if (!data || data.length === 0) {
+      errEl.style.color = 'var(--red)';
+      errEl.textContent = TR[currentLang].addrNotFound;
+      errEl.style.display = 'block';
+      return;
+    }
+    const lat = parseFloat(data[0].lat);
+    const lng = parseFloat(data[0].lon);
+    if (!isInNYC(lat, lng)) {
+      errEl.style.color = 'var(--red)';
+      errEl.textContent = TR[currentLang].addrOutOfNYC;
+      errEl.style.display = 'block';
+      return;
+    }
+
+    document.getElementById(`compareLat${side}`).value = lat.toFixed(6);
+    document.getElementById(`compareLon${side}`).value = lng.toFixed(6);
+
+    const bc = getBoroughCode(lat, lng);
+    if (bc) document.getElementById(`compareBorough${side}`).value = bc;
+
+    errEl.style.color = 'var(--green)';
+    errEl.textContent = `✓ ${data[0].display_name.split(',').slice(0, 3).join(',')}`;
+    errEl.style.display = 'block';
+    setTimeout(() => { errEl.style.display = 'none'; errEl.style.color = ''; }, 3500);
+
+  } catch (err) {
+    errEl.style.color = 'var(--red)';
+    errEl.textContent = TR[currentLang].addrError;
+    errEl.style.display = 'block';
+  } finally {
+    sideBtn.textContent = '📍';
+    sideBtn.disabled    = false;
+  }
+}
+
+async function runCompareEstimate(side) {
+  const lat     = parseFloat(document.getElementById(`compareLat${side}`).value);
+  const lon     = parseFloat(document.getElementById(`compareLon${side}`).value);
+  const borough = parseInt(document.getElementById(`compareBorough${side}`).value);
+  const bldg    = document.getElementById(`compareBldg${side}`).value;
+  const sqft    = parseFloat(document.getElementById(`compareSqft${side}`).value);
+  const age     = parseFloat(document.getElementById(`compareAge${side}`).value);
+  const floors  = parseFloat(document.getElementById(`compareFloors${side}`).value);
+  const units   = parseFloat(document.getElementById(`compareUnits${side}`).value) || 1;
+  const errEl   = document.getElementById(`compareErr${side}`);
+  const btn     = document.getElementById(`compareEstBtn${side}`);
+
+  // Validate
+  const missing = [];
+  if (!lat || !lon)         missing.push('location');
+  if (!borough)             missing.push('borough');
+  if (!bldg)                missing.push('building class');
+  if (!sqft || sqft <= 0)   missing.push('sq ft');
+  if (isNaN(age) || age < 0) missing.push('age');
+  if (!floors || floors < 1) missing.push('floors');
+
+  if (missing.length) {
+    errEl.style.color   = 'var(--red)';
+    errEl.textContent   = `Missing: ${missing.join(', ')}.`;
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  btn.disabled     = true;
+  btn.innerHTML    = '<span>⏳ Estimating…</span>';
+
+  try {
+    const payload = {
+      latitude: lat, longitude: lon,
+      borough:  Math.round(borough),
+      bldgclass: bldg,
+      gross_square_feet: sqft,
+      building_age:      Math.round(age),
+      numfloors:         floors,
+      residential_units: Math.round(units),
+    };
+
+    const res = await fetch(`${API_BASE}/predict`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || `API error ${res.status}`);
+    }
+
+    const data = await res.json();
+    _compareResults[side] = { ...data, _sqft: sqft };
+    _renderCompareResult(side, data, sqft);
+
+    if (_compareResults.A && _compareResults.B) _renderCompareDelta();
+
+  } catch (err) {
+    errEl.style.color   = 'var(--red)';
+    errEl.textContent   = `Error: ${err.message}`;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = `<span>🔍 Estimate ${side}</span>`;
+  }
+}
+
+function _renderCompareResult(side, data, sqft) {
+  const el = document.getElementById(`compareResult${side}`);
+  el.classList.add('visible');
+
+  document.getElementById(`comparePrice${side}`).textContent = fmt$(data.predicted_price);
+  document.getElementById(`compareRange${side}`).textContent =
+    `Range: ${fmt$(data.confidence_low)} – ${fmt$(data.confidence_high)}`;
+
+  // Meta row: grade badge + borough name + $/sqft badge
+  const qc = data.avm_qc;
+  const gradeHtml = qc
+    ? `<span class="conf-grade-badge conf-grade-${qc.confidence_grade}" style="width:22px;height:22px;font-size:.73rem">${qc.confidence_grade}</span>`
+    : '';
+  const psfHtml = sqft > 0
+    ? `<span class="compare-psf-badge">$${Math.round(data.predicted_price / sqft).toLocaleString()}/sqft</span>`
+    : '';
+  document.getElementById(`compareMeta${side}`).innerHTML =
+    `${gradeHtml}<span style="font-size:.72rem;color:var(--gray-700)">${data.borough_name || ''}</span>${psfHtml}`;
+
+  // Top 3 SHAP drivers
+  const driversEl = document.getElementById(`compareDrivers${side}`);
+  driversEl.innerHTML = '';
+  const top3 = (data.top_drivers || []).slice(0, 3);
+  if (top3.length > 0) {
+    const maxImp = Math.max(...top3.map(d => Math.abs(d.impact)));
+    top3.forEach(drv => {
+      const isPos = drv.direction === 'positive';
+      const pct   = Math.round((Math.abs(drv.impact) / maxImp) * 100);
+      const row   = document.createElement('div');
+      row.className = 'compare-driver-row';
+      row.innerHTML = `
+        <span class="compare-driver-arrow" style="color:${isPos ? 'var(--green)' : 'var(--red)'}">${isPos ? '↑' : '↓'}</span>
+        <span class="compare-driver-label">${drv.description || drv.feature}</span>
+        <div class="compare-driver-bar-wrap"><div class="compare-driver-bar ${isPos ? 'positive' : 'negative'}" style="width:${pct}%"></div></div>
+        <span class="compare-driver-impact ${isPos ? 'positive' : 'negative'}">${drv.impact > 0 ? '+' : ''}${drv.impact.toFixed(3)}</span>
+      `;
+      driversEl.appendChild(row);
+    });
+  }
+}
+
+function _renderCompareDelta() {
+  const a      = _compareResults.A.predicted_price;
+  const b      = _compareResults.B.predicted_price;
+  const banner = document.getElementById('compareDeltaBanner');
+  const diff   = Math.abs(a - b);
+  const pct    = ((diff / Math.min(a, b)) * 100).toFixed(1);
+
+  if (diff < a * 0.02) {
+    banner.className   = 'compare-delta-banner compare-delta-equal';
+    banner.textContent = `≈ Roughly equal in value (within 2%)`;
+  } else if (a > b) {
+    banner.className   = 'compare-delta-banner compare-delta-higher';
+    banner.textContent = `Property A is ${fmt$(diff)} (+${pct}%) more expensive than Property B`;
+  } else {
+    banner.className   = 'compare-delta-banner compare-delta-lower';
+    banner.textContent = `Property B is ${fmt$(diff)} (+${pct}%) more expensive than Property A`;
+  }
+  banner.style.display = 'block';
+}
+
+// Close comparison modal on Escape key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const ov = document.getElementById('compareOverlay');
+    if (ov && ov.style.display !== 'none') {
+      ov.style.display   = 'none';
+      document.body.style.overflow = '';
+    }
+  }
+});
+
 // ── i18n — Translations ───────────────────────────────────────────────
 const TR = {
   en: {

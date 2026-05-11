@@ -1300,6 +1300,155 @@ select optgroup { color: var(--gray-500); font-style: normal; }
 }
 [dir="rtl"] .addr-search-wrap { flex-direction: row-reverse; }
 
+/* ── Property Comparison Modal ───────────────────────────────────────── */
+.compare-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(15,23,42,0.65); backdrop-filter: blur(4px);
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 32px 16px 48px; overflow-y: auto;
+}
+.compare-modal {
+  background: var(--white); border-radius: var(--radius-lg);
+  box-shadow: 0 20px 60px rgba(0,0,0,.25); width: 100%; max-width: 920px;
+  display: flex; flex-direction: column;
+  animation: compareIn 0.22s ease;
+}
+@keyframes compareIn {
+  from { opacity:0; transform: translateY(-14px) scale(0.98); }
+  to   { opacity:1; transform: translateY(0)     scale(1);    }
+}
+.compare-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--gray-200);
+}
+.compare-header h2 {
+  font-size: 1rem; font-weight: 700; color: var(--gray-900); margin: 0;
+}
+.compare-close {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.15rem; color: var(--gray-500); padding: 4px 8px;
+  border-radius: 6px; line-height: 1; transition: background .15s, color .15s;
+}
+.compare-close:hover { background: var(--gray-100); color: var(--gray-900); }
+
+/* Delta banner */
+.compare-delta-banner {
+  margin: 12px 20px 0;
+  padding: 10px 16px; border-radius: var(--radius-sm);
+  font-size: .85rem; font-weight: 600; text-align: center;
+}
+.compare-delta-higher { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.compare-delta-lower  { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.compare-delta-equal  { background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-200); }
+
+/* Two-col grid */
+.compare-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  padding: 16px 20px 24px;
+}
+@media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
+
+/* Each column */
+.compare-col {
+  display: flex; flex-direction: column; gap: 10px;
+  border: 1px solid var(--gray-200); border-radius: var(--radius);
+  padding: 14px; background: var(--gray-50);
+}
+.compare-col-header { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.compare-col-label {
+  font-size: .78rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--gray-500);
+}
+.compare-col-label-A { color: #1d4ed8; }
+.compare-col-label-B { color: #7c3aed; }
+
+/* Address search row */
+.compare-addr-row { display: flex; gap: 6px; }
+.compare-addr-input {
+  flex: 1; padding: 7px 10px; border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm); font-size: .8rem;
+  font-family: inherit; background: var(--white);
+  transition: border-color .15s;
+}
+.compare-addr-input:focus { outline: none; border-color: var(--blue); }
+.compare-addr-btn {
+  padding: 7px 11px; background: var(--blue); color: white;
+  border: none; border-radius: var(--radius-sm); cursor: pointer;
+  font-size: .78rem; font-weight: 600; white-space: nowrap;
+  transition: background .15s;
+}
+.compare-addr-btn:hover:not(:disabled) { background: var(--blue-dark); }
+.compare-addr-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+/* Mini form grid */
+.compare-mini-form { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.compare-field label {
+  display: block; font-size: .67rem; font-weight: 600; color: var(--gray-500);
+  margin-bottom: 3px; text-transform: uppercase; letter-spacing: .04em;
+}
+.compare-field select,
+.compare-field input[type="number"] {
+  width: 100%; padding: 6px 8px; border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm); font-size: .8rem;
+  font-family: inherit; background: var(--white); box-sizing: border-box;
+  transition: border-color .15s;
+}
+.compare-field select:focus,
+.compare-field input[type="number"]:focus { outline: none; border-color: var(--blue); }
+
+/* Error / success line */
+.compare-error {
+  font-size: .73rem; padding: 3px 0;
+  color: var(--red); display: none;
+}
+
+/* Estimate button */
+.compare-estimate-btn {
+  width: 100%; padding: 9px; background: linear-gradient(135deg, #6366f1, #4f46e5);
+  color: white; border: none; border-radius: var(--radius-sm); cursor: pointer;
+  font-size: .83rem; font-weight: 700; font-family: inherit;
+  transition: opacity .15s; display: flex; align-items: center;
+  justify-content: center; gap: 6px;
+}
+.compare-estimate-btn:hover:not(:disabled) { opacity: .88; }
+.compare-estimate-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Result box */
+.compare-result {
+  display: none; flex-direction: column; gap: 5px;
+  padding: 10px 12px; background: var(--white);
+  border-radius: var(--radius-sm); border: 1px solid var(--gray-200);
+}
+.compare-result.visible { display: flex; }
+
+.compare-result-price {
+  font-size: 1.45rem; font-weight: 800; color: var(--gray-900); letter-spacing: -1px;
+}
+.compare-result-range { font-size: .72rem; color: var(--gray-500); }
+.compare-result-meta  { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin: 2px 0; }
+.compare-psf-badge {
+  font-size: .68rem; background: var(--blue-light); color: var(--blue-dark);
+  padding: 2px 7px; border-radius: 10px; font-weight: 600;
+}
+
+/* Top-3 drivers */
+.compare-result-drivers { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
+.compare-driver-row { display: flex; align-items: center; gap: 6px; font-size: .71rem; }
+.compare-driver-arrow { font-size: .8rem; font-weight: 800; flex-shrink: 0; }
+.compare-driver-label  { flex: 1; color: var(--gray-700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.compare-driver-bar-wrap {
+  width: 44px; height: 4px; background: var(--gray-200);
+  border-radius: 3px; overflow: hidden; flex-shrink: 0;
+}
+.compare-driver-bar { height: 100%; border-radius: 3px; }
+.compare-driver-bar.positive { background: var(--green); }
+.compare-driver-bar.negative { background: var(--red); }
+.compare-driver-impact {
+  font-weight: 600; width: 46px; text-align: right; flex-shrink: 0; font-size: .7rem;
+}
+.compare-driver-impact.positive { color: var(--green); }
+.compare-driver-impact.negative { color: var(--red); }
+
 /* ── Price trend chart ───────────────────────────────────────────────── */
 #trendChart {
   margin-top: 12px;

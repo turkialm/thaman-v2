@@ -25,6 +25,7 @@
       <span class="badge badge-blue">R² = 0.651</span>
       <span class="badge badge-purple">MedAPE 20.80%</span>
       <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
+      <button class="badge badge-gray" onclick="openCompare()" style="cursor:pointer;border:none">⚖ Compare</button>
       <a href="/docs" target="_blank" class="badge badge-gray">API Docs ↗</a>
       <!-- Language Toggle -->
       <div class="lang-toggle" role="group" aria-label="Language">
@@ -334,6 +335,132 @@
 
     </aside>
   </main>
+
+  <!-- ── Property Comparison Modal ────────────────────────────────────── -->
+  <div class="compare-overlay" id="compareOverlay" style="display:none" onclick="closeCompare(event)">
+    <div class="compare-modal" id="compareModal">
+      <div class="compare-header">
+        <h2>⚖ Property Comparison</h2>
+        <button class="compare-close" onclick="closeCompare()" aria-label="Close">✕</button>
+      </div>
+      <div class="compare-delta-banner" id="compareDeltaBanner" style="display:none"></div>
+      <div class="compare-grid">
+
+        <!-- ── Property A ── -->
+        <div class="compare-col" id="compareColA">
+          <div class="compare-col-header">
+            <span class="compare-col-label compare-col-label-A">🔵 Property A</span>
+          </div>
+          <div class="compare-addr-row">
+            <input class="compare-addr-input" id="compareAddrA" type="text" placeholder="Search address in NYC…" />
+            <button class="compare-addr-btn" onclick="geocodeForCompare('A')">📍</button>
+          </div>
+          <div class="compare-mini-form">
+            <div class="compare-field">
+              <label>Borough</label>
+              <select id="compareBoroughA">
+                <option value="">—</option>
+                <option value="1">Manhattan</option>
+                <option value="2">Bronx</option>
+                <option value="3">Brooklyn</option>
+                <option value="4">Queens</option>
+                <option value="5">Staten Island</option>
+              </select>
+            </div>
+            <div class="compare-field">
+              <label>Bldg Class</label>
+              <select id="compareBldgA"><option value="">—</option></select>
+            </div>
+            <div class="compare-field">
+              <label>Sq ft</label>
+              <input type="number" id="compareSqftA" placeholder="e.g. 1800" min="1" />
+            </div>
+            <div class="compare-field">
+              <label>Age (yrs)</label>
+              <input type="number" id="compareAgeA" placeholder="e.g. 40" min="0" />
+            </div>
+            <div class="compare-field">
+              <label>Floors</label>
+              <input type="number" id="compareFloorsA" placeholder="e.g. 2" min="1" />
+            </div>
+            <div class="compare-field">
+              <label>Units</label>
+              <input type="number" id="compareUnitsA" placeholder="e.g. 1" min="0" />
+            </div>
+          </div>
+          <input type="hidden" id="compareLatA" />
+          <input type="hidden" id="compareLonA" />
+          <div class="compare-error" id="compareErrA"></div>
+          <button class="compare-estimate-btn" id="compareEstBtnA" onclick="runCompareEstimate('A')">
+            <span>🔍 Estimate A</span>
+          </button>
+          <div class="compare-result" id="compareResultA">
+            <div class="compare-result-price" id="comparePriceA"></div>
+            <div class="compare-result-range"  id="compareRangeA"></div>
+            <div class="compare-result-meta"   id="compareMetaA"></div>
+            <div class="compare-result-drivers" id="compareDriversA"></div>
+          </div>
+        </div>
+
+        <!-- ── Property B ── -->
+        <div class="compare-col" id="compareColB">
+          <div class="compare-col-header">
+            <span class="compare-col-label compare-col-label-B">🟣 Property B</span>
+          </div>
+          <div class="compare-addr-row">
+            <input class="compare-addr-input" id="compareAddrB" type="text" placeholder="Search address in NYC…" />
+            <button class="compare-addr-btn" onclick="geocodeForCompare('B')">📍</button>
+          </div>
+          <div class="compare-mini-form">
+            <div class="compare-field">
+              <label>Borough</label>
+              <select id="compareBoroughB">
+                <option value="">—</option>
+                <option value="1">Manhattan</option>
+                <option value="2">Bronx</option>
+                <option value="3">Brooklyn</option>
+                <option value="4">Queens</option>
+                <option value="5">Staten Island</option>
+              </select>
+            </div>
+            <div class="compare-field">
+              <label>Bldg Class</label>
+              <select id="compareBldgB"><option value="">—</option></select>
+            </div>
+            <div class="compare-field">
+              <label>Sq ft</label>
+              <input type="number" id="compareSqftB" placeholder="e.g. 1800" min="1" />
+            </div>
+            <div class="compare-field">
+              <label>Age (yrs)</label>
+              <input type="number" id="compareAgeB" placeholder="e.g. 40" min="0" />
+            </div>
+            <div class="compare-field">
+              <label>Floors</label>
+              <input type="number" id="compareFloorsB" placeholder="e.g. 2" min="1" />
+            </div>
+            <div class="compare-field">
+              <label>Units</label>
+              <input type="number" id="compareUnitsB" placeholder="e.g. 1" min="0" />
+            </div>
+          </div>
+          <input type="hidden" id="compareLatB" />
+          <input type="hidden" id="compareLonB" />
+          <div class="compare-error" id="compareErrB"></div>
+          <button class="compare-estimate-btn" id="compareEstBtnB" onclick="runCompareEstimate('B')">
+            <span>🔍 Estimate B</span>
+          </button>
+          <div class="compare-result" id="compareResultB">
+            <div class="compare-result-price" id="comparePriceB"></div>
+            <div class="compare-result-range"  id="compareRangeB"></div>
+            <div class="compare-result-meta"   id="compareMetaB"></div>
+            <div class="compare-result-drivers" id="compareDriversB"></div>
+          </div>
+        </div>
+
+      </div><!-- /.compare-grid -->
+    </div><!-- /.compare-modal -->
+  </div><!-- /.compare-overlay -->
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
