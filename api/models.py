@@ -188,3 +188,6 @@ class PredictResponse(BaseModel):
 
     # AVM Quality Control (2026 standard) — always present
     avm_qc: Optional[AvmQc] = None
+
+    # Resolved NTA code (for transparency / debugging)
+    nta_code: Optional[str] = None

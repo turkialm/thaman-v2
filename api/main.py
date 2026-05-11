@@ -61,6 +61,7 @@ _COMPS_TTL   = 86_400   # 24 h
 _NEARBY_COLS = [
     "latitude", "longitude", "sale_price", "address",
     "bldgclass", "gross_square_feet", "building_age", "sale_date",
+    "ntacode",   # needed for NTA lookup at inference
 ]
 
 
@@ -328,6 +329,49 @@ def _build_feature_row(req: PredictRequest, spatial_feats: dict) -> dict:
     return feat
 
 
+def _lookup_nta(lat: float, lon: float, bldgclass: str) -> dict:
+    """
+    Resolve lat/lon → ntacode via nearest-neighbor in the training sales index,
+    then map ntacode to the 4 NTA model features from meta.json encoding maps.
+    Returns a dict of feature overrides to merge into predict_single kwargs.
+    Falls back to global_mean_log / global median when ntacode is unknown.
+    """
+    if _nearby_df is None or _nearby_tree is None or _scorer is None:
+        return {}
+
+    meta      = _scorer.meta
+    gml       = meta.get("global_mean_log", 13.5)
+    nta_means = meta.get("nta_means", {})
+    ntab_means= meta.get("nta_bldg_means", {})
+    nta_stats = meta.get("nta_stats", {})
+
+    # Nearest-neighbor lookup → ntacode
+    _, idx    = _nearby_tree.query([lat, lon], k=1)
+    row       = _nearby_df.row(int(idx), named=True)
+    ntacode   = row.get("ntacode") or ""
+
+    # nta_encoded
+    nta_enc   = nta_means.get(ntacode, gml)
+
+    # nta_bldg_encoded  (ntacode + "_" + first letter of bldgclass)
+    bldg_pfx  = (bldgclass or "")[:1].upper()
+    ntab_key  = f"{ntacode}_{bldg_pfx}"
+    ntab_enc  = ntab_means.get(ntab_key, nta_enc)   # fall back to nta_enc, then gml
+
+    # nta_sale_count + nta_median_psf
+    stats      = nta_stats.get(ntacode, {})
+    sale_count = float(stats.get("sale_count", 0))
+    med_psf    = float(stats.get("median_psf", 0.0))
+
+    return {
+        "nta_encoded":      nta_enc,
+        "nta_bldg_encoded": ntab_enc,
+        "nta_sale_count":   sale_count,
+        "nta_median_psf":   med_psf,
+        "_resolved_nta":    ntacode,   # for logging/response only
+    }
+
+
 def _count_comparables(lat: float, lon: float, radius_m: int = 800) -> int:
     """
     Count training-set sales within radius_m metres using the already-loaded
@@ -491,10 +535,15 @@ def predict(req: PredictRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Spatial lookup failed: {e}")
 
-    # 2. Build full 70-feature row
+    # 2. Build full feature row
     feat_dict = _build_feature_row(req, spatial_feats)
 
-    # 3. Run XGBoost v2 prediction
+    # 2b. NTA lookup: resolve lat/lon → ntacode → 4 NTA model features
+    nta_override = _lookup_nta(req.latitude, req.longitude, req.bldgclass)
+    _resolved_nta = nta_override.pop("_resolved_nta", "")
+    feat_dict.update(nta_override)   # overrides defaults (global_mean_log) with real NTA values
+
+    # 3. Run prediction
     try:
         result = _scorer.predict_single(**feat_dict)
     except Exception as e:
@@ -567,6 +616,7 @@ def predict(req: PredictRequest):
         "spatial_features":   spatial_summary,
         "top_drivers":        [d.model_dump() for d in drivers],
         "avm_qc":             avm_qc_dict,
+        "nta_code":           _resolved_nta or None,
     }
 
 

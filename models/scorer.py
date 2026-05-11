@@ -58,10 +58,10 @@ class ThamanScorer:
         self._stack = None
         if os.path.exists(stack_path):
             self._stack = joblib.load(stack_path)
-            # v5: xgb_a + xgb_b + lgb + cat; v4: lgb + cat; v3: lgb only
+            # v6/v5: xgb_a + xgb_b + lgb + cat; v4: lgb + cat; v3: lgb only
             ver = self._stack.get("version", "v4")
-            if ver == "v5":
-                label = "XGB-A + XGB-B + LGB + CAT + Ridge (v5)"
+            if ver in ("v5", "v6", "v7", "v8", "v9"):
+                label = f"XGB-A + XGB-B + LGB + CAT + Ridge ({ver})"
             elif "cat" in self._stack:
                 label = "XGB + LGB + CAT + Ridge (v4)"
             else:
@@ -110,7 +110,7 @@ class ThamanScorer:
 
         if self._stack is not None:
             ver = self._stack.get("version", "v4")
-            if ver == "v5":
+            if ver in ("v5", "v6", "v7", "v8", "v9"):
                 # 4-model diverse stack: XGB-A + XGB-B + LGB + CAT
                 log_xa  = self._stack["xgb_a"].predict(Xv).astype(np.float32)
                 log_xb  = self._stack["xgb_b"].predict(Xv).astype(np.float32)
@@ -150,6 +150,18 @@ class ThamanScorer:
         defaults = {feat: 0.0 for feat in self.feature_names}
         for col in self.acris_medians:
             defaults[col] = None  # polars null
+        # Target-encoded features: default to global mean (not 0)
+        _gml = self.meta.get("global_mean_log", 0.0)
+        for enc_feat in ("nta_encoded", "nta_bldg_encoded", "zip_encoded", "zip_bldg_encoded"):
+            if enc_feat in defaults:
+                defaults[enc_feat] = _gml
+        # Derived interaction features that depend on nta_encoded
+        if "nta_rel_price" in defaults:
+            defaults["nta_rel_price"] = 1.0           # bldgclass/nta ≈ 1 at global mean
+        if "sqft_x_nta_enc" in defaults:
+            defaults["sqft_x_nta_enc"] = 0.0          # will be overridden when sqft is passed
+        if "bldg_age_x_nta" in defaults:
+            defaults["bldg_age_x_nta"] = 0.0
         # Convert any np.nan in kwargs to None
         clean_kwargs = {
             k: (None if (isinstance(v, float) and np.isnan(v)) else v)
@@ -164,7 +176,7 @@ class ThamanScorer:
             medape = self.meta["stack"]["medape_holdout"]
             r2     = self.meta["stack"]["r2_holdout"]
             ver    = self._stack.get("version", "v4") if self._stack else "v4"
-            model_label = f"Stack {ver} · 4-Model Ensemble" if ver == "v5" else "XGBoost + LightGBM Stack"
+            model_label = f"Stack {ver} · 4-Model Ensemble" if ver in ("v5","v6","v7","v8","v9") else "XGBoost + LightGBM Stack"
         else:
             medape = self.meta["xgboost"]["medape_test"]
             r2     = self.meta["xgboost"]["r2_test"]
