@@ -328,6 +328,28 @@ def _build_feature_row(req: PredictRequest, spatial_feats: dict) -> dict:
     return feat
 
 
+def _count_comparables(lat: float, lon: float, radius_m: int = 800) -> int:
+    """
+    Count training-set sales within radius_m metres using the already-loaded
+    cKDTree.  Returns 0 if the index is not available. Target latency < 5ms.
+    """
+    if _nearby_df is None or _nearby_tree is None:
+        return 0
+    radius_deg = radius_m / 111_000.0
+    idxs = _nearby_tree.query_ball_point([lat, lon], radius_deg)
+    return len(idxs)
+
+
+def _build_qc_flags(seg_medape: float, comps: int, price: float, borough: int) -> list:
+    """Produce list of AVM QC flag strings for the given prediction context."""
+    flags = []
+    if comps < 5:                          flags.append("SPARSE_MARKET")
+    if price > 3_000_000:                  flags.append("LUXURY_SEGMENT")
+    if seg_medape > 30.0:                  flags.append("HIGH_UNCERTAINTY")
+    if borough == 1 and price > 1_000_000: flags.append("METRO_CORE")
+    return flags
+
+
 def _get_shap_drivers(feat_dict: dict) -> list[FeatureDriver]:
     """Run SHAP explanation and return top 10 feature drivers."""
     row_dict  = {}
@@ -478,6 +500,21 @@ def predict(req: PredictRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Model prediction failed: {e}")
 
+    # 3b. AVM QC: comparable count (hit rate) + quality flags
+    comp_count  = _count_comparables(req.latitude, req.longitude)
+    seg_medape  = result.get("segment_medape_pct", result["medape_test_pct"])
+    qc_flags    = _build_qc_flags(seg_medape, comp_count,
+                                   result["predicted_price"], req.borough)
+    avm_qc_dict = {
+        "confidence_score":    result.get("confidence_score", 0),
+        "confidence_grade":    result.get("confidence_grade", "D"),
+        "segment_medape_pct":  seg_medape,
+        "comparables_found":   comp_count,
+        "comparables_radius_m": 800,
+        "sparse_market":       comp_count < 5,
+        "qc_flags":            qc_flags,
+    }
+
     # 4. SHAP explanations
     drivers = _get_shap_drivers(feat_dict)
 
@@ -521,7 +558,7 @@ def predict(req: PredictRequest):
         "predicted_price":    result["predicted_price"],
         "confidence_low":     result["confidence_low"],
         "confidence_high":    result["confidence_high"],
-        "confidence_note":    "±20.80% MedAPE confidence interval",
+        "confidence_note":    f"±{round(seg_medape, 1)}% segment MedAPE confidence interval",
         "model":              result["model"],
         "r2_test":            result["r2_test"],
         "medape_pct":         result["medape_test_pct"],
@@ -529,6 +566,7 @@ def predict(req: PredictRequest):
         "bldgclass_description": bc_desc,
         "spatial_features":   spatial_summary,
         "top_drivers":        [d.model_dump() for d in drivers],
+        "avm_qc":             avm_qc_dict,
     }
 
 

@@ -129,6 +129,18 @@ class FeatureDriver(BaseModel):
     description: str = Field(description="Human-readable feature description")
 
 
+class AvmQc(BaseModel):
+    """2026 AVM Quality Control block — confidence score, hit rate, and QC flags."""
+    confidence_score:     int   = Field(description="0–100 AVM reliability score (100 – segment MedAPE)")
+    confidence_grade:     str   = Field(description="Letter grade: A (≥85) / B (≥75) / C (≥65) / D (<65)")
+    segment_medape_pct:   float = Field(description="Segment-specific MedAPE used for this prediction")
+    comparables_found:    int   = Field(description="Training-set sales within 800m (hit rate signal)")
+    comparables_radius_m: int   = Field(default=800, description="Radius used for comparable count")
+    sparse_market:        bool  = Field(description="True if fewer than 5 comparables found within 800m")
+    qc_flags:             List[str] = Field(default_factory=list,
+                              description="SPARSE_MARKET | LUXURY_SEGMENT | HIGH_UNCERTAINTY | METRO_CORE")
+
+
 class SpatialFeatures(BaseModel):
     dist_subway_m: float
     dist_bus_m: float
@@ -173,3 +185,6 @@ class PredictResponse(BaseModel):
 
     # SHAP explanations
     top_drivers: List[FeatureDriver]
+
+    # AVM Quality Control (2026 standard) — always present
+    avm_qc: Optional[AvmQc] = None
