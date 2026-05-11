@@ -206,9 +206,9 @@
       <span class="tagline" id="chartsTagline">Model Analytics Dashboard v2.1</span>
     </div>
     <div class="header-badges">
-      <span class="badge badge-green">Stack v2.1</span>
-      <span class="badge badge-blue">R² = 0.6511</span>
-      <span class="badge badge-purple" id="chartsFeaturesBadge">81 Features</span>
+      <span class="badge badge-green">Stack v5</span>
+      <span class="badge badge-blue">R² = 0.658</span>
+      <span class="badge badge-purple" id="chartsFeaturesBadge">85 Features</span>
       <span class="badge badge-gray">Spatial CV</span>
       <div class="lang-toggle">
         <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
@@ -223,23 +223,23 @@
 
     <!-- Title -->
     <div class="page-title">
-      <h1 id="pageTitle">THAMAN v2.1 — NYC Property Valuation Stack</h1>
-      <p id="pageSubtitle">XGBoost + LightGBM + CatBoost + Ridge meta · 81 features · Spatial GroupKFold CV · Honest time-based holdout · 185K NYC sales</p>
+      <h1 id="pageTitle">THAMAN v5 — NYC Property Valuation Stack</h1>
+      <p id="pageSubtitle">XGBoost + LightGBM + CatBoost + Ridge meta · 85 features · Spatial GroupKFold CV · Honest time-based holdout · 185K NYC sales</p>
     </div>
 
     <!-- ── KPI Metric Cards ───────────────────────────────── -->
     <div class="metrics-row">
       <div class="metric-card">
         <div class="metric-icon">🎯</div>
-        <div class="metric-value blue-val">0.6511</div>
+        <div class="metric-value blue-val">0.6582</div>
         <div class="metric-label" id="kpi1Label">R² Stack Holdout</div>
-        <div class="metric-sub">XGB: 0.6537 · LGB: 0.6511 · CAT: 0.6446</div>
+        <div class="metric-sub">XGB-A: 0.6582 · LGB: 0.6532 · CAT: 0.6555</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">📊</div>
-        <div class="metric-value green-val">20.80%</div>
+        <div class="metric-value green-val">20.34%</div>
         <div class="metric-label" id="kpi2Label">Median APE</div>
-        <div class="metric-sub" id="kpi2Sub">±20.80% confidence interval</div>
+        <div class="metric-sub" id="kpi2Sub">±20.34% confidence interval</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">💵</div>
@@ -269,8 +269,8 @@
 
     <!-- ── Chart 0: Model Comparison — Full width ──────── -->
     <div class="chart-card span-2">
-      <h2 id="c0Title">⚖️ Stack v2.1 — Base Learner Comparison (XGB + LGB + CatBoost)</h2>
-      <div class="chart-sub" id="c0Sub">Holdout R² and MedAPE for each base model vs the 3-model Ridge stack — CatBoost adds diversity; stack reduces MedAPE by 0.74pp vs XGBoost alone</div>
+      <h2 id="c0Title">⚖️ Stack v5 — Base Learner Comparison (XGB + LGB + CatBoost)</h2>
+      <div class="chart-sub" id="c0Sub">Holdout R² and MedAPE for each of the 4 diverse base models vs the v5 stack — different depths and LR schedules prevent correlated errors; non-negative Ridge meta-learner improves MedAPE by 0.46pp over v4</div>
       <div class="chart-wrap" style="height:200px">
         <canvas id="stackCompareChart"></canvas>
       </div>
@@ -287,8 +287,8 @@
 
     <!-- ── Chart 2: v1 vs v2 vs v2.1 vs Baseline ─────────── -->
     <div class="chart-card">
-      <h2 id="c2Title">⚡ Baseline → v1 → v2 → Stack v2.1</h2>
-      <div class="chart-sub" id="c2Sub">v2.1 stack on 185K rows achieves R²=0.651 vs baseline R²=0.238 — 5× more data drove R² from 0.591 → 0.651</div>
+      <h2 id="c2Title">⚡ Baseline → v1 → v2 → Stack v5</h2>
+      <div class="chart-sub" id="c2Sub">v5 stack on 185K rows achieves R²=0.658 vs baseline R²=0.238 — 4 diverse base learners + 4 interaction features drove R² from 0.591 → 0.658</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="baselineChart"></canvas>
       </div>
@@ -305,7 +305,7 @@
 
     <!-- ── Chart 4: Feature Categories Donut ────────────── -->
     <div class="chart-card">
-      <h2 id="c4Title">🗂️ Feature Categories Breakdown (81 Features)</h2>
+      <h2 id="c4Title">🗂️ Feature Categories Breakdown (85 Features)</h2>
       <div class="chart-sub" id="c4Sub">v2 adds 9 log-distances, 4 urban gravity centres, 3 interactions, walk-score proxy, and 2 target-encoded codes</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="categoryDonut"></canvas>
@@ -467,25 +467,25 @@
   function ctx(id) { return document.getElementById(id).getContext('2d'); }
 
   // ────────────────────────────────────────────────────────────────
-  // 0. Stack v2.1 Model Comparison
+  // 0. Stack v5 Model Comparison
   // ────────────────────────────────────────────────────────────────
   new Chart(ctx('stackCompareChart'), {
     type: 'bar',
     data: {
-      labels: ['XGBoost v2', 'LightGBM', 'CatBoost', 'Stack v2.1\n(XGB+LGB+CAT+Ridge)'],
+      labels: ['XGB-A (deep)', 'XGB-B (shallow)', 'LGB (wide)', 'CAT (high-cap)', 'Stack v5\n(4-Model+Ridge)'],
       datasets: [
         {
           label: 'R² Holdout',
-          data: [0.6537, 0.6511, 0.6446, 0.6509],
-          backgroundColor: [C.blueLt, C.tealLt, C.purpleLt, C.greenLt],
-          borderColor:     [C.blue,   C.teal,   C.purple,   C.green],
+          data: [0.6582, 0.6512, 0.6532, 0.6555, 0.6582],
+          backgroundColor: [C.blueLt, C.tealLt, C.purpleLt, C.greenLt, C.orangeLt || '#fde68a'],
+          borderColor:     [C.blue,   C.teal,   C.purple,   C.green,   C.orange],
           borderWidth: 2.5,
           borderRadius: 6,
           yAxisID: 'y',
         },
         {
           label: 'MedAPE (%)',
-          data: [20.48, 20.35, 21.21, 20.29],
+          data: [20.19, 20.52, 20.51, 20.52, 20.34],
           type: 'line',
           borderColor: C.orange,
           backgroundColor: 'transparent',
@@ -624,8 +624,8 @@
           borderRadius: 5,
         },
         {
-          label: 'THAMAN v2.1 Stack ✓',
-          data:  [0.6509, 1.056, 20.29],
+          label: 'THAMAN v5 Stack ✓',
+          data:  [0.6582, 1.056, 20.34],
           backgroundColor: [C.tealLt, C.tealLt, C.tealLt],
           borderColor:     [C.teal,   C.teal,   C.teal],
           borderWidth: 2.5,
@@ -1220,7 +1220,7 @@
       tagline:    'Model Analytics Dashboard v2.1',
       backLink:   '← Back to Map',
       features:   '71 Features',
-      pageTitle:  'THAMAN v2.1 — NYC Property Valuation Stack',
+      pageTitle:  'THAMAN v5 — NYC Property Valuation Stack',
       pageSub:    'XGBoost + LightGBM + CatBoost + Ridge meta · 71 features · Spatial GroupKFold CV · Honest time-based holdout · 185K NYC sales',
       kpi1: 'R² Stack Holdout',
       kpi2: 'Median APE',       kpi2s: '±20.29% confidence interval',
@@ -1228,11 +1228,11 @@
       kpi4: 'Tier Accuracy',    kpi4s: 'Within-1-tier: 96.7%',
       kpi5: 'Boosting Rounds',  kpi5s: 'v1: 917 rounds',
       kpi6: 'Features',         kpi6s: 'v1: 50 features (+20 new)',
-      c0t: '⚖️ Stack v2.1 — Base Learner Comparison (XGB + LGB + CatBoost)',
+      c0t: '⚖️ Stack v5 — Base Learner Comparison (XGB + LGB + CatBoost)',
       c0s: 'Holdout R² and MedAPE for each base model vs the 3-model Ridge stack — CatBoost adds diversity; stack reduces MedAPE by 0.19pp vs XGBoost alone',
       c1t: '🔍 SHAP Feature Importance — Top 20 (v2)',
       c1s: 'Mean |SHAP| on holdout set — target-encoded bldgclass is now the strongest predictor, replacing raw building size',
-      c2t: '⚡ Baseline → v1 → v2 → Stack v2.1',
+      c2t: '⚡ Baseline → v1 → v2 → Stack v5',
       c2s: 'v2.1 stack on 185K rows achieves R²=0.651 vs baseline R²=0.238 — 5× more data drove R² from 0.591 → 0.651',
       c3t: '📈 Train · Val · Holdout · Spatial CV',
       c3s: 'Spatial CV (0.559±0.06) is the true generalisation estimate — fold variance reveals borough-level difficulty',

@@ -329,7 +329,7 @@ LGB_PARAMS = dict(
 CAT_PARAMS = dict(
     iterations=2000, learning_rate=0.025, depth=8,
     l2_leaf_reg=1.5, random_strength=0.5,
-    bagging_temperature=0.8, feature_border_count=64,
+    bagging_temperature=0.8, border_count=64,
     early_stopping_rounds=150, random_seed=42, verbose=0,
 )
 
