@@ -1300,6 +1300,38 @@ select optgroup { color: var(--gray-500); font-style: normal; }
 }
 [dir="rtl"] .addr-search-wrap { flex-direction: row-reverse; }
 
+/* ── Share / Export Actions ──────────────────────────────────────────── */
+.share-actions {
+  display: flex; gap: 8px; margin-top: 12px;
+}
+.share-btn {
+  flex: 1; padding: 7px 10px;
+  background: var(--white); border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm); cursor: pointer;
+  font-size: .75rem; font-weight: 600; font-family: inherit;
+  color: var(--gray-700); transition: background .15s, border-color .15s, color .15s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.share-btn:hover {
+  background: var(--indigo-light, #eef2ff); border-color: var(--indigo, #6366f1);
+  color: var(--indigo, #6366f1);
+}
+
+/* ── Toast Notification ──────────────────────────────────────────────── */
+.toast-notification {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(16px);
+  background: var(--gray-900); color: var(--white);
+  padding: 10px 20px; border-radius: 20px;
+  font-size: .82rem; font-weight: 600; font-family: inherit;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+  opacity: 0; pointer-events: none; z-index: 9999;
+  transition: opacity .22s ease, transform .22s ease;
+  white-space: nowrap;
+}
+.toast-notification.visible {
+  opacity: 1; transform: translateX(-50%) translateY(0);
+}
+
 /* ── Property Comparison Modal ───────────────────────────────────────── */
 .compare-overlay {
   position: fixed; inset: 0; z-index: 2000;
