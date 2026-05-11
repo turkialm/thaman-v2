@@ -185,3 +185,45 @@ def test_nearby_invalid_coords(client):
     """Invalid coordinates should return 422."""
     response = client.get("/nearby?lat=999&lon=999")
     assert response.status_code == 422
+
+
+# ── AVM QC block ──────────────────────────────────────────────────────
+
+def test_predict_returns_avm_qc_block(client):
+    """/predict response must include an avm_qc block."""
+    data = client.post("/predict", json=BROOKLYN_A1).json()
+    assert "avm_qc" in data, "avm_qc block missing from /predict response"
+    assert data["avm_qc"] is not None
+
+
+def test_avm_qc_has_required_fields(client):
+    """avm_qc must contain all 2026 AVM standard fields."""
+    qc = client.post("/predict", json=BROOKLYN_A1).json()["avm_qc"]
+    for field in ["confidence_score", "confidence_grade", "segment_medape_pct",
+                  "comparables_found", "comparables_radius_m", "sparse_market", "qc_flags"]:
+        assert field in qc, f"Missing avm_qc field: {field}"
+
+
+def test_avm_qc_confidence_score_range(client):
+    """confidence_score must be an integer in [0, 100]."""
+    qc = client.post("/predict", json=BROOKLYN_A1).json()["avm_qc"]
+    assert isinstance(qc["confidence_score"], int)
+    assert 0 <= qc["confidence_score"] <= 100
+
+
+def test_avm_qc_comparable_count_non_negative(client):
+    """comparables_found must be ≥ 0 and radius must be 800."""
+    qc = client.post("/predict", json=BROOKLYN_A1).json()["avm_qc"]
+    assert qc["comparables_found"] >= 0
+    assert qc["comparables_radius_m"] == 800
+
+
+def test_luxury_flag_for_high_price(client):
+    """LUXURY_SEGMENT flag should appear when predicted price exceeds $3M."""
+    data = client.post("/predict", json=MANHATTAN_D4).json()
+    qc   = data["avm_qc"]
+    # If the model predicts above $3M, the flag must be present
+    if data["predicted_price"] > 3_000_000:
+        assert "LUXURY_SEGMENT" in qc["qc_flags"]
+    # qc_flags is always a list (may be empty)
+    assert isinstance(qc["qc_flags"], list)

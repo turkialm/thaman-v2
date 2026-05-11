@@ -141,3 +141,59 @@ def test_explain_returns_shap_df(scorer):
     shap_df  = scorer.explain(df)
     assert shap_df.shape == (1, 81)
     assert list(shap_df.columns) == scorer.feature_names
+
+
+# ── Adaptive Confidence ───────────────────────────────────────────────
+
+def test_adaptive_confidence_returns_required_keys(scorer):
+    """_adaptive_confidence should return all five required keys."""
+    result = scorer._adaptive_confidence(price=750_000, borough=3)  # Brooklyn
+    for key in ["segment_medape", "confidence_score", "confidence_grade",
+                "tier_label", "borough_name"]:
+        assert key in result, f"Missing key: {key}"
+
+
+def test_adaptive_confidence_score_range(scorer):
+    """confidence_score must always be an integer in [0, 100]."""
+    for borough in [1, 2, 3, 4, 5]:
+        for price in [300_000, 750_000, 2_000_000, 5_000_000]:
+            r = scorer._adaptive_confidence(price, borough)
+            assert 0 <= r["confidence_score"] <= 100, (
+                f"Score out of range for borough={borough}, price={price}: {r['confidence_score']}"
+            )
+
+
+def test_adaptive_confidence_grade_matches_score(scorer):
+    """Grade must correspond to the documented score thresholds."""
+    r = scorer._adaptive_confidence(price=750_000, borough=4)  # Queens
+    score = r["confidence_score"]
+    expected = ("A" if score >= 85 else "B" if score >= 75
+                else "C" if score >= 65 else "D")
+    assert r["confidence_grade"] == expected, (
+        f"Grade {r['confidence_grade']} does not match score {score}"
+    )
+
+
+def test_predict_single_returns_confidence_fields(scorer):
+    """predict_single must now return confidence_score, confidence_grade, segment_medape_pct."""
+    result = scorer.predict_single(
+        latitude=40.7589, longitude=-73.9851,
+        gross_square_feet=950, building_age=40,
+        bldgclass_encoded=scorer.bldgclass_means.get("D4", 13.0),
+        borough_bldg_encoded=scorer.borough_bldg_means.get("1_D", 13.0),
+        borough=1, numfloors=12, residential_units=1,
+    )
+    assert "confidence_score"   in result
+    assert "confidence_grade"   in result
+    assert "segment_medape_pct" in result
+    assert result["confidence_grade"] in ("A", "B", "C", "D")
+
+
+def test_manhattan_lower_confidence_than_staten_island(scorer):
+    """Manhattan MedAPE=34.22% > Staten Island=13.79% → lower score at same price."""
+    mn = scorer._adaptive_confidence(price=750_000, borough=1)
+    si = scorer._adaptive_confidence(price=750_000, borough=5)
+    assert mn["confidence_score"] < si["confidence_score"], (
+        f"Manhattan score {mn['confidence_score']} should be lower than "
+        f"Staten Island {si['confidence_score']}"
+    )

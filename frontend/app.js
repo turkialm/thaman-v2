@@ -805,6 +805,7 @@ function hideResults() {
   shapCard.style.display    = 'none';
   spatialCard.style.display = 'none';
   document.getElementById('marketCard').style.display  = 'none';
+  document.getElementById('avmQcRow').style.display    = 'none';
   _compsLoaded = false;
 }
 
@@ -863,10 +864,43 @@ function renderResults(data) {
   confLow.textContent  = fmt$(low);
   confHigh.textContent = fmt$(high);
   confFill.style.left  = '0%';
-  confFill.style.width = '100%';
   const markerPct = Math.round(((pred - low) / span) * 100);
   confMarker.style.left = `${markerPct}%`;
   confBarWrap.style.display = 'block';
+
+  // ── AVM QC block ─────────────────────────────────────────────────
+  const qc = data.avm_qc;
+  if (qc) {
+    const T = TR[currentLang];
+    // Grade badge
+    const badgeEl = document.getElementById('confGradeBadge');
+    badgeEl.textContent = qc.confidence_grade;
+    badgeEl.className   = `conf-grade-badge conf-grade-${qc.confidence_grade}`;
+    // Comparable count
+    document.getElementById('avmCompsLine').textContent =
+      `${qc.comparables_found} ${T.comparablesLabel}`;
+    // Confidence bar fill reflects score strength (not always 100%)
+    confFill.style.width = `${qc.confidence_score}%`;
+    // QC flags
+    const flagsEl = document.getElementById('avmFlagsRow');
+    flagsEl.innerHTML = '';
+    const FLAG_MAP = {
+      'SPARSE_MARKET':    ['avm-flag-sparse',  'flagSparse'],
+      'LUXURY_SEGMENT':   ['avm-flag-luxury',  'flagLuxury'],
+      'HIGH_UNCERTAINTY': ['avm-flag-highunc', 'flagHighUnc'],
+      'METRO_CORE':       ['avm-flag-metro',   'flagMetro'],
+    };
+    (qc.qc_flags || []).forEach(flag => {
+      const [cls, key] = FLAG_MAP[flag] || ['', flag];
+      const span = document.createElement('span');
+      span.className   = `avm-qc-flag ${cls}`;
+      span.textContent = T[key] || flag;
+      flagsEl.appendChild(span);
+    });
+    document.getElementById('avmQcRow').style.display = 'flex';
+  } else {
+    confFill.style.width = '100%';
+  }
 
   // ── Update map popup ──────────────────────────────────────────────
   if (marker) {
@@ -1267,7 +1301,12 @@ const TR = {
     tabNearby:      '📍 Nearby Sales',
     tabComps:       '🏛 Area Comps',
     trendHeader:    '📈 Price Trend (last 24 mo)',
-    bldgAdvLabel:   'Advanced: search all codes',
+    bldgAdvLabel:      'Advanced: search all codes',
+    comparablesLabel:  'comparables found within 800m',
+    flagSparse:        '⚠ Sparse data area — estimate less reliable',
+    flagLuxury:        '🏆 Luxury tier — wider confidence range',
+    flagHighUnc:       '⚠ High uncertainty segment',
+    flagMetro:         '🏙 Manhattan core premium applies',
   },
   ar: {
     estimateBtn:    'تقدير السعر',
@@ -1323,7 +1362,12 @@ const TR = {
     tabNearby:      '📍 المبيعات القريبة',
     tabComps:       '🏛 مقارنات المنطقة',
     trendHeader:    '📈 اتجاه السعر (آخر 24 شهرًا)',
-    bldgAdvLabel:   'متقدم: البحث في جميع الرموز',
+    bldgAdvLabel:      'متقدم: البحث في جميع الرموز',
+    comparablesLabel:  'معاملة مقارنة في نطاق 800 متر',
+    flagSparse:        '⚠ منطقة بيانات نادرة — التقدير أقل موثوقية',
+    flagLuxury:        '🏆 فئة الفاخرة — نطاق ثقة أوسع',
+    flagHighUnc:       '⚠ قطاع عدم يقين عالٍ',
+    flagMetro:         '🏙 علاوة وسط مانهاتن مطبّقة',
   },
 };
 
@@ -1406,6 +1450,13 @@ function setLang(lang) {
     document.getElementById('tabComps').textContent  = T.tabComps;
   if (document.getElementById('trendHeader'))
     document.getElementById('trendHeader').textContent = T.trendHeader;
+
+  // AVM comps line — re-render label suffix if card is visible
+  const compsEl = document.getElementById('avmCompsLine');
+  if (compsEl && compsEl.textContent && !compsEl.textContent.startsWith('—')) {
+    const count = compsEl.textContent.split(' ')[0];
+    compsEl.textContent = `${count} ${T.comparablesLabel}`;
+  }
 
   // Borough select options
   const boroughNames = {

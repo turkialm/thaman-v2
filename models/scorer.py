@@ -24,6 +24,18 @@ _DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class ThamanScorer:
+    # ── Borough / tier constants for adaptive confidence ────────────
+    _BOROUGH_INT_TO_NAME = {
+        1: "Manhattan", 2: "Bronx", 3: "Brooklyn",
+        4: "Queens",    5: "Staten Island",
+    }
+    _TIER_BINS = [
+        (0,           500_000,    "<$500K"),
+        (500_000,   1_000_000,   "$500K–1M"),
+        (1_000_000,  3_000_000,  "$1M–3M"),
+        (3_000_000, 10_000_000,  "$3M–10M"),
+    ]
+
     def __init__(self):
         meta_path   = os.path.join(_DIR, "meta.json")
         model_path  = os.path.join(_DIR, "xgboost_model.json")
@@ -141,14 +153,62 @@ class ThamanScorer:
             r2     = self.meta["xgboost"]["r2_test"]
             model_label = "XGBoost v2"
 
-        mult = medape / 100.0
+        conf    = self._adaptive_confidence(price, int(kwargs.get("borough", 0)))
+        seg_med = conf["segment_medape"]
+        mult    = seg_med / 100.0
+
         return {
-            "predicted_price":  round(price),
-            "confidence_low":   round(price * (1.0 - mult)),
-            "confidence_high":  round(price * (1.0 + mult)),
-            "model":            model_label,
-            "r2_test":          r2,
-            "medape_test_pct":  medape,
+            "predicted_price":    round(price),
+            "confidence_low":     round(price * (1.0 - mult)),   # segment-adaptive
+            "confidence_high":    round(price * (1.0 + mult)),   # segment-adaptive
+            "confidence_score":   conf["confidence_score"],
+            "confidence_grade":   conf["confidence_grade"],
+            "segment_medape_pct": seg_med,
+            "tier_label":         conf["tier_label"],
+            "model":              model_label,
+            "r2_test":            r2,
+            "medape_test_pct":    medape,   # global value kept for backward compat
+        }
+
+    # ── Segment-adaptive confidence ────────────────────────────────
+    def _adaptive_confidence(self, price: float, borough: int) -> dict:
+        """
+        Returns a confidence score (0–100) and grade (A/B/C/D) based on
+        the per-segment MedAPE for the given borough and price tier.
+        Uses the WORSE (higher) of the two segment MedAPEs so the interval
+        is conservatively wide when two risk factors coincide.
+        """
+        global_medape = self.meta["stack"]["medape_holdout"]
+        borough_name  = self._BOROUGH_INT_TO_NAME.get(borough, "Unknown")
+
+        borough_medape = (
+            self.meta.get("segment_by_borough", {})
+                .get(borough_name, {}).get("medape", global_medape)
+        )
+
+        tier_label,  tier_medape = "$3M–10M", global_medape
+        for lo, hi, label in self._TIER_BINS:
+            if lo <= price < hi:
+                tier_label  = label
+                tier_medape = (
+                    self.meta.get("segment_by_tier", {})
+                        .get(label, {}).get("medape", global_medape)
+                )
+                break
+
+        segment_medape   = max(borough_medape, tier_medape)
+        confidence_score = max(0, min(100, round(100 - segment_medape)))
+        if   confidence_score >= 85: grade = "A"
+        elif confidence_score >= 75: grade = "B"
+        elif confidence_score >= 65: grade = "C"
+        else:                         grade = "D"
+
+        return {
+            "segment_medape":   round(segment_medape, 2),
+            "confidence_score": confidence_score,
+            "confidence_grade": grade,
+            "tier_label":       tier_label,
+            "borough_name":     borough_name,
         }
 
     # ── SHAP explanation for one property ──────────────────────────
