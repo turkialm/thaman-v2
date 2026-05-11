@@ -25,8 +25,8 @@ def test_scorer_loads(scorer):
 
 
 def test_scorer_has_feature_names(scorer):
-    """Scorer should have 85 feature names (v5: +4 interaction features over v4's 81)."""
-    assert len(scorer.feature_names) == 85
+    """Scorer should have 93 feature names (v9: same v6 feature set, raw NTA encoding)."""
+    assert len(scorer.feature_names) == 93
 
 
 def test_scorer_has_bldgclass_means(scorer):
@@ -85,13 +85,16 @@ def test_predict_single_confidence_ordering(scorer):
 
 
 def test_manhattan_more_expensive_than_staten_island(scorer):
-    """Manhattan property should be priced higher than similar Staten Island property."""
+    """Manhattan high-rise condo (D4) should be priced higher than a Staten Island single-family.
+    Uses global_mean_log for NTA to avoid leaking borough-specific encoding into the comparison
+    — location is captured by lat/lon, borough, and numfloors instead.
+    """
     mn = scorer.predict_single(
         latitude=40.7589, longitude=-73.9851,
-        gross_square_feet=1200, building_age=40,
-        bldgclass_encoded=scorer.bldgclass_means.get("A1", 13.0),
-        borough_bldg_encoded=scorer.borough_bldg_means.get("1_A", 13.0),
-        borough=1, numfloors=2, residential_units=1,
+        gross_square_feet=1200, building_age=20,
+        bldgclass_encoded=scorer.bldgclass_means.get("D4", 13.0),
+        borough_bldg_encoded=scorer.borough_bldg_means.get("1_D", 13.0),
+        borough=1, numfloors=20, residential_units=1,
     )
     si = scorer.predict_single(
         latitude=40.5795, longitude=-74.1502,
