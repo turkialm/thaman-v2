@@ -258,7 +258,7 @@
         <div class="price-block">
           <div class="price-label-row">
             <span class="price-label">AI Estimate</span>
-            <span class="model-tag">Stack v4 · XGB+LGB+CAT</span>
+            <span class="model-tag" id="modelTag">Stack v4 · XGB+LGB+CAT</span>
           </div>
           <div class="price-main" id="priceMain">—</div>
           <div class="price-range" id="priceRange">—</div>
@@ -287,6 +287,15 @@
             <div class="avm-qc-comps" id="avmCompsLine">— comparables within 800m</div>
             <div id="avmFlagsRow"></div>
           </div>
+        </div>
+        <!-- Share / Export actions -->
+        <div class="share-actions" id="shareActions">
+          <button class="share-btn" onclick="shareEstimate()" title="Copy shareable link">
+            🔗 Share Link
+          </button>
+          <button class="share-btn" onclick="copyResults()" title="Copy estimate to clipboard">
+            📋 Copy Results
+          </button>
         </div>
       </div>
 
@@ -335,6 +344,9 @@
 
     </aside>
   </main>
+
+  <!-- ── Toast notification ──────────────────────────────────────────── -->
+  <div class="toast-notification" id="toastNotif"></div>
 
   <!-- ── Property Comparison Modal ────────────────────────────────────── -->
   <div class="compare-overlay" id="compareOverlay" style="display:none" onclick="closeCompare(event)">

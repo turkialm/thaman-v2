@@ -54,13 +54,19 @@ class ThamanScorer:
         self.borough_bldg_means = self.meta["borough_bldg_means"]
         self.global_mean_log    = self.meta["global_mean_log"]
 
-        # Stack (LGB + Ridge meta) — optional
+        # Stack (multi-model + Ridge meta) — optional
         self._stack = None
         if os.path.exists(stack_path):
             self._stack = joblib.load(stack_path)
-            has_cat = "cat" in self._stack
-            label = "XGB + LGB + CAT + Ridge" if has_cat else "XGB + LGB + Ridge"
-            print(f"  [scorer] Stack loaded ({label})")
+            # v5: xgb_a + xgb_b + lgb + cat; v4: lgb + cat; v3: lgb only
+            ver = self._stack.get("version", "v4")
+            if ver == "v5":
+                label = "XGB-A + XGB-B + LGB + CAT + Ridge (v5)"
+            elif "cat" in self._stack:
+                label = "XGB + LGB + CAT + Ridge (v4)"
+            else:
+                label = "XGB + LGB + Ridge (v3)"
+            print(f"  [scorer] Stack loaded: {label}")
         else:
             print(f"  [scorer] Stack not found — using XGBoost only")
 
@@ -103,12 +109,22 @@ class ThamanScorer:
         log_xgb = self.model.predict(dmat)
 
         if self._stack is not None:
-            log_lgb = self._stack["lgb"].predict(Xv).astype(np.float32)
-            cols = [log_xgb, log_lgb]
-            if "cat" in self._stack:
+            ver = self._stack.get("version", "v4")
+            if ver == "v5":
+                # 4-model diverse stack: XGB-A + XGB-B + LGB + CAT
+                log_xa  = self._stack["xgb_a"].predict(Xv).astype(np.float32)
+                log_xb  = self._stack["xgb_b"].predict(Xv).astype(np.float32)
+                log_lgb = self._stack["lgb"].predict(Xv).astype(np.float32)
                 log_cat = self._stack["cat"].predict(Xv).astype(np.float32)
-                cols.append(log_cat)
-            S         = np.column_stack(cols)
+                S = np.column_stack([log_xa, log_xb, log_lgb, log_cat])
+            else:
+                # Legacy v4 / v3 stack: XGB (base model) + LGB [+ CAT]
+                log_lgb = self._stack["lgb"].predict(Xv).astype(np.float32)
+                cols = [log_xgb, log_lgb]
+                if "cat" in self._stack:
+                    log_cat = self._stack["cat"].predict(Xv).astype(np.float32)
+                    cols.append(log_cat)
+                S = np.column_stack(cols)
             log_final = self._stack["meta"].predict(S).astype(np.float32)
         else:
             log_final = log_xgb
@@ -147,7 +163,8 @@ class ThamanScorer:
         if self._stack is not None and "stack" in self.meta:
             medape = self.meta["stack"]["medape_holdout"]
             r2     = self.meta["stack"]["r2_holdout"]
-            model_label = "XGBoost + LightGBM Stack"
+            ver    = self._stack.get("version", "v4") if self._stack else "v4"
+            model_label = f"Stack {ver} · 4-Model Ensemble" if ver == "v5" else "XGBoost + LightGBM Stack"
         else:
             medape = self.meta["xgboost"]["medape_test"]
             r2     = self.meta["xgboost"]["r2_test"]
