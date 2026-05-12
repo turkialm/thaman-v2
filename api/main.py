@@ -816,7 +816,7 @@ def nearby_sales(lat: float, lon: float, radius_m: int = 800, limit: int = 8):
     if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
         raise HTTPException(status_code=422, detail="Invalid coordinates.")
 
-    limit = min(max(1, limit), 20)
+    limit = min(max(1, limit), 100)
 
     # Search within radius (degree approximation: 1° ≈ 111 km)
     radius_deg = radius_m / 111_000.0

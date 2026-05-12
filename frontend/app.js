@@ -956,7 +956,7 @@ function shapContext(feature, value, isPositive) {
 async function fetchSalesForView() {
   const c = map.getCenter(), z = map.getZoom();
   try {
-    const r = await fetch(`${API_BASE}/nearby?lat=${c.lat}&lon=${c.lng}&radius_m=${radiusForZoom(z)}&limit=25`);
+    const r = await fetch(`${API_BASE}/nearby?lat=${c.lat}&lon=${c.lng}&radius_m=${radiusForZoom(z)}&limit=50`);
     if (!r.ok) return;
     const d = await r.json();
     renderSalesBubbles(d.nearby || []);
