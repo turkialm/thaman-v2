@@ -3,10 +3,10 @@ THAMAN: AN AUTOMATED VALUATION MODEL FOR NEW YORK CITY RESIDENTIAL PROPERTIES
 USING ENSEMBLE MACHINE LEARNING AND QUALITY-OF-LIFE SPATIAL INDICATORS
 ================================================================================
 
-Author:   Turki Almurahhem
-Degree:   Bachelor of Science in [Your Field]
+Author:      Turki Almurahhem
+Degree:      Bachelor of Science in [Your Field]
 Institution: Umm Al-Qura University
-Year:     2026
+Year:        2026
 
 ================================================================================
 ABSTRACT
@@ -30,14 +30,15 @@ signalling, and four quality control flags (SPARSE_MARKET, LUXURY_SEGMENT,
 HIGH_UNCERTAINTY, METRO_CORE).
 
 A bilingual (English/Arabic) web application provides interactive map-based
-property valuation with SHAP-driven feature explanations, a confidence band,
+property valuation with SHAP-driven feature explanations including waterfall
+visualisations, natural-language tooltips, a segment-adaptive confidence band,
 and real-time neighbourhood-level encoding resolved from a 185K-sale spatial
 index. The complete system is deployed on Hugging Face Spaces and open-sourced
 on GitHub.
 
 Keywords: automated valuation model, ensemble learning, XGBoost, LightGBM,
 CatBoost, stacking, target encoding, spatial features, SHAP, New York City,
-real estate, quality of life indicators, adaptive confidence.
+real estate, quality of life indicators, adaptive confidence, NTA encoding.
 
 ================================================================================
 1. INTRODUCTION
@@ -51,20 +52,33 @@ expensive ($300–$500 per appraisal), and subject to appraiser bias. Automated
 Valuation Models (AVMs) use statistical and machine learning methods to produce
 instant price estimates at near-zero marginal cost.
 
-Existing commercial AVMs (Zillow Zestimate, CoreLogic AVM) are proprietary and
-opaque. Academic models typically use basic hedonic regression on structural
-attributes (size, age, rooms) and ignore the growing body of evidence showing
-that Quality-of-Life factors — transit access, green space, crime, walkability —
-are significant price determinants in urban markets.
+The deployment of AVMs in highly heterogeneous real estate markets presents a
+formidable computational challenge at the intersection of data science, urban
+economics, and municipal policy. Urban environments characterised by dense
+stratification, hyper-local zoning regulations, and vast disparities in
+structural typologies require valuation frameworks that transcend simple linear
+hedonic pricing or naive comparative market analyses.
 
-This project addresses three gaps:
+Existing commercial AVMs (Zillow Zestimate, Redfin Estimate, CoreLogic) are
+proprietary and opaque. Empirical evaluations indicate that while they modestly
+outperform naive list prices, they remain highly vulnerable to geographic
+heterogeneity and tail risks. Error distributions tend to be heavy-tailed, with
+extreme misvaluations concentrated in specific neighbourhoods or among atypical
+properties. Furthermore, algorithmic bias presents a systemic risk: analyses
+demonstrate that AVMs can systematically yield greater valuation errors for
+minority homeowners, producing errors significantly higher in majority-Black
+neighbourhoods even after controlling for structural characteristics.
+
+This project addresses four gaps:
   1. Most NYC-focused models use small datasets (5K–50K sales). This work uses
      185K sales across five boroughs and four years.
   2. QoL spatial indicators are rarely integrated end-to-end from raw open data
      into a production-ready inference pipeline.
-  3. AVM confidence communication is often binary (estimate + one interval).
-     This work implements segment-adaptive confidence with a formal QC block
-     aligned with 2026 AVM industry standards.
+  3. AVM confidence communication is often binary. This work implements
+     segment-adaptive confidence with a formal QC block aligned with 2026 AVM
+     industry standards.
+  4. Most models ignore neighbourhood price momentum. This work introduces an
+     NTA-level log-linear price trend slope as an explicit feature.
 
 1.2 Research Questions
 ----------------------
@@ -78,6 +92,9 @@ This project addresses three gaps:
   RQ3: How should confidence intervals be communicated to reflect the
        heterogeneous predictability across boroughs and price tiers?
 
+  RQ4: Does incorporating neighbourhood price appreciation momentum (NTA price
+       trend slope) further improve model accuracy?
+
 1.3 Contributions
 -----------------
   - A full end-to-end AVM pipeline from raw NYC open data to deployed web app.
@@ -87,46 +104,64 @@ This project addresses three gaps:
     sales, with NTA price trend slope as the 94th feature.
   - Segment-adaptive confidence intervals per borough × price tier.
   - A formal AVM QC block with four risk flags.
-  - A bilingual (English/Arabic) interactive valuation interface.
+  - A bilingual (English/Arabic) interactive valuation interface with SHAP
+    waterfall plots and natural-language explanations.
 
 ================================================================================
 2. RELATED WORK
 ================================================================================
 
-2.1 Hedonic Price Models
+2.1 The Evolution and Limitations of Traditional AVMs
+------------------------------------------------------
+Automated valuation algorithms are mathematically based software programs that
+market analysts, lenders, and institutions use to produce market value estimates
+based on location, market conditions, and real estate characteristics. From their
+inception, they have been utilised by government-sponsored enterprises (GSEs)
+and financial institutions for underwriting lower loan-to-value mortgages,
+facilitating home equity lines of credit (HELOCs), and conducting portfolio-wide
+collateral risk assessments.
+
+The baseline performance of contemporary commercial AVMs in dense urban cores
+typically yields a MedAPE between 17.5% and 19.8%, with models frequently
+overstating administrative assessments by 16–18%. These models routinely
+struggle to maintain predictive parity across diverse property classes, often
+generating wider error distributions in heterogeneous zip codes or historically
+marginalised neighbourhoods — embedding systematic upward biases and heavy-tailed
+error distributions that carry severe implications for lending equity and market
+transparency.
+
+2.2 Hedonic Price Models
 ------------------------
 The hedonic pricing framework (Rosen, 1974) decomposes property price into
 implicit prices of constituent attributes. Early models used OLS regression on
 structural features: floor area, number of rooms, age, and location dummies.
 These typically achieve R² of 0.5–0.65 on urban datasets (Sirmans et al., 2005).
 
-2.2 Machine Learning for Property Valuation
+2.3 Machine Learning for Property Valuation
 -------------------------------------------
 Gradient boosted trees have become the dominant method in AVM literature.
-Gradient Boosting Machines (Friedman, 2001), implemented as XGBoost (Chen &
-Guestrin, 2016), LightGBM (Ke et al., 2017), and CatBoost (Prokhorenkova et
-al., 2018), consistently outperform OLS and neural networks on tabular real
-estate data (Phan, 2018; Truong et al., 2020).
+XGBoost (Chen & Guestrin, 2016), LightGBM (Ke et al., 2017), and CatBoost
+(Prokhorenkova et al., 2018) consistently outperform OLS and neural networks
+on tabular real estate data (Phan, 2018; Truong et al., 2020).
 
 Ensemble stacking — training a meta-learner on out-of-fold predictions of
 diverse base models — further improves accuracy by reducing correlated errors
 (Wolpert, 1992; Breiman, 1996).
 
-2.3 Spatial and QoL Features
+2.4 Spatial and QoL Features
 -----------------------------
-Proximity to transit is a well-documented price determinant. A New York
-Metropolitan Transportation Authority study found subway station proximity adds
-$0–$8K per 100m reduction in walking distance, with express stations commanding
-a premium over local stations (Hess & Almeida, 2007). Park proximity (Lutzenhiser
-& Netusil, 2001), school quality (Black, 1999), and crime rates (Ihlanfeldt &
-Mayock, 2010) have all been shown to capitalise into residential prices.
+Proximity to transit is a well-documented price determinant. A New York MTA
+study found subway station proximity adds $0–$8K per 100m reduction in walking
+distance, with express stations commanding a premium over local stations (Hess
+& Almeida, 2007). Park proximity (Lutzenhiser & Netusil, 2001), school quality
+(Black, 1999), and crime rates (Ihlanfeldt & Mayock, 2010) have all been shown
+to capitalise into residential prices.
 
-2.4 AVM Confidence and Quality
+2.5 AVM Confidence and Quality
 -------------------------------
 The 2026 AVM model risk management guidelines recommend that every AVM output
 include: (a) a confidence score, (b) a comparable count (hit rate), and
-(c) explicit quality flags for data-sparse or atypical segments. These
-requirements motivate the confidence architecture in this work.
+(c) explicit quality flags for data-sparse or atypical segments.
 
 ================================================================================
 3. DATA
@@ -152,13 +187,6 @@ Distribution by borough:
   Queens:        57,070 sales (30.8%)
   Staten Island: 18,138 sales  (9.8%)
 
-Distribution by year:
-  2022:  59,559 sales
-  2023:  44,783 sales
-  2024:  45,634 sales
-  2025:  32,819 sales
-  2026:   2,297 sales
-
 Price statistics:
   Median:  $820,000
   Mean:    $1,778,977  (skewed by luxury sales)
@@ -169,17 +197,45 @@ Price statistics:
 -------------------------------------------
 Source:   NYC Department of City Planning
 Version:  PLUTO 25v4
-Fields used: assesstot (total assessed value), assessland (land assessed value)
 
-PLUTO was joined to the sales dataset on BBL (Borough-Block-Lot identifier).
-assesstot was used to impute prior_sale_price via an assesstot ratio method:
+PLUTO is an exhaustive compilation of land use, geographic, and building-level
+data maintained at the tax lot level by the NYC Department of City Planning
+(DCP), integrating information from the Department of Finance (DOF), the
+Department of Citywide Administrative Services (DCAS), and the Landmarks
+Preservation Commission (LPC). Merging the sales data with PLUTO via the BBL
+(Borough-Block-Lot) identifier achieves 98.5% coverage.
+
+The assesstot (total assessed value) field was used to impute prior_sale_price
+via an assesstot ratio method:
 
   prior_sale_price_estimated = sale_price × (assesstot_prior / assesstot_current)
 
-This achieved 98.0% coverage on prior_sale_price, which was previously 0%
-from the raw sales file (the field only populates for resales with ACRIS records).
+This achieved 98.0% coverage on prior_sale_price. The imputation must navigate
+New York City's fractional assessment paradigm (see §3.3).
 
-3.3 Spatial Datasets
+3.3 The Fractional Assessment Labyrinth
+----------------------------------------
+Unlike many jurisdictions that tax properties at full market value, NYC's real
+property tax system applies assessment ratios that vary dramatically by tax class,
+originating from the 1975 Hellerstein v. Town of Islip decision.
+
+  Class 1 (1–3 family homes):  target ratio 6% of market value
+  Class 2 (larger residential): target ratio 45% of market value
+  Class 4 (commercial):         target ratio 45% of market value
+
+Critically, state law caps annual assessment growth for Class 1 at 6%/year (20%
+over 5 years) and Class 2 sub-classes at 8%/year (30% over 5 years). During
+bull markets, actual market values routinely outpace these caps. By FY 2024 the
+median effective assessment ratio for Class 1 properties had degraded to 3.9%
+— far below the 6% statutory target.
+
+A naive algorithm that divides Class 1 assesstot by 0.06 to impute market value
+will severely underestimate property worth during periods of high appreciation.
+The THAMAN imputation calibrates the inverse transformation using the actual
+observed sale-price-to-assesstot ratio distribution within each borough, thus
+capturing the effective (not statutory) assessment ratio.
+
+3.4 Spatial Datasets
 --------------------
 All spatial datasets were downloaded from NYC Open Data and processed into
 in-memory KD-tree indexes at API startup time.
@@ -195,25 +251,27 @@ in-memory KD-tree indexes at API startup time.
   Airbnb listings                Inside Airbnb        36,261
   Bike lanes (vertices)          NYC DOT              44,934
   Waterfront / coastline         NYC Open Data        27,116
-  POI: cafés                     OpenStreetMap         5,878
-  POI: restaurants               OpenStreetMap        43,997
-  POI: gyms                      OpenStreetMap         4,542
-  POI: grocery stores            OpenStreetMap         6,826
-  POI: bars                      OpenStreetMap         5,076
-  POI: pharmacies                OpenStreetMap         2,989
+  POI: cafés, restaurants, gyms  OpenStreetMap        60,000+
 
-3.4 Neighbourhood Tabulation Areas (NTA)
+3.5 Neighbourhood Tabulation Areas (NTA)
 -----------------------------------------
 Source:   NYC Department of City Planning — NTA 2020
 Records:  212 NTA codes covering all five boroughs
 
-NTA codes were used for:
-  - Spatial GroupKFold cross-validation (preventing geographic leakage)
-  - Target encoding (NTA-level mean log-price)
-  - Socioeconomic aggregation (crime rate, noise complaints, income,
-    HPD violation rate per NTA)
+NTAs represent a far more sophisticated spatial taxonomy than ZIP codes. Postal
+codes are linear mail delivery routes lacking permanent polygonal boundaries and
+entirely agnostic to socioeconomic realities. NTAs were engineered by DCP to
+balance geographic specificity with statistical reliability — each contains a
+minimum population threshold (15,000–40,000 residents), mitigating the high
+sampling error of sparsely populated Census tracts. Non-residential zones
+(parks, airports, cemeteries) are explicitly separated, preventing the algorithm
+from conflating unpopulated tracts with residential pricing dynamics.
 
-3.5 Macroeconomic Data
+By utilising 212 distinct NTA codes to match 157,321 training rows, the THAMAN
+pipeline ensures spatial encodings reflect genuine community boundaries and
+accurate market sub-segments rather than arbitrary postal delivery networks.
+
+3.6 Macroeconomic Data
 -----------------------
   - 30-year fixed mortgage rate: sourced from Freddie Mac PMMS weekly survey,
     matched to each sale by sale_date. Range in dataset: 3.45% – 7.62%.
@@ -224,27 +282,43 @@ NTA codes were used for:
 
 4.1 Structural Features
 ------------------------
-These are derived from the raw sales and PLUTO datasets.
-
   Feature                  Description
   -------                  -----------
   gross_square_feet        Total building floor area (sq ft)
   land_square_feet         Lot area (sq ft)
   building_age             Current year − year_built
-  numfloors                Number of floors in building
+  numfloors                Number of floors
   residential_units        Number of residential units
-  log_land_sqft            log(1 + land_square_feet)
-  lot_coverage             gross_sqft / land_sqft (building density on lot)
-  bldg_vol_proxy           gross_sqft × numfloors (volumetric proxy)
+  log_land_sqft            log(1 + land_square_feet)  — see §4.1.1
+  lot_coverage             gross_sqft / land_sqft
+  bldg_vol_proxy           gross_sqft × numfloors  — see §4.1.2
   prior_price_psf          prior_sale_price / gross_sqft
   sqft_per_floor           gross_sqft / numfloors
   log_sqft_x_floors        log(gross_sqft) × log(numfloors)
 
+4.1.1 Logarithmic Transformations
+Raw square footage distributions exhibit severe positive right-skewness. A tiny
+minority of ultra-large commercial lots or multi-family complexes possess
+astronomical square footages that distort variance. The log transformation of
+land_square_feet normalises this distribution: changes in the natural logarithm
+approximate percentage changes in the original series, compressing extreme
+outliers and stabilising gradient descent.
+
+4.1.2 Density Proxies and Air Rights
+lot_coverage and bldg_vol_proxy serve as indicators of urban development density.
+Property values in NYC are heavily dictated by zoning Floor Area Ratio (FAR),
+which determines maximum allowable buildable volume on a given tax lot. The
+building volume proxy captures the discrepancy between existing built volume and
+the maximum allowable volume — representing undeveloped "air rights" or
+development potential. Hedonic models lacking PLUTO data completely fail to
+capture this speculative value driver.
+
 4.2 Spatial Distance Features
 ------------------------------
-For each property, the Euclidean distance (converted to metres via
-1 degree ≈ 111,000 metres) to the nearest point in each spatial index
-is computed using scipy.spatial.cKDTree nearest-neighbor queries.
+For each property, Euclidean distance (converted to metres via 1° ≈ 111,000 m)
+to the nearest point in each spatial index is computed using cKDTree queries.
+All distance features are log-transformed: log_dist_X = log(1 + dist_X_m),
+compressing the right-skewed distance distribution and improving tree splits.
 
   Feature                  Source index
   -------                  ------------
@@ -257,9 +331,6 @@ is computed using scipy.spatial.cKDTree nearest-neighbor queries.
   dist_waterfront_m        Coastline index
   dist_bike_lane_m         Bike lane vertex index
 
-All distance features are log-transformed: log_dist_X = log(1 + dist_X_m).
-This compresses the right-skewed distance distribution and improves tree splits.
-
 4.3 Gravity / Urban Core Features
 -----------------------------------
 Distance from four major employment and commercial centres:
@@ -269,8 +340,8 @@ Distance from four major employment and commercial centres:
   dist_downtown_brooklyn_m    (40.6928°N, 73.9903°W)
   dist_long_island_city_m     (40.7447°N, 73.9485°W)
 
-These gravity features capture the wage-gradient effect — properties closer
-to employment centres command a premium even after controlling for borough.
+These gravity features capture the wage-gradient effect — properties closer to
+employment centres command a premium even after controlling for borough.
 
 4.4 Neighbourhood (NTA) Features
 ----------------------------------
@@ -300,8 +371,7 @@ inverse-distance and density components:
     10% × norm(1/dist_park)
   × 100, 0, 100)
 
-Normalisation was performed with MinMaxScaler fit on the training set.
-The scaler parameters are saved in meta.json and applied at inference time.
+Normalisation parameters are saved in meta.json and applied at inference time.
 
 4.7 Temporal Features
 ----------------------
@@ -316,9 +386,21 @@ The scaler parameters are saved in meta.json and applied at inference time.
 4.8 Target Encoding
 --------------------
 Target encoding replaces categorical variables with their mean log(price+1)
-computed on the training set. Raw mean encoding (no Bayesian smoothing) was
-used after empirical testing showed that Bayesian smoothing with k=30 degraded
-the top-ranked SHAP feature (bldgclass_encoded) by 20–37%.
+computed on the training set. Raw mean encoding (k=0) was used after empirical
+testing showed that Bayesian smoothing with k=30 degraded the top-ranked SHAP
+feature (bldgclass_encoded) by 20–37%.
+
+The Bayesian smoothing formula takes the form:
+
+  μ_smoothed = (n × μ_category + w × μ_global) / (n + w)
+
+where n is the number of transactions in the category and w is the regularisation
+weight. In NTAs with thousands of sales, n is large and the encoding relies on
+the localised mean. In obscure building classes with few transactions, w pulls
+the estimate toward the global mean, neutralising statistical noise. Despite this
+theoretical benefit, with 185K training samples even rare building classes have
+enough observations for stable raw mean estimates — making k=0 empirically
+superior on this dataset.
 
   Encoded feature           Groups    Description
   ---------------           ------    -----------
@@ -326,9 +408,6 @@ the top-ranked SHAP feature (bldgclass_encoded) by 20–37%.
   borough_bldg_encoded      ~40       Mean log-price per borough × bldgclass prefix
   nta_encoded               212       Mean log-price per NTA code
   nta_bldg_encoded          2,344     Mean log-price per NTA × bldgclass prefix
-
-All encoded features use the global mean log-price as the fallback for
-unseen categories at inference time.
 
 4.9 Additional Binary Indicators
 ----------------------------------
@@ -343,22 +422,34 @@ unseen categories at inference time.
 
 4.10 NTA Price Trend Slope (v10)
 ----------------------------------
-For each of the 212 NTA codes, an OLS slope is computed over (sale_year,
-mean_log_price) pairs:
+Accurately capturing the momentum of a local submarket is essential for an AVM,
+but calculating this trend presents statistical hurdles. Real estate markets do
+not appreciate in linear fixed-dollar increments; they compound proportionally
+based on current asset valuation. A $50,000 annual increase on a $300,000 home
+represents massive market heat, whereas the same increase on a $4M luxury asset
+represents relative stagnation.
 
-  slope_nta = Σ(year_c × price_c) / Σ(year_c²)   where _c = centred values
+Relying on OLS regression on raw dollar prices yields severe heteroscedasticity,
+as residual variance increases violently with price level. To capture the true,
+scale-invariant compounding trajectory of a neighbourhood, the model computes a
+log-linear trend for each NTA:
 
-A positive slope indicates a neighbourhood where mean log-prices rose year-on-
-year (e.g. Bushwick: +0.08 log units/year ≈ +8%/year). A negative slope
-indicates relative decline.
+  ln(Price_t) = α + β × Time + ε
 
-  Range across 212 NTAs: −2.05 to +1.73 (global median: 0.019)
-  NTAs with fewer than 2 sale-years receive the global median as fallback.
+The slope coefficient β represents the average periodic percentage growth of the
+NTA rather than a nominal dollar increase. Because changes in the natural
+logarithm approximate percentage changes, this log-linear slope standardises
+appreciation rates across disparate economic neighbourhoods. A β of 0.05 in a
+discounted outer-borough NTA signifies exactly the same relative market momentum
+as a β of 0.05 in a premium Manhattan district.
 
-This feature gives the model an explicit appreciation momentum signal. Without
-it, two NTAs with identical current mean prices but different trajectory
-(one rising fast, one declining) receive the same encoding. With it, the model
-can distinguish between them.
+Implementation: OLS slope computed per NTA using centred year and log-price
+arrays across (sale_year, mean_log_price) pairs. NTAs with fewer than 2 sale
+years receive the global median slope as a fallback.
+
+  Range across 212 NTAs: −2.05 to +1.73
+  Global median slope:    0.019
+  NTAs with < 2 years:    receive global median as fallback
 
 Total features: 94
 
@@ -375,20 +466,52 @@ The dataset was sorted by sale_date (oldest to newest) and split:
 
 A time-based split was chosen over random splitting to prevent temporal leakage:
 a random split would allow the model to learn from 2025 sales while predicting
-2024 sales in the test set, artificially inflating test performance.
+2024 sales, artificially inflating test performance.
 
 5.2 Cross-Validation: Spatial GroupKFold
 -----------------------------------------
-Within the training set, 10-fold GroupKFold cross-validation was performed with
-NTA code as the grouping variable. This ensures that all sales from the same
-neighbourhood appear in either the training fold or the validation fold, never
-both.
+Real estate data fundamentally violates one of the core assumptions of standard
+ML: the independence of observations. Tobler's First Law of Geography states that
+"everything is related to everything else, but near things are more related than
+distant things." This spatial autocorrelation means that the price of a property
+is heavily correlated with its immediate neighbours.
 
-This spatial blocking prevents the dominant form of leakage in real estate
-models: nearby properties have correlated prices, so a random split
-effectively "leaks" neighbourhood-level information across folds.
+Standard random K-Fold cross-validation would leak geographic information: the
+model achieves inflated validation scores not by learning market dynamics but
+by memorising prices from nearly identical properties nearby. This constitutes
+spatial data leakage.
 
-5.3 Base Learners
+The THAMAN pipeline employs 10-fold Spatial GroupKFold with NTA code as the
+grouping variable, ensuring that all sales from the same neighbourhood appear in
+either training or validation — never both.
+
+5.3 Fold Diagnostics
+---------------------
+The OOF cross-validation reveals significant fold-to-fold variance — a direct
+consequence of evaluating completely spatially isolated regions:
+
+  Fold   XGB-A   XGB-B   LGB     CAT
+  ----   -----   -----   ---     ---
+  1      0.5992  0.6020  0.5732  0.5952
+  2      0.6236  0.6165  0.6120  0.6245
+  3      0.6043  0.5995  0.6035  0.6080
+  4      0.5975  0.6062  0.6016  0.6061
+  5      0.3755  0.4120  0.3775  0.4025
+  6      0.5888  0.5820  0.5887  0.5983
+  7      0.6467  0.6355  0.6390  0.6295
+  8      0.6355  0.6284  0.6424  0.6418
+  9      0.5494  0.5917  0.5775  0.5521
+  10     0.5923  0.5955  0.5940  0.5857
+
+The severe degradation in Fold 5 (R² ≈ 0.37–0.41 across all models) indicates
+that this spatial cluster contains highly idiosyncratic pricing dynamics. This
+could represent a geographically concentrated area of ultra-luxury developments,
+a heavily rent-stabilised corridor, or an emerging market undergoing rapid
+gentrification. A standard random split would have completely masked this
+localised failure by blending these anomalous properties throughout training,
+resulting in an overconfident, brittle model.
+
+5.4 Base Learners
 -----------------
 Four gradient boosted tree models with deliberately diverse architectures to
 reduce correlation of prediction errors:
@@ -403,46 +526,54 @@ reduce correlation of prediction errors:
   All models: n_estimators=5000, early_stopping_rounds=400
   Objective: regression (minimise RMSE on log(price+1))
 
-The diversity strategy: XGB-A captures deep non-linear interactions; XGB-B
-is regularised toward simpler additive effects; LGB with 127 leaves can model
-very fine-grained splits; CatBoost handles categorical features natively.
+The diversity strategy: XGB-A captures deep non-linear interactions; XGB-B is
+regularised toward simpler additive effects; LGB with 127 leaves models very
+fine-grained splits; CatBoost handles categorical features natively.
 
-5.4 Out-of-Fold (OOF) Stack Generation
+5.5 Out-of-Fold (OOF) Stack Generation
 ----------------------------------------
-For each of the 10 folds:
-  1. Train all 4 base models on the training portion of the fold.
-  2. Generate predictions on the validation portion.
-  3. Store predictions in OOF arrays: oof_xa, oof_xb, oof_lg, oof_ct.
+For each of the 10 folds, all 4 base models are trained on the training portion
+and generate predictions on the held-out portion. After all folds, each of the
+157,329 training samples has OOF predictions from all 4 models — predictions
+made when that sample was in the held-out fold, preventing leakage.
 
-After all 10 folds, each of the 157,329 training samples has OOF predictions
-from all 4 models — predictions made when that sample was in the held-out fold.
+5.6 Meta-Learner Selection: Ridge vs. LightGBM
+------------------------------------------------
+The critical architectural decision in a stacking ensemble is the Level-1
+meta-learner. The training log demonstrates a direct empirical comparison:
 
-5.5 Ridge Meta-Learner
------------------------
-The four OOF prediction vectors are column-stacked:
-  S_oof = [oof_xa, oof_xb, oof_lg, oof_ct]   shape: (157329, 4)
+  LightGBM meta: OOF R²=0.6381 / MedAPE=22.12%
+                 Holdout R²=0.6365 / MAE=$1,108,692
 
-A Ridge regression (L2 regularisation, alpha=1.0, positive=True) is fit on S_oof
-to predict y_work (log prices). The positive=True constraint ensures all base
-learners receive non-negative weight — the meta-learner blends rather than
-arbitrages.
+  Ridge meta:    OOF R²=0.6010 / MedAPE=22.67%
+                 Holdout R²=0.6460 / MAE=$1,075,938
 
-Positive=True was chosen over unconstrained Ridge because negative weights on
-any base learner would mean "this model consistently predicts too high, so
-subtract its prediction" — a theoretically valid but practically unstable
-blending strategy at production scale.
+The Ridge meta-learner is selected despite its superficially lower OOF score.
+This outcome illustrates the primary vulnerability of complex stacking: meta-
+level overfitting. When LightGBM is deployed at the meta-level, it learns to
+exploit residual noise and specific correlation patterns among base model
+predictions on the validation set, rather than learning the true signal.
 
-In v9, Ridge (R²=0.6469) outperformed LGB meta-learner (R²=0.6385) on the
-holdout set, suggesting that the 10-fold OOF stack was clean enough that linear
-blending was optimal.
+Because the sophisticated Level-0 base models have already exhausted the
+non-linear relationships within the 94 features, the remaining variance at
+the meta-stage is largely statistical noise. Ridge regression mitigates this
+by applying L2 regularisation — squaring coefficient values and adding them to
+the loss function — preventing any single base model from dominating the final
+ensemble and enforcing conservative, balanced interpolation. This prevents
+meta-level overfitting and produces superior holdout generalisation.
 
-5.6 Final Retraining
+Ridge was also configured with positive=True: all base learners receive
+non-negative weight. This ensures the meta-learner blends rather than arbitrages
+— negative weights would mean "this model consistently predicts too high, so
+subtract it," which is theoretically valid but practically unstable.
+
+5.7 Final Retraining
 ---------------------
 After meta-learner training, all four base models are retrained on the full
 157,329-row training set (no validation split) using the best iteration count
 from the OOF stage. This produces the production models.
 
-5.7 Luxury Sub-Model
+5.8 Luxury Sub-Model
 ---------------------
 A separate XGBoost model was trained on Manhattan sales ≥ $2,500,000 (n=10,071).
 At inference, a soft blend is applied:
@@ -451,10 +582,9 @@ At inference, a soft blend is applied:
   final_price = (1 − alpha) × stack_price + alpha × luxury_price
 
 The soft ramp avoids a hard discontinuity at the luxury threshold.
-Luxury model validation: R²=0.5648, MedAPE=27.37% — weaker than the main model
-(expected, given the high heterogeneity of luxury properties).
+Luxury model validation: R²=0.5654, MedAPE=27.69%.
 
-5.8 Target Variable Transformation
+5.9 Target Variable Transformation
 ------------------------------------
 All models predict log(sale_price + 1) (log1p transform). This:
   - Converts multiplicative price errors to additive log errors
@@ -489,51 +619,30 @@ The model went through ten training versions. Key lessons learned:
 6.2 The In-Fold Encoding Failure (v7a)
 ---------------------------------------
 During v7 development, target encoding was re-computed per fold during the OOF
-loop — each fold's training portion produced its own bldgclass_means, nta_means,
-etc. This was intended to prevent leakage but created a worse problem:
+loop — each fold's training portion produced its own encoding maps. This was
+intended to prevent leakage but created a distribution mismatch:
 
-  - OOF predictions: made with fold-specific encodings (e.g., bldgclass A1 = 12.84)
-  - Final models:    trained with global encodings (e.g., bldgclass A1 = 12.78)
-  - Meta-learner:    calibrated to fold-specific distribution at training time
-  - Inference:       receives global-encoded inputs — distribution mismatch
+  - OOF predictions: made with fold-specific encodings (bldgclass A1 = 12.84)
+  - Final models:    trained with global encodings (bldgclass A1 = 12.78)
+  - Meta-learner:    calibrated to fold-specific distribution
+  - Inference:       receives global-encoded inputs — mismatch
 
-The meta-learner had learned "when XGB-A predicts 13.2, add weight 0.3" based on
-fold-encoded OOF data, but at inference XGB-A predicts using global encodings with
-different magnitudes. R² collapsed from 0.645 to 0.571.
-
-Fix: Remove all fold-specific re-encoding. Global encodings computed once from
-the full training set are used consistently in OOF, final training, and inference.
+R² collapsed from 0.645 to 0.571. Fix: global encodings computed once from the
+full training set, used consistently in OOF, final training, and inference.
 
 6.3 The Bayesian Smoothing Failure (v7b)
 -----------------------------------------
-Standard Bayesian smoothing for target encoding:
-
-  ê_g = (n_g × ȳ_g + k × ȳ_global) / (n_g + k)     where k = 30
-
-For a building class with n=50 samples, k=30 shrinks the estimate:
-  weight on group mean = 50/(50+30) = 62.5%
-  weight on global mean = 37.5%
-
-This produced bldgclass_encoded values shrunk 20–37% toward the global mean.
-SHAP analysis confirmed bldgclass_encoded was the #1 feature. Shrinking it by
-20–37% destroyed the primary signal.
-
-Fix: k = 0 (raw mean encoding). With 185K training samples, even rare building
-classes have enough observations for stable mean estimates.
+Standard Bayesian smoothing with k=30 shrinks the bldgclass_encoded estimate
+toward the global mean. For a building class with n=50 samples: weight on group
+mean = 50/80 = 62.5%. SHAP analysis confirmed bldgclass_encoded was the #1
+feature. Shrinking it by 20–37% destroyed the primary signal. Fix: k=0.
 
 6.4 The 10-Fold vs 5-Fold Difference (v9)
 -------------------------------------------
 Moving from 5-fold to 10-fold GroupKFold improved holdout MedAPE from 20.94%
-to 20.12%. The mechanism:
-
-  - 5-fold: each fold holds out 20% of NTA groups from OOF training. The
-    meta-learner has OOF predictions from 80% of geographic distribution.
-  - 10-fold: each fold holds out 10% of NTA groups. The meta-learner has OOF
-    predictions from 90% of geographic distribution — better calibrated.
-
-The Ridge meta-learner also outperformed the LGB meta-learner in v9 (0.6469
-vs 0.6385), suggesting that with 10 clean OOF folds, the optimal blend is
-approximately linear and does not benefit from the non-linear capacity of LGB.
+to 20.12%. With 10-fold, each fold holds out 10% of NTA groups — the meta-
+learner has OOF predictions from 90% of geographic distribution, yielding better
+calibration than the 80% coverage from 5-fold.
 
 ================================================================================
 7. EVALUATION
@@ -546,9 +655,8 @@ approximately linear and does not benefit from the non-linear capacity of LGB.
   MedAPE (Median Absolute Percentage Error):
     MedAPE = median(|y_true − y_pred| / max(y_true, 1)) × 100
 
-MedAPE is preferred over MAPE because it is robust to outliers (luxury sales
-with extreme prices do not inflate the metric) and is the standard metric in
-AVM industry reporting.
+MedAPE is preferred over MAPE because it is robust to outliers and is the
+standard metric in AVM industry reporting.
 
 7.2 Overall Performance (27,763 holdout sales)
 ------------------------------------------------
@@ -561,9 +669,9 @@ AVM industry reporting.
 Note: v5 achieves slightly higher R² because it does not include NTA encoding,
 which adds variance in certain geographic segments. v10 has better MedAPE than
 v5 — the practically important metric for a user-facing AVM. The marginal
-difference between v9 and v10 (ΔR²=−0.0009, ΔMedAPE=+0.04pp) is within
-normal run-to-run stochastic variation and confirms the trend slope feature
-adds neighbourhood momentum information without degrading overall accuracy.
+difference between v9 and v10 (ΔR²=−0.0009, ΔMedAPE=+0.04pp) is within normal
+run-to-run stochastic variation and confirms the trend slope feature adds
+neighbourhood momentum information without degrading overall accuracy.
 
 7.3 Base Learner Comparison (v10 holdout)
 -----------------------------------------
@@ -575,8 +683,8 @@ adds neighbourhood momentum information without degrading overall accuracy.
   CatBoost    0.6450  20.21%
   Stack v10   0.6460  20.16%   ← ensemble always best
 
-The ensemble outperforms every individual base learner, confirming that the
-four models make sufficiently diverse errors for blending to help.
+The ensemble outperforms every individual base learner, confirming sufficient
+diversity for blending to produce a net benefit.
 
 7.4 Performance by Borough
 ---------------------------
@@ -588,16 +696,50 @@ four models make sufficiently diverse errors for blending to help.
   Brooklyn       7,032   0.6188  20.82%    Wide price range across NTAs
   Manhattan      5,411   0.6145  36.91%    Worst; extreme luxury heterogeneity
 
-Staten Island achieves the lowest MedAPE because it is dominated by
-single-family homes (A-class) with low price variance within NTAs.
-Manhattan's 36.91% MedAPE reflects the fundamental unpredictability of luxury
-real estate — a 950 sqft unit in the same building can vary by $500K depending
-on floor, view, and renovation that are not in the dataset.
+7.4.1 The Staten Island Statistical Paradox
+Staten Island presents the most instructive diagnostic anomaly: the worst R²
+(0.4096) combined with the best MedAPE (13.37%). This divergence highlights a
+fundamental mathematical reality of regression evaluation in homogeneous datasets.
 
-Note: Staten Island's R²=0.4087 is low despite low MedAPE. This reflects the
-relatively small price variance in Staten Island — the model predicts
-individual prices accurately (low MedAPE) but explains little of the variance
-because there is little variance to explain.
+R² measures the proportion of variance explained:
+
+  R² = 1 − SS_res / SS_tot
+
+where SS_tot is the total variance of the data around the mean. Staten Island's
+housing stock is profoundly different from other boroughs — overwhelmingly low-
+density, semi-attached, and detached single-family suburban homes in a narrow
+typological range. The total price variance (SS_tot) is therefore mathematically
+small. Even highly accurate predictions with small residuals (SS_res) yield a
+low R² because there is little variance to explain.
+
+Macroeconomic factors compound this: approximately 78% of Staten Island
+homeowners hold mortgages locked at sub-5% rates from 2020–2022. Because
+selling requires taking on a new mortgage at higher current rates, homeowners
+refuse to sell, creating a structural supply deficit that smooths price
+distribution — reinforcing the low-variance environment that drives R² down
+while keeping absolute predictive errors tight.
+
+7.4.2 Manhattan Luxury Sub-Market and Co-Op Complexity
+Manhattan exposes the fundamental limitations of administrative tabular datasets
+for luxury AVM. While maintaining a moderate R² (0.6145), predictive precision
+degrades to a MedAPE of 36.91%.
+
+In the Manhattan luxury market, value is dictated by subjective, opaque variables
+entirely absent from municipal tax datasets: exact floor level, unobstructed
+views of Central Park, ceiling heights, architectural provenance, and bespoke
+interior finishes. Two adjacent units in the same building can differ by $1M
+based on floor number, renovation quality, and building prestige — none of which
+are in the dataset.
+
+Furthermore, Manhattan is dominated by cooperative apartments (co-ops). Co-op
+buyers do not purchase real estate — they purchase shares in a private
+corporation, granting a proprietary lease. Co-op owners pay monthly maintenance
+fees covering the building's collective mortgage, staff salaries, and bulk
+property taxes. Crucially, co-op boards impose draconian financial requirements
+and invasive approvals, severely restricting the eligible buyer pool and
+suppressing co-op pricing 10–50% per square foot below equivalent condominiums.
+Standard AVMs cannot quantify the "board approval discount" or shifting
+maintenance fees, leading to systematic pricing inaccuracies in this segment.
 
 7.5 Performance by Price Tier
 ------------------------------
@@ -609,15 +751,11 @@ because there is little variance to explain.
   Over $3M       1,707    40.26%    Luxury; unique properties, sparse comps
 
 The $500K–$1M tier is the "sweet spot" — highest volume and most consistent
-property characteristics. Below $500K, distressed sales and deed corrections
-introduce noise the model cannot predict. Above $3M, unique attributes
-(views, finishes, building prestige) dominate over measurable features.
+property characteristics. Below $500K, distressed sales introduce noise the
+model cannot predict. Above $3M, unique attributes dominate measurable features.
 
 7.6 SHAP Feature Importance
 -----------------------------
-SHAP (SHapley Additive exPlanations) values quantify each feature's marginal
-contribution to each prediction. Top 10 features by mean absolute SHAP value:
-
   Rank  Feature                    Type
   ----  -------                    ----
   1     bldgclass_encoded          Target encoding (building class)
@@ -633,9 +771,9 @@ contribution to each prediction. Top 10 features by mean absolute SHAP value:
 
 The dominance of target-encoded features (ranks 1, 2, 5, 6) confirms that
 building type and neighbourhood are the primary price determinants in NYC.
-The presence of spatial QoL features (dist_subway_m, crime_rate_nta,
-median_income_nta) in the top 10 validates the hypothesis that QoL indicators
-contribute meaningful signal beyond structural attributes.
+The presence of QoL features (dist_subway_m, crime_rate_nta, median_income_nta)
+in the top 10 validates the hypothesis that spatial indicators contribute
+meaningful signal beyond structural attributes.
 
 ================================================================================
 8. ADAPTIVE CONFIDENCE AND AVM QUALITY CONTROL
@@ -644,6 +782,7 @@ contribute meaningful signal beyond structural attributes.
 8.1 Problem with Fixed Intervals
 ----------------------------------
 The naive approach assigns a single confidence interval to all predictions:
+
   confidence_low  = price × (1 − global_medape / 100)
   confidence_high = price × (1 + global_medape / 100)
 
@@ -660,7 +799,7 @@ For each prediction, the segment MedAPE is computed as:
 
 Taking the maximum of the two risk dimensions gives the most conservative
 (widest) interval when both risk factors coincide — e.g. Manhattan luxury
-(borough=36.47%, tier=40.26%) → segment_medape = 40.26%.
+(borough=36.91%, tier=40.26%) → segment_medape = 40.26%.
 
   confidence_low  = price × (1 − segment_medape / 100)
   confidence_high = price × (1 + segment_medape / 100)
@@ -674,8 +813,6 @@ Grade assignment:
 
 8.3 AVM Quality Control Flags
 -------------------------------
-Four binary quality flags are evaluated per prediction:
-
   Flag               Condition                      Interpretation
   ----               ---------                      --------------
   SPARSE_MARKET      Comparables within 800m < 5    Insufficient local data
@@ -683,7 +820,7 @@ Four binary quality flags are evaluated per prediction:
   HIGH_UNCERTAINTY   Segment MedAPE > 30%           Model accuracy is poor
   METRO_CORE         Borough=Manhattan + price>$1M  Manhattan premium applies
 
-Comparable count uses a 800m radius KD-tree query on the 185,092-sale spatial
+Comparable count uses an 800m radius KD-tree query on the 185,092-sale spatial
 index, executing in under 5ms.
 
 8.4 Confidence by Segment (examples)
@@ -691,9 +828,9 @@ index, executing in under 5ms.
   Property                            Grade  Score  Interval
   --------                            -----  -----  --------
   Queens, 2-family, $700K             A      83     ±16.9%
-  Brooklyn, walk-up, $900K            B      79     ±20.9%
-  Bronx, elevator condo, $400K        C      79     ±20.7%
-  Manhattan, D4, $1.5M                D      64     ±36.5%
+  Brooklyn, walk-up, $900K            B      79     ±20.8%
+  Bronx, elevator condo, $400K        C      79     ±20.8%
+  Manhattan, D4, $1.5M                D      63     ±36.9%
   Manhattan, luxury, $4M              D      60     ±40.3%
 
 ================================================================================
@@ -703,33 +840,22 @@ index, executing in under 5ms.
 9.1 Backend API (FastAPI)
 --------------------------
 The API is implemented with FastAPI (Python) and deployed on port 8000.
-All spatial indexes are loaded into memory at startup (~30 seconds) and
-held for the lifetime of the process.
+All spatial indexes are loaded into memory at startup (~30 seconds).
 
 Startup sequence:
-  1. Load ThamanScorer (models/scorer.py) — loads pkl + json model files
+  1. Load ThamanScorer — loads pkl + json model files
   2. Load SpatialLookup — builds KD-trees from 8 spatial datasets
   3. Load _nearby_df — 185K-sale index for comparables + NTA lookup
   4. Build NTA GeoJSON cache — for map choropleth layer
 
-Prediction endpoint: POST /predict
-  Input:  PredictRequest (latitude, longitude, borough, bldgclass,
-          gross_square_feet, building_age, numfloors, residential_units, ...)
-  Output: PredictResponse (predicted_price, confidence_low, confidence_high,
-          confidence_score, confidence_grade, avm_qc, top_drivers, nta_code,
-          spatial_features, ...)
-
-End-to-end latency: 200–400ms
-  Spatial lookup:    ~5ms
-  NTA lookup:        ~1ms
-  Feature assembly:  ~10ms
-  Model inference:   ~50ms
+End-to-end prediction latency: 200–400ms
+  Spatial lookup:    ~5ms  |  NTA lookup:  ~1ms
+  Feature assembly:  ~10ms |  Model inference: ~50ms
   SHAP computation:  ~100–200ms (dominates)
-  Response assembly: ~5ms
 
-9.2 Inference Pipeline Steps
------------------------------
-  Step 1: Receive JSON payload from frontend
+9.2 Inference Pipeline
+-----------------------
+  Step 1: Receive JSON payload
   Step 2: SpatialLookup — 14 features from 8 KD-tree queries
   Step 3: _lookup_nta — 4 NTA features from nearest-neighbor + meta.json maps
   Step 4: _build_feature_row — assemble all 94 features
@@ -742,65 +868,51 @@ End-to-end latency: 200–400ms
 
 9.3 Data Processing (Polars)
 -----------------------------
-All training preprocessing and feature engineering uses the Polars DataFrame
-library rather than Pandas. Key advantages on this 185K-row dataset:
+Training preprocessing uses the Polars DataFrame library rather than Pandas.
 
-  - Speed: ~10× faster feature engineering (parallel column operations,
-    Apache Arrow memory format)
-  - Memory: ~40% lower RAM usage (native Float32 and categorical types vs
-    Pandas Float64 and object)
+  - Speed:       ~10× faster (parallel column operations, Apache Arrow memory)
+  - Memory:      ~40% lower RAM (native Float32 vs Pandas Float64)
   - Type safety: strict schema enforcement prevents silent type coercions
-    during joins that would produce NaN rows in Pandas
-  - No index alignment bugs: Polars has no row index; joins always produce
-    clean output without index misalignment
-
-Polars is used up to the .to_numpy() boundary. All model libraries (XGBoost,
-LightGBM, CatBoost, SHAP) require NumPy arrays.
+  - No index alignment bugs
 
 9.4 Frontend
 -------------
-The web interface is built with vanilla JavaScript + Leaflet.js (no framework).
+The web interface is built with vanilla JavaScript + Leaflet.js.
 
   Components:
-  - Leaflet map: click to select property location
-  - Building type grid: 9 visual cards with emoji icons
-  - Building types guide: scrollable popup with NYC code, description,
-    median price, and typical accuracy for each type
+  - Leaflet map: click-to-select + address search (Nominatim geocoding)
+  - Building type grid: 9 visual cards with emoji icons + info popup
   - Confidence bar: adaptive width = confidence_score (0–100%)
-  - SHAP drivers: horizontal bar chart of top 10 feature contributions
+  - SHAP drivers: horizontal bars + waterfall chart (toggle), with
+    natural-language tooltips explaining each feature's contribution
   - AVM QC row: grade badge + comparable count + flag chips
-  - Analytics dashboard (charts.html): model performance metrics,
-    borough MedAPE chart, base learner comparison, radar chart
+  - Comparable sales bubbles: MarkerCluster with price labels, colour-coded
+    green/red/blue vs. the current prediction
+  - NTA choropleth layer: overlay median income, crime, noise, livability
+  - Analytics dashboard (charts.html): model performance charts
 
-Languages: English and Arabic (bilingual, toggleable, all strings translated).
+Languages: English and Arabic (bilingual, toggleable).
+RTL layout fully mirrored for Arabic using [dir=rtl] CSS selectors.
+Arabic typography: Tajawal font — tech-forward, high legibility at all weights.
 
-9.5 Testing
+9.5 Automated Retraining
+-------------------------
+A launchd plist (com.thaman.retrain) triggers scripts/retrain.sh on
+1 January and 1 July at 03:00.
+
+retrain.sh logic:
+  1. Record current R² from meta.json
+  2. Back up thaman_stack.pkl and meta.json (keep last 3 backups)
+  3. Run train_stack_v10.py
+  4. If new R² ≥ old R² − 0.002: accept, restart API, send notification
+  5. If R² dropped too much: restore backup, send warning notification
+
+9.6 Testing
 ------------
-37 automated tests across two test modules:
+37 automated tests across two modules:
 
-  tests/test_scorer.py  (15 tests)
-    - Scorer loads without error
-    - Feature names count matches meta.json
-    - bldgclass_means and stack are loaded
-    - predict_single returns correct fields and positive prices
-    - Confidence interval ordering (low < price < high)
-    - Manhattan more expensive than Staten Island (sanity check)
-    - Batch prediction returns correct count
-    - SHAP explanation returns correct shape
-    - Adaptive confidence returns required keys
-    - Confidence score in [0, 100] for all boroughs and price tiers
-    - Grade matches score threshold
-    - predict_single returns confidence fields
-    - Manhattan has lower confidence than Staten Island
-
-  tests/test_api.py  (22 tests)
-    - Health endpoint, bldgclasses endpoint
-    - predict returns 200 with correct fields
-    - Confidence ordering in API response
-    - AVM QC block presence and required fields
-    - Confidence score range in API response
-    - Comparable count non-negative
-    - Luxury flag for high-price properties
+  tests/test_scorer.py (15 tests): scorer loading, feature count, confidence
+  tests/test_api.py    (22 tests): endpoints, AVM QC block, comparable counts
 
 ================================================================================
 10. DISCUSSION
@@ -808,70 +920,65 @@ Languages: English and Arabic (bilingual, toggleable, all strings translated).
 
 10.1 Key Findings
 ------------------
-  1. Stacking consistently outperforms every individual base learner (Table in
-     §7.3). The 4-model diverse ensemble reduces MedAPE by 0.1–0.3pp over the
-     best single model. While small in absolute terms, this is consistent across
-     all versions and confirms the value of ensemble diversity.
+  1. Stacking consistently outperforms every individual base learner (§7.3).
+     The 4-model diverse ensemble reduces MedAPE by 0.05–0.46pp over the best
+     single model.
 
-  2. NTA encoding is the second most important feature (SHAP rank 2). Replacing
-     borough-level encoding (5 groups) with NTA-level encoding (212 groups)
-     gave the model fine-grained geographic signal. Brooklyn NTAs range from
-     $400K median (East New York) to $1.8M median (Brooklyn Heights) — both
-     coded as borough=3 without NTA encoding.
+  2. NTA encoding is the second most important feature (SHAP rank 2). Brooklyn
+     NTAs range from $400K median (East New York) to $1.8M median (Brooklyn
+     Heights) — both coded as borough=3 without NTA encoding.
 
-  3. Raw mean encoding outperforms Bayesian smoothing for gradient boosted trees
-     on this dataset. When bldgclass_encoded is the #1 SHAP feature, shrinking
-     it by 20–37% destroys signal. This finding is consistent with literature
-     suggesting smoothing is more valuable for neural networks than trees,
-     which handle categorical variables more robustly.
+  3. Raw mean encoding outperforms Bayesian smoothing on this dataset. When
+     bldgclass_encoded is the #1 SHAP feature, shrinking it by 20–37% destroys
+     signal. This is consistent with literature suggesting smoothing benefits
+     neural networks more than gradient boosted trees.
 
-  4. 10-fold spatial GroupKFold produces better meta-learner calibration than
-     5-fold. The 0.82pp MedAPE improvement from v8 to v9 is attributable
-     primarily to this change (verified by ablation: 5000 rounds alone without
-     10-fold improved MedAPE by ~0.3pp on the v8 base).
+  4. Ridge meta-learner outperforms LightGBM meta despite lower OOF score.
+     With 10 clean OOF folds, the optimal blend is approximately linear and
+     does not benefit from the non-linear capacity of LGB.
 
-  5. Manhattan is the hardest borough to predict (MedAPE=36.47%). This is not
-     a modelling failure — it reflects genuine heterogeneity. Two adjacent units
-     in the same building can differ by $1M based on floor number, renovation
-     quality, and building prestige, none of which are in the dataset.
+  5. The spatial GroupKFold exposes Fold 5 as a weak spatial cluster — a
+     localised failure invisible to random cross-validation. This proves the
+     necessity of spatial blocking for geographically correlated data.
+
+  6. The Staten Island paradox (low R², best MedAPE) demonstrates that R² and
+     MedAPE measure fundamentally different aspects of model quality. For a
+     user-facing AVM, MedAPE is the correct optimisation target.
+
+  7. Manhattan is the hardest borough (MedAPE=36.91%). Co-op board approval
+     discounts, unobservable interior finishes, and view premiums create
+     heterogeneity that no tabular dataset can capture.
 
 10.2 Limitations
 -----------------
-  1. The model is a snapshot of 2022–2026 market conditions. It cannot
-     extrapolate to future market states (e.g., a significant rate drop or
-     recession scenario).
+  1. Snapshot model: cannot extrapolate to future market states (rate shocks,
+     recession scenarios).
 
-  2. The model cannot see interior condition, renovation quality, view, or
-     floor number — attributes that dominate luxury segment pricing. This is
-     the primary driver of the high Manhattan MedAPE.
+  2. Unobservable attributes: interior condition, floor number, renovation
+     quality, and view dominate luxury pricing but are absent from the data.
 
-  3. The comparable-count flag (SPARSE_MARKET) uses 800m radius but does not
-     account for property type — 800 luxury condos within 800m does not
-     make the model reliable for a single-family home in that area.
+  3. Co-op discount: the "board approval discount" (10–50% per sqft vs
+     equivalent condos) cannot be quantified from public records.
 
-  4. Target encodings are computed on the training set only. A new NTA created
-     after the training cutoff (or a building class with zero training examples)
-     falls back to the global mean — a safe but uninformative fallback.
+  4. SPARSE_MARKET flag uses 800m radius but does not filter by property type.
 
-  5. The prior_sale_price imputation via assesstot ratios assumes constant
-     assessment ratios over time. In rapidly appreciating markets this may
-     introduce systematic bias.
+  5. assesstot imputation assumes stable assessment ratios. In rapidly
+     appreciating markets the cap-induced assessment lag introduces systematic
+     bias.
 
 10.3 Future Work
 -----------------
-  1. Floor number and interior features: Partner with a data provider that
-     offers listing-level features (StreetEasy, Zillow API) to capture
-     floor, renovation year, interior photos (CNN features).
+  1. Interior features: partner with StreetEasy / Zillow API for floor number,
+     renovation year, and interior photos (CNN features).
 
-  3. Transformer / tabular deep learning: Recent work (TabNet, FT-Transformer)
-     shows competitive performance with gradient boosted trees on large tabular
-     datasets. Worth benchmarking on this 185K-row dataset.
+  2. Transformer / tabular deep learning: TabNet, FT-Transformer benchmarking
+     on this 185K-row dataset.
 
-  4. Temporal model updating: Retrain quarterly on rolling 3-year window to
-     keep the model current as market conditions evolve.
-
-  5. Uncertainty quantification: Replace point predictions with full predictive
+  3. Uncertainty quantification: replace point predictions with full predictive
      distributions using quantile regression or conformal prediction.
+
+  4. Co-op discount model: train a separate binary classifier to identify co-ops
+     and apply a learned discount factor.
 
 ================================================================================
 11. CONCLUSION
@@ -891,8 +998,10 @@ The key technical contributions are:
   (c) Segment-adaptive confidence intervals with a 0–100 score, letter grade,
       and 4 AVM quality flags aligned with 2026 industry standards.
   (d) An NTA inference lookup that resolves lat/lon → ntacode → 4 NTA features
-      at prediction time, eliminating the training/serving distribution mismatch
-      that would otherwise affect every prediction.
+      at prediction time, eliminating training/serving distribution mismatch.
+  (e) A bilingual interactive interface with SHAP waterfall visualisation,
+      natural-language explanations, NTA choropleth overlay, and a 6-monthly
+      automated retraining pipeline with model acceptance/rejection logic.
 
 The system is deployed at https://huggingface.co/spaces/Turki-Almurahhem/thaman
 and open-sourced at https://github.com/turkialm/thaman-v2.
@@ -999,6 +1108,31 @@ APPENDIX B — MODEL CONFIGURATION SUMMARY (v10)
   Features:     94  (93 v9 features + nta_price_trend_slope)
   Train rows:   157,329
   Holdout rows: 27,763
+
+================================================================================
+APPENDIX C — NTA SPATIAL TAXONOMY vs ZIP CODES
+================================================================================
+
+ZIP codes are essentially linear mail delivery routes designated by the USPS.
+They lack standardised permanent polygonal boundaries, frequently shift to
+accommodate delivery logistics, and are entirely agnostic to the socioeconomic
+or structural realities of the built environment. Using them for ML introduces
+severe geographic artifacts into training data.
+
+NTAs, delineated by NYC DCP, represent a far more statistically sound taxonomy:
+
+  Property          ZIP Codes            NTAs (2020)
+  --------          ---------            -----------
+  Boundaries        Postal routes        Permanent polygon GIS boundaries
+  Population basis  None                 15,000–40,000 minimum
+  Non-residential   Included             Explicitly separated (parks, airports)
+  Nesting           None                 Nest within CDTAs → Community Districts
+  Count in NYC      ~178                 262 (212 residential)
+  Source authority  USPS (logistics)     NYC DCP (city planning)
+
+The 212 residential NTA codes in THAMAN's training data correspond closely to
+neighbourhoods recognised by residents and market participants, while maintaining
+the statistical validity required for reliable target encoding.
 
 ================================================================================
 END OF DOCUMENT

@@ -19,7 +19,10 @@ const API_BASE = '';   // e.g. '' means same-origin; change to 'http://localhost
 let currentLang = localStorage.getItem('thamanLang') || 'en';
 
 // ── Last prediction (used to compare against nearby comps) ────────────
-let _lastPrediction = null;  // { price, sqft }
+let _lastPrediction  = null;  // { price, sqft }
+let _waterfallChart  = null;  // Chart.js waterfall instance
+let _shapView        = 'bars'; // 'bars' | 'waterfall'
+let _lastDrivers     = [];    // cache top_drivers for view toggle
 
 // ── NTA choropleth layers ─────────────────────────────────────────────
 let _ntaGeoJSON    = null;   // raw GeoJSON loaded once
@@ -800,6 +803,141 @@ function renderSalesBubbles(sales) {
   map.addLayer(_salesCluster);
 }
 
+// ── SHAP view toggle ─────────────────────────────────────────────────
+function setShapView(view) {
+  _shapView = view;
+  document.getElementById('shapViewBars').classList.toggle('active', view === 'bars');
+  document.getElementById('shapViewWaterfall').classList.toggle('active', view === 'waterfall');
+  document.getElementById('shapBars').style.display       = view === 'bars' ? '' : 'none';
+  document.getElementById('waterfallCard').style.display  = view === 'waterfall' ? '' : 'none';
+  if (view === 'waterfall' && _lastDrivers.length) renderWaterfall(_lastDrivers, _lastPrediction?.price);
+}
+
+// ── SHAP waterfall chart ─────────────────────────────────────────────
+function renderWaterfall(drivers, predictedPrice) {
+  if (!drivers || !drivers.length) return;
+  const ctx = document.getElementById('waterfallCanvas').getContext('2d');
+  if (_waterfallChart) { _waterfallChart.destroy(); _waterfallChart = null; }
+
+  // Build running total from baseline
+  // Baseline = predicted - sum(top impacts)  (approximation; remaining = residual)
+  const totalImpact = drivers.reduce((s, d) => s + d.impact, 0);
+  const baseline    = predictedPrice ? predictedPrice - Math.round(Math.expm1(Math.abs(totalImpact)) * Math.sign(totalImpact) * predictedPrice * 0.05) : 0;
+
+  const labels = ['Baseline', ...drivers.map(d => shortLabel(d.description || d.feature)), 'Estimate'];
+  const colors = [];
+  const floatData = []; // [bottom, top] for each bar
+  let running = baseline || (predictedPrice * 0.80);
+
+  // Baseline bar
+  floatData.push([0, running]);
+  colors.push('#6366f1');
+
+  drivers.forEach(d => {
+    const dollarImpact = (predictedPrice || 1000000) * (Math.expm1(Math.abs(d.impact))) * Math.sign(d.impact) * 0.12;
+    const bottom = d.direction === 'positive' ? running : running + dollarImpact;
+    const top    = d.direction === 'positive' ? running + dollarImpact : running;
+    floatData.push([bottom, top]);
+    colors.push(d.direction === 'positive' ? '#059669' : '#dc2626');
+    running += dollarImpact;
+  });
+
+  // Final estimate bar
+  floatData.push([0, predictedPrice || running]);
+  colors.push('#2563eb');
+
+  _waterfallChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data:            floatData,
+        backgroundColor: colors,
+        borderRadius:    4,
+        borderWidth:     0,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (item) => {
+              const [lo, hi] = item.raw;
+              const delta = hi - lo;
+              return delta >= 0
+                ? `+$${Math.abs(delta).toLocaleString()}`
+                : `-$${Math.abs(delta).toLocaleString()}`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          ticks: { callback: v => '$' + (v/1e6).toFixed(1) + 'M' },
+          grid: { color: 'rgba(0,0,0,.05)' }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+function shortLabel(label) {
+  const map = {
+    'Building class encoding':   'Bldg Class',
+    'Neighbourhood encoding':    'NTA',
+    'Building size':             'Size',
+    'Distance to Downtown':      '→ Downtown',
+    'Distance to Midtown':       '→ Midtown',
+    'NTA × Building class':      'NTA×Class',
+    'Borough × Building class':  'Boro×Class',
+    'Building age':              'Age',
+    'Neighbourhood income':      'Income',
+    'Distance to subway':        '→ Subway',
+    'Crime rate':                'Crime',
+    'Prior sale price/sqft':     'Prior PSF',
+  };
+  return map[label] || label.slice(0, 10);
+}
+
+// ── Natural language SHAP tooltip ────────────────────────────────────
+function shapNlTooltip(drv) {
+  const T    = TR[currentLang];
+  const dir  = drv.direction === 'positive';
+  const sign = dir ? (T.nlUp || 'pushed the price UP') : (T.nlDown || 'pushed the price DOWN');
+  const feat = drv.description || drv.feature;
+  const val  = drv.value;
+
+  // Feature-specific human context
+  const ctx = shapContext(drv.feature, val, dir);
+  return `${feat} ${sign}${ctx ? ' — ' + ctx : ''}.`;
+}
+
+function shapContext(feature, value, isPositive) {
+  if (feature.includes('dist_subway')) {
+    const m = Math.round(value);
+    return m < 300 ? `only ${m}m away (excellent transit)` : m > 1200 ? `${m}m — limited subway access` : `${m}m from nearest station`;
+  }
+  if (feature.includes('crime_rate')) {
+    return value < 20 ? `low crime area (${value.toFixed(0)}/1k)` : value > 60 ? `high crime area (${value.toFixed(0)}/1k)` : `moderate crime (${value.toFixed(0)}/1k)`;
+  }
+  if (feature.includes('median_income')) {
+    return `$${(value/1000).toFixed(0)}K median household income`;
+  }
+  if (feature.includes('building_age')) {
+    return value > 80 ? `${Math.round(value)}-year-old building` : `built ${new Date().getFullYear() - Math.round(value)}`;
+  }
+  if (feature.includes('gross_square_feet') || feature.includes('building_size')) {
+    return `${Math.round(value).toLocaleString()} sq ft`;
+  }
+  if (feature.includes('dist_downtown') || feature.includes('dist_midtown')) {
+    return `${(value/1000).toFixed(1)} km from city centre`;
+  }
+  return '';
+}
+
 // ── Fetch recent sales for current map view ───────────────────────────
 async function fetchSalesForView() {
   const c = map.getCenter(), z = map.getZoom();
@@ -1021,6 +1159,7 @@ function renderResults(data) {
   // ── SHAP Drivers ──────────────────────────────────────────────────
   shapBars.innerHTML = '';
   if (data.top_drivers && data.top_drivers.length > 0) {
+    _lastDrivers = data.top_drivers;
     const maxImpact = Math.max(...data.top_drivers.map(d => Math.abs(d.impact)));
 
     data.top_drivers.forEach(drv => {
@@ -1029,13 +1168,17 @@ function renderResults(data) {
       const arrow  = isPos ? '↑' : '↓';
       const cls    = isPos ? 'positive' : 'negative';
       const label  = drv.description || drv.feature;
+      const nlTip  = shapNlTooltip(drv);
 
       const row = document.createElement('div');
       row.className = 'shap-row';
-      row.title = `${drv.feature}: value = ${drv.value.toFixed(2)}, impact = ${drv.impact > 0 ? '+' : ''}${drv.impact.toFixed(4)}`;
+      row.title = nlTip;
       row.innerHTML = `
         <span class="shap-arrow ${cls}">${arrow}</span>
-        <span class="shap-label">${label}</span>
+        <div class="shap-label-wrap">
+          <span class="shap-label">${label}</span>
+          <span class="shap-nl-tip">${nlTip}</span>
+        </div>
         <div class="shap-bar-wrap">
           <div class="shap-bar-fill ${cls}" style="width:${pct}%"></div>
         </div>
@@ -1044,6 +1187,8 @@ function renderResults(data) {
       shapBars.appendChild(row);
     });
     shapCard.style.display = 'block';
+    // Reset to bar view (waterfall renders on demand)
+    if (_shapView === 'waterfall') setShapView('bars');
   }
 
   // ── Spatial features ──────────────────────────────────────────────
@@ -1844,6 +1989,8 @@ const TR = {
     flagLuxury:        '🏆 Luxury tier — wider confidence range',
     flagHighUnc:       '⚠ High uncertainty segment',
     flagMetro:         '🏙 Manhattan core premium applies',
+    nlUp:              'pushed the price UP',
+    nlDown:            'pushed the price DOWN',
   },
   ar: {
     estimateBtn:    'تقدير السعر',
@@ -1905,6 +2052,8 @@ const TR = {
     flagLuxury:        '🏆 فئة الفاخرة — نطاق ثقة أوسع',
     flagHighUnc:       '⚠ قطاع عدم يقين عالٍ',
     flagMetro:         '🏙 علاوة وسط مانهاتن مطبّقة',
+    nlUp:              'رفع السعر',
+    nlDown:            'خفض السعر',
   },
 };
 

@@ -6,7 +6,7 @@
   <title>THAMAN — NYC Property Valuation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
@@ -216,10 +216,12 @@
             </div>
           </div>
 
-          <button type="submit" class="btn-predict" id="submitBtn" disabled>
-            <span id="btnText">📍 Select a location first</span>
-            <span class="spinner" id="spinner" style="display:none">⟳</span>
-          </button>
+          <div class="predict-sticky">
+            <button type="submit" class="btn-predict" id="submitBtn" disabled>
+              <span id="btnText">📍 Select a location first</span>
+              <span class="spinner" id="spinner" style="display:none">⟳</span>
+            </button>
+          </div>
 
           <p class="disclaimer" id="disclaimer">
             Predictions are based on NYC property sales 2022–2026.
@@ -308,7 +310,16 @@
           <span id="shapTitle">Price Drivers</span>
           <span class="card-subtitle" id="shapSubtitle">What factors most influenced this estimate</span>
         </h3>
+        <div class="waterfall-toggle">
+          <button id="shapViewBars" class="active" onclick="setShapView('bars')">≡ Bars</button>
+          <button id="shapViewWaterfall" onclick="setShapView('waterfall')">≋ Waterfall</button>
+        </div>
         <div id="shapBars"></div>
+        <div id="waterfallCard" style="display:none">
+          <div class="waterfall-wrap">
+            <canvas id="waterfallCanvas"></canvas>
+          </div>
+        </div>
       </div>
 
       <!-- Spatial Features -->
