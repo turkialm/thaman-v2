@@ -31,12 +31,16 @@ let _activeMetric  = 'none'; // which layer is showing
 
 // ── Layer metadata ────────────────────────────────────────────────────
 const LAYER_META = {
-  income:  { key: 'median_income_nta',       label: 'Median Income',   unit: '/yr',    palette: 'green',  fmt: v => `$${(v/1000).toFixed(0)}k` },
-  crime:   { key: 'crime_rate_nta',          label: 'Crime Rate',      unit: '/1k res',palette: 'red',    fmt: v => v.toFixed(1) },
-  noise:   { key: 'noise_density_nta',       label: 'Noise Level',     unit: '/1k res',palette: 'orange', fmt: v => v.toFixed(1) },
-  air:     { key: 'pm25_mean',               label: 'PM2.5 Air Quality',unit: 'µg/m³', palette: 'purple', fmt: v => v.toFixed(2) },
-  trees:   { key: 'tree_count_200m',         label: 'Tree Cover',      unit: 'trees/200m',palette:'green',fmt: v => `~${Math.round(v)}` },
-  hotness: { key: 'price_appreciation',      label: 'Market Hotness',  unit: '% gain', palette: 'blue',   fmt: v => `${v > 0 ? '+' : ''}${(v*100).toFixed(0)}%` },
+  income:     { key: 'median_income_nta',        label: 'Median Income',      unit: '/yr',       palette: 'green',  fmt: v => `$${(v/1000).toFixed(0)}k` },
+  crime:      { key: 'crime_rate_nta',           label: 'Crime Rate',         unit: '/1k res',   palette: 'red',    fmt: v => v.toFixed(1) },
+  noise:      { key: 'noise_density_nta',        label: 'Noise Level',        unit: '/1k res',   palette: 'orange', fmt: v => v.toFixed(1) },
+  air:        { key: 'pm25_mean',                label: 'PM2.5 Air Quality',  unit: 'µg/m³',     palette: 'purple', fmt: v => v.toFixed(2) },
+  trees:      { key: 'tree_count_200m',          label: 'Tree Cover',         unit: 'trees/200m',palette: 'green',  fmt: v => `~${Math.round(v)}` },
+  hotness:    { key: 'price_appreciation',       label: 'Market Hotness',     unit: '% gain',    palette: 'blue',   fmt: v => `${v > 0 ? '+' : ''}${(v*100).toFixed(0)}%` },
+  rats:       { key: 'rat_density_nta',          label: 'Rodent Activity',    unit: '/1k res',   palette: 'red',    fmt: v => v.toFixed(2) },
+  heat311:    { key: 'heat_density_nta',         label: 'Heat Complaints',    unit: '/1k res',   palette: 'orange', fmt: v => v.toFixed(2) },
+  hpd:        { key: 'hpd_viol_rate_nta',        label: 'HPD Violations',     unit: 'rate',      palette: 'red',    fmt: v => v.toFixed(2) },
+  livability: { key: 'livability_complaint_rate',label: '311 Livability',     unit: '/1k res',   palette: 'purple', fmt: v => v.toFixed(1) },
 };
 
 // ── Map init ──────────────────────────────────────────────────────────
