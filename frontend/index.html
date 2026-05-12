@@ -21,9 +21,9 @@
       <span class="tagline" id="headerTagline">NYC Property Valuation · AI-Powered</span>
     </div>
     <div class="header-badges">
-      <span class="badge badge-green">Stack v9</span>
-      <span class="badge badge-blue">R² = 0.647</span>
-      <span class="badge badge-purple">MedAPE 20.12%</span>
+      <span class="badge badge-green">Stack v10</span>
+      <span class="badge badge-blue">R² = 0.646</span>
+      <span class="badge badge-purple">MedAPE 20.16%</span>
       <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
       <button class="badge badge-gray" onclick="openCompare()" style="cursor:pointer;border:none">⚖ Compare</button>
       <a href="/docs" target="_blank" class="badge badge-gray">API Docs ↗</a>
@@ -111,7 +111,10 @@
           </div>
 
           <div class="field field-full" style="margin-bottom:12px">
-            <label id="lblBldgType">Building Type</label>
+            <div class="label-with-info">
+              <label id="lblBldgType">Building Type</label>
+              <button type="button" class="bldg-label-info-btn" id="bldgTypesInfoBtn">!</button>
+            </div>
             <div class="bldgtype-grid" id="bldgTypeGrid" role="group" aria-label="Building type">
               <button type="button" class="bldgtype-card" data-code="A1"><span class="bti">🏠</span><span class="btl">Single Family</span></button>
               <button type="button" class="bldgtype-card" data-code="B2"><span class="bti">🏡</span><span class="btl">2-Family</span></button>
@@ -473,6 +476,14 @@
       </div><!-- /.compare-grid -->
     </div><!-- /.compare-modal -->
   </div><!-- /.compare-overlay -->
+
+  <!-- Building type info popup (all types listed) -->
+  <div id="bldgInfoPopup" class="bldg-info-popup" style="display:none">
+    <button class="bldg-info-close" id="bldgInfoClose">✕</button>
+    <div class="bldg-info-popup-title" id="bldgInfoPopupTitle">Building Types Guide</div>
+    <div class="bldg-info-list" id="bldgInfoList"></div>
+  </div>
+  <div id="bldgInfoOverlay" class="bldg-info-overlay" style="display:none"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>

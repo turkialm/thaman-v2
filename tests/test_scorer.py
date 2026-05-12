@@ -25,8 +25,8 @@ def test_scorer_loads(scorer):
 
 
 def test_scorer_has_feature_names(scorer):
-    """Scorer should have 93 feature names (v9: same v6 feature set, raw NTA encoding)."""
-    assert len(scorer.feature_names) == 93
+    """Scorer should have 94 feature names (v10: v9 + nta_price_trend_slope)."""
+    assert len(scorer.feature_names) == 94
 
 
 def test_scorer_has_bldgclass_means(scorer):

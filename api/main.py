@@ -486,11 +486,18 @@ def api_info():
 @app.get("/health", tags=["Info"])
 def health():
     """Health check — confirms model and spatial data are loaded."""
+    last_trained = None
+    model_version = None
+    if _scorer and _scorer.meta:
+        last_trained  = _scorer.meta.get("trained_at") or _scorer.meta.get("timestamp")
+        model_version = _scorer.meta.get("stack", {}).get("version")
     return {
-        "status":         "ok" if (_scorer and _spatial) else "loading",
-        "model_loaded":   _scorer  is not None,
-        "spatial_loaded": _spatial is not None,
-        "timestamp":      datetime.datetime.now().isoformat(),
+        "status":            "ok" if (_scorer and _spatial) else "loading",
+        "model_loaded":      _scorer  is not None,
+        "spatial_loaded":    _spatial is not None,
+        "model_version":     model_version,
+        "last_trained_date": last_trained,
+        "timestamp":         datetime.datetime.now().isoformat(),
     }
 
 
@@ -637,6 +644,10 @@ def predict_batch(requests: list[PredictRequest]):
         try:
             spatial_feats = _spatial.lookup(req.latitude, req.longitude)
             feat_dict     = _build_feature_row(req, spatial_feats)
+            # NTA lookup — same as /predict
+            nta_ov = _lookup_nta(req.latitude, req.longitude, req.bldgclass)
+            nta_ov.pop("_resolved_nta", None)
+            feat_dict.update(nta_ov)
             result        = _scorer.predict_single(**feat_dict)
             results.append({
                 "index":           i,
