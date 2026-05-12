@@ -36,6 +36,7 @@
   --sidebar-w:   460px;
   --header-h:    54px;
   --font:        'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-ar:     'Tajawal', 'Cairo', 'Segoe UI', system-ui, sans-serif;
   --font-mono:   'SFMono-Regular', Consolas, monospace;
   --text:        var(--gray-900);
   --bg:          var(--white);
@@ -583,11 +584,17 @@ select optgroup { color: var(--gray-500); font-style: normal; }
 
 .shap-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
-  padding: 5px 6px;
+  padding: 6px 6px;
   border-bottom: 1px solid var(--gray-100);
   border-radius: 6px;
+}
+.shap-label-wrap {
+  flex: 0 0 160px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 .shap-row:last-child { border-bottom: none; }
 .shap-row:hover { background: var(--gray-50); }
@@ -600,7 +607,6 @@ select optgroup { color: var(--gray-500); font-style: normal; }
 }
 
 .shap-label {
-  flex: 0 0 140px;
   font-size: .78rem;
   color: var(--gray-700);
   font-weight: 500;
@@ -1566,3 +1572,90 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   margin-bottom: 6px;
 }
 #trendCanvas { max-height: 160px; }
+
+/* ══════════════════════════════════════════════════════════════════
+   RTL / ARABIC SUPPORT
+   ══════════════════════════════════════════════════════════════════ */
+[dir=rtl] {
+  font-family: var(--font-ar);
+}
+[dir=rtl] .header-left   { flex-direction: row-reverse; }
+[dir=rtl] .shap-arrow    { transform: scaleX(-1); }
+[dir=rtl] .shap-bar-wrap { direction: rtl; }
+[dir=rtl] .shap-row      { flex-direction: row-reverse; }
+[dir=rtl] .shap-impact   { margin-right: 0; margin-left: 0; }
+[dir=rtl] .avm-qc-row    { flex-direction: row-reverse; }
+[dir=rtl] .conf-bar-wrap { direction: rtl; }
+[dir=rtl] .card-title    { flex-direction: row-reverse; }
+[dir=rtl] .spatial-item  { flex-direction: row-reverse; text-align: right; }
+[dir=rtl] .nearby-row    { flex-direction: row-reverse; }
+[dir=rtl] .addr-search-wrap { flex-direction: row-reverse; }
+[dir=rtl] .waterfall-wrap { direction: rtl; }
+[dir=rtl] .label-with-info { flex-direction: row-reverse; }
+/* Mirror back-arrow in breadcrumbs / progress */
+[dir=rtl] .nav-arrow,
+[dir=rtl] .progress-arrow { transform: scaleX(-1); display: inline-block; }
+
+/* ══════════════════════════════════════════════════════════════════
+   SHAP WATERFALL CHART
+   ══════════════════════════════════════════════════════════════════ */
+#waterfallCard {
+  margin-top: 10px;
+}
+.waterfall-wrap {
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+}
+#waterfallCanvas { max-height: 260px; width: 100% !important; }
+.waterfall-toggle {
+  display: flex; gap: 6px; margin-bottom: 8px;
+}
+.waterfall-toggle button {
+  font-size: .7rem; padding: 3px 10px; border-radius: 20px;
+  border: 1px solid var(--gray-200); background: var(--gray-50);
+  color: var(--gray-700); cursor: pointer; font-weight: 600;
+  transition: background .15s, color .15s;
+}
+.waterfall-toggle button.active {
+  background: var(--blue); color: #fff; border-color: var(--blue);
+}
+.shap-nl-tip {
+  font-size: .72rem; color: var(--gray-500); margin-top: 2px;
+  font-style: italic; line-height: 1.4;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MOBILE — THUMB ZONE OPTIMISATION
+   ══════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Sticky predict button pinned to bottom of sidebar — thumb-reachable */
+  .predict-sticky {
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    padding: 10px 0 6px;
+    border-top: 1px solid var(--gray-200);
+    z-index: 10;
+  }
+  /* Building type grid scrolls horizontally — swipeable on mobile */
+  .bldgtype-grid {
+    display: flex;
+    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .bldgtype-grid::-webkit-scrollbar { display: none; }
+  .bldgtype-card {
+    flex: 0 0 72px;
+    min-width: 72px;
+  }
+  /* Map takes less space; sidebar expands */
+  .map-section  { height: 38vh; }
+  .sidebar      { height: 62vh; }
+  /* Increase touch target sizes */
+  .btn-predict  { font-size: 1rem; padding: 15px; min-height: 52px; }
+  .addr-btn     { min-height: 40px; min-width: 40px; }
+}
