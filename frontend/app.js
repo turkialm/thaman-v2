@@ -952,14 +952,21 @@ function shapContext(feature, value, isPositive) {
   return '';
 }
 
-// ── Fetch recent sales for current map view ───────────────────────────
+// ── Fetch sales for the current map viewport (bbox) ──────────────────
 async function fetchSalesForView() {
-  const c = map.getCenter(), z = map.getZoom();
   try {
-    const r = await fetch(`${API_BASE}/nearby?lat=${c.lat}&lon=${c.lng}&radius_m=${radiusForZoom(z)}&limit=50`);
+    const b = map.getBounds();
+    const params = new URLSearchParams({
+      min_lat: b.getSouth().toFixed(6),
+      max_lat: b.getNorth().toFixed(6),
+      min_lon: b.getWest().toFixed(6),
+      max_lon: b.getEast().toFixed(6),
+      limit:   200,
+    });
+    const r = await fetch(`${API_BASE}/sales/bbox?${params}`);
     if (!r.ok) return;
     const d = await r.json();
-    renderSalesBubbles(d.nearby || []);
+    renderSalesBubbles(d.sales || []);
   } catch (_) {}
 }
 
