@@ -858,6 +858,65 @@ def nearby_sales(lat: float, lon: float, radius_m: int = 800, limit: int = 8):
     return {"count": len(nearby), "nearby": nearby}
 
 
+@app.get("/sales/bbox", tags=["Reference"])
+def sales_bbox(
+    min_lat: float, max_lat: float,
+    min_lon: float, max_lon: float,
+    limit: int = 200,
+):
+    """
+    Return up to `limit` sales within a lat/lon bounding box, spatially sampled
+    to give even coverage across the viewport. Used by the map bubble layer.
+    """
+    if _nearby_df is None:
+        raise HTTPException(status_code=503, detail="Nearby index not loaded.")
+
+    limit = min(max(1, limit), 500)
+
+    subset = _nearby_df.filter(
+        (pl.col("latitude")  >= min_lat) & (pl.col("latitude")  <= max_lat) &
+        (pl.col("longitude") >= min_lon) & (pl.col("longitude") <= max_lon)
+    )
+
+    if len(subset) == 0:
+        return {"count": 0, "sales": []}
+
+    # Spatially sample: divide bbox into grid cells, pick one per cell
+    if len(subset) > limit:
+        grid = max(1, int(limit ** 0.5))          # e.g. limit=200 → 14×14 grid
+        lat_step = (max_lat - min_lat) / grid
+        lon_step = (max_lon - min_lon) / grid
+        subset = (
+            subset
+            .with_columns([
+                ((pl.col("latitude")  - min_lat) / lat_step).cast(pl.Int32).clip(0, grid - 1).alias("_gc"),
+                ((pl.col("longitude") - min_lon) / lon_step).cast(pl.Int32).clip(0, grid - 1).alias("_gr"),
+            ])
+            .with_columns((pl.col("_gc") * grid + pl.col("_gr")).alias("_cell"))
+            .sort("sale_date", descending=True)
+            .unique(subset=["_cell"], keep="first")
+            .drop(["_gc", "_gr", "_cell"])
+        )
+
+    _BBOX_COLS = [c for c in ["latitude","longitude","sale_price","address",
+                               "bldgclass","gross_square_feet","sale_date"] if c in subset.columns]
+    sales = []
+    for row in subset.select(_BBOX_COLS).iter_rows(named=True):
+        if not row.get("latitude") or not row.get("longitude"):
+            continue
+        sales.append({
+            "latitude":         float(row["latitude"]),
+            "longitude":        float(row["longitude"]),
+            "sale_price":       int(row.get("sale_price") or 0),
+            "address":          str(row.get("address") or ""),
+            "bldgclass":        str(row.get("bldgclass") or ""),
+            "gross_square_feet":int(row.get("gross_square_feet") or 0),
+            "sale_date":        str(row.get("sale_date") or "")[:10],
+        })
+
+    return {"count": len(sales), "sales": sales}
+
+
 @app.get("/market/comps", tags=["Reference"])
 async def market_comps(lat: float, lon: float):
     """
