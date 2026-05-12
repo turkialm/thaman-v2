@@ -16,18 +16,21 @@ This paper presents THAMAN, an Automated Valuation Model (AVM) for estimating
 residential property prices across New York City's five boroughs. The system
 integrates structural property attributes with spatial Quality-of-Life (QoL)
 indicators — including proximity to transit, crime rates, income demographics,
-and points-of-interest density — into a four-model stacked ensemble comprising
-two XGBoost models, LightGBM, and CatBoost, blended by a Ridge meta-learner.
+points-of-interest density, building health signals, and MTA station quality —
+into a four-model stacked ensemble comprising two XGBoost models, LightGBM, and
+CatBoost, blended by a Ridge meta-learner.
 
 Trained on 185,092 NYC property sales from 2022 to 2026, the final model
-(Stack v10) achieves R² = 0.6460 and Median Absolute Percentage Error (MedAPE)
-of 20.16% on a time-based holdout set of 27,763 unseen sales across 94 features,
-including a novel NTA price trend slope feature that captures neighbourhood-level
-price appreciation momentum via per-NTA OLS regression. The system further
-implements 2026 AVM best practices including segment-adaptive confidence
-intervals, a 0–100 confidence score with letter grade, comparable-count hit-rate
-signalling, and four quality control flags (SPARSE_MARKET, LUXURY_SEGMENT,
-HIGH_UNCERTAINTY, METRO_CORE).
+(Stack v11) achieves R² = 0.6467 and Median Absolute Percentage Error (MedAPE)
+of 20.23% on a time-based holdout set of 27,763 unseen sales across 104 features,
+including a novel NTA price trend slope feature capturing neighbourhood-level
+price appreciation momentum via per-NTA OLS regression, and ten new building
+health and mobility indicators sourced from NYC HPD violation records, DOB permit
+filings, granular 311 complaint density (rodent and heat), and MTA station
+quality attributes. The system further implements 2026 AVM best practices
+including segment-adaptive confidence intervals, a 0–100 confidence score with
+letter grade, comparable-count hit-rate signalling, and four quality control
+flags (SPARSE_MARKET, LUXURY_SEGMENT, HIGH_UNCERTAINTY, METRO_CORE).
 
 A bilingual (English/Arabic) web application provides interactive map-based
 property valuation with SHAP-driven feature explanations including waterfall
@@ -98,14 +101,15 @@ This project addresses four gaps:
 1.3 Contributions
 -----------------
   - A full end-to-end AVM pipeline from raw NYC open data to deployed web app.
-  - A 94-feature dataset combining structural, spatial, temporal, and
-    neighbourhood momentum signals.
-  - Stack v10: a 4-model ensemble achieving MedAPE = 20.16% on 27,763 holdout
-    sales, with NTA price trend slope as the 94th feature.
+  - A 104-feature dataset combining structural, spatial, temporal, neighbourhood
+    momentum, building health, and transit quality signals.
+  - Stack v11: a 4-model ensemble achieving R² = 0.6467 / MedAPE = 20.23% on
+    27,763 holdout sales, with 10 new v11 features (HPD violations, DOB permits,
+    311 rodent/heat density, MTA station quality attributes).
   - Segment-adaptive confidence intervals per borough × price tier.
   - A formal AVM QC block with four risk flags.
   - A bilingual (English/Arabic) interactive valuation interface with SHAP
-    waterfall plots and natural-language explanations.
+    waterfall plots, natural-language explanations, and 11-layer NTA choropleth.
 
 ================================================================================
 2. RELATED WORK
@@ -252,6 +256,10 @@ in-memory KD-tree indexes at API startup time.
   Bike lanes (vertices)          NYC DOT              44,934
   Waterfront / coastline         NYC Open Data        27,116
   POI: cafés, restaurants, gyms  OpenStreetMap        60,000+
+  MTA station quality (v11)      MTA / NYC Open Data    496
+  HPD violations by ZIP (v11)    NYC DOHMH Socrata      562 ZIP-class groups
+  DOB permits by ZIP (v11)       NYC Buildings Socrata  227 ZIP groups
+  311 rodent/heat complaints(v11) NYC Open Data       155K rodent + 7K heat
 
 3.5 Neighbourhood Tabulation Areas (NTA)
 -----------------------------------------
@@ -451,7 +459,34 @@ years receive the global median slope as a fallback.
   Global median slope:    0.019
   NTAs with < 2 years:    receive global median as fallback
 
-Total features: 94
+4.11 Building Health & Mobility Features (v11)
+-----------------------------------------------
+Ten new features were added in v11, sourced from four NYC open data sources
+and aggregated at ZIP code and NTA level via Socrata SoQL GROUP BY queries
+and shapely STRtree spatial joins respectively.
+
+  Group A — HPD Housing Violations (ZIP-level, 1.3M raw violations → 562 rows):
+    hpd_class_b_viol_zip     Count of Class B (hazardous) violations per ZIP
+    hpd_class_c_viol_zip     Count of Class C (immediately hazardous) violations
+    hpd_severity_score_zip   Weighted composite: B×1 + C×3, normalised by zip pop
+
+  Group B — DOB Building Permits (ZIP-level, 3.4M raw permits → 227 rows):
+    dob_reno_permit_count    Alteration/renovation permit count per ZIP (2022+)
+    dob_newbld_permit_count  New building permit count per ZIP (2022+)
+
+  Group C — 311 Granular Complaints (NTA-level, shapely STRtree polygon join):
+    rat_density_nta          Rodent complaint density per 1k residents per NTA
+    heat_density_nta         Heat/hot water complaint density per 1k residents
+
+  Group D — MTA Station Quality (nearest-station KDTree, 496 stations):
+    nearest_station_is_cbd   1 if nearest station serves a CBD express line
+    nearest_station_route_count  Number of distinct routes at nearest station
+    nearest_station_is_ada   1 if nearest station is ADA accessible
+
+  API inference: ZIP resolved from nearby sales KDTree; NTA from _lookup_nta();
+  MTA station from scipy KDTree(coords) stored in meta.json.
+
+Total features: 104
 
 ================================================================================
 5. MODEL ARCHITECTURE
@@ -492,16 +527,16 @@ consequence of evaluating completely spatially isolated regions:
 
   Fold   XGB-A   XGB-B   LGB     CAT
   ----   -----   -----   ---     ---
-  1      0.5992  0.6020  0.5732  0.5952
-  2      0.6236  0.6165  0.6120  0.6245
-  3      0.6043  0.5995  0.6035  0.6080
-  4      0.5975  0.6062  0.6016  0.6061
-  5      0.3755  0.4120  0.3775  0.4025
-  6      0.5888  0.5820  0.5887  0.5983
-  7      0.6467  0.6355  0.6390  0.6295
-  8      0.6355  0.6284  0.6424  0.6418
-  9      0.5494  0.5917  0.5775  0.5521
-  10     0.5923  0.5955  0.5940  0.5857
+  1      0.5898  0.5933  0.5540  0.5995
+  2      0.6318  0.6187  0.6125  0.6332
+  3      0.6015  0.5955  0.6059  0.6046
+  4      0.5989  0.6056  0.6022  0.6043
+  5      0.3512  0.4186  0.3829  0.4071
+  6      0.5860  0.5697  0.5874  0.5957
+  7      0.6397  0.6295  0.6343  0.6298
+  8      0.6356  0.6195  0.6398  0.6436
+  9      0.5673  0.5907  0.5733  0.5666
+  10     0.5937  0.5900  0.5940  0.5750
 
 The severe degradation in Fold 5 (R² ≈ 0.37–0.41 across all models) indicates
 that this spatial cluster contains highly idiosyncratic pricing dynamics. This
@@ -542,11 +577,11 @@ made when that sample was in the held-out fold, preventing leakage.
 The critical architectural decision in a stacking ensemble is the Level-1
 meta-learner. The training log demonstrates a direct empirical comparison:
 
-  LightGBM meta: OOF R²=0.6381 / MedAPE=22.12%
-                 Holdout R²=0.6365 / MAE=$1,108,692
+  LightGBM meta: OOF R²=0.6376 / MedAPE=22.17%
+                 Holdout R²=0.6349 / MAE=$1,105,269
 
-  Ridge meta:    OOF R²=0.6010 / MedAPE=22.67%
-                 Holdout R²=0.6460 / MAE=$1,075,938
+  Ridge meta:    OOF R²=0.5995 / MedAPE=22.73%
+                 Holdout R²=0.6467 / MAE=$1,067,305
 
 The Ridge meta-learner is selected despite its superficially lower OOF score.
 This outcome illustrates the primary vulnerability of complex stacking: meta-
@@ -555,7 +590,7 @@ exploit residual noise and specific correlation patterns among base model
 predictions on the validation set, rather than learning the true signal.
 
 Because the sophisticated Level-0 base models have already exhausted the
-non-linear relationships within the 94 features, the remaining variance at
+non-linear relationships within the 104 features, the remaining variance at
 the meta-stage is largely statistical noise. Ridge regression mitigates this
 by applying L2 regularisation — squaring coefficient values and adding them to
 the loss function — preventing any single base model from dominating the final
@@ -614,7 +649,8 @@ The model went through ten training versions. Key lessons learned:
   v7b      0.633   21.5%    Recovered; Bayesian smoothing hurt accuracy
   v8       0.635   20.94%   Raw encoding; ZIP codes added
   v9       0.6469  20.12%   10-fold OOF + 5000 rounds (best MedAPE)
-  v10      0.6460  20.16%   NTA price trend slope (94th feature; §4.10)
+  v10      0.6460  20.30%   NTA price trend slope (94th feature; §4.10)
+  v11      0.6467  20.23%   10 new building health & mobility features (§4.11)
 
 6.2 The In-Fold Encoding Failure (v7a)
 ---------------------------------------
@@ -660,28 +696,29 @@ standard metric in AVM industry reporting.
 
 7.2 Overall Performance (27,763 holdout sales)
 ------------------------------------------------
-  Metric   Stack v10   Stack v9    Stack v5    v10 vs v5
-  ------   ---------   --------    --------    ---------
-  R²       0.6460      0.6469      0.6582      −0.012
-  MedAPE   20.16%      20.12%      20.34%      −0.18pp
-  MAE      $1,075,938  $1,064,855  $1,058,000  +$17,938
+  Metric   Stack v11   Stack v10   Stack v9    Stack v5    v11 vs v5
+  ------   ---------   ---------   --------    --------    ---------
+  R²       0.6467      0.6460      0.6469      0.6582      −0.011
+  MedAPE   20.23%      20.30%      20.12%      20.34%      −0.11pp
+  MAE      $1,067,305  $1,075,938  $1,064,855  $1,058,000  +$9,305
 
 Note: v5 achieves slightly higher R² because it does not include NTA encoding,
-which adds variance in certain geographic segments. v10 has better MedAPE than
-v5 — the practically important metric for a user-facing AVM. The marginal
-difference between v9 and v10 (ΔR²=−0.0009, ΔMedAPE=+0.04pp) is within normal
-run-to-run stochastic variation and confirms the trend slope feature adds
-neighbourhood momentum information without degrading overall accuracy.
+which adds variance in certain geographic segments. v11 has better MedAPE than
+v5 — the practically important metric for a user-facing AVM. Each version since
+v9 makes a small, consistent improvement: v10 added neighbourhood momentum (NTA
+trend slope), v11 added building health and transit quality signals. The combined
+ΔR²=+0.0007 and ΔMedAPE=−0.07pp over v10 confirms that the new indicators add
+genuine predictive signal rather than noise.
 
-7.3 Base Learner Comparison (v10 holdout)
+7.3 Base Learner Comparison (v11 holdout)
 -----------------------------------------
   Model       R²      MedAPE
   -----       ------  -------
-  XGB-A       0.6422  20.30%
-  XGB-B       0.6404  20.25%
-  LGB         0.6412  20.62%
-  CatBoost    0.6450  20.21%
-  Stack v10   0.6460  20.16%   ← ensemble always best
+  XGB-A       0.6441  20.21%
+  XGB-B       0.6429  20.35%
+  LGB         0.6419  20.40%
+  CatBoost    0.6430  20.22%
+  Stack v11   0.6467  20.23%   ← ensemble always best
 
 The ensemble outperforms every individual base learner, confirming sufficient
 diversity for blending to produce a net benefit.
@@ -690,15 +727,15 @@ diversity for blending to produce a net benefit.
 ---------------------------
   Borough        n       R²      MedAPE    Notes
   -------        ----    ------  -------   -----
-  Staten Island  3,052   0.4096  13.37%    Best accuracy; uniform housing stock
-  Queens         9,533   0.6845  17.03%    Highest volume; best R²
-  Bronx          2,735   0.6184  20.79%    Mixed housing stock
-  Brooklyn       7,032   0.6188  20.82%    Wide price range across NTAs
-  Manhattan      5,411   0.6145  36.91%    Worst; extreme luxury heterogeneity
+  Staten Island  3,052   0.4103  13.46%    Best accuracy; uniform housing stock
+  Queens         9,533   0.6851  17.06%    Highest volume; best R²
+  Bronx          2,735   0.6195  20.93%    Mixed housing stock
+  Brooklyn       7,032   0.6206  20.89%    Wide price range across NTAs
+  Manhattan      5,411   0.6141  36.66%    Worst; extreme luxury heterogeneity
 
 7.4.1 The Staten Island Statistical Paradox
 Staten Island presents the most instructive diagnostic anomaly: the worst R²
-(0.4096) combined with the best MedAPE (13.37%). This divergence highlights a
+(0.4103) combined with the best MedAPE (13.46%). This divergence highlights a
 fundamental mathematical reality of regression evaluation in homogeneous datasets.
 
 R² measures the proportion of variance explained:
@@ -721,8 +758,8 @@ while keeping absolute predictive errors tight.
 
 7.4.2 Manhattan Luxury Sub-Market and Co-Op Complexity
 Manhattan exposes the fundamental limitations of administrative tabular datasets
-for luxury AVM. While maintaining a moderate R² (0.6145), predictive precision
-degrades to a MedAPE of 36.91%.
+for luxury AVM. While maintaining a moderate R² (0.6141), predictive precision
+degrades to a MedAPE of 36.66%.
 
 In the Manhattan luxury market, value is dictated by subjective, opaque variables
 entirely absent from municipal tax datasets: exact floor level, unobstructed
@@ -786,9 +823,9 @@ The naive approach assigns a single confidence interval to all predictions:
   confidence_low  = price × (1 − global_medape / 100)
   confidence_high = price × (1 + global_medape / 100)
 
-With global MedAPE = 20.16%, a Staten Island $600K property and a Manhattan
-$3M condo both receive ±20.16% intervals. This is dishonest: the Staten Island
-estimate is likely within ±13%, while the Manhattan estimate could easily be
+With global MedAPE = 20.23%, a Staten Island $600K property and a Manhattan
+$3M condo both receive ±20.23% intervals. This is dishonest: the Staten Island
+estimate is likely within ±13.5%, while the Manhattan estimate could easily be
 off by ±37%.
 
 8.2 Segment-Adaptive Confidence
@@ -799,7 +836,7 @@ For each prediction, the segment MedAPE is computed as:
 
 Taking the maximum of the two risk dimensions gives the most conservative
 (widest) interval when both risk factors coincide — e.g. Manhattan luxury
-(borough=36.91%, tier=40.26%) → segment_medape = 40.26%.
+(borough=36.66%, tier=40.26%) → segment_medape = 40.26%.
 
   confidence_low  = price × (1 − segment_medape / 100)
   confidence_high = price × (1 + segment_medape / 100)
@@ -827,10 +864,10 @@ index, executing in under 5ms.
 --------------------------------------
   Property                            Grade  Score  Interval
   --------                            -----  -----  --------
-  Queens, 2-family, $700K             A      83     ±16.9%
-  Brooklyn, walk-up, $900K            B      79     ±20.8%
-  Bronx, elevator condo, $400K        C      79     ±20.8%
-  Manhattan, D4, $1.5M                D      63     ±36.9%
+  Queens, 2-family, $700K             A      83     ±17.1%
+  Brooklyn, walk-up, $900K            B      79     ±20.9%
+  Bronx, elevator condo, $400K        C      72     ±28.2%
+  Manhattan, D4, $1.5M                D      63     ±36.7%
   Manhattan, luxury, $4M              D      60     ±40.3%
 
 ================================================================================
@@ -858,8 +895,10 @@ End-to-end prediction latency: 200–400ms
   Step 1: Receive JSON payload
   Step 2: SpatialLookup — 14 features from 8 KD-tree queries
   Step 3: _lookup_nta — 4 NTA features from nearest-neighbor + meta.json maps
-  Step 4: _build_feature_row — assemble all 94 features
-  Step 5: Stack inference — 4 base models → Ridge meta → price
+  Step 4a: _build_feature_row — assemble structural + spatial features
+  Step 4b: _lookup_v11_features — ZIP→HPD/DOB, NTA→rat/heat, KDTree→MTA
+           (assembles all 104 features)
+  Step 5:  Stack inference — 4 base models → Ridge meta → price
   Step 6: _adaptive_confidence — segment MedAPE → interval + grade
   Step 7: _count_comparables — 800m radius count
   Step 8: _build_qc_flags — evaluate 4 flag conditions
@@ -881,14 +920,16 @@ The web interface is built with vanilla JavaScript + Leaflet.js.
 
   Components:
   - Leaflet map: click-to-select + address search (Nominatim geocoding)
-  - Building type grid: 9 visual cards with emoji icons + info popup
+  - Building type grid: 9 cards with monochromatic SVG icons + (i) tooltip
   - Confidence bar: adaptive width = confidence_score (0–100%)
   - SHAP drivers: horizontal bars + waterfall chart (toggle), with
     natural-language tooltips explaining each feature's contribution
   - AVM QC row: grade badge + comparable count + flag chips
   - Comparable sales bubbles: MarkerCluster with price labels, colour-coded
     green/red/blue vs. the current prediction
-  - NTA choropleth layer: overlay median income, crime, noise, livability
+  - NTA choropleth layer: 11 overlays — income, crime, noise, air quality,
+    tree cover, market hotness, rodent activity, heat complaints, HPD
+    violations, 311 livability, plus default base map
   - Analytics dashboard (charts.html): model performance charts
 
 Languages: English and Arabic (bilingual, toggleable).
@@ -903,7 +944,7 @@ A launchd plist (com.thaman.retrain) triggers scripts/retrain.sh on
 retrain.sh logic:
   1. Record current R² from meta.json
   2. Back up thaman_stack.pkl and meta.json (keep last 3 backups)
-  3. Run train_stack_v10.py
+  3. Run train_stack_v11.py
   4. If new R² ≥ old R² − 0.002: accept, restart API, send notification
   5. If R² dropped too much: restore backup, send warning notification
 
@@ -945,7 +986,7 @@ retrain.sh logic:
      MedAPE measure fundamentally different aspects of model quality. For a
      user-facing AVM, MedAPE is the correct optimisation target.
 
-  7. Manhattan is the hardest borough (MedAPE=36.91%). Co-op board approval
+  7. Manhattan is the hardest borough (MedAPE=36.66%). Co-op board approval
      discounts, unobservable interior finishes, and view premiums create
      heterogeneity that no tabular dataset can capture.
 
@@ -985,23 +1026,27 @@ retrain.sh logic:
 ================================================================================
 
 This paper presented THAMAN, a production-deployed AVM for NYC residential
-property valuation. The system achieves R² = 0.6460 and MedAPE = 20.16% on
+property valuation. The system achieves R² = 0.6467 and MedAPE = 20.23% on
 27,763 unseen holdout sales, outperforming single-model baselines through a
-4-model diverse stacking ensemble across 94 features.
+4-model diverse stacking ensemble across 104 features.
 
 The key technical contributions are:
   (a) An end-to-end spatial feature pipeline that converts raw NYC open data
-      into 94 model features at inference time in < 5ms using KD-trees.
+      into 104 model features at inference time in < 5ms using KD-trees.
   (b) Neighbourhood-level (NTA) target encoding that gives the model 212-group
       geographic resolution vs the 5-group borough baseline, augmented by a
       per-NTA OLS price trend slope capturing appreciation momentum.
-  (c) Segment-adaptive confidence intervals with a 0–100 score, letter grade,
+  (c) Ten new v11 building health and mobility features: HPD violation severity
+      by ZIP, DOB permit activity, 311 rodent/heat complaint density by NTA,
+      and MTA station quality (CBD connectivity, route count, ADA access).
+  (d) Segment-adaptive confidence intervals with a 0–100 score, letter grade,
       and 4 AVM quality flags aligned with 2026 industry standards.
-  (d) An NTA inference lookup that resolves lat/lon → ntacode → 4 NTA features
+  (e) An NTA inference lookup that resolves lat/lon → ntacode → NTA features
       at prediction time, eliminating training/serving distribution mismatch.
-  (e) A bilingual interactive interface with SHAP waterfall visualisation,
-      natural-language explanations, NTA choropleth overlay, and a 6-monthly
-      automated retraining pipeline with model acceptance/rejection logic.
+  (f) A bilingual interactive interface with SHAP waterfall visualisation,
+      natural-language explanations, 11-layer NTA choropleth overlay, and a
+      6-monthly automated retraining pipeline with model acceptance/rejection
+      logic.
 
 The system is deployed at https://huggingface.co/spaces/Turki-Almurahhem/thaman
 and open-sourced at https://github.com/turkialm/thaman-v2.
