@@ -53,6 +53,8 @@ _spatial:     SpatialLookup | None = None
 _nearby_df                         = None   # pl.DataFrame — runtime sales lookup
 _nearby_tree                       = None   # scipy cKDTree for nearby queries
 _nta_geojson_cache: str | None     = None   # pre-built NTA choropleth GeoJSON
+_mta_tree                          = None   # KDTree for MTA station nearest-neighbor
+_mta_feats: dict                   = {}     # arrays: is_cbd, route_count, is_ada
 
 # ── Comps cache (zip_code → (result_dict, unix_timestamp)) ────────────
 _comps_cache: dict[str, tuple[dict, float]] = {}
@@ -62,6 +64,7 @@ _NEARBY_COLS = [
     "latitude", "longitude", "sale_price", "address",
     "bldgclass", "gross_square_feet", "building_age", "sale_date",
     "ntacode",   # needed for NTA lookup at inference
+    "zip_code",  # needed for v11 HPD/DOB ZIP-level feature lookup
 ]
 
 
@@ -118,6 +121,7 @@ def _build_nta_geojson() -> str:
 async def lifespan(app: FastAPI):
     """Load model + spatial data once at startup."""
     global _scorer, _spatial, _nearby_df, _nearby_tree, _nta_geojson_cache
+    global _mta_tree, _mta_feats
     print("=" * 60)
     print("THAMAN API — Starting up (v2)")
     print("=" * 60)
@@ -138,6 +142,25 @@ async def lifespan(app: FastAPI):
         print(f"  Nearby index: {len(_nearby_df):,} sales loaded")
     except Exception as e:
         print(f"  [nearby] Could not load nearby index: {e}")
+
+    # Build MTA station KDTree for v11 transit-quality features
+    try:
+        from scipy.spatial import KDTree as _SciKDTree
+        _stations = _scorer.meta.get("mta_stations", [])
+        if _stations:
+            _slats = np.array([s["lat"] for s in _stations], dtype=np.float64)
+            _slons = np.array([s["lon"] for s in _stations], dtype=np.float64)
+            _mta_tree  = _SciKDTree(np.column_stack([_slats, _slons]))
+            _mta_feats = {
+                "is_cbd":       np.array([s.get("is_cbd",       0) for s in _stations], dtype=np.int32),
+                "route_count":  np.array([s.get("route_count",  1) for s in _stations], dtype=np.int32),
+                "is_ada":       np.array([s.get("is_ada",       0) for s in _stations], dtype=np.int32),
+            }
+            print(f"  MTA station index: {len(_stations)} complexes loaded")
+        else:
+            print("  MTA station index: not in meta.json (train v11 first)")
+    except Exception as e:
+        print(f"  [MTA] KDTree build failed: {e}")
 
     # Build NTA choropleth GeoJSON cache
     try:
@@ -376,6 +399,74 @@ def _lookup_nta(lat: float, lon: float, bldgclass: str) -> dict:
     }
 
 
+def _lookup_v11_features(ntacode: str, lat: float, lon: float,
+                          zip_code: str = "") -> dict:
+    """
+    Resolve v11 feature values for inference:
+      1. ZIP-level HPD violation severity + DOB permit intensity → from v11_zip_lookup
+      2. NTA-level rodent/heat complaint density             → from v11_nta_lookup
+      3. MTA station quality (CBD, route count, ADA)         → KDTree on _mta_tree
+
+    Falls back to global medians when lookup keys are missing.
+    Called after _lookup_nta() so ntacode is already resolved.
+    """
+    if _scorer is None:
+        return {}
+
+    meta         = _scorer.meta
+    zip_lookup   = meta.get("v11_zip_lookup",  {})
+    nta_lookup   = meta.get("v11_nta_lookup",  {})
+    out: dict    = {}
+
+    # ── 1. ZIP-level HPD + DOB features ──────────────────────────────
+    _ZIP_COLS = ["hpd_class_b_viol_zip", "hpd_class_c_viol_zip",
+                 "hpd_severity_score_zip", "dob_reno_permit_count",
+                 "dob_newbld_permit_count"]
+    zip_data = zip_lookup.get(zip_code, {})
+    if not zip_data and zip_lookup:
+        # Fall back to median across all ZIPs
+        zip_data = {}
+    for col in _ZIP_COLS:
+        if col in zip_data:
+            out[col] = float(zip_data[col])
+        elif zip_lookup:
+            # Global median fallback: median of all zip values for this column
+            vals = [float(v[col]) for v in zip_lookup.values() if col in v]
+            out[col] = float(np.median(vals)) if vals else 0.0
+        else:
+            out[col] = 0.0
+
+    # ── 2. NTA-level rodent + heat density ───────────────────────────
+    _NTA_COLS = ["rat_density_nta", "heat_density_nta"]
+    nta_data  = nta_lookup.get(ntacode, {})
+    for col in _NTA_COLS:
+        if col in nta_data:
+            out[col] = float(nta_data[col])
+        elif nta_lookup:
+            vals = [float(v[col]) for v in nta_lookup.values() if col in v]
+            out[col] = float(np.median(vals)) if vals else 0.0
+        else:
+            out[col] = 0.0
+
+    # ── 3. MTA nearest-station quality ───────────────────────────────
+    if _mta_tree is not None:
+        try:
+            _, idx = _mta_tree.query([lat, lon], k=1)
+            out["nearest_station_is_cbd"]     = int(_mta_feats["is_cbd"][idx])
+            out["nearest_station_route_count"] = int(_mta_feats["route_count"][idx])
+            out["nearest_station_is_ada"]     = int(_mta_feats["is_ada"][idx])
+        except Exception:
+            out["nearest_station_is_cbd"]      = 0
+            out["nearest_station_route_count"] = 1
+            out["nearest_station_is_ada"]      = 0
+    else:
+        out["nearest_station_is_cbd"]      = 0
+        out["nearest_station_route_count"] = 1
+        out["nearest_station_is_ada"]      = 0
+
+    return out
+
+
 def _count_comparables(lat: float, lon: float, radius_m: int = 800) -> int:
     """
     Count training-set sales within radius_m metres using the already-loaded
@@ -550,9 +641,22 @@ def predict(req: PredictRequest):
     feat_dict = _build_feature_row(req, spatial_feats)
 
     # 2b. NTA lookup: resolve lat/lon → ntacode → 4 NTA model features
-    nta_override = _lookup_nta(req.latitude, req.longitude, req.bldgclass)
+    nta_override  = _lookup_nta(req.latitude, req.longitude, req.bldgclass)
     _resolved_nta = nta_override.pop("_resolved_nta", "")
     feat_dict.update(nta_override)   # overrides defaults (global_mean_log) with real NTA values
+
+    # 2c. v11 features: HPD/DOB by ZIP + rat/heat by NTA + MTA station quality
+    _zip_str = ""
+    if _nearby_df is not None and _nearby_tree is not None and "zip_code" in _nearby_df.columns:
+        try:
+            from scipy.spatial import cKDTree as _KDT
+            _, _nidx = _nearby_tree.query([req.latitude, req.longitude], k=1)
+            _zip_raw = _nearby_df.row(int(_nidx), named=True).get("zip_code")
+            _zip_str = str(int(_zip_raw)).zfill(5) if _zip_raw else ""
+        except Exception:
+            pass
+    v11_feats = _lookup_v11_features(_resolved_nta, req.latitude, req.longitude, _zip_str)
+    feat_dict.update(v11_feats)
 
     # 3. Run prediction
     try:
@@ -650,8 +754,18 @@ def predict_batch(requests: list[PredictRequest]):
             feat_dict     = _build_feature_row(req, spatial_feats)
             # NTA lookup — same as /predict
             nta_ov = _lookup_nta(req.latitude, req.longitude, req.bldgclass)
-            nta_ov.pop("_resolved_nta", None)
+            _b_nta = nta_ov.pop("_resolved_nta", "")
             feat_dict.update(nta_ov)
+            # v11 features — HPD/DOB/rat/heat/MTA (same pattern as /predict)
+            _b_zip = ""
+            if _nearby_df is not None and _nearby_tree is not None and "zip_code" in _nearby_df.columns:
+                try:
+                    _, _bni = _nearby_tree.query([req.latitude, req.longitude], k=1)
+                    _zr = _nearby_df.row(int(_bni), named=True).get("zip_code")
+                    _b_zip = str(int(_zr)).zfill(5) if _zr else ""
+                except Exception:
+                    pass
+            feat_dict.update(_lookup_v11_features(_b_nta, req.latitude, req.longitude, _b_zip))
             result        = _scorer.predict_single(**feat_dict)
             results.append({
                 "index":           i,
