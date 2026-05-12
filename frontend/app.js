@@ -501,6 +501,105 @@ document.addEventListener('click', (e) => {
 
 loadBldgClasses().then(() => parseURLParams());
 
+// ── Building type info data ────────────────────────────────────────────
+const BLDG_INFO = {
+  A1: {
+    icon: '🏠', title: 'Single-Family Detached',
+    desc: 'A standalone house on its own lot — no shared walls with neighbours. Common in Staten Island, Queens, and outer Brooklyn. Typically 1–3 floors with a private backyard.',
+    descAr: 'منزل مستقل على قطعة أرض منفردة — لا جدران مشتركة مع الجيران. شائع في ستاتن آيلاند وكوينز وأجزاء من بروكلين. عادةً 1-3 طوابق مع حديقة خاصة.',
+    median: '$769K', count: '15K sales/yr', accuracy: '±13%',
+  },
+  B2: {
+    icon: '🏡', title: '2-Family Home (Frame)',
+    desc: 'A two-unit house sharing a foundation — typically one unit per floor. Very common in Brooklyn and Queens. Owner often lives in one unit and rents the other.',
+    descAr: 'منزل بوحدتين يشتركان في الأساس — عادةً وحدة واحدة في كل طابق. شائع جداً في بروكلين وكوينز. غالباً يسكن المالك في وحدة واحدة ويؤجر الأخرى.',
+    median: '$925K', count: '9.6K sales/yr', accuracy: '±20%',
+  },
+  C0: {
+    icon: '🏘', title: '3-Unit Walk-up',
+    desc: 'A small apartment building with 3 units and no elevator — residents walk up the stairs. Typically 3–4 floors. Widespread across all boroughs except Manhattan.',
+    descAr: 'مبنى سكني صغير بـ3 وحدات وبدون مصعد — يصعد السكان السلم. عادةً 3-4 طوابق. منتشر في جميع الأحياء.',
+    median: '$1.2M', count: '7.4K sales/yr', accuracy: '±21%',
+  },
+  A5: {
+    icon: '🏙', title: 'Row House (Attached Single-Family)',
+    desc: 'A single-family home attached to neighbouring homes on one or both sides — like a terrace house. Very common in Brooklyn brownstone neighbourhoods and the Bronx.',
+    descAr: 'منزل عائلة واحدة ملاصق للمنازل المجاورة من جانب أو جانبين — مثل المنازل المتصلة. شائع جداً في أحياء بروكلين التاريخية والبرونكس.',
+    median: '$679K', count: '13K sales/yr', accuracy: '±20%',
+  },
+  R1: {
+    icon: '🏢', title: 'Condo Unit (Walk-up)',
+    desc: 'An individually owned apartment unit in a building without an elevator. The owner holds the deed to that specific unit plus a share of common areas. Popular in Brooklyn and Queens.',
+    descAr: 'وحدة شقة مملوكة بشكل فردي في مبنى بدون مصعد. يملك المالك صك تلك الوحدة بالإضافة إلى حصة في المساحات المشتركة.',
+    median: '$978K', count: '2.1K sales/yr', accuracy: '±21%',
+  },
+  D4: {
+    icon: '🏗', title: 'Elevator Condo Apartment',
+    desc: 'An individually owned unit in a high-rise or mid-rise building with an elevator. The most common property type in NYC (41K+ annual sales). Dominant in Manhattan and Long Island City.',
+    descAr: 'وحدة مملوكة بشكل فردي في مبنى شاهق أو متوسط الارتفاع مع مصعد. أكثر أنواع العقارات شيوعاً في نيويورك (أكثر من 41 ألف صفقة سنوياً). الأكثر انتشاراً في مانهاتن وشواطئ لونغ آيلاند.',
+    median: '$495K', count: '41K sales/yr', accuracy: '±20%',
+  },
+  C1: {
+    icon: '🏠', title: 'Walk-up Apartment (4–6 Units)',
+    desc: 'A small apartment building with 4 to 6 units and no elevator. Usually 4–5 floors, with a hallway and staircase shared by all residents. Common investment property in Brooklyn and the Bronx.',
+    descAr: 'مبنى سكني صغير بـ4 إلى 6 وحدات وبدون مصعد. عادةً 4-5 طوابق. عقار استثماري شائع في بروكلين والبرونكس.',
+    median: '$2.05M', count: '1.8K sales/yr', accuracy: '±21%',
+  },
+  C6: {
+    icon: '🤝', title: 'Co-op Apartment',
+    desc: 'A form of shared ownership — instead of owning your unit outright, you own shares in a corporation that owns the building and receive a lease for your apartment. Common in Manhattan and older Queens buildings.',
+    descAr: 'شكل من أشكال الملكية المشتركة — بدلاً من امتلاك وحدتك مباشرة، تمتلك أسهماً في شركة تملك المبنى وتحصل على عقد إيجار لشقتك.',
+    median: '$370K', count: '8.4K sales/yr', accuracy: '±21%',
+  },
+  S1: {
+    icon: '🏪', title: 'Mixed-Use (1-Family + Store)',
+    desc: 'A building that combines a ground-floor commercial space (shop, office, or restaurant) with a residential unit above. Common in neighbourhood main streets across all boroughs.',
+    descAr: 'مبنى يجمع بين مساحة تجارية في الطابق الأرضي (محل أو مكتب أو مطعم) ووحدة سكنية بالأعلى. شائع في الشوارع الرئيسية للأحياء السكنية.',
+    median: '$925K', count: '692 sales/yr', accuracy: '±20%',
+  },
+};
+
+// ── Building type info popup (all types, single ! button by label) ─────
+function initBldgInfoPopup() {
+  const popup    = document.getElementById('bldgInfoPopup');
+  const overlay  = document.getElementById('bldgInfoOverlay');
+  const closeBtn = document.getElementById('bldgInfoClose');
+  const listEl   = document.getElementById('bldgInfoList');
+  const titleEl  = document.getElementById('bldgInfoPopupTitle');
+
+  function openPopup() {
+    const isAr = currentLang === 'ar';
+    titleEl.textContent = isAr ? 'دليل أنواع المباني' : 'Building Types Guide';
+    listEl.innerHTML = Object.entries(BLDG_INFO).map(([code, info]) => `
+      <div class="bldg-info-row">
+        <div class="bldg-info-row-icon">${info.icon}</div>
+        <div class="bldg-info-row-body">
+          <div class="bldg-info-row-head">
+            <span class="bldg-info-row-title">${info.title}</span>
+            <span class="bldg-info-row-code">${code}</span>
+            <span class="bldg-info-row-median">${info.median}</span>
+          </div>
+          <div class="bldg-info-row-desc">${isAr ? info.descAr : info.desc}</div>
+        </div>
+      </div>
+    `).join('');
+    popup.style.display   = 'flex';
+    overlay.style.display = 'block';
+  }
+
+  function closePopup() {
+    popup.style.display   = 'none';
+    overlay.style.display = 'none';
+  }
+
+  document.getElementById('bldgTypesInfoBtn').addEventListener('click', openPopup);
+  closeBtn.addEventListener('click', closePopup);
+  overlay.addEventListener('click', closePopup);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopup(); });
+}
+
+initBldgInfoPopup();
+
 // ── Building type card selector ───────────────────────────────────────
 function initBldgTypeCards() {
   const cards = document.querySelectorAll('.bldgtype-card');
@@ -834,7 +933,7 @@ function renderResults(data) {
   // Update model tag if available
   const modelTagEl = document.getElementById('modelTag');
   if (modelTagEl && data.model) {
-    modelTagEl.textContent = data.model.includes('v9') ? 'Stack v9 · 4-Model' : data.model.includes('v8') ? 'Stack v8 · 4-Model' : data.model.includes('v7') ? 'Stack v7 · 4-Model' : data.model.includes('v6') ? 'Stack v6 · 4-Model' : data.model.includes('v5') ? 'Stack v5 · 4-Model' : data.model.includes('Stack') ? 'Stack v4 · XGB+LGB+CAT' : data.model;
+    modelTagEl.textContent = data.model.includes('v10') ? 'Stack v10 · 4-Model' : data.model.includes('v9') ? 'Stack v9 · 4-Model' : data.model.includes('v8') ? 'Stack v8 · 4-Model' : data.model.includes('v7') ? 'Stack v7 · 4-Model' : data.model.includes('v6') ? 'Stack v6 · 4-Model' : data.model.includes('v5') ? 'Stack v5 · 4-Model' : data.model.includes('Stack') ? 'Stack v4 · XGB+LGB+CAT' : data.model;
   }
   // Price reveal + count-up animation
   priceMain.classList.remove('price-reveal');
@@ -1346,7 +1445,7 @@ function copyResults() {
     `🔗 ${shareURL}`,
     '',
     `Generated by THAMAN · AI-Powered Property Valuation`,
-    `R² 0.647 · MedAPE 20.12% · 185K NYC sales 2022–2026`,
+    `R² 0.646 · MedAPE 20.16% · 185K NYC sales 2022–2026`,
   ].filter(l => l !== null && l !== undefined).join('\n').replace(/\n{3,}/g, '\n\n');
 
   navigator.clipboard.writeText(text)
@@ -1707,7 +1806,7 @@ const TR = {
     lblYear:        'Valuation Year',
     lblMonth:       'Sale Month',
     lblPrior:       'Prior Sale Price ($)',
-    disclaimer:     'Predictions are based on NYC property sales 2022–2026. Model accuracy: median error ±20.12%.',
+    disclaimer:     'Predictions are based on NYC property sales 2022–2026. Model accuracy: median error ±20.16%.',
     resultTitle:    'Estimated Value',
     confMid:        'Predicted',
     shapTitle:      'Price Drivers',
@@ -1768,7 +1867,7 @@ const TR = {
     lblYear:        'سنة التقييم',
     lblMonth:       'شهر البيع',
     lblPrior:       'سعر البيع السابق ($)',
-    disclaimer:     'التوقعات مبنية على مبيعات العقارات في مدينة نيويورك 2022–2026. دقة النموذج: متوسط الخطأ ±20.12٪.',
+    disclaimer:     'التوقعات مبنية على مبيعات العقارات في مدينة نيويورك 2022–2026. دقة النموذج: متوسط الخطأ ±20.16٪.',
     resultTitle:    'القيمة التقديرية',
     confMid:        'التقدير',
     shapTitle:      'محركات السعر',
