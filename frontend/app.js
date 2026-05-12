@@ -41,6 +41,16 @@ const LAYER_META = {
   heat311:    { key: 'heat_density_nta',         label: 'Heat Complaints',    unit: '/1k res',   palette: 'orange', fmt: v => v.toFixed(2) },
   hpd:        { key: 'hpd_viol_rate_nta',        label: 'HPD Violations',     unit: 'rate',      palette: 'red',    fmt: v => v.toFixed(2) },
   livability: { key: 'livability_complaint_rate',label: '311 Livability',     unit: '/1k res',   palette: 'purple', fmt: v => v.toFixed(1) },
+  transit:    { key: 'dist_subway_m',            label: 'Transit Access',     unit: 'm to subway',palette:'blue',   fmt: v => `${Math.round(v)}m`, invert: true },
+  no2:        { key: 'no2_mean',                 label: 'NO₂ Pollution',      unit: 'µg/m³',     palette: 'purple', fmt: v => v.toFixed(3) },
+  population: { key: 'population_2020',          label: 'Population',         unit: 'residents', palette: 'blue',   fmt: v => `${Math.round(v/1000).toFixed(0)}k` },
+  bldgage:    { key: 'building_age',             label: 'Avg Building Age',   unit: 'years',     palette: 'orange', fmt: v => `${Math.round(v)}yr` },
+  airbnb:     { key: 'airbnb_count_500m',        label: 'Airbnb Density',     unit: '/500m',     palette: 'purple', fmt: v => Math.round(v) },
+  psf:        { key: 'price_psf',                label: 'Price / sq ft',      unit: '$/sqft',    palette: 'green',  fmt: v => `$${Math.round(v)}` },
+  restaurant: { key: 'poi_restaurant_500m',      label: 'Restaurants',        unit: '/500m',     palette: 'green',  fmt: v => Math.round(v) },
+  nightlife:  { key: 'poi_nightlife_500m',       label: 'Cafes & Bars',       unit: '/500m',     palette: 'orange', fmt: v => Math.round(v) },
+  grocery:    { key: 'poi_grocery_500m',         label: 'Grocery Access',     unit: '/500m',     palette: 'green',  fmt: v => Math.round(v) },
+  fitness:    { key: 'poi_gym_500m',             label: 'Gyms & Fitness',     unit: '/500m',     palette: 'blue',   fmt: v => Math.round(v) },
 };
 
 // ── Map init ──────────────────────────────────────────────────────────
@@ -213,9 +223,10 @@ function _hexToRgb(hex) {
 function _rgbToHex(r, g, b) {
   return '#' + [r,g,b].map(v => Math.round(v).toString(16).padStart(2,'0')).join('');
 }
-function colorScale(val, min, max, palette) {
+function colorScale(val, min, max, palette, invert=false) {
   if (val === null || val === undefined || isNaN(val)) return '#e5e7eb';
-  const t = max === min ? 0.5 : Math.max(0, Math.min(1, (val - min) / (max - min)));
+  let t = max === min ? 0.5 : Math.max(0, Math.min(1, (val - min) / (max - min)));
+  if (invert) t = 1 - t;
   const [c0, c1] = (_PALETTES[palette] || _PALETTES.blue).map(_hexToRgb);
   return _rgbToHex(c0[0] + t*(c1[0]-c0[0]), c0[1] + t*(c1[1]-c0[1]), c0[2] + t*(c1[2]-c0[2]));
 }
@@ -241,7 +252,7 @@ function showLayer(metricId) {
     style: feat => {
       const v = feat.properties[meta.key];
       return {
-        fillColor:   colorScale(v, min, max, meta.palette),
+        fillColor:   colorScale(v, min, max, meta.palette, meta.invert || false),
         fillOpacity: 0.60,
         weight:      0.8,
         color:       '#ffffff',
