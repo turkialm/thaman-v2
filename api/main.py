@@ -102,10 +102,14 @@ def _build_nta_geojson() -> str:
             pass
 
     # Merge stats into GeoJSON feature properties
+    # NYC Open Data NTA 2020 uses "nta2020" field; older exports use "ntacode"
     for feat in geojson.get("features", []):
-        code = feat.get("properties", {}).get("ntacode", "")
+        props = feat.get("properties", {})
+        code = props.get("ntacode") or props.get("nta2020") or ""
+        # Normalise: add "ntacode" key so frontend JS can reference it uniformly
+        props["ntacode"] = code
         if code in stats:
-            feat["properties"].update(stats[code])
+            props.update(stats[code])
 
     return json.dumps(geojson)
 
@@ -159,8 +163,8 @@ app = FastAPI(
     description=(
         "AI-powered NYC property price estimator. "
         "Combines structural attributes + Quality-of-Life indicators "
-        "using GIS spatial lookups + XGBoost+LightGBM+CatBoost Stack (R²=0.651, MedAPE=20.80%, "
-        "81 features, spatial CV validated, luxury sub-model for Manhattan $3M+)."
+        "using GIS spatial lookups + XGBoost+LightGBM+CatBoost Stack (R²=0.646, MedAPE=20.16%, "
+        "94 features, spatial CV validated, luxury sub-model for Manhattan $3M+)."
     ),
     version="4.0.0",
     lifespan=lifespan,
