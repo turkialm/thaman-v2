@@ -619,11 +619,10 @@ function initBldgTypeCards() {
   });
 
   document.getElementById('bldgAdvToggle').addEventListener('click', () => {
-    const panel = document.getElementById('bldgAdvPanel');
+    const panel  = document.getElementById('bldgAdvPanel');
+    const toggle = document.getElementById('bldgAdvToggle');
     panel.classList.toggle('open');
-    // Update the arrow character only (first text node), preserve inner span
-    document.getElementById('bldgAdvToggle').childNodes[0].textContent =
-      panel.classList.contains('open') ? '▼ ' : '▶ ';
+    toggle.classList.toggle('open');
   });
 }
 
