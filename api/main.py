@@ -87,15 +87,36 @@ def _build_nta_geojson() -> str:
          ["tree_count_200m", "pm25_mean", "hpd_viol_rate_nta"]),
         (os.path.join(BASE, "data", "processed", "features_v5.csv"),
          ["rat_density_nta", "heat_density_nta", "hpd_viol_rate_nta",
-          "livability_complaint_rate"]),
+          "livability_complaint_rate", "no2_mean",
+          "dist_subway_m", "building_age", "airbnb_count_500m", "population_2020",
+          "poi_restaurant_500m", "poi_cafe_500m", "poi_bar_500m",
+          "poi_grocery_500m", "poi_gym_500m"]),
     ]:
         if not os.path.exists(csv_path):
             continue
-        cols_needed = ["ntacode"] + [c for c in extra_cols]
+        avail = pl.read_csv(csv_path, n_rows=0).columns
+        cols_needed = ["ntacode"] + [c for c in extra_cols if c in avail]
+        # also grab price/sqft source columns if available
+        for _c in ["sale_price", "gross_square_feet", "poi_cafe_500m", "poi_bar_500m"]:
+            if _c in avail and _c not in cols_needed:
+                cols_needed.append(_c)
         try:
-            df = pl.read_csv(csv_path, columns=[c for c in cols_needed
-                             if c in pl.read_csv(csv_path, n_rows=0).columns])
-            for col in [c for c in extra_cols if c in df.columns]:
+            df = pl.read_csv(csv_path, columns=cols_needed)
+            # Derived columns
+            if "sale_price" in df.columns and "gross_square_feet" in df.columns:
+                df = df.with_columns(
+                    (pl.col("sale_price").cast(pl.Float64, strict=False) /
+                     pl.col("gross_square_feet").cast(pl.Float64, strict=False).clip(1))
+                    .alias("price_psf")
+                )
+            if "poi_cafe_500m" in df.columns and "poi_bar_500m" in df.columns:
+                df = df.with_columns(
+                    (pl.col("poi_cafe_500m").cast(pl.Float64, strict=False) +
+                     pl.col("poi_bar_500m").cast(pl.Float64, strict=False))
+                    .alias("poi_nightlife_500m")
+                )
+            all_cols = [c for c in extra_cols + ["price_psf", "poi_nightlife_500m"] if c in df.columns]
+            for col in all_cols:
                 agg = (df.group_by("ntacode")
                          .agg(pl.col(col).cast(pl.Float64, strict=False).median().alias(col)))
                 for row in agg.iter_rows(named=True):
