@@ -84,7 +84,10 @@ def _build_nta_geojson() -> str:
          ["median_income_nta", "crime_rate_nta", "noise_density_nta",
           "livability_complaint_rate", "price_appreciation"]),
         (os.path.join(BASE, "data", "processed", "features_v3.csv"),
-         ["tree_count_200m", "pm25_mean"]),
+         ["tree_count_200m", "pm25_mean", "hpd_viol_rate_nta"]),
+        (os.path.join(BASE, "data", "processed", "features_v5.csv"),
+         ["rat_density_nta", "heat_density_nta", "hpd_viol_rate_nta",
+          "livability_complaint_rate"]),
     ]:
         if not os.path.exists(csv_path):
             continue
