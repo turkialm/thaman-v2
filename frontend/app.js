@@ -698,7 +698,7 @@ map.on('click', (e) => {
 // ── Map moveend: refresh sale bubbles (debounced) ─────────────────────
 map.on('moveend', () => {
   clearTimeout(_salesTimer);
-  _salesTimer = setTimeout(fetchSalesForView, 600);
+  _salesTimer = setTimeout(fetchSalesForView, 250);
 });
 
 // Initial bubble load
@@ -781,24 +781,30 @@ function radiusForZoom(z) {
 
 // ── Render sale bubbles on map ────────────────────────────────────────
 function renderSalesBubbles(sales) {
-  if (_salesCluster) map.removeLayer(_salesCluster);
-  _salesCluster = L.markerClusterGroup({
-    maxClusterRadius:     40,
-    showCoverageOnHover:  false,
-    iconCreateFunction: c => L.divIcon({
-      html:       `<div class="cluster-bubble">${c.getChildCount()}</div>`,
-      className:  '',
-      iconAnchor: [18, 18],
-    }),
-  });
-  (sales || []).forEach(s => {
-    if (!s.latitude || !s.longitude) return;
+  // Keep cluster group alive — only clear and batch-add markers
+  if (!_salesCluster) {
+    _salesCluster = L.markerClusterGroup({
+      maxClusterRadius:    40,
+      showCoverageOnHover: false,
+      chunkedLoading:      true,
+      iconCreateFunction: c => L.divIcon({
+        html:      `<div class="cluster-bubble">${c.getChildCount()}</div>`,
+        className: '',
+        iconAnchor:[18, 18],
+      }),
+    });
+    map.addLayer(_salesCluster);
+  } else {
+    _salesCluster.clearLayers();
+  }
+
+  const markers = (sales || []).filter(s => s.latitude && s.longitude).map(s => {
     const psf = s.gross_square_feet > 0
       ? `$${Math.round(s.sale_price / s.gross_square_feet).toLocaleString()}/sqft` : '';
     const m = L.marker([s.latitude, s.longitude], { icon: buildSaleIcon(s.sale_price) });
     let vsBadge = '';
     if (_lastPrediction && _lastPrediction.price) {
-      const pct = ((s.sale_price - _lastPrediction.price) / _lastPrediction.price * 100);
+      const pct  = (s.sale_price - _lastPrediction.price) / _lastPrediction.price * 100;
       const sign = pct >= 0 ? '+' : '';
       const cls  = pct >= 5 ? 'delta-above' : pct <= -5 ? 'delta-below' : 'delta-neutral';
       vsBadge = `<span class="delta-badge ${cls}" style="margin-left:4px">${sign}${pct.toFixed(0)}% vs est.</span>`;
@@ -807,14 +813,15 @@ function renderSalesBubbles(sales) {
       `<div class="sale-popup">
         <strong>${formatBubblePrice(s.sale_price)}${vsBadge}</strong>
         <div class="sale-popup-addr">${s.address || ''}</div>
-        <div class="sale-popup-meta">${s.bldgclass || ''} · ${(s.gross_square_feet || 0).toLocaleString()} sqft${psf ? ' · ' + psf : ''}</div>
+        <div class="sale-popup-meta">${s.bldgclass || ''} · ${(s.gross_square_feet||0).toLocaleString()} sqft${psf ? ' · '+psf : ''}</div>
         <div class="sale-popup-date">Sold ${s.sale_date || ''}</div>
       </div>`,
       { maxWidth: 220 }
     );
-    _salesCluster.addLayer(m);
+    return m;
   });
-  map.addLayer(_salesCluster);
+
+  _salesCluster.addLayers(markers);   // single batch — much faster than addLayer() loop
 }
 
 // ── SHAP view toggle ─────────────────────────────────────────────────
@@ -953,21 +960,41 @@ function shapContext(feature, value, isPositive) {
 }
 
 // ── Fetch sales for the current map viewport (bbox) ──────────────────
+// ── Tile-based sales layer — O(1) server lookups, client-side cache ───
+const _TILE_DEG    = 0.05;
+const _NYC_MIN_LAT = 40.45, _NYC_MIN_LON = -74.30;
+const _tileCache   = new Map();   // "tx_ty" → sales[]
+const _tileInflight= new Set();   // tiles currently fetching
+
+function _viewportTiles(bounds) {
+  const minTx = Math.floor((bounds.getWest()  - _NYC_MIN_LON) / _TILE_DEG);
+  const maxTx = Math.floor((bounds.getEast()  - _NYC_MIN_LON) / _TILE_DEG);
+  const minTy = Math.floor((bounds.getSouth() - _NYC_MIN_LAT) / _TILE_DEG);
+  const maxTy = Math.floor((bounds.getNorth() - _NYC_MIN_LAT) / _TILE_DEG);
+  const tiles = [];
+  for (let tx = Math.max(0, minTx); tx <= maxTx; tx++)
+    for (let ty = Math.max(0, minTy); ty <= maxTy; ty++)
+      tiles.push({ tx, ty, key: `${tx}_${ty}` });
+  return tiles;
+}
+
 async function fetchSalesForView() {
-  try {
-    const b = map.getBounds();
-    const params = new URLSearchParams({
-      min_lat: b.getSouth().toFixed(6),
-      max_lat: b.getNorth().toFixed(6),
-      min_lon: b.getWest().toFixed(6),
-      max_lon: b.getEast().toFixed(6),
-      limit:   200,
-    });
-    const r = await fetch(`${API_BASE}/sales/bbox?${params}`);
-    if (!r.ok) return;
-    const d = await r.json();
-    renderSalesBubbles(d.sales || []);
-  } catch (_) {}
+  const tiles   = _viewportTiles(map.getBounds());
+  const missing = tiles.filter(t => !_tileCache.has(t.key) && !_tileInflight.has(t.key));
+
+  if (missing.length) {
+    missing.forEach(t => _tileInflight.add(t.key));
+    await Promise.all(missing.map(async ({ tx, ty, key }) => {
+      try {
+        const r = await fetch(`${API_BASE}/sales/tile?tx=${tx}&ty=${ty}`);
+        _tileCache.set(key, r.ok ? (await r.json()).sales || [] : []);
+      } catch (_) { _tileCache.set(key, []); }
+      finally     { _tileInflight.delete(key); }
+    }));
+  }
+
+  const all = tiles.flatMap(t => _tileCache.get(t.key) || []);
+  renderSalesBubbles(all);
 }
 
 // ── Submit ─────────────────────────────────────────────────────────────

@@ -56,6 +56,11 @@ _nta_geojson_cache: str | None     = None   # pre-built NTA choropleth GeoJSON
 _mta_tree                          = None   # KDTree for MTA station nearest-neighbor
 _mta_feats: dict                   = {}     # arrays: is_cbd, route_count, is_ada
 
+# ── Pre-baked sales tile cache (5km × 5km grid, built at startup) ─────
+_TILE_DEG   = 0.05                          # ~5.5 km per tile
+_NYC_MIN_LAT, _NYC_MIN_LON = 40.45, -74.30
+_sales_tiles: dict = {}                     # (tx,ty) → list[dict]
+
 # ── Comps cache (zip_code → (result_dict, unix_timestamp)) ────────────
 _comps_cache: dict[str, tuple[dict, float]] = {}
 _COMPS_TTL   = 86_400   # 24 h
@@ -141,6 +146,45 @@ def _build_nta_geojson() -> str:
     return json.dumps(geojson)
 
 
+def _build_sales_tiles():
+    """Pre-bake sales into a 5.5-km tile grid for O(1) map queries."""
+    global _sales_tiles
+    if _nearby_df is None:
+        return
+    cols = [c for c in ["latitude","longitude","sale_price","address",
+                         "bldgclass","gross_square_feet","sale_date"]
+            if c in _nearby_df.columns]
+    df = (
+        _nearby_df
+        .filter(
+            (pl.col("latitude")  >= _NYC_MIN_LAT) & (pl.col("latitude")  <= 40.95) &
+            (pl.col("longitude") >= _NYC_MIN_LON) & (pl.col("longitude") <= -73.70)
+        )
+        .select(cols)
+        .sort("sale_date", descending=True)
+        .with_columns([
+            ((pl.col("latitude")  - _NYC_MIN_LAT) / _TILE_DEG).cast(pl.Int32).alias("_ty"),
+            ((pl.col("longitude") - _NYC_MIN_LON) / _TILE_DEG).cast(pl.Int32).alias("_tx"),
+        ])
+    )
+    tiles: dict = {}
+    for row in df.iter_rows(named=True):
+        key = (int(row["_tx"]), int(row["_ty"]))
+        bucket = tiles.setdefault(key, [])
+        if len(bucket) < 30:
+            bucket.append({
+                "latitude":          round(float(row["latitude"]),  6),
+                "longitude":         round(float(row["longitude"]), 6),
+                "sale_price":        int(row.get("sale_price") or 0),
+                "address":           str(row.get("address") or "")[:60],
+                "bldgclass":         str(row.get("bldgclass") or ""),
+                "gross_square_feet": int(row.get("gross_square_feet") or 0),
+                "sale_date":         str(row.get("sale_date") or "")[:10],
+            })
+    _sales_tiles = tiles
+    print(f"  Sales tiles: {len(tiles)} tiles pre-baked")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load model + spatial data once at startup."""
@@ -195,6 +239,12 @@ async def lifespan(app: FastAPI):
             print("  NTA layer: nta_boundaries.geojson not found — /layers/nta unavailable")
     except Exception as e:
         print(f"  NTA layer: build failed — {e}")
+
+    # Pre-bake sales tile grid for instant map rendering
+    try:
+        _build_sales_tiles()
+    except Exception as e:
+        print(f"  Sales tiles: build failed — {e}")
 
     print("=" * 60)
     print("THAMAN API — Ready at http://localhost:8000")
@@ -856,6 +906,15 @@ def nearby_sales(lat: float, lon: float, radius_m: int = 800, limit: int = 8):
         })
 
     return {"count": len(nearby), "nearby": nearby}
+
+
+@app.get("/sales/tile", tags=["Reference"])
+def sales_tile(tx: int, ty: int):
+    """
+    Return pre-baked sales for a 5.5-km map tile (tx, ty).
+    All tiles are computed at startup — response is O(1) dict lookup.
+    """
+    return {"sales": _sales_tiles.get((tx, ty), [])}
 
 
 @app.get("/sales/bbox", tags=["Reference"])
