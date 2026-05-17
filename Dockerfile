@@ -23,6 +23,8 @@ COPY models/meta.json           models/meta.json
 COPY models/xgboost_model.json  models/xgboost_model.json
 COPY models/thaman_stack.pkl    models/thaman_stack.pkl
 COPY models/luxury_model.json   models/luxury_model.json
+COPY models/riyadh_stack.pkl    models/riyadh_stack.pkl
+COPY models/riyadh_meta.json    models/riyadh_meta.json
 COPY frontend/   frontend/
 
 # Runtime data files only (training data excluded via .gitignore)
@@ -40,6 +42,19 @@ COPY data/raw/mortgage_rates.csv                 data/raw/mortgage_rates.csv
 # v4 additions: waterfront & bike-lane distance features
 COPY data/raw/nyc_coastline_pts.npy              data/raw/nyc_coastline_pts.npy
 COPY data/raw/nyc_bike_lanes.geojson             data/raw/nyc_bike_lanes.geojson
+# Riyadh spatial + district layer
+COPY data/processed/features_riyadh.csv          data/processed/features_riyadh.csv
+COPY data/raw/metro-stations-in-riyadh-by-metro-line-and-station-type-2024.geojson  data/raw/metro-stations-in-riyadh-by-metro-line-and-station-type-2024.geojson
+COPY data/raw/bus-stops-in-riyadh-by-bus-route-direction-and-shelter-type-2024.geojson  data/raw/bus-stops-in-riyadh-by-bus-route-direction-and-shelter-type-2024.geojson
+COPY data/raw/traffic-intersections-by-main-street-and-cross-street-2024.geojson  data/raw/traffic-intersections-by-main-street-and-cross-street-2024.geojson
+COPY data/raw/commercial-services-by-category-sub-municipality-and-district-2024.geojson  data/raw/commercial-services-by-category-sub-municipality-and-district-2024.geojson
+COPY data/raw/air-quality.csv                    data/raw/air-quality.csv
+COPY data/raw/riyadh_mosques.csv                 data/raw/riyadh_mosques.csv
+COPY data/raw/riyadh_malls.csv                   data/raw/riyadh_malls.csv
+COPY data/raw/riyadh_schools.csv                 data/raw/riyadh_schools.csv
+COPY data/raw/riyadh_hospitals.csv               data/raw/riyadh_hospitals.csv
+COPY data/raw/riyadh_parks.csv                   data/raw/riyadh_parks.csv
+COPY data/raw/rcrc_entertainment.csv             data/raw/rcrc_entertainment.csv
 # Note: overture_places.geojson (590MB) is gitignored; POI counts degrade to 0 on HF
 
 # Hugging Face Spaces requires port 7860

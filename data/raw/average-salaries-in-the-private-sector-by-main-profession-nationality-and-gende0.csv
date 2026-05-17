@@ -1,0 +1,397 @@
+﻿Year;Profession;Nationality;Gender;Average Salary
+2014;Scientific, technical and human specialists;Saudis;Male;12579.18
+2019;Scientific, technical and human specialists;Saudis;Male;4390.32
+2016;Scientific, technical and human specialists;Saudis;Female;5028.048
+2017;Scientific, technical and human specialists;Saudis;Female;5142.434
+2020;Scientific, technical and human specialists;Saudis;Female;6264.0
+2014;Scientific, technical and human specialists;Non-Saudis;Male;8753.253
+2015;Scientific, technical and human technicians;Saudis;Male;5914.643
+2021;Scientific, technical and human technicians;Saudis;Male;7768.089
+2019;Scientific, technical and human technicians;Non-Saudis;Male;4140.098
+2021;Scientific, technical and human technicians;Non-Saudis;Male;4401.789
+2016;Scientific, technical and human technicians;Non-Saudis;Female;3372.265
+2019;Scientific, technical and human technicians;Non-Saudis;Female;4029.817
+2021;Scientific, technical and human technicians;Non-Saudis;Female;4300.147
+2022;Scientific, technical and human technicians;Non-Saudis;Female;4439.711
+2021;Clerical jobs;Saudis;Male;7039.395
+2020;Clerical jobs;Saudis;Female;4025.0
+2021;Clerical jobs;Saudis;Female;4575.72
+2017;Clerical jobs;Non-Saudis;Female;3611.996
+2021;Clerical jobs;Non-Saudis;Female;4410.438
+2022;Clerical jobs;Non-Saudis;Female;4683.563
+2022;Auxiliary basic engineering jobs;Saudis;Male;7761.364
+2021;Auxiliary basic engineering jobs;Saudis;Female;4165.833
+2022;Auxiliary basic engineering jobs;Saudis;Female;4332.988
+2022;Auxiliary basic engineering jobs;Non-Saudis;Male;1676.701
+2017;Auxiliary basic engineering jobs;Non-Saudis;Female;1882.331
+2019;Auxiliary basic engineering jobs;Non-Saudis;Female;5201.087
+2015;Administrative and business directors;Non-Saudis;Male;8802.74
+2014;Administrative and business directors;Non-Saudis;Female;5213.095
+2022;Administrative and business directors;Non-Saudis;Female;12966.896
+2014;Sales jobs;Saudis;Male;3988.814
+2018;Sales jobs;Saudis;Male;4356.724
+2020;Sales jobs;Saudis;Male;4537.0
+2014;Sales jobs;Saudis;Female;3190.555
+2020;Sales jobs;Saudis;Female;3678.0
+2015;Sales jobs;Non-Saudis;Male;2750.463
+2017;Sales jobs;Non-Saudis;Male;2797.444
+2017;Sales jobs;Non-Saudis;Female;3570.801
+2022;Sales jobs;Non-Saudis;Female;5494.407
+2014;Services jobs;Saudis;Male;4859.837
+2018;Services jobs;Saudis;Male;5024.472
+2020;Services jobs;Saudis;Male;5065.0
+2022;Services jobs;Saudis;Male;6568.91
+2021;Services jobs;Saudis;Female;4081.883
+2015;Services jobs;Non-Saudis;Male;1240.196
+2015;Services jobs;Non-Saudis;Female;1650.672
+2019;Services jobs;Non-Saudis;Female;1793.715
+2017;Agricultural & animal husbandry Poultry and fishing;Saudis;Male;4185.431
+2021;Agricultural & animal husbandry Poultry and fishing;Saudis;Male;5021.486
+2020;Agricultural & animal husbandry Poultry and fishing;Saudis;Female;3522.0
+2022;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Male;1185.4
+2016;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Female;987.011
+2022;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Female;1433.478
+2016;Industrial and chemical processes and food industries;Saudis;Male;7995.521
+2021;Industrial and chemical processes and food industries;Saudis;Male;9122.294
+2020;Industrial and chemical processes and food industries;Saudis;Female;3895.0
+2021;Industrial and chemical processes and food industries;Saudis;Female;4373.183
+2016;Industrial and chemical processes and food industries;Non-Saudis;Male;1544.231
+2017;Industrial and chemical processes and food industries;Non-Saudis;Female;1373.564
+2018;Industrial and chemical processes and food industries;Non-Saudis;Female;1466.016
+2020;Industrial and chemical processes and food industries;Non-Saudis;Female;1682.0
+2014;Other;Saudis;Male;10216.581
+2016;Other;Saudis;Female;16043.934
+2021;Other;Saudis;Female;5210.135
+2014;Other;Non-Saudis;Male;725.458
+2019;Other;Non-Saudis;Female;803.267
+2015;Total labour force;Saudis;Male;6357.265
+2016;Total labour force;Saudis;Male;6756.506
+2021;Total labour force;Saudis;Male;8099.041
+2015;Total labour force;Saudis;Female;3708.252
+2019;Total labour force;Saudis;Female;4166.443
+2021;Total labour force;Saudis;Female;4954.413
+2016;Total labour force;Non-Saudis;Male;1797.456
+2019;Total labour force;Non-Saudis;Male;2119.614
+2017;Total labour force;Non-Saudis;Female;3157.94
+2019;Total labour force;Non-Saudis;Female;3087.676
+2022;Total labour force;Non-Saudis;Female;3507.477
+2015;Scientific, technical and human specialists;Saudis;Male;12710.181
+2021;Scientific, technical and human specialists;Saudis;Male;13091.068
+2017;Scientific, technical and human specialists;Non-Saudis;Male;10210.383
+2021;Scientific, technical and human specialists;Non-Saudis;Male;11600.457
+2022;Scientific, technical and human specialists;Non-Saudis;Male;13016.176
+2017;Scientific, technical and human technicians;Saudis;Male;6733.55
+2020;Scientific, technical and human technicians;Saudis;Male;8053.0
+2022;Scientific, technical and human technicians;Saudis;Male;8763.057
+2015;Scientific, technical and human technicians;Saudis;Female;4383.848
+2017;Scientific, technical and human technicians;Saudis;Female;4410.561
+2015;Scientific, technical and human technicians;Non-Saudis;Male;3398.667
+2017;Scientific, technical and human technicians;Non-Saudis;Male;3615.773
+2014;Scientific, technical and human technicians;Non-Saudis;Female;2792.435
+2015;Scientific, technical and human technicians;Non-Saudis;Female;3087.879
+2020;Scientific, technical and human technicians;Non-Saudis;Female;4242.0
+2017;Clerical jobs;Saudis;Male;6166.465
+2017;Clerical jobs;Saudis;Female;3651.734
+2019;Clerical jobs;Non-Saudis;Female;3931.232
+2014;Auxiliary basic engineering jobs;Saudis;Male;5454.451
+2019;Auxiliary basic engineering jobs;Saudis;Female;4348.028
+2015;Auxiliary basic engineering jobs;Non-Saudis;Male;1139.035
+2016;Auxiliary basic engineering jobs;Non-Saudis;Male;1147.986
+2017;Auxiliary basic engineering jobs;Non-Saudis;Male;1210.285
+2019;Auxiliary basic engineering jobs;Non-Saudis;Male;5852.368
+2020;Auxiliary basic engineering jobs;Non-Saudis;Male;1467.0
+2021;Auxiliary basic engineering jobs;Non-Saudis;Male;1588.941
+2021;Auxiliary basic engineering jobs;Non-Saudis;Female;2276.494
+2022;Auxiliary basic engineering jobs;Non-Saudis;Female;2608.671
+2015;Administrative and business directors;Saudis;Male;10675.803
+2017;Administrative and business directors;Saudis;Male;11663.479
+2018;Administrative and business directors;Saudis;Male;12725.482
+2020;Administrative and business directors;Saudis;Male;13555.0
+2022;Administrative and business directors;Saudis;Male;16610.147
+2016;Administrative and business directors;Saudis;Female;4328.289
+2019;Administrative and business directors;Saudis;Female;5703.054
+2022;Administrative and business directors;Saudis;Female;7887.049
+2019;Administrative and business directors;Non-Saudis;Female;7854.205
+2021;Administrative and business directors;Non-Saudis;Female;10545.19
+2015;Sales jobs;Saudis;Female;3242.022
+2016;Sales jobs;Saudis;Female;3281.768
+2015;Sales jobs;Non-Saudis;Female;3403.09
+2015;Services jobs;Saudis;Male;4918.446
+2016;Services jobs;Saudis;Male;5036.298
+2014;Services jobs;Saudis;Female;3131.437
+2020;Services jobs;Saudis;Female;3564.0
+2018;Services jobs;Non-Saudis;Male;1467.206
+2020;Services jobs;Non-Saudis;Male;1882.0
+2021;Services jobs;Non-Saudis;Male;1769.186
+2022;Services jobs;Non-Saudis;Female;1999.871
+2015;Agricultural & animal husbandry Poultry and fishing;Saudis;Male;3789.988
+2016;Agricultural & animal husbandry Poultry and fishing;Saudis;Male;4053.441
+2021;Agricultural & animal husbandry Poultry and fishing;Saudis;Female;4166.003
+2015;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Male;732.162
+2014;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Female;930.348
+2021;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Female;1457.938
+2015;Industrial and chemical processes and food industries;Saudis;Female;3309.532
+2018;Industrial and chemical processes and food industries;Saudis;Female;3628.689
+2017;Industrial and chemical processes and food industries;Non-Saudis;Male;1663.188
+2016;Other;Saudis;Male;11994.229
+2017;Other;Saudis;Male;12850.549
+2021;Other;Saudis;Male;8553.237
+2014;Other;Saudis;Female;13878.265
+2019;Other;Saudis;Female;16056.337
+2015;Other;Non-Saudis;Male;593.41
+2016;Other;Non-Saudis;Male;653.738
+2019;Other;Non-Saudis;Male;469.843
+2021;Other;Non-Saudis;Male;6736.227
+2015;Other;Non-Saudis;Female;1365.848
+2017;Other;Non-Saudis;Female;1496.439
+2020;Other;Non-Saudis;Female;1558.0
+2022;Total labour force;Saudis;Male;8503.765
+2015;Total labour force;Non-Saudis;Male;1743.7
+2017;Total labour force;Non-Saudis;Male;1885.94
+2020;Total labour force;Non-Saudis;Male;2536.0
+2021;Total labour force;Non-Saudis;Male;2483.396
+2014;Total labour force;Non-Saudis;Female;2631.014
+2015;Total labour force;Non-Saudis;Female;2872.331
+2020;Total labour force;Non-Saudis;Female;4313.0
+2016;Scientific, technical and human specialists;Saudis;Male;13105.824
+2018;Scientific, technical and human specialists;Saudis;Male;13148.01
+2022;Scientific, technical and human specialists;Saudis;Male;15381.034
+2018;Scientific, technical and human specialists;Saudis;Female;5676.301
+2015;Scientific, technical and human specialists;Non-Saudis;Male;9499.865
+2019;Scientific, technical and human specialists;Non-Saudis;Male;11135.196
+2020;Scientific, technical and human specialists;Non-Saudis;Male;11217.0
+2015;Scientific, technical and human specialists;Non-Saudis;Female;7410.802
+2014;Scientific, technical and human technicians;Saudis;Male;5669.147
+2016;Scientific, technical and human technicians;Saudis;Male;6480.095
+2014;Scientific, technical and human technicians;Saudis;Female;4330.953
+2018;Scientific, technical and human technicians;Saudis;Female;4315.183
+2019;Scientific, technical and human technicians;Saudis;Female;4209.758
+2020;Scientific, technical and human technicians;Saudis;Female;4574.0
+2021;Scientific, technical and human technicians;Saudis;Female;4882.489
+2022;Scientific, technical and human technicians;Saudis;Female;5375.95
+2018;Scientific, technical and human technicians;Non-Saudis;Male;3876.293
+2020;Scientific, technical and human technicians;Non-Saudis;Male;4316.0
+2018;Scientific, technical and human technicians;Non-Saudis;Female;3934.754
+2014;Clerical jobs;Saudis;Male;5709.524
+2015;Clerical jobs;Saudis;Male;5870.702
+2016;Clerical jobs;Saudis;Male;6261.988
+2018;Clerical jobs;Saudis;Male;6392.894
+2019;Clerical jobs;Saudis;Male;6585.004
+2014;Clerical jobs;Saudis;Female;3498.224
+2015;Clerical jobs;Saudis;Female;3554.802
+2019;Clerical jobs;Saudis;Female;3942.825
+2014;Clerical jobs;Non-Saudis;Male;4836.455
+2016;Clerical jobs;Non-Saudis;Male;4960.777
+2017;Clerical jobs;Non-Saudis;Male;4924.403
+2018;Clerical jobs;Non-Saudis;Male;5177.83
+2019;Clerical jobs;Non-Saudis;Male;5234.092
+2020;Clerical jobs;Non-Saudis;Male;5177.0
+2014;Clerical jobs;Non-Saudis;Female;3601.968
+2015;Clerical jobs;Non-Saudis;Female;3566.188
+2018;Clerical jobs;Non-Saudis;Female;3718.039
+2015;Auxiliary basic engineering jobs;Saudis;Male;5489.17
+2020;Auxiliary basic engineering jobs;Saudis;Female;3594.0
+2018;Auxiliary basic engineering jobs;Non-Saudis;Male;1311.749
+2020;Auxiliary basic engineering jobs;Non-Saudis;Female;2173.0
+2015;Administrative and business directors;Saudis;Female;4142.068
+2018;Administrative and business directors;Saudis;Female;5069.981
+2021;Administrative and business directors;Saudis;Female;7093.407
+2014;Administrative and business directors;Non-Saudis;Male;8339.506
+2016;Administrative and business directors;Non-Saudis;Male;9041.896
+2019;Administrative and business directors;Non-Saudis;Male;10447.799
+2021;Administrative and business directors;Non-Saudis;Male;11782.74
+2022;Administrative and business directors;Non-Saudis;Male;13753.831
+2015;Administrative and business directors;Non-Saudis;Female;5423.145
+2018;Administrative and business directors;Non-Saudis;Female;6305.03
+2020;Administrative and business directors;Non-Saudis;Female;9258.0
+2015;Sales jobs;Saudis;Male;4088.884
+2019;Sales jobs;Saudis;Male;4381.827
+2021;Sales jobs;Saudis;Male;4881.03
+2017;Sales jobs;Saudis;Female;3309.006
+2021;Sales jobs;Saudis;Female;4162.334
+2022;Sales jobs;Saudis;Female;4295.376
+2014;Sales jobs;Non-Saudis;Male;2614.22
+2018;Sales jobs;Non-Saudis;Male;2958.061
+2021;Sales jobs;Non-Saudis;Male;3440.893
+2022;Sales jobs;Non-Saudis;Male;4183.183
+2014;Sales jobs;Non-Saudis;Female;3188.735
+2018;Services jobs;Saudis;Female;3291.272
+2019;Services jobs;Saudis;Female;3442.505
+2017;Services jobs;Non-Saudis;Female;1864.714
+2020;Services jobs;Non-Saudis;Female;2812.0
+2021;Services jobs;Non-Saudis;Female;1964.0
+2014;Agricultural & animal husbandry Poultry and fishing;Saudis;Male;3696.405
+2018;Agricultural & animal husbandry Poultry and fishing;Saudis;Male;4284.283
+2020;Agricultural & animal husbandry Poultry and fishing;Saudis;Male;4758.0
+2014;Agricultural & animal husbandry Poultry and fishing;Saudis;Female;3135.451
+2015;Agricultural & animal husbandry Poultry and fishing;Saudis;Female;3178.211
+2019;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Male;938.036
+2015;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Female;1114.422
+2017;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Female;1075.886
+2014;Industrial and chemical processes and food industries;Saudis;Female;3172.451
+2017;Industrial and chemical processes and food industries;Saudis;Female;3459.62
+2019;Industrial and chemical processes and food industries;Saudis;Female;3749.654
+2015;Industrial and chemical processes and food industries;Non-Saudis;Male;1463.308
+2019;Industrial and chemical processes and food industries;Non-Saudis;Male;2041.863
+2021;Industrial and chemical processes and food industries;Non-Saudis;Male;2241.158
+2019;Industrial and chemical processes and food industries;Non-Saudis;Female;1584.21
+2017;Other;Saudis;Female;16157.289
+2018;Other;Saudis;Female;16164.67
+2018;Other;Non-Saudis;Male;564.628
+2020;Other;Non-Saudis;Male;931.0
+2018;Other;Non-Saudis;Female;1267.849
+2017;Total labour force;Saudis;Male;6823.314
+2019;Total labour force;Saudis;Male;7572.109
+2020;Total labour force;Saudis;Male;7605.0
+2014;Total labour force;Saudis;Female;3642.441
+2016;Total labour force;Saudis;Female;3820.115
+2017;Total labour force;Saudis;Female;3822.607
+2020;Scientific, technical and human specialists;Saudis;Male;12749.0
+2014;Scientific, technical and human specialists;Saudis;Female;4669.206
+2018;Scientific, technical and human specialists;Non-Saudis;Male;10696.515
+2017;Scientific, technical and human specialists;Non-Saudis;Female;8603.196
+2018;Scientific, technical and human specialists;Non-Saudis;Female;8997.152
+2018;Scientific, technical and human technicians;Saudis;Male;6996.849
+2019;Scientific, technical and human technicians;Saudis;Male;7228.002
+2016;Scientific, technical and human technicians;Saudis;Female;4477.628
+2016;Scientific, technical and human technicians;Non-Saudis;Male;3485.43
+2022;Scientific, technical and human technicians;Non-Saudis;Male;4805.453
+2017;Scientific, technical and human technicians;Non-Saudis;Female;3723.121
+2020;Clerical jobs;Saudis;Male;6583.0
+2022;Clerical jobs;Saudis;Male;7970.01
+2016;Clerical jobs;Saudis;Female;3643.848
+2018;Clerical jobs;Saudis;Female;3810.975
+2015;Clerical jobs;Non-Saudis;Male;4959.373
+2021;Clerical jobs;Non-Saudis;Male;5141.809
+2022;Clerical jobs;Non-Saudis;Male;5577.337
+2020;Clerical jobs;Non-Saudis;Female;4068.0
+2016;Auxiliary basic engineering jobs;Saudis;Male;5669.359
+2017;Auxiliary basic engineering jobs;Saudis;Male;5623.695
+2018;Auxiliary basic engineering jobs;Saudis;Male;6038.794
+2019;Auxiliary basic engineering jobs;Saudis;Male;6220.365
+2021;Auxiliary basic engineering jobs;Saudis;Male;6724.061
+2014;Auxiliary basic engineering jobs;Saudis;Female;3354.116
+2016;Auxiliary basic engineering jobs;Saudis;Female;3473.7
+2017;Auxiliary basic engineering jobs;Saudis;Female;3394.875
+2018;Auxiliary basic engineering jobs;Saudis;Female;3466.765
+2018;Auxiliary basic engineering jobs;Non-Saudis;Female;2016.434
+2016;Administrative and business directors;Saudis;Male;11281.17
+2019;Administrative and business directors;Saudis;Male;13942.595
+2014;Administrative and business directors;Saudis;Female;3979.756
+2018;Administrative and business directors;Non-Saudis;Male;9554.813
+2020;Administrative and business directors;Non-Saudis;Male;10973.0
+2016;Administrative and business directors;Non-Saudis;Female;5670.264
+2017;Administrative and business directors;Non-Saudis;Female;5645.451
+2016;Sales jobs;Saudis;Male;4238.383
+2017;Sales jobs;Saudis;Male;4227.678
+2022;Sales jobs;Saudis;Male;5290.911
+2019;Sales jobs;Saudis;Female;3516.573
+2020;Sales jobs;Non-Saudis;Male;3210.0
+2019;Sales jobs;Non-Saudis;Female;4283.434
+2020;Sales jobs;Non-Saudis;Female;4520.0
+2021;Services jobs;Saudis;Male;5759.385
+2014;Services jobs;Non-Saudis;Male;1137.542
+2016;Services jobs;Non-Saudis;Female;1794.009
+2019;Agricultural & animal husbandry Poultry and fishing;Saudis;Male;4449.016
+2016;Agricultural & animal husbandry Poultry and fishing;Saudis;Female;3187.407
+2018;Agricultural & animal husbandry Poultry and fishing;Saudis;Female;3264.306
+2019;Agricultural & animal husbandry Poultry and fishing;Saudis;Female;3317.936
+2022;Agricultural & animal husbandry Poultry and fishing;Saudis;Female;4395.051
+2018;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Male;888.911
+2021;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Male;1336.793
+2018;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Female;1011.404
+2015;Industrial and chemical processes and food industries;Saudis;Male;7515.674
+2020;Industrial and chemical processes and food industries;Saudis;Male;9133.0
+2014;Industrial and chemical processes and food industries;Non-Saudis;Male;1354.518
+2020;Industrial and chemical processes and food industries;Non-Saudis;Male;2070.0
+2015;Industrial and chemical processes and food industries;Non-Saudis;Female;1158.541
+2016;Industrial and chemical processes and food industries;Non-Saudis;Female;1250.621
+2021;Industrial and chemical processes and food industries;Non-Saudis;Female;1954.563
+2022;Industrial and chemical processes and food industries;Non-Saudis;Female;2131.816
+2015;Other;Saudis;Male;10840.868
+2018;Other;Saudis;Male;12974.876
+2019;Other;Saudis;Male;13228.589
+2015;Other;Saudis;Female;14701.974
+2020;Other;Saudis;Female;4625.0
+2022;Other;Non-Saudis;Male;2657.828
+2014;Other;Non-Saudis;Female;2438.243
+2016;Other;Non-Saudis;Female;1928.828
+2018;Total labour force;Saudis;Male;7210.434
+2020;Total labour force;Saudis;Female;4411.0
+2022;Total labour force;Saudis;Female;5172.521
+2022;Total labour force;Non-Saudis;Male;2536.343
+2017;Scientific, technical and human specialists;Saudis;Male;12999.346
+2015;Scientific, technical and human specialists;Saudis;Female;4757.19
+2019;Scientific, technical and human specialists;Saudis;Female;5262.0
+2021;Scientific, technical and human specialists;Saudis;Female;6899.318
+2022;Scientific, technical and human specialists;Saudis;Female;7752.53
+2016;Scientific, technical and human specialists;Non-Saudis;Male;9818.695
+2014;Scientific, technical and human specialists;Non-Saudis;Female;6465.757
+2016;Scientific, technical and human specialists;Non-Saudis;Female;8038.767
+2019;Scientific, technical and human specialists;Non-Saudis;Female;9303.682
+2020;Scientific, technical and human specialists;Non-Saudis;Female;9542.0
+2021;Scientific, technical and human specialists;Non-Saudis;Female;9828.755
+2022;Scientific, technical and human specialists;Non-Saudis;Female;10423.819
+2014;Scientific, technical and human technicians;Non-Saudis;Male;3190.66
+2022;Clerical jobs;Saudis;Female;4844.311
+2016;Clerical jobs;Non-Saudis;Female;3645.696
+2020;Auxiliary basic engineering jobs;Saudis;Male;5811.0
+2015;Auxiliary basic engineering jobs;Saudis;Female;3399.351
+2014;Auxiliary basic engineering jobs;Non-Saudis;Male;1068.392
+2014;Auxiliary basic engineering jobs;Non-Saudis;Female;1442.079
+2015;Auxiliary basic engineering jobs;Non-Saudis;Female;1613.407
+2016;Auxiliary basic engineering jobs;Non-Saudis;Female;1799.331
+2014;Administrative and business directors;Saudis;Male;10120.13
+2021;Administrative and business directors;Saudis;Male;14755.802
+2017;Administrative and business directors;Saudis;Female;4513.78
+2020;Administrative and business directors;Saudis;Female;6120.0
+2017;Administrative and business directors;Non-Saudis;Male;9161.418
+2018;Sales jobs;Saudis;Female;3431.181
+2016;Sales jobs;Non-Saudis;Male;2755.785
+2019;Sales jobs;Non-Saudis;Male;3197.63
+2016;Sales jobs;Non-Saudis;Female;3593.869
+2018;Sales jobs;Non-Saudis;Female;3888.905
+2021;Sales jobs;Non-Saudis;Female;4791.553
+2017;Services jobs;Saudis;Male;4941.948
+2019;Services jobs;Saudis;Male;5543.086
+2015;Services jobs;Saudis;Female;3218.693
+2016;Services jobs;Saudis;Female;3295.813
+2017;Services jobs;Saudis;Female;3272.69
+2022;Services jobs;Saudis;Female;4330.233
+2016;Services jobs;Non-Saudis;Male;1291.221
+2017;Services jobs;Non-Saudis;Male;1359.772
+2019;Services jobs;Non-Saudis;Male;1590.217
+2022;Services jobs;Non-Saudis;Male;1934.998
+2014;Services jobs;Non-Saudis;Female;1476.727
+2018;Services jobs;Non-Saudis;Female;1827.49
+2022;Agricultural & animal husbandry Poultry and fishing;Saudis;Male;5476.499
+2017;Agricultural & animal husbandry Poultry and fishing;Saudis;Female;3204.214
+2014;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Male;686.077
+2016;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Male;775.327
+2017;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Male;840.427
+2020;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Male;955.0
+2019;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Female;1063.62
+2020;Agricultural & animal husbandry Poultry and fishing;Non-Saudis;Female;1399.0
+2014;Industrial and chemical processes and food industries;Saudis;Male;6915.683
+2017;Industrial and chemical processes and food industries;Saudis;Male;8109.467
+2018;Industrial and chemical processes and food industries;Saudis;Male;8426.772
+2019;Industrial and chemical processes and food industries;Saudis;Male;8574.423
+2022;Industrial and chemical processes and food industries;Saudis;Male;10472.679
+2016;Industrial and chemical processes and food industries;Saudis;Female;3427.13
+2022;Industrial and chemical processes and food industries;Saudis;Female;4524.791
+2018;Industrial and chemical processes and food industries;Non-Saudis;Male;1827.44
+2022;Industrial and chemical processes and food industries;Non-Saudis;Male;2400.544
+2014;Industrial and chemical processes and food industries;Non-Saudis;Female;1017.064
+2020;Other;Saudis;Male;6837.0
+2022;Other;Saudis;Male;7465.342
+2022;Other;Saudis;Female;5130.481
+2017;Other;Non-Saudis;Male;639.679
+2021;Other;Non-Saudis;Female;6150.995
+2022;Other;Non-Saudis;Female;4312.395
+2014;Total labour force;Saudis;Male;6157.74
+2018;Total labour force;Saudis;Female;3995.178
+2014;Total labour force;Non-Saudis;Male;1646.688
+2018;Total labour force;Non-Saudis;Male;2034.877
+2016;Total labour force;Non-Saudis;Female;3029.032
+2018;Total labour force;Non-Saudis;Female;3147.062
+2021;Total labour force;Non-Saudis;Female;3570.046

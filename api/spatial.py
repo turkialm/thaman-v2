@@ -412,3 +412,378 @@ class SpatialLookup:
 
     def get_feature_description(self, feature_name: str) -> str:
         return FEATURE_DESCRIPTIONS.get(feature_name, feature_name.replace("_", " ").title())
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  Riyadh Spatial Lookup
+# ══════════════════════════════════════════════════════════════════════════════
+
+import unicodedata as _ucd
+import pandas as _pd
+
+RIYADH_COMMERCIAL_BUCKETS = {
+    "hypermarket":        {"HypMkt"},
+    "supermarket":        {"SupMkt", "MktS", "GroS"},
+    "bank":               {"Bank"},
+    "restaurant":         {"Res"},
+    "hotel":              {"Hot", "HotAp"},
+    "gas_station":        {"GasStation", "PetStation"},
+    "commercial_complex": {"ComC", "ComX"},
+}
+
+# English station name → (lat, lon) mapping for air quality CSV
+_AQ_STATION_COORDS = {
+    "At-Taawun":    (24.762272, 46.650878),
+    "Al-Muruj":     (24.758315, 46.671171),
+    "Al-Jazeera":   (24.700139, 46.678500),
+    "Al-Uraija":    (24.685105, 46.703063),
+    "Al-Khalidiya": (24.766047, 46.761886),
+    "Ar-Rawabi":    (24.751314, 46.868278),
+    "Ad-Dhubbat":   (24.723857, 46.756673),
+    "Al-Ghurabi":   (24.648444, 46.721056),
+    "Al-Khaleej":   (24.598469, 46.744378),
+}
+
+_LINE_ORDER = {"Line1": 1, "Line2": 2, "Line3": 3, "Line4": 4, "Line5": 5, "Line6": 6}
+
+
+def _normalize_ar(s: str) -> str:
+    """Normalize Arabic string: NFKC, strip tatweel and harakat."""
+    if not isinstance(s, str):
+        return ""
+    s = _ucd.normalize("NFKC", s)
+    s = s.replace("ـ", "")  # tatweel
+    s = "".join(c for c in s if not (0x064B <= ord(c) <= 0x065F))
+    return s.strip()
+
+
+class RiyadhSpatialLookup:
+    """
+    Parallel spatial index for Riyadh-specific data sources.
+    Loaded once at API startup; lookup() returns ~25 features for any lat/lon.
+    """
+
+    def __init__(self):
+        print("[RiyadhSpatialLookup] Loading Riyadh spatial data...")
+        self._load_metro()
+        self._load_bus()
+        self._load_intersections()
+        self._load_commercial()
+        self._load_poi_csvs()
+        self._load_air_quality()
+        self._load_district_stats()
+        print("[RiyadhSpatialLookup] Ready.")
+
+    # ── Loaders ───────────────────────────────────────────────────────────────
+
+    def _load_metro(self):
+        path = os.path.join(RAW, "metro-stations-in-riyadh-by-metro-line-and-station-type-2024.geojson")
+        with open(path) as f:
+            gj = json.load(f)
+        coords, lines, types = [], [], []
+        line1 = []
+        for feat in gj["features"]:
+            c = feat["geometry"]["coordinates"]  # [lon, lat]
+            lat, lon = c[1], c[0]
+            p = feat["properties"]
+            coords.append([lat, lon])
+            lines.append(p["metro_line_cd"])
+            types.append(int(p["metro_station_type_cd"]))
+            if p["metro_line_cd"] == "Line1":
+                line1.append([lat, lon])
+        self._metro_arr   = np.array(coords, dtype=np.float64)
+        self._metro_tree  = cKDTree(self._metro_arr)
+        self._metro_ball  = BallTree(np.radians(self._metro_arr), metric="haversine")
+        self._metro_lines = lines
+        self._metro_types = types
+        self._line1_tree  = cKDTree(np.array(line1, dtype=np.float64)) if line1 else self._metro_tree
+        print(f"  Metro: {len(coords)} stations | Line1: {len(line1)}")
+
+    def _load_bus(self):
+        path = os.path.join(RAW, "bus-stops-in-riyadh-by-bus-route-direction-and-shelter-type-2024.geojson")
+        with open(path) as f:
+            gj = json.load(f)
+        coords, shelters = [], []
+        for feat in gj["features"]:
+            geo = feat["properties"].get("geo_point_2d") or {}
+            lat, lon = geo.get("lat"), geo.get("lon")
+            if lat is None:
+                continue
+            coords.append([lat, lon])
+            btype = str(feat["properties"].get("bsheltertypecode", ""))
+            shelters.append(btype.startswith("A"))
+        arr = np.array(coords, dtype=np.float64)
+        self._bus_tree = cKDTree(arr)
+        self._bus_ball = BallTree(np.radians(arr), metric="haversine")
+        shelter_arr = arr[np.array(shelters)]
+        self._shelter_ball = BallTree(np.radians(shelter_arr), metric="haversine") if len(shelter_arr) else None
+        print(f"  Bus: {len(coords)} stops | BRT: {shelter_arr.shape[0]}")
+
+    def _load_intersections(self):
+        path = os.path.join(RAW, "traffic-intersections-by-main-street-and-cross-street-2024.geojson")
+        with open(path) as f:
+            gj = json.load(f)
+        coords = []
+        for feat in gj["features"]:
+            geo = feat["properties"].get("geo_point_2d") or {}
+            lat, lon = geo.get("lat"), geo.get("lon")
+            if lat is None:
+                continue
+            coords.append([lat, lon])
+        arr = np.array(coords, dtype=np.float64)
+        self._int_tree = cKDTree(arr)
+        self._int_ball = BallTree(np.radians(arr), metric="haversine")
+        print(f"  Intersections: {len(coords)}")
+
+    def _load_commercial(self):
+        path = os.path.join(RAW, "commercial-services-by-category-sub-municipality-and-district-2024.geojson")
+        with open(path) as f:
+            gj = json.load(f)
+        all_coords = []
+        bucket_coords = {k: [] for k in RIYADH_COMMERCIAL_BUCKETS}
+        for feat in gj["features"]:
+            geo = feat["properties"].get("geo_point_2d") or {}
+            lat, lon = geo.get("lat"), geo.get("lon")
+            if lat is None:
+                continue
+            all_coords.append([lat, lon])
+            cat = feat["properties"].get("comcatcode", "")
+            for bname, codes in RIYADH_COMMERCIAL_BUCKETS.items():
+                if cat in codes:
+                    bucket_coords[bname].append([lat, lon])
+        all_arr = np.array(all_coords, dtype=np.float64)
+        self._comm_ball_all = BallTree(np.radians(all_arr), metric="haversine")
+        self._comm_balls = {}
+        for bname, pts in bucket_coords.items():
+            if pts:
+                self._comm_balls[bname] = BallTree(
+                    np.radians(np.array(pts, dtype=np.float64)), metric="haversine"
+                )
+            else:
+                self._comm_balls[bname] = None
+            print(f"  Commercial {bname}: {len(pts)}")
+
+    def _load_poi_csvs(self):
+        """Load mosque/mall/school/hospital/park/entertainment POI files from saudi_thaman."""
+        _POI_FILES = {
+            "mosque":   os.path.join(RAW, "riyadh_mosques.csv"),
+            "mall":     os.path.join(RAW, "riyadh_malls.csv"),
+            "school":   os.path.join(RAW, "riyadh_schools.csv"),
+            "hospital": os.path.join(RAW, "riyadh_hospitals.csv"),
+            "park":     os.path.join(RAW, "riyadh_parks.csv"),
+            "entertain":os.path.join(RAW, "rcrc_entertainment.csv"),
+        }
+        self._poi_trees: dict = {}
+        self._poi_balls: dict = {}
+        for poi_name, path in _POI_FILES.items():
+            if not os.path.exists(path):
+                continue
+            df = _pd.read_csv(path, encoding="utf-8-sig")
+            df.columns = [c.lstrip("﻿").strip() for c in df.columns]
+            lat_col = next((c for c in df.columns if "lat" in c.lower()), None)
+            lon_col = next((c for c in df.columns if "lon" in c.lower()), None)
+            if lat_col is None or lon_col is None:
+                continue
+            df = df[[lat_col, lon_col]].dropna()
+            df[lat_col] = _pd.to_numeric(df[lat_col], errors="coerce")
+            df[lon_col] = _pd.to_numeric(df[lon_col], errors="coerce")
+            df = df.dropna()
+            # Filter Riyadh bbox
+            df = df[(df[lat_col] > 23.5) & (df[lat_col] < 26.0) &
+                    (df[lon_col] > 45.5) & (df[lon_col] < 48.0)]
+            if len(df) < 2:
+                continue
+            arr = df[[lat_col, lon_col]].values.astype(np.float64)
+            self._poi_trees[poi_name] = cKDTree(arr)
+            self._poi_balls[poi_name] = BallTree(np.radians(arr), metric="haversine")
+            print(f"  POI {poi_name}: {len(arr)}")
+
+    def _load_air_quality(self):
+        aq_csv = os.path.join(RAW, "air-quality.csv")
+        aq_df = _pd.read_csv(aq_csv, sep=";")
+        aq_avg = aq_df[aq_df["Indicator"] == "Avg / Hourly"].copy()
+        aq_means = (
+            aq_avg[aq_avg["Component"].isin(["NO2", "SO2", "PM10", "O3"])]
+            .groupby(["Station", "Component"])["Value"]
+            .mean()
+            .unstack(fill_value=0)
+            .reset_index()
+        )
+        aq_means["lat"] = aq_means["Station"].map(lambda s: _AQ_STATION_COORDS.get(s, (None, None))[0])
+        aq_means["lon"] = aq_means["Station"].map(lambda s: _AQ_STATION_COORDS.get(s, (None, None))[1])
+        aq_means = aq_means[aq_means["lat"].notna()].copy()
+        self._aq_arr      = aq_means[["lat", "lon"]].values.astype(np.float64)
+        self._aq_tree     = cKDTree(self._aq_arr)
+        self._aq_means_df = aq_means
+        self._aq_components = [c for c in ["NO2", "SO2", "PM10", "O3"] if c in aq_means.columns]
+        print(f"  Air quality: {len(self._aq_arr)} stations | {self._aq_components}")
+
+    def _load_district_stats(self):
+        """Load per-district aggregated stats from features_riyadh.csv."""
+        feat_path = os.path.join(PROC, "features_riyadh.csv")
+        if not os.path.exists(feat_path):
+            self._district_stats = {}
+            self._district_feat_df = None
+            self._district_centroid_tree = None
+            self._district_names = []
+            print("  District stats: features_riyadh.csv not found — run riyadh_feature_engineering.py")
+            return
+
+        df = _pd.read_csv(feat_path)
+        # Choropleth stats (median per district across all columns)
+        STAT_COLS = [
+            "district_lat", "district_lon",
+            "dist_metro_m", "metro_stations_1km",
+            "commercial_count_1km", "hypermarket_count_1km",
+            "bus_stops_500m", "no2_nearest_mean", "pm10_nearest_mean",
+            "air_quality_score", "rei_residential_qtr_idx",
+            "district_median_price_sqm", "district_price_trend_slope",
+            "district_commercial_mix", "riyadh_connectivity_score",
+        ]
+        available = [c for c in STAT_COLS if c in df.columns]
+        agg = df.groupby("district_ar")[available].median().reset_index()
+        self._district_stats = agg.set_index("district_ar").to_dict("index")
+
+        # Full feature medians per district (for prediction)
+        num_cols = df.select_dtypes(include="number").columns.tolist()
+        feat_cols = [c for c in num_cols if c not in ("year", "quarter", "quarter_id",
+                                                       "sale_year", "sale_quarter",
+                                                       "sale_price_sar_sqm",
+                                                       "is_apartment", "is_villa",
+                                                       "is_residential_plot", "is_building",
+                                                       "district_encoded", "district_type_encoded")]
+        self._district_feat_df = (
+            df.groupby("district_ar")[feat_cols]
+            .median()
+            .reset_index()
+        )
+        # KDTree on district centroids for fast nearest-district lookup
+        cents = self._district_feat_df[["district_lat", "district_lon"]].values.astype(np.float64)
+        self._district_centroid_tree = cKDTree(cents)
+        self._district_names = self._district_feat_df["district_ar"].tolist()
+        print(f"  District stats: {len(self._district_stats)} districts | predict features: {len(feat_cols)}")
+
+    # ── Lookup ────────────────────────────────────────────────────────────────
+
+    def lookup(self, lat: float, lon: float) -> dict:
+        """Return all Riyadh spatial features for a (lat, lon) coordinate."""
+        feats = {}
+        pt = np.array([[lat, lon]])
+        pt_rad = np.radians(pt)
+        r_500  = 500.0  / 6_371_000
+        r_1km  = 1000.0 / 6_371_000
+
+        # Metro
+        d, idx = self._metro_tree.query(pt, k=1)
+        feats["dist_metro_m"]          = float(d[0]) * 111_000
+        feats["log_dist_metro_m"]      = float(np.log1p(feats["dist_metro_m"]))
+        feats["nearest_metro_line_num"] = int(_LINE_ORDER.get(self._metro_lines[int(idx[0])], 0))
+        feats["nearest_metro_type_cd"] = int(self._metro_types[int(idx[0])])
+        feats["metro_stations_1km"]    = int(self._metro_ball.query_radius(pt_rad, r=r_1km, count_only=True)[0])
+        d1, _ = self._line1_tree.query(pt, k=1)
+        feats["dist_metro_line1_m"]    = float(d1[0]) * 111_000
+
+        # Bus
+        d_b, _ = self._bus_tree.query(pt, k=1)
+        feats["dist_bus_m"]     = float(d_b[0]) * 111_000
+        feats["log_dist_bus_m"] = float(np.log1p(feats["dist_bus_m"]))
+        feats["bus_stops_500m"] = int(self._bus_ball.query_radius(pt_rad, r=r_500, count_only=True)[0])
+        feats["brt_stops_500m"] = int(
+            self._shelter_ball.query_radius(pt_rad, r=r_500, count_only=True)[0]
+            if self._shelter_ball else 0
+        )
+
+        # Intersections
+        d_i, _ = self._int_tree.query(pt, k=1)
+        feats["dist_major_intersection_m"] = float(d_i[0]) * 111_000
+        feats["log_dist_intersection_m"]   = float(np.log1p(feats["dist_major_intersection_m"]))
+        feats["intersections_1km"]         = int(self._int_ball.query_radius(pt_rad, r=r_1km, count_only=True)[0])
+        feats["intersections_500m"]        = int(self._int_ball.query_radius(pt_rad, r=r_500, count_only=True)[0])
+
+        # Commercial
+        feats["commercial_count_1km"] = int(self._comm_ball_all.query_radius(pt_rad, r=r_1km, count_only=True)[0])
+        for bname, bt in self._comm_balls.items():
+            feats[f"{bname}_count_1km"] = int(bt.query_radius(pt_rad, r=r_1km, count_only=True)[0]) if bt else 0
+        feats["commercial_density_score"] = (
+            feats.get("hypermarket_count_1km", 0) * 3
+            + feats.get("supermarket_count_1km", 0) * 2
+            + feats.get("bank_count_1km", 0)
+            + feats.get("restaurant_count_1km", 0)
+            + feats.get("hotel_count_1km", 0)
+        )
+
+        # QoL POIs (mosque, mall, school, hospital, park, entertainment)
+        for poi_name, tree in self._poi_trees.items():
+            d_poi, _ = tree.query(pt, k=1)
+            dist_m = float(d_poi[0]) * 111_000
+            feats[f"dist_{poi_name}_m"]     = dist_m
+            feats[f"log_dist_{poi_name}_m"] = float(np.log1p(dist_m))
+            feats[f"{poi_name}_count_500m"] = int(
+                self._poi_balls[poi_name].query_radius(pt_rad, r=r_500, count_only=True)[0]
+            )
+
+        # Air quality (IDW from 2 nearest stations)
+        d_aq, idx_aq = self._aq_tree.query(pt, k=min(2, len(self._aq_arr)))
+        d_m = d_aq.ravel() * 111_000
+        d_m = np.where(d_m < 1, 1, d_m)
+        weights = 1.0 / d_m
+        for comp in self._aq_components:
+            if comp in self._aq_means_df.columns:
+                vals = self._aq_means_df.iloc[idx_aq.ravel()][comp].values
+                feats[f"{comp.lower()}_nearest_mean"] = float(np.average(vals, weights=weights))
+        feats["dist_air_station_m"] = float(d_aq.ravel()[0]) * 111_000
+
+        return feats
+
+    def get_district_stats(self) -> dict:
+        """Return dict of district_ar → per-district metric medians."""
+        return self._district_stats
+
+    def predict_features(self, lat: float, lon: float,
+                         property_type: str, year: int, quarter: int) -> dict:
+        """
+        Build a complete 72-feature dict for Riyadh model prediction.
+        Combines live spatial lookup + district medians + type flags + macro.
+        """
+        feats: dict = {}
+
+        # 1. Type flags
+        feats["is_apartment"]      = int(property_type == "شقة")
+        feats["is_villa"]          = int(property_type == "فيلا")
+        feats["is_residential_plot"] = int(property_type == "قطعة أرض-سكنى")
+        feats["is_building"]       = int(property_type == "عمارة")
+
+        # 2. Time features
+        feats["sale_year"]         = float(year)
+        feats["sale_quarter_sin"]  = float(np.sin(2 * np.pi * quarter / 4))
+        feats["sale_quarter_cos"]  = float(np.cos(2 * np.pi * quarter / 4))
+        quarter_id = year * 10 + quarter
+
+        # 3. Nearest district baseline features
+        if self._district_centroid_tree is not None and self._district_feat_df is not None:
+            _, idx = self._district_centroid_tree.query([[lat, lon]], k=1)
+            row = self._district_feat_df.iloc[int(idx[0])].to_dict()
+            feats.update({
+                k: v for k, v in row.items()
+                if k != "district_ar"
+                and (not isinstance(v, float) or not np.isnan(v))
+            })
+
+        # 4. Live spatial features from the exact lat/lon (override district centroid)
+        live = self.lookup(lat, lon)
+        feats.update(live)
+
+        # 5. Log deed count (use district median as a proxy for a typical transaction)
+        feats.setdefault("log_deed_count", float(np.log1p(5)))
+
+        # 6. District target encoding — district_encoded and district_type_encoded
+        # Already carried from district_feat_df medians via step 3
+        # Ensure they exist
+        feats.setdefault("district_encoded",      feats.get("district_encoded", 7.8))
+        feats.setdefault("district_type_encoded", feats.get("district_type_encoded", 7.8))
+
+        # 7. Connectivity score (recalculate from live spatial if scaler params available)
+        # Keep the district median value from step 3 unless live override is possible
+        feats.setdefault("riyadh_connectivity_score", 50.0)
+
+        return feats

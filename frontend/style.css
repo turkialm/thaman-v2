@@ -131,6 +131,35 @@ html, body {
 }
 
 /* ── Layer toggle bar ───────────────────────────────────────────────── */
+/* ── City mode toggle ───────────────────────────────────────────────── */
+.city-toggle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1001;
+  display: flex;
+  gap: 4px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  padding: 4px 6px;
+  box-shadow: var(--shadow-md);
+}
+.city-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--gray-600);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+.city-btn:hover  { background: var(--gray-100); }
+.city-btn.active { background: var(--blue); color: var(--white); }
+
 .layer-bar {
   position: absolute;
   top: 10px;
@@ -1754,4 +1783,68 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   /* Increase touch target sizes */
   .btn-predict  { font-size: 1rem; padding: 15px; min-height: 52px; }
   .addr-btn     { min-height: 40px; min-width: 40px; }
+}
+
+/* ── Riyadh form & results ──────────────────────────────────────── */
+.riyadh-results {
+  margin-top: 16px;
+  border-top: 2px solid var(--blue);
+  padding-top: 14px;
+}
+.riyadh-price-hero {
+  text-align: center;
+  background: linear-gradient(135deg, #006C35 0%, #1a8c4e 100%);
+  border-radius: 12px;
+  padding: 20px 16px;
+  color: #fff;
+  margin-bottom: 14px;
+}
+.riyadh-price-label {
+  font-size: .78rem;
+  opacity: .85;
+  margin-bottom: 6px;
+  letter-spacing: .5px;
+}
+.riyadh-price-main {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.riyadh-price-unit {
+  font-size: 1rem;
+  font-weight: 400;
+  opacity: .85;
+  margin-left: 4px;
+}
+.riyadh-price-total {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-top: 6px;
+  opacity: .92;
+}
+.riyadh-confidence {
+  font-size: .76rem;
+  opacity: .75;
+  margin-top: 4px;
+}
+.riyadh-spatial-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.riyadh-spatial-item {
+  background: var(--gray-50, #f7f8fa);
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: .78rem;
+}
+.riyadh-spatial-item .rs-label {
+  color: var(--gray-500, #6b7280);
+  display: block;
+  margin-bottom: 2px;
+}
+.riyadh-spatial-item .rs-val {
+  font-weight: 600;
+  font-size: .88rem;
 }
