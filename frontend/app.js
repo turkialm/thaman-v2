@@ -24,10 +24,23 @@ let _waterfallChart  = null;  // Chart.js waterfall instance
 let _shapView        = 'bars'; // 'bars' | 'waterfall'
 let _lastDrivers     = [];    // cache top_drivers for view toggle
 
+// ── City mode ─────────────────────────────────────────────────────────
+let _cityMode = 'nyc';  // 'nyc' | 'riyadh'
+
+const RIYADH_CENTER = [24.7136, 46.6753];
+const NYC_CENTER    = [40.7128, -74.0060];
+const RIYADH_BBOX   = { minLat: 24.35, maxLat: 25.10, minLon: 46.30, maxLon: 47.20 };
+
+function isInRiyadh(lat, lng) {
+  return lat >= RIYADH_BBOX.minLat && lat <= RIYADH_BBOX.maxLat
+      && lng >= RIYADH_BBOX.minLon && lng <= RIYADH_BBOX.maxLon;
+}
+
 // ── NTA choropleth layers ─────────────────────────────────────────────
-let _ntaGeoJSON    = null;   // raw GeoJSON loaded once
-let _activeLayer   = null;   // current Leaflet GeoJSON layer on map
-let _activeMetric  = 'none'; // which layer is showing
+let _ntaGeoJSON      = null;   // raw NTA GeoJSON (NYC)
+let _districtGeoJSON = null;   // raw district GeoJSON (Riyadh)
+let _activeLayer     = null;   // current Leaflet GeoJSON layer on map
+let _activeMetric    = 'none'; // which layer is showing
 
 // ── Layer metadata ────────────────────────────────────────────────────
 const LAYER_META = {
@@ -51,6 +64,22 @@ const LAYER_META = {
   nightlife:  { key: 'poi_nightlife_500m',       label: 'Cafes & Bars',       unit: '/500m',     palette: 'orange', fmt: v => Math.round(v) },
   grocery:    { key: 'poi_grocery_500m',         label: 'Grocery Access',     unit: '/500m',     palette: 'green',  fmt: v => Math.round(v) },
   fitness:    { key: 'poi_gym_500m',             label: 'Gyms & Fitness',     unit: '/500m',     palette: 'blue',   fmt: v => Math.round(v) },
+};
+
+// ── Riyadh layer metadata ─────────────────────────────────────────────
+const LAYER_META_RIYADH = {
+  metro_access:  { key: 'dist_metro_m',                label: 'Metro Access',        unit: 'm to station', palette: 'blue',   fmt: v => `${Math.round(v)}m`,                 invert: true  },
+  metro_density: { key: 'metro_stations_1km',          label: 'Metro Density',       unit: 'stations/1km', palette: 'blue',   fmt: v => Math.round(v)                                      },
+  bus_access:    { key: 'bus_stops_500m',              label: 'Bus Stop Density',    unit: '/500m',        palette: 'blue',   fmt: v => Math.round(v)                                      },
+  commercial:    { key: 'commercial_count_1km',        label: 'Commercial Services', unit: '/1km',         palette: 'green',  fmt: v => Math.round(v)                                      },
+  hypermarkets:  { key: 'hypermarket_count_1km',       label: 'Hypermarkets',        unit: '/1km',         palette: 'green',  fmt: v => Math.round(v)                                      },
+  air_no2:       { key: 'no2_nearest_mean',            label: 'NO₂ Level',           unit: 'ppb avg',      palette: 'red',    fmt: v => v.toFixed(1),                        invert: true  },
+  air_pm10:      { key: 'pm10_nearest_mean',           label: 'PM10 Level',          unit: 'ppb avg',      palette: 'red',    fmt: v => v.toFixed(1),                        invert: true  },
+  air_quality:   { key: 'air_quality_score',           label: 'Air Quality Score',   unit: '0–100',        palette: 'green',  fmt: v => v.toFixed(0)                                       },
+  price_index:   { key: 'rei_residential_qtr_idx',     label: 'Price Index',         unit: '2023=100',     palette: 'orange', fmt: v => v.toFixed(1)                                       },
+  apt_price:     { key: 'district_median_price_sqm',   label: 'Median Price/sqm',    unit: 'SAR/sqm',      palette: 'green',  fmt: v => `﷼${Math.round(v).toLocaleString()}`               },
+  price_trend:   { key: 'district_price_trend_slope',  label: 'Price Trend',         unit: 'SAR/qtr',      palette: 'blue',   fmt: v => `${v > 0 ? '+' : ''}${Math.round(v)}`              },
+  connectivity:  { key: 'riyadh_connectivity_score',   label: 'Connectivity Score',  unit: '0–100',        palette: 'blue',   fmt: v => v.toFixed(0)                                       },
 };
 
 // ── Map init ──────────────────────────────────────────────────────────
@@ -207,6 +236,12 @@ fetch(`${API_BASE}/layers/nta`)
   })
   .catch(() => {});
 
+// Fetch Riyadh district layer (loaded eagerly so it's ready when user switches)
+fetch(`${API_BASE}/layers/district`)
+  .then(r => r.ok ? r.json() : null)
+  .then(data => { if (data) _districtGeoJSON = data; })
+  .catch(() => {});
+
 // Colour palettes: each is [light, dark] for interpolation
 const _PALETTES = {
   green:  ['#d1fae5', '#065f46'],
@@ -236,19 +271,46 @@ function showLayer(metricId) {
   _activeMetric = metricId;
 
   const legend = document.getElementById('layerLegend');
-  if (metricId === 'none' || !_ntaGeoJSON) { legend.style.display = 'none'; return; }
 
-  const meta   = LAYER_META[metricId];
+  // Choose correct GeoJSON source and metadata table based on city mode
+  const isRiyadh   = _cityMode === 'riyadh';
+  const activeGJ   = isRiyadh ? _districtGeoJSON : _ntaGeoJSON;
+  const metaTable  = isRiyadh ? LAYER_META_RIYADH : LAYER_META;
+
+  if (metricId === 'none' || !activeGJ) { legend.style.display = 'none'; return; }
+
+  const meta = metaTable[metricId];
   if (!meta) return;
 
-  const values = _ntaGeoJSON.features
+  const values = activeGJ.features
     .map(f => f.properties[meta.key])
     .filter(v => v !== null && v !== undefined && !isNaN(v));
   if (!values.length) return;
 
   const min = Math.min(...values), max = Math.max(...values);
 
-  _activeLayer = L.geoJSON(_ntaGeoJSON, {
+  // For Riyadh district points: render as circles; for NYC NTA polygons: fill polygons
+  if (isRiyadh) {
+    _activeLayer = L.geoJSON(activeGJ, {
+      pointToLayer: (feat, latlng) => L.circleMarker(latlng, {
+        radius: 10,
+        fillColor:   colorScale(feat.properties[meta.key], min, max, meta.palette, meta.invert || false),
+        fillOpacity: 0.75,
+        weight: 1,
+        color: '#ffffff',
+        opacity: 0.8,
+      }),
+      onEachFeature: (feat, layer) => {
+        const v = feat.properties[meta.key];
+        const fmtVal = (v !== null && v !== undefined) ? meta.fmt(v) : 'N/A';
+        layer.bindTooltip(
+          `<b>${feat.properties.district_ar || ''}</b><br>${meta.label}: ${fmtVal} ${meta.unit}`,
+          { sticky: true, className: 'layer-tooltip' }
+        );
+      },
+    }).addTo(map);
+  } else {
+    _activeLayer = L.geoJSON(activeGJ, {
     style: feat => {
       const v = feat.properties[meta.key];
       return {
@@ -272,6 +334,7 @@ function showLayer(metricId) {
       });
     },
   }).addTo(map);
+  } // end else (NYC polygon branch)
 
   // Update legend
   const [c0, c1] = (_PALETTES[meta.palette] || _PALETTES.blue);
@@ -291,6 +354,34 @@ document.getElementById('layerBar').addEventListener('click', e => {
   btn.classList.add('active');
   showLayer(btn.dataset.layer);
 });
+
+// ── City mode toggle ──────────────────────────────────────────────────
+function setCityMode(mode) {
+  _cityMode = mode;
+  const isRiyadh = mode === 'riyadh';
+
+  // Update toggle button styles
+  document.getElementById('cityBtnNYC').classList.toggle('active', !isRiyadh);
+  document.getElementById('cityBtnRiyadh').classList.toggle('active', isRiyadh);
+
+  // Swap layer groups
+  document.getElementById('nycLayerGroup').style.display    = isRiyadh ? 'none' : 'contents';
+  document.getElementById('riyadhLayerGroup').style.display = isRiyadh ? 'contents' : 'none';
+
+  // Reset active layer state
+  document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
+  const defaultBtn = document.querySelector(`#${isRiyadh ? 'riyadhLayerGroup' : 'nycLayerGroup'} [data-layer="none"]`);
+  if (defaultBtn) defaultBtn.classList.add('active');
+  showLayer('none');
+
+  // Show/hide city-specific predict forms and clear Riyadh results
+  document.getElementById('predictForm').style.display  = isRiyadh ? 'none' : '';
+  document.getElementById('riyadhForm').style.display   = isRiyadh ? ''     : 'none';
+  document.getElementById('riyadhResults').style.display = 'none';
+
+  // Fly map to the selected city
+  map.flyTo(isRiyadh ? RIYADH_CENTER : NYC_CENTER, 11, { duration: 1.5 });
+}
 
 // ── Pin marker (emoji-based, no image dependency) ──────────────────────
 let lastValidPos = null;   // last accepted pin position (for snap-back on drag)
@@ -356,11 +447,16 @@ async function geocodeAddress() {
   addrBtn.classList.add('loading');
   addrError.style.display = 'none';
 
+  const isRiyadhMode = _cityMode === 'riyadh';
+
   try {
-    // Restrict to NYC bounding box to avoid false matches
-    const url = `https://nominatim.openstreetmap.org/search?` +
-      `q=${encodeURIComponent(q + ', New York City')}&format=json&limit=1` +
-      `&countrycodes=us&bounded=1&viewbox=-74.26,40.47,-73.70,40.92`;
+    const url = isRiyadhMode
+      ? `https://nominatim.openstreetmap.org/search?` +
+        `q=${encodeURIComponent(q + ', Riyadh, Saudi Arabia')}&format=json&limit=1` +
+        `&countrycodes=sa&bounded=1&viewbox=46.30,24.35,47.20,25.10`
+      : `https://nominatim.openstreetmap.org/search?` +
+        `q=${encodeURIComponent(q + ', New York City')}&format=json&limit=1` +
+        `&countrycodes=us&bounded=1&viewbox=-74.26,40.47,-73.70,40.92`;
 
     const res  = await fetch(url, { headers: { 'Accept-Language': 'en' } });
     const data = await res.json();
@@ -373,6 +469,47 @@ async function geocodeAddress() {
     const lat = parseFloat(data[0].lat);
     const lng = parseFloat(data[0].lon);
 
+    if (isRiyadhMode) {
+      if (!isInRiyadh(lat, lng)) {
+        showAddrError('Location not found in Riyadh');
+        return;
+      }
+      document.getElementById('riyadhLat').value = lat.toFixed(6);
+      document.getElementById('riyadhLon').value = lng.toFixed(6);
+      lastValidPos = [lat, lng];
+
+      if (marker) {
+        marker.setLatLng([lat, lng]);
+      } else {
+        marker = L.marker([lat, lng], { icon: pinIcon, draggable: true }).addTo(map);
+        marker.on('dragend', (ev) => {
+          const pos = ev.target.getLatLng();
+          if (!isInRiyadh(pos.lat, pos.lng)) {
+            if (lastValidPos) marker.setLatLng(lastValidPos);
+            return;
+          }
+          lastValidPos = [pos.lat, pos.lng];
+          document.getElementById('riyadhLat').value = pos.lat.toFixed(6);
+          document.getElementById('riyadhLon').value = pos.lng.toFixed(6);
+        });
+      }
+
+      document.getElementById('riyadhSubmitBtn').disabled = false;
+      const riyadhBtnText = document.getElementById('riyadhBtnText');
+      if (riyadhBtnText) riyadhBtnText.textContent = '🔍  تقدير السعر / Estimate';
+      map.flyTo([lat, lng], 14, { duration: 1.2, easeLinearity: 0.4 });
+
+      if (marker) {
+        marker.bindPopup(
+          `<div class="map-popup"><small>📍 ${data[0].display_name.split(',').slice(0,3).join(',')}</small></div>`,
+          { maxWidth: 220 }
+        ).openPopup();
+        setTimeout(() => marker.closePopup(), 3000);
+      }
+      return;
+    }
+
+    // ── NYC geocode path ──────────────────────────────────────────────
     if (!isInNYC(lat, lng)) {
       showAddrError(TR[currentLang].addrOutOfNYC);
       return;
@@ -647,7 +784,43 @@ initBldgTypeCards();
 map.on('click', (e) => {
   const { lat, lng } = e.latlng;
 
-  // Reject clicks outside the real NYC boundary (uses GeoJSON, falls back to polygons)
+  // ── Riyadh mode ───────────────────────────────────────────────────
+  if (_cityMode === 'riyadh') {
+    if (!isInRiyadh(lat, lng)) {
+      showMapError(lat, lng, 'Location is outside Riyadh bounds');
+      return;
+    }
+    // Update hidden Riyadh inputs
+    document.getElementById('riyadhLat').value = lat.toFixed(6);
+    document.getElementById('riyadhLon').value = lng.toFixed(6);
+    lastValidPos = [lat, lng];
+
+    // Place/move marker
+    if (marker) {
+      marker.setLatLng([lat, lng]);
+    } else {
+      marker = L.marker([lat, lng], { icon: pinIcon, draggable: true }).addTo(map);
+      marker.on('dragend', (ev) => {
+        const pos = ev.target.getLatLng();
+        if (!isInRiyadh(pos.lat, pos.lng)) {
+          if (lastValidPos) marker.setLatLng(lastValidPos);
+          showMapError(pos.lat, pos.lng, 'Location is outside Riyadh bounds');
+          return;
+        }
+        lastValidPos = [pos.lat, pos.lng];
+        document.getElementById('riyadhLat').value = pos.lat.toFixed(6);
+        document.getElementById('riyadhLon').value = pos.lng.toFixed(6);
+      });
+    }
+
+    // Enable Riyadh submit button and update location text
+    document.getElementById('riyadhSubmitBtn').disabled = false;
+    const riyadhBtnText = document.getElementById('riyadhBtnText');
+    if (riyadhBtnText) riyadhBtnText.textContent = '🔍  تقدير السعر / Estimate';
+    return;
+  }
+
+  // ── NYC mode ──────────────────────────────────────────────────────
   if (!isInNYC(lat, lng)) {
     showMapError(lat, lng, TR[currentLang].outOfNYC);
     return;
@@ -742,6 +915,12 @@ function fmt$(n) {
   if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(2)}M`;
   if (n >= 1_000)     return `$${(n / 1_000).toFixed(0)}K`;
   return `$${n.toLocaleString()}`;
+}
+
+function fmtSAR(n) {
+  if (n >= 1_000_000) return `﷼${(n / 1_000_000).toFixed(2)}M`;
+  if (n >= 1_000)     return `﷼${(n / 1_000).toFixed(0)}K`;
+  return `﷼${Math.round(n).toLocaleString()}`;
 }
 
 function fmtDist(m) {
@@ -1074,6 +1253,112 @@ predictForm.addEventListener('submit', async (e) => {
     setLoading(false);
   }
 });
+
+// ── Riyadh submit ──────────────────────────────────────────────────────
+document.getElementById('riyadhForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const lat  = parseFloat(document.getElementById('riyadhLat').value);
+  const lon  = parseFloat(document.getElementById('riyadhLon').value);
+  const type = document.getElementById('riyadhType').value;
+  const area = parseFloat(document.getElementById('riyadhArea').value);
+
+  if (!lat || !lon) {
+    return;
+  }
+  if (!type) return;
+  if (!area || area <= 0) {
+    document.getElementById('riyadhArea').classList.add('invalid');
+    return;
+  }
+
+  const submitBtn2 = document.getElementById('riyadhSubmitBtn');
+  const btnText2   = document.getElementById('riyadhBtnText');
+  const spinner2   = document.getElementById('riyadhSpinner');
+  submitBtn2.disabled = true;
+  if (btnText2) btnText2.textContent = 'جارٍ التقدير…';
+  if (spinner2) spinner2.style.display = 'inline-block';
+  document.getElementById('riyadhResults').style.display = 'none';
+
+  try {
+    const res = await fetch(`${API_BASE}/predict/riyadh`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ latitude: lat, longitude: lon, property_type: type, area_sqm: area }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || `API error ${res.status}`);
+    }
+    const data = await res.json();
+    renderRiyadhResults(data);
+  } catch (err) {
+    console.error(err);
+    alert(`Riyadh prediction failed: ${err.message}\n\nMake sure the API server is running at http://localhost:8000`);
+  } finally {
+    submitBtn2.disabled = false;
+    if (btnText2) btnText2.textContent = '🔍  تقدير السعر / Estimate';
+    if (spinner2) spinner2.style.display = 'none';
+  }
+});
+
+// ── Riyadh result renderer ─────────────────────────────────────────────
+function renderRiyadhResults(data) {
+  const psqm  = data.predicted_price_sqm;
+  const total = data.predicted_total_sar;
+  const low   = data.confidence_low_sar;
+  const high  = data.confidence_high_sar;
+  const sf    = data.spatial_features || {};
+
+  // Price hero
+  const sqmEl = document.getElementById('riyadhPriceSqm');
+  if (sqmEl) sqmEl.textContent = fmtSAR(psqm);
+
+  const totalEl = document.getElementById('riyadhPriceTotal');
+  if (totalEl) totalEl.textContent = `Total: ${fmtSAR(total)}`;
+
+  const confEl = document.getElementById('riyadhConfidence');
+  if (confEl) confEl.textContent = `Range: ${fmtSAR(low)} – ${fmtSAR(high)}`;
+
+  const distEl = document.getElementById('riyadhDistrictLabel');
+  if (distEl) {
+    const district = data.district_ar || '';
+    const medape   = data.medape_pct  || 23.4;
+    distEl.textContent = `${district ? district + ' · ' : ''}MedAPE ${medape.toFixed(1)}%`;
+  }
+
+  // Spatial grid
+  const grid = document.getElementById('riyadhSpatialGrid');
+  if (grid && sf) {
+    const items = [
+      { icon: '🚇', label: 'Metro',        value: sf.dist_metro_m      != null ? fmtDist(sf.dist_metro_m)      : '—' },
+      { icon: '🚌', label: 'Bus stop',     value: sf.dist_bus_m        != null ? fmtDist(sf.dist_bus_m)        : '—' },
+      { icon: '🏪', label: 'Commercial',   value: sf.commercial_count_1km != null ? `${Math.round(sf.commercial_count_1km)} /1km` : '—' },
+      { icon: '🕌', label: 'Mosque',       value: sf.dist_mosque_m     != null ? fmtDist(sf.dist_mosque_m)     : '—' },
+      { icon: '🛍️', label: 'Mall',         value: sf.dist_mall_m       != null ? fmtDist(sf.dist_mall_m)       : '—' },
+      { icon: '🌿', label: 'Air quality',  value: sf.air_quality_score != null ? `${Math.round(sf.air_quality_score)}/100` : '—' },
+      { icon: '🏫', label: 'School',       value: sf.dist_school_m     != null ? fmtDist(sf.dist_school_m)     : '—' },
+      { icon: '🏥', label: 'Hospital',     value: sf.dist_hospital_m   != null ? fmtDist(sf.dist_hospital_m)   : '—' },
+    ];
+    grid.innerHTML = items.map(item => `
+      <div class="riyadh-spatial-item">
+        <div class="riyadh-spatial-icon">${item.icon}</div>
+        <div class="riyadh-spatial-label">${item.label}</div>
+        <div class="riyadh-spatial-value">${item.value}</div>
+      </div>`).join('');
+  }
+
+  // Map marker popup
+  if (marker) {
+    marker.bindPopup(
+      `<div class="map-popup"><strong>${fmtSAR(psqm)}/sqm</strong><br>${data.property_type || ''}</div>`,
+      { maxWidth: 200 }
+    ).openPopup();
+  }
+
+  document.getElementById('riyadhResults').style.display = 'block';
+  document.getElementById('riyadhResults').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
 
 // ── Loading state (with skeleton cards) ───────────────────────────────
 function setLoading(on) {

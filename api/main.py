@@ -40,10 +40,11 @@ BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE)
 
 from models.scorer import ThamanScorer
-from api.spatial import SpatialLookup
+from api.spatial import SpatialLookup, RiyadhSpatialLookup
 from api.models import (
     PredictRequest, PredictResponse, FeatureDriver,
     BOROUGH_NAMES, BLDGCLASS_DESCRIPTIONS,
+    RiyadhPredictRequest, RiyadhPredictResponse,
 )
 
 
@@ -53,6 +54,8 @@ _spatial:     SpatialLookup | None = None
 _nearby_df                         = None   # pl.DataFrame — runtime sales lookup
 _nearby_tree                       = None   # scipy cKDTree for nearby queries
 _nta_geojson_cache: str | None     = None   # pre-built NTA choropleth GeoJSON
+_riyadh_spatial: RiyadhSpatialLookup | None = None
+_district_geojson_cache: str | None = None  # pre-built Riyadh district GeoJSON
 _mta_tree                          = None   # KDTree for MTA station nearest-neighbor
 _mta_feats: dict                   = {}     # arrays: is_cbd, route_count, is_ada
 
@@ -189,7 +192,7 @@ def _build_sales_tiles():
 async def lifespan(app: FastAPI):
     """Load model + spatial data once at startup."""
     global _scorer, _spatial, _nearby_df, _nearby_tree, _nta_geojson_cache
-    global _mta_tree, _mta_feats
+    global _mta_tree, _mta_feats, _riyadh_spatial, _district_geojson_cache
     print("=" * 60)
     print("THAMAN API — Starting up (v2)")
     print("=" * 60)
@@ -245,6 +248,15 @@ async def lifespan(app: FastAPI):
         _build_sales_tiles()
     except Exception as e:
         print(f"  Sales tiles: build failed — {e}")
+
+    # Riyadh spatial lookup + district choropleth
+    try:
+        _riyadh_spatial = RiyadhSpatialLookup()
+        _district_geojson_cache = _build_district_geojson(_riyadh_spatial)
+        if _district_geojson_cache:
+            print(f"  Riyadh district layer: {len(_district_geojson_cache)//1024} KB built")
+    except Exception as e:
+        print(f"  Riyadh spatial: init failed — {e}")
 
     print("=" * 60)
     print("THAMAN API — Ready at http://localhost:8000")
@@ -855,6 +867,82 @@ def predict_batch(requests: list[PredictRequest]):
     return {"count": len(results), "results": results}
 
 
+@app.post("/predict/riyadh", response_model=RiyadhPredictResponse, tags=["Prediction"])
+def predict_riyadh(req: RiyadhPredictRequest):
+    """
+    Predict the market value of a **Riyadh** property (SAR/m² + total SAR).
+
+    Uses the XGBoost+LightGBM+CatBoost+Ridge stack trained on Saudi open-data
+    district-level quarterly transactions (2018–2025 Q3).
+
+    **Required**: latitude, longitude, property_type, area_sqm.
+    Spatial features (metro, bus, commercial, QoL POIs, air quality) are auto-computed
+    from the coordinates. Year/quarter default to the current period.
+    """
+    if not _riyadh_spatial:
+        raise HTTPException(status_code=503, detail="Riyadh spatial data not loaded.")
+    if not _scorer:
+        raise HTTPException(status_code=503, detail="Riyadh model not loaded.")
+    if not hasattr(_scorer, "predict_riyadh"):
+        raise HTTPException(status_code=503, detail="Riyadh scorer not available.")
+
+    # Default year/quarter to current
+    import datetime as _dt
+    now = _dt.datetime.now()
+    year    = req.year    or now.year
+    quarter = req.quarter or ((now.month - 1) // 3 + 1)
+
+    # Build feature row
+    try:
+        feat_dict = _riyadh_spatial.predict_features(
+            lat=req.latitude, lon=req.longitude,
+            property_type=req.property_type,
+            year=year, quarter=quarter,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Feature build failed: {e}")
+
+    # Predict (SAR/sqm, log-space)
+    try:
+        result = _scorer.predict_riyadh(**feat_dict)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Riyadh prediction failed: {e}")
+
+    # Find nearest district name for display
+    district_ar = None
+    if (_riyadh_spatial._district_centroid_tree is not None
+            and _riyadh_spatial._district_names):
+        _, idx = _riyadh_spatial._district_centroid_tree.query([[req.latitude, req.longitude]], k=1)
+        district_ar = _riyadh_spatial._district_names[int(idx[0])]
+
+    psqm        = int(round(result["predicted_price_sqm"]))
+    total       = int(round(psqm * req.area_sqm))
+    medape_frac = result["medape_pct"] / 100.0
+    return RiyadhPredictResponse(
+        predicted_price_sqm  = psqm,
+        predicted_total_sar  = total,
+        confidence_low_sqm   = int(psqm * (1 - medape_frac)),
+        confidence_high_sqm  = int(psqm * (1 + medape_frac)),
+        confidence_low_sar   = int(total * (1 - medape_frac)),
+        confidence_high_sar  = int(total * (1 + medape_frac)),
+        area_sqm             = req.area_sqm,
+        property_type        = req.property_type,
+        district_ar          = district_ar,
+        model                = result.get("model", "riyadh_stack_v1"),
+        r2_test              = result.get("r2_test", 0.675),
+        medape_pct           = result["medape_pct"],
+        spatial_features     = {k: round(v, 3) if isinstance(v, float) else v
+                                 for k, v in feat_dict.items()
+                                 if k in ("dist_metro_m", "metro_stations_1km",
+                                          "dist_bus_m", "bus_stops_500m",
+                                          "commercial_count_1km", "dist_mosque_m",
+                                          "dist_mall_m", "dist_school_m",
+                                          "dist_hospital_m", "dist_park_m",
+                                          "air_quality_score",
+                                          "riyadh_connectivity_score")},
+    )
+
+
 @app.get("/nearby", tags=["Reference"])
 def nearby_sales(lat: float, lon: float, radius_m: int = 800, limit: int = 8):
     """
@@ -1115,3 +1203,57 @@ def nta_layer():
     if not _nta_geojson_cache:
         raise HTTPException(status_code=503, detail="NTA layer not available.")
     return Response(content=_nta_geojson_cache, media_type="application/json")
+
+
+def _build_district_geojson(riyadh_spatial) -> str:
+    """
+    Build Riyadh district-level Point GeoJSON from per-district stats in features_riyadh.csv.
+    Each feature = one district centroid with choropleth metrics as properties.
+    Upgrades to polygon geometry when a district boundary file is added.
+    """
+    import json as _json
+    district_stats = riyadh_spatial.get_district_stats() if riyadh_spatial else {}
+    if not district_stats:
+        return ""
+
+    METRIC_COLS = [
+        "dist_metro_m", "metro_stations_1km",
+        "commercial_count_1km", "hypermarket_count_1km",
+        "bus_stops_500m", "no2_nearest_mean", "pm10_nearest_mean",
+        "air_quality_score", "rei_residential_qtr_idx",
+        "district_median_price_sqm", "district_price_trend_slope",
+        "district_commercial_mix", "riyadh_connectivity_score",
+    ]
+
+    features = []
+    for district_ar, stats in district_stats.items():
+        lat = stats.get("district_lat")
+        lon = stats.get("district_lon")
+        if lat is None or lon is None:
+            continue
+        props = {"district_ar": district_ar}
+        for col in METRIC_COLS:
+            v = stats.get(col)
+            if v is not None and not (isinstance(v, float) and v != v):  # skip NaN
+                props[col] = round(float(v), 4)
+        features.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": [round(lon, 6), round(lat, 6)]},
+            "properties": props,
+        })
+
+    return _json.dumps({"type": "FeatureCollection", "features": features})
+
+
+@app.get("/layers/district", tags=["Reference"])
+def district_layer():
+    """
+    Return Riyadh district centroid GeoJSON enriched with per-district statistics
+    (transit access, commercial density, air quality, price index) for map choropleth.
+    """
+    if not _district_geojson_cache:
+        raise HTTPException(
+            status_code=503,
+            detail="District layer not available. Run scripts/riyadh_feature_engineering.py first.",
+        )
+    return Response(content=_district_geojson_cache, media_type="application/json")

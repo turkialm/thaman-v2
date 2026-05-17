@@ -21,8 +21,8 @@ into a four-model stacked ensemble comprising two XGBoost models, LightGBM, and
 CatBoost, blended by a Ridge meta-learner.
 
 Trained on 185,092 NYC property sales from 2022 to 2026, the final model
-(Stack v11) achieves R² = 0.6467 and Median Absolute Percentage Error (MedAPE)
-of 20.23% on a time-based holdout set of 27,763 unseen sales across 104 features,
+(Stack v11) achieves R² = 0.6450 and Median Absolute Percentage Error (MedAPE)
+of 20.24% on a time-based holdout set of 27,763 unseen sales across 104 features,
 including a novel NTA price trend slope feature capturing neighbourhood-level
 price appreciation momentum via per-NTA OLS regression, and ten new building
 health and mobility indicators sourced from NYC HPD violation records, DOB permit
@@ -103,7 +103,7 @@ This project addresses four gaps:
   - A full end-to-end AVM pipeline from raw NYC open data to deployed web app.
   - A 104-feature dataset combining structural, spatial, temporal, neighbourhood
     momentum, building health, and transit quality signals.
-  - Stack v11: a 4-model ensemble achieving R² = 0.6467 / MedAPE = 20.23% on
+  - Stack v11: a 4-model ensemble achieving R² = 0.6450 / MedAPE = 20.24% on
     27,763 holdout sales, with 10 new v11 features (HPD violations, DOB permits,
     311 rodent/heat density, MTA station quality attributes).
   - Segment-adaptive confidence intervals per borough × price tier.
@@ -581,7 +581,7 @@ meta-learner. The training log demonstrates a direct empirical comparison:
                  Holdout R²=0.6349 / MAE=$1,105,269
 
   Ridge meta:    OOF R²=0.5995 / MedAPE=22.73%
-                 Holdout R²=0.6467 / MAE=$1,067,305
+                 Holdout R²=0.6450 / MAE=$1,065,470
 
 The Ridge meta-learner is selected despite its superficially lower OOF score.
 This outcome illustrates the primary vulnerability of complex stacking: meta-
@@ -650,7 +650,7 @@ The model went through ten training versions. Key lessons learned:
   v8       0.635   20.94%   Raw encoding; ZIP codes added
   v9       0.6469  20.12%   10-fold OOF + 5000 rounds (best MedAPE)
   v10      0.6460  20.30%   NTA price trend slope (94th feature; §4.10)
-  v11      0.6467  20.23%   10 new building health & mobility features (§4.11)
+  v11      0.6450  20.24%   10 new building health & mobility features (§4.11)
 
 6.2 The In-Fold Encoding Failure (v7a)
 ---------------------------------------
@@ -698,9 +698,9 @@ standard metric in AVM industry reporting.
 ------------------------------------------------
   Metric   Stack v11   Stack v10   Stack v9    Stack v5    v11 vs v5
   ------   ---------   ---------   --------    --------    ---------
-  R²       0.6467      0.6460      0.6469      0.6582      −0.011
-  MedAPE   20.23%      20.30%      20.12%      20.34%      −0.11pp
-  MAE      $1,067,305  $1,075,938  $1,064,855  $1,058,000  +$9,305
+  R²       0.6450      0.6460      0.6469      0.6582      −0.011
+  MedAPE   20.24%      20.30%      20.12%      20.34%      −0.11pp
+  MAE      $1,065,470  $1,075,938  $1,064,855  $1,058,000  +$7,470
 
 Note: v5 achieves slightly higher R² because it does not include NTA encoding,
 which adds variance in certain geographic segments. v11 has better MedAPE than
@@ -718,7 +718,7 @@ genuine predictive signal rather than noise.
   XGB-B       0.6429  20.35%
   LGB         0.6419  20.40%
   CatBoost    0.6430  20.22%
-  Stack v11   0.6467  20.23%   ← ensemble always best
+  Stack v11   0.6450  20.24%   ← ensemble always best
 
 The ensemble outperforms every individual base learner, confirming sufficient
 diversity for blending to produce a net benefit.
@@ -823,8 +823,8 @@ The naive approach assigns a single confidence interval to all predictions:
   confidence_low  = price × (1 − global_medape / 100)
   confidence_high = price × (1 + global_medape / 100)
 
-With global MedAPE = 20.23%, a Staten Island $600K property and a Manhattan
-$3M condo both receive ±20.23% intervals. This is dishonest: the Staten Island
+With global MedAPE = 20.24%, a Staten Island $600K property and a Manhattan
+$3M condo both receive ±20.24% intervals. This is dishonest: the Staten Island
 estimate is likely within ±13.5%, while the Manhattan estimate could easily be
 off by ±37%.
 
@@ -1026,7 +1026,7 @@ retrain.sh logic:
 ================================================================================
 
 This paper presented THAMAN, a production-deployed AVM for NYC residential
-property valuation. The system achieves R² = 0.6467 and MedAPE = 20.23% on
+property valuation. The system achieves R² = 0.6450 and MedAPE = 20.24% on
 27,763 unseen holdout sales, outperforming single-model baselines through a
 4-model diverse stacking ensemble across 104 features.
 
@@ -1047,6 +1047,10 @@ The key technical contributions are:
       natural-language explanations, 11-layer NTA choropleth overlay, and a
       6-monthly automated retraining pipeline with model acceptance/rejection
       logic.
+
+A parallel Riyadh extension (Saudi open-data district transactions, 6,910 sales)
+achieves holdout R² = 0.675 and MedAPE = 23.43% (SAR/m²) via the same stacking
+architecture, exposed at POST /predict/riyadh with bilingual map UI support.
 
 The system is deployed at https://huggingface.co/spaces/Turki-Almurahhem/thaman
 and open-sourced at https://github.com/turkialm/thaman-v2.

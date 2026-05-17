@@ -41,28 +41,53 @@
     <!-- ── Left: Map ──────────────────────────────────────────────── -->
     <section class="map-section">
       <!-- Layer toggle bar -->
+      <!-- City mode toggle -->
+      <div class="city-toggle" id="cityToggle">
+        <button class="city-btn active" id="cityBtnNYC" onclick="setCityMode('nyc')">🗽 NYC</button>
+        <button class="city-btn" id="cityBtnRiyadh" onclick="setCityMode('riyadh')">🕌 Riyadh</button>
+      </div>
+
       <div class="layer-bar" id="layerBar">
-        <button class="layer-btn active" data-layer="none">🗺 Default</button>
-        <button class="layer-btn" data-layer="income">💰 Income</button>
-        <button class="layer-btn" data-layer="crime">🔴 Crime</button>
-        <button class="layer-btn" data-layer="noise">🔊 Noise</button>
-        <button class="layer-btn" data-layer="air">💨 Air Quality</button>
-        <button class="layer-btn" data-layer="trees">🌳 Tree Cover</button>
-        <button class="layer-btn" data-layer="hotness">📈 Market</button>
-        <button class="layer-btn" data-layer="rats">🐀 Rodents</button>
-        <button class="layer-btn" data-layer="heat311">🌡️ Heat</button>
-        <button class="layer-btn" data-layer="hpd">🏚️ HPD Violations</button>
-        <button class="layer-btn" data-layer="livability">😤 311 Livability</button>
-        <button class="layer-btn" data-layer="transit">🚇 Transit</button>
-        <button class="layer-btn" data-layer="no2">🌫️ NO₂</button>
-        <button class="layer-btn" data-layer="population">👥 Population</button>
-        <button class="layer-btn" data-layer="bldgage">🏗️ Building Age</button>
-        <button class="layer-btn" data-layer="airbnb">🏠 Airbnb</button>
-        <button class="layer-btn" data-layer="psf">💲 Price/sqft</button>
-        <button class="layer-btn" data-layer="restaurant">🍽️ Restaurants</button>
-        <button class="layer-btn" data-layer="nightlife">☕ Cafes & Bars</button>
-        <button class="layer-btn" data-layer="grocery">🛒 Grocery</button>
-        <button class="layer-btn" data-layer="fitness">🏋️ Fitness</button>
+        <!-- NYC layers -->
+        <div id="nycLayerGroup">
+          <button class="layer-btn active" data-layer="none">🗺 Default</button>
+          <button class="layer-btn" data-layer="income">💰 Income</button>
+          <button class="layer-btn" data-layer="crime">🔴 Crime</button>
+          <button class="layer-btn" data-layer="noise">🔊 Noise</button>
+          <button class="layer-btn" data-layer="air">💨 Air Quality</button>
+          <button class="layer-btn" data-layer="trees">🌳 Tree Cover</button>
+          <button class="layer-btn" data-layer="hotness">📈 Market</button>
+          <button class="layer-btn" data-layer="rats">🐀 Rodents</button>
+          <button class="layer-btn" data-layer="heat311">🌡️ Heat</button>
+          <button class="layer-btn" data-layer="hpd">🏚️ HPD Violations</button>
+          <button class="layer-btn" data-layer="livability">😤 311 Livability</button>
+          <button class="layer-btn" data-layer="transit">🚇 Transit</button>
+          <button class="layer-btn" data-layer="no2">🌫️ NO₂</button>
+          <button class="layer-btn" data-layer="population">👥 Population</button>
+          <button class="layer-btn" data-layer="bldgage">🏗️ Building Age</button>
+          <button class="layer-btn" data-layer="airbnb">🏠 Airbnb</button>
+          <button class="layer-btn" data-layer="psf">💲 Price/sqft</button>
+          <button class="layer-btn" data-layer="restaurant">🍽️ Restaurants</button>
+          <button class="layer-btn" data-layer="nightlife">☕ Cafes & Bars</button>
+          <button class="layer-btn" data-layer="grocery">🛒 Grocery</button>
+          <button class="layer-btn" data-layer="fitness">🏋️ Fitness</button>
+        </div>
+        <!-- Riyadh layers (hidden when NYC mode active) -->
+        <div id="riyadhLayerGroup" style="display:none">
+          <button class="layer-btn active" data-layer="none">🗺 Default</button>
+          <button class="layer-btn" data-layer="metro_access">🚇 Metro Access</button>
+          <button class="layer-btn" data-layer="metro_density">🚉 Metro Density</button>
+          <button class="layer-btn" data-layer="bus_access">🚌 Bus Stops</button>
+          <button class="layer-btn" data-layer="commercial">🏪 Commercial</button>
+          <button class="layer-btn" data-layer="hypermarkets">🛒 Hypermarkets</button>
+          <button class="layer-btn" data-layer="air_no2">🌫️ NO₂ Air</button>
+          <button class="layer-btn" data-layer="air_pm10">💨 PM10 Air</button>
+          <button class="layer-btn" data-layer="air_quality">✅ Air Quality</button>
+          <button class="layer-btn" data-layer="price_index">📈 Price Index</button>
+          <button class="layer-btn" data-layer="apt_price">💰 Apt Price</button>
+          <button class="layer-btn" data-layer="price_trend">📊 Price Trend</button>
+          <button class="layer-btn" data-layer="connectivity">🔗 Connectivity</button>
+        </div>
       </div>
       <!-- Choropleth legend -->
       <div class="layer-legend" id="layerLegend" style="display:none">
@@ -315,6 +340,63 @@
             Model accuracy: median error ±20.29% (MedAPE, spatial CV validated).
           </p>
         </form>
+
+        <!-- ── Riyadh valuation form (shown in Riyadh mode) ─────────── -->
+        <form id="riyadhForm" novalidate style="display:none">
+          <input type="hidden" id="riyadhLat" />
+          <input type="hidden" id="riyadhLon" />
+
+          <div class="field-row">
+            <div class="field field-full">
+              <label for="riyadhType" id="lblRiyadhType">Property Type / نوع العقار</label>
+              <select id="riyadhType" required>
+                <option value="">Select… / اختر…</option>
+                <option value="شقة">Apartment / شقة</option>
+                <option value="فيلا">Villa / فيلا</option>
+                <option value="قطعة أرض-سكنى">Residential Plot / قطعة أرض سكنية</option>
+                <option value="عمارة">Residential Building / عمارة</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="riyadhArea" id="lblRiyadhArea">Area (m²) / المساحة</label>
+              <input type="number" id="riyadhArea" min="10" max="50000" placeholder="e.g. 200" required />
+            </div>
+            <div class="field">
+              <label for="riyadhYear" id="lblRiyadhYear">Year / السنة (opt.)</label>
+              <input type="number" id="riyadhYear" min="2018" max="2030" placeholder="2025" />
+            </div>
+          </div>
+
+          <div class="predict-sticky">
+            <button type="submit" class="btn-predict" id="riyadhSubmitBtn" disabled>
+              <span id="riyadhBtnText">📍 Select a location first</span>
+              <span class="spinner" id="riyadhSpinner" style="display:none">⟳</span>
+            </button>
+          </div>
+          <p class="disclaimer">
+            Predictions based on Saudi open-data quarterly transactions 2018–2025.
+            Model accuracy: median error ±23.43% (MedAPE).
+            تنبؤات مبنية على بيانات صفقات البيع الفصلية المفتوحة 2018–2025.
+          </p>
+        </form>
+
+        <!-- ── Riyadh results (shown after predict/riyadh response) ─── -->
+        <div id="riyadhResults" style="display:none" class="riyadh-results">
+          <div class="riyadh-price-hero">
+            <div class="riyadh-price-label" id="riyadhDistrictLabel">—</div>
+            <div class="riyadh-price-main">
+              <span id="riyadhPriceSqm">—</span>
+              <span class="riyadh-price-unit">SAR/m²</span>
+            </div>
+            <div class="riyadh-price-total" id="riyadhPriceTotal">—</div>
+            <div class="riyadh-confidence" id="riyadhConfidence">—</div>
+          </div>
+
+          <div class="riyadh-spatial-grid" id="riyadhSpatialGrid"></div>
+        </div>
       </div>
 
       <!-- ── Skeleton cards (visible during loading) ───────────────── -->

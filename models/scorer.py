@@ -79,6 +79,17 @@ class ThamanScorer:
             self._luxury.load_model(luxury_path)
             print(f"  [scorer] Luxury model loaded (blend ≥ ${self._luxury_threshold/1e6:.0f}M)")
 
+        # Riyadh model (city = 'riyadh')
+        riyadh_stack_path = os.path.join(_DIR, "riyadh_stack.pkl")
+        riyadh_meta_path  = os.path.join(_DIR, "riyadh_meta.json")
+        self._riyadh_stack = None
+        self._riyadh_meta  = {}
+        if os.path.exists(riyadh_stack_path) and os.path.exists(riyadh_meta_path):
+            self._riyadh_stack = joblib.load(riyadh_stack_path)
+            with open(riyadh_meta_path) as f:
+                self._riyadh_meta = json.load(f)
+            print(f"  [scorer] Riyadh stack loaded — {self._riyadh_meta.get('n_features',0)} features")
+
     # ── Internal: preprocess feature matrix ────────────────────────
     def _prepare(self, df: pl.DataFrame) -> np.ndarray:
         X = df.select(self.feature_names)
@@ -269,6 +280,39 @@ class ThamanScorer:
         return pl.DataFrame(
             {col: shap_values[:, i] for i, col in enumerate(self.feature_names)}
         )
+
+
+    # ── Riyadh prediction ───────────────────────────────────────────
+    def predict_riyadh(self, **kwargs) -> dict:
+        """
+        Predict SAR/sqm for a Riyadh property using the Riyadh stack.
+        kwargs should contain all 72 Riyadh model features.
+        Returns dict with predicted_price_sqm, medape_pct, r2_test, model.
+        """
+        if self._riyadh_stack is None:
+            raise RuntimeError("Riyadh model not loaded — run train_stack_riyadh_v1.py first.")
+
+        feat_names = self._riyadh_meta.get("feature_names", [])
+        X = np.array(
+            [float(kwargs.get(f, 0.0) or 0.0) for f in feat_names],
+            dtype=np.float32
+        ).reshape(1, -1)
+
+        stk  = self._riyadh_stack
+        preds = np.column_stack([
+            stk["xgb"].predict(X).astype(np.float32),
+            stk["lgb"].predict(X).astype(np.float32),
+            stk["cat"].predict(X).astype(np.float32),
+        ])
+        log_pred = stk["meta"].predict(preds)[0]
+        price_sqm = float(np.expm1(log_pred))
+
+        return {
+            "predicted_price_sqm": price_sqm,
+            "medape_pct":  self._riyadh_meta.get("holdout_medape_pct", 23.43),
+            "r2_test":     self._riyadh_meta.get("holdout_r2", 0.675),
+            "model":       self._riyadh_meta.get("model_version", "riyadh_stack_v1"),
+        }
 
 
 # ── Quick test ─────────────────────────────────────────────────────

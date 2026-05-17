@@ -65,6 +65,38 @@ sales["sale_month"] = sales["sale_date"].dt.month
 # ── Step 3: NTA spatial join + income ───────────────────────────
 print("\n[3/13] NTA spatial join …")
 nta = gpd.read_file("data/raw/nta_boundaries.geojson")
+
+# NYC Open Data NTA 2020 uses nta2020; older exports use ntacode
+if "ntacode" not in nta.columns and "nta2020" in nta.columns:
+    nta["ntacode"] = nta["nta2020"]
+
+# Population / income enriched via census tract join (may be absent in raw GeoJSON)
+if "population_2020" not in nta.columns or "median_income_nta" not in nta.columns:
+    for lookup_path in (
+        "data/processed/features_v4.csv",
+        "data/processed/features.csv",
+    ):
+        if os.path.exists(lookup_path):
+            lk = (
+                pd.read_csv(lookup_path, usecols=["ntacode", "population_2020", "median_income_nta"])
+                .dropna(subset=["ntacode"])
+                .groupby("ntacode", as_index=False)
+                .agg({"population_2020": "median", "median_income_nta": "median"})
+            )
+            nta = nta.merge(lk, on="ntacode", how="left", suffixes=("", "_lk"))
+            for col in ("population_2020", "median_income_nta"):
+                if f"{col}_lk" in nta.columns:
+                    nta[col] = nta[col].fillna(nta[f"{col}_lk"])
+                    nta.drop(columns=[f"{col}_lk"], inplace=True)
+            print(f"  NTA census stats merged from {lookup_path}")
+            break
+    if "population_2020" not in nta.columns:
+        nta["population_2020"] = np.nan
+    if "median_income_nta" not in nta.columns:
+        nta["median_income_nta"] = np.nan
+
+nta_join_cols = [c for c in ["ntacode", "ntaname", "population_2020", "median_income_nta", "geometry"]
+                 if c in nta.columns]
 gdf = gpd.GeoDataFrame(
     sales,
     geometry=gpd.points_from_xy(sales.longitude, sales.latitude),
@@ -72,7 +104,7 @@ gdf = gpd.GeoDataFrame(
 )
 gdf = gpd.sjoin(
     gdf,
-    nta[["ntacode", "ntaname", "population_2020", "median_income_nta", "geometry"]],
+    nta[nta_join_cols],
     how="left", predicate="within",
 ).drop(columns=["index_right", "geometry"])
 df = gdf.copy()
@@ -193,9 +225,11 @@ def nta_rate(parquet_path, nta_gdf, pop_col="population_2020", out_col="rate"):
     counts[out_col] = counts["count"] / counts[pop_col].clip(lower=1) * 1000
     return counts[["ntacode", out_col]]
 
-crime_nta     = nta_rate("data/raw/nypd_crimes.parquet",          nta, out_col="crime_rate_nta")
-noise_nta     = nta_rate("data/raw/noise_complaints.parquet",     nta, out_col="noise_density_nta")
-livab_nta     = nta_rate("data/raw/livability_complaints.parquet",nta, out_col="livability_complaint_rate")
+# nta_rate needs ntacode + population_2020 on the boundary frame
+_nta_for_rates = nta[["ntacode", "population_2020", "geometry"]].copy()
+crime_nta     = nta_rate("data/raw/nypd_crimes.parquet",          _nta_for_rates, out_col="crime_rate_nta")
+noise_nta     = nta_rate("data/raw/noise_complaints.parquet",     _nta_for_rates, out_col="noise_density_nta")
+livab_nta     = nta_rate("data/raw/livability_complaints.parquet", _nta_for_rates, out_col="livability_complaint_rate")
 
 df = df.merge(crime_nta, on="ntacode", how="left")
 df = df.merge(noise_nta, on="ntacode", how="left")

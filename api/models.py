@@ -2,7 +2,7 @@
 THAMAN API — Pydantic request/response schemas
 """
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
 
 
@@ -103,20 +103,19 @@ class PredictRequest(BaseModel):
     sale_year: Optional[int] = Field(None, ge=2010, le=2030, description="Year of hypothetical sale")
     sale_month: Optional[int] = Field(None, ge=1, le=12, description="Month of hypothetical sale")
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "latitude": 40.6892,
-                "longitude": -73.9442,
-                "gross_square_feet": 1800,
-                "building_age": 55,
-                "bldgclass": "A1",
-                "borough": 3,
-                "numfloors": 2,
-                "residential_units": 1,
-                "land_square_feet": 2000
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "latitude": 40.6892,
+            "longitude": -73.9442,
+            "gross_square_feet": 1800,
+            "building_age": 55,
+            "bldgclass": "A1",
+            "borough": 3,
+            "numfloors": 2,
+            "residential_units": 1,
+            "land_square_feet": 2000,
         }
+    })
 
 
 # ── Response models ───────────────────────────────────────────────────
@@ -191,3 +190,48 @@ class PredictResponse(BaseModel):
 
     # Resolved NTA code (for transparency / debugging)
     nta_code: Optional[str] = None
+
+# ── Riyadh predict schemas ────────────────────────────────────────────
+
+RIYADH_TYPE_LABELS = {
+    "شقة":           "Apartment / شقة",
+    "فيلا":          "Villa / فيلا",
+    "قطعة أرض-سكنى": "Residential Plot / قطعة أرض سكنية",
+    "عمارة":         "Building / عمارة",
+}
+
+
+class RiyadhPredictRequest(BaseModel):
+    latitude:      float = Field(..., ge=23.5, le=26.0, description="Property latitude (Riyadh bbox)")
+    longitude:     float = Field(..., ge=45.5, le=48.0, description="Property longitude (Riyadh bbox)")
+    property_type: str   = Field(..., description="Property type: شقة | فيلا | قطعة أرض-سكنى | عمارة")
+    area_sqm:      float = Field(..., gt=0, description="Property area in square meters")
+    year:          Optional[int]   = Field(None, ge=2018, le=2030)
+    quarter:       Optional[int]   = Field(None, ge=1, le=4)
+
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "latitude": 24.7500,
+            "longitude": 46.6800,
+            "property_type": "شقة",
+            "area_sqm": 150.0,
+            "year": 2025,
+            "quarter": 2,
+        }
+    })
+
+
+class RiyadhPredictResponse(BaseModel):
+    predicted_price_sqm:  int   = Field(description="Predicted price per sqm (SAR/m²)")
+    predicted_total_sar:  int   = Field(description="Estimated total price (SAR) for the given area")
+    confidence_low_sqm:   int
+    confidence_high_sqm:  int
+    confidence_low_sar:   int
+    confidence_high_sar:  int
+    area_sqm:             float
+    property_type:        str
+    district_ar:          Optional[str] = None
+    model:                str
+    r2_test:              float
+    medape_pct:           float
+    spatial_features:     dict
