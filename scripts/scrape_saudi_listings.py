@@ -1,7 +1,13 @@
 """
 scrape_saudi_listings.py - Playwright scraper for Haraj.com.sa Saudi property listings
-Usage: python scripts/scrape_saudi_listings.py [--max-pages N] [--type all|apartment|villa|plot|building]
+Usage: python scripts/scrape_saudi_listings.py [--type all|apartment|villa|plot|building]
 Output: data/raw/saudi_listings_haraj_YYYYMMDD.csv
+
+Strategy: district-tag based (NOT ?page=N pagination which returns duplicate data).
+  1. For each property type, navigate the main Riyadh tag URL.
+  2. Intercept the relatedTags GraphQL response to collect district-specific tag names.
+  3. Scrape 1 page each from the main URL + each district tag URL (~21 unique listings each).
+  4. Deduplicate by listing_id before writing.
 """
 
 from __future__ import annotations
@@ -12,9 +18,9 @@ import json
 import re
 import sys
 import time
+import urllib.parse
 from datetime import date
 from pathlib import Path
-from typing import Iterator
 
 # ── third-party (must be installed) ──────────────────────────────────────────
 try:
@@ -39,7 +45,7 @@ CSV_COLUMNS = [
     "bedrooms", "bathrooms", "age_years", "listing_date", "url",
 ]
 
-# Haraj tag URLs for each property type (Riyadh-specific)
+# Haraj tag URLs for each property type (Riyadh-specific, main entry point)
 HARAJ_URLS: dict[str, str] = {
     "apartment": (
         "https://haraj.com.sa/tags/"
@@ -260,6 +266,9 @@ def _fetch_json_ld(page: Page, url: str) -> dict | None:
     """
     Navigate to a Haraj tag page and extract the JSON-LD blob.
     Returns parsed dict or None if element not found.
+    NOTE: Does NOT set up response listeners — call before attaching listeners
+    or after removing them. Use _fetch_json_ld_and_capture_tags() for the
+    main tag URL where you also need relatedTags.
     """
     try:
         page.goto(url, wait_until="networkidle", timeout=30_000)
@@ -286,17 +295,159 @@ def _fetch_json_ld(page: Page, url: str) -> dict | None:
         return None
 
 
+def _fetch_json_ld_and_capture_tags(
+    page: Page,
+    url: str,
+    min_count: int = 5,
+) -> tuple[dict | None, list[str]]:
+    """
+    Navigate to a Haraj main tag URL, intercept the relatedTags GraphQL
+    response, and also return the JSON-LD blob for the page.
+
+    Returns (json_ld_or_None, list_of_district_tag_strings).
+    """
+    related_tags: list[str] = []
+
+    def _on_response(resp):
+        try:
+            if (
+                "graphql.haraj" in resp.url
+                and "queryName=relatedTags" in resp.url
+            ):
+                body = resp.body()
+                data = json.loads(body.decode("utf-8"))
+                tags = data.get("data", {}).get("relatedTags", [])
+                for t in tags:
+                    if t.get("count", 0) >= min_count and t.get("tag"):
+                        related_tags.append(t["tag"])
+        except Exception:
+            pass  # silently ignore malformed/non-JSON responses
+
+    page.on("response", _on_response)
+    try:
+        page.goto(url, wait_until="networkidle", timeout=30_000)
+    except PWTimeout:
+        print(f"  [WARN] page.goto timeout for {url} — retrying once")
+        try:
+            page.goto(url, wait_until="domcontentloaded", timeout=30_000)
+        except PWTimeout:
+            print(f"  [WARN] second timeout — skipping main URL")
+            page.remove_listener("response", _on_response)
+            return None, related_tags
+
+    # Give extra time for GraphQL XHR to complete
+    page.wait_for_timeout(2000)
+    page.remove_listener("response", _on_response)
+
+    handle = page.query_selector("script#json-ld-posts-list")
+    json_ld = None
+    if handle is not None:
+        raw = handle.inner_text()
+        try:
+            json_ld = json.loads(raw)
+        except json.JSONDecodeError as exc:
+            print(f"  [WARN] JSON decode error on main URL: {exc}")
+
+    return json_ld, related_tags
+
+
+def _tag_to_url(tag: str) -> str:
+    """Convert a relatedTags tag string to its Haraj URL."""
+    return f"https://haraj.com.sa/tags/{urllib.parse.quote(tag, safe='')}/"
+
+
 # ─────────────────────────────────────────────────────────────────────────────
-# Core scraper
+# Per-type scraper (district-tag strategy)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _scrape_type(
+    page: Page,
+    prop_type: str,
+    base_url: str,
+    writer: csv.DictWriter,
+    fh,
+    global_seen_ids: set[str],
+) -> int:
+    """
+    Scrape one property type using the district-tag strategy:
+      1. Hit the main Riyadh tag URL, capture relatedTags from GraphQL.
+      2. Scrape main URL + each district tag URL (1 page each).
+      3. Deduplicate against global_seen_ids (shared across types).
+
+    Returns number of rows written for this type.
+    """
+    print(f"\n[{prop_type.upper()}] main URL: {base_url}")
+
+    # Step 1: navigate to main URL, capture relatedTags GraphQL response
+    print(f"  [{prop_type}] fetching relatedTags from main URL ...")
+    json_ld_main, related_tags = _fetch_json_ld_and_capture_tags(page, base_url)
+
+    if related_tags:
+        print(f"  [{prop_type}] captured {len(related_tags)} district tags from GraphQL")
+    else:
+        print(f"  [{prop_type}] no district tags captured — will scrape main URL only")
+
+    # Build ordered list of URLs to scrape: main first, then district tags
+    urls_to_scrape: list[tuple[str, dict | None]] = [
+        (base_url, json_ld_main),  # already fetched, reuse the blob
+    ]
+    for tag in related_tags:
+        urls_to_scrape.append((_tag_to_url(tag), None))
+
+    total_type = 0
+
+    for idx, (url, prefetched_json_ld) in enumerate(urls_to_scrape):
+        label = "main" if idx == 0 else f"district-tag {idx}/{len(urls_to_scrape)-1}"
+        print(f"  [{prop_type}] {label} — {url}")
+
+        if prefetched_json_ld is not None:
+            json_ld = prefetched_json_ld
+        else:
+            json_ld = _fetch_json_ld(page, url)
+
+        if json_ld is None:
+            print(f"    [{prop_type}] JSON-LD not found — skipping")
+            time.sleep(1.5)
+            continue
+
+        rows = _parse_json_ld_page(json_ld, prop_type)
+
+        # Deduplicate against global seen set
+        new_rows = [
+            r for r in rows
+            if r.get("listing_id") and r["listing_id"] not in global_seen_ids
+        ]
+        global_seen_ids.update(r["listing_id"] for r in new_rows)
+
+        dupes = len(rows) - len(new_rows)
+        print(
+            f"    [{prop_type}] {len(rows)} Riyadh listings parsed, "
+            f"{new_rows.__len__()} new, {dupes} duplicates skipped"
+        )
+
+        if new_rows:
+            for row in new_rows:
+                clean = {col: row.get(col) for col in CSV_COLUMNS}
+                writer.writerow(clean)
+            fh.flush()
+            total_type += len(new_rows)
+
+        time.sleep(1.5)
+
+    print(f"  [{prop_type}] done — {total_type} unique rows written")
+    return total_type
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Main scrape orchestrator
 # ─────────────────────────────────────────────────────────────────────────────
 
 def scrape_haraj(
     prop_types: list[str],
-    max_pages: int = 50,
     out_path: Path | None = None,
 ) -> int:
     """
-    Scrape Haraj.com.sa for the given property types.
+    Scrape Haraj.com.sa for the given property types using district-tag strategy.
     Writes (appends) results to out_path.
     Returns total number of rows written.
     """
@@ -306,6 +457,8 @@ def scrape_haraj(
 
     file_exists = out_path.exists() and out_path.stat().st_size > 0
     total_written = 0
+    # Global deduplication set — shared across all property types
+    global_seen_ids: set[str] = set()
 
     with open(out_path, "a", newline="", encoding="utf-8") as fh:
         writer = csv.DictWriter(fh, fieldnames=CSV_COLUMNS)
@@ -329,41 +482,15 @@ def scrape_haraj(
             try:
                 for prop_type in prop_types:
                     base_url = HARAJ_URLS[prop_type]
-                    print(f"\n[{prop_type.upper()}] base URL: {base_url}")
-                    consecutive_empty = 0
-
-                    for page_num in range(1, max_pages + 1):
-                        url = base_url if page_num == 1 else f"{base_url}?page={page_num}"
-                        print(f"  [haraj/{prop_type}] page {page_num}/{max_pages} — {url}")
-
-                        json_ld = _fetch_json_ld(page, url)
-
-                        # Stop if JSON-LD element not found (end of pagination)
-                        if json_ld is None:
-                            print(f"  [haraj/{prop_type}] JSON-LD not found — end of pagination at page {page_num}")
-                            break
-
-                        rows = _parse_json_ld_page(json_ld, prop_type)
-                        riyadh_count = len(rows)
-
-                        if riyadh_count == 0:
-                            consecutive_empty += 1
-                            print(f"  [haraj/{prop_type}] 0 Riyadh listings (consecutive empty: {consecutive_empty}/3)")
-                            if consecutive_empty >= 3:
-                                print(f"  [haraj/{prop_type}] 3 consecutive empty pages — stopping")
-                                break
-                        else:
-                            consecutive_empty = 0
-
-                        # Checkpoint: write rows immediately
-                        for row in rows:
-                            clean = {col: row.get(col) for col in CSV_COLUMNS}
-                            writer.writerow(clean)
-                        total_written += riyadh_count
-                        fh.flush()
-                        print(f"  [haraj/{prop_type}] wrote {riyadh_count} rows (total so far: {total_written})")
-
-                        time.sleep(1.5)
+                    count = _scrape_type(
+                        page=page,
+                        prop_type=prop_type,
+                        base_url=base_url,
+                        writer=writer,
+                        fh=fh,
+                        global_seen_ids=global_seen_ids,
+                    )
+                    total_written += count
 
             except KeyboardInterrupt:
                 print("\n[INTERRUPTED] Partial data saved.")
@@ -383,12 +510,6 @@ def main() -> None:
         description="Playwright scraper for Haraj.com.sa Saudi property listings (Riyadh)"
     )
     parser.add_argument(
-        "--max-pages",
-        type=int,
-        default=50,
-        help="Maximum pages to scrape per property type (default: 50, ~21 listings/page)",
-    )
-    parser.add_argument(
         "--type",
         dest="prop_type",
         choices=["all", "apartment", "villa", "plot", "building"],
@@ -404,14 +525,14 @@ def main() -> None:
 
     out_path = DATA_RAW / f"saudi_listings_haraj_{TODAY}.csv"
 
+    print(f"[INFO] Strategy       : district-tag (1 page per district, no ?page=N pagination)")
     print(f"[INFO] Property types : {prop_types}")
-    print(f"[INFO] Max pages/type : {args.max_pages}")
-    print(f"[INFO] Est. max rows  : {args.max_pages * len(prop_types) * 21} (≈21 listings/page)")
+    print(f"[INFO] Est. max rows  : {len(prop_types)} types × 100+ districts × ~15 Riyadh rows")
     print(f"[INFO] Output         : {out_path}")
     print(f"[INFO] Date           : {TODAY}\n")
 
-    total = scrape_haraj(prop_types=prop_types, max_pages=args.max_pages, out_path=out_path)
-    print(f"\n[DONE] Total rows written: {total} → {out_path}")
+    total = scrape_haraj(prop_types=prop_types, out_path=out_path)
+    print(f"\n[DONE] Total unique rows written: {total} → {out_path}")
 
 
 if __name__ == "__main__":
