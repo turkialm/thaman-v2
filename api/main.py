@@ -769,8 +769,21 @@ def predict(req: PredictRequest):
         "qc_flags":            qc_flags,
     }
 
-    # 4. SHAP explanations
-    drivers = _get_shap_drivers(feat_dict)
+    # 4. SHAP explanations — prefer scorer's CatBoost SHAP (top_drivers), fall back to XGB explain()
+    scorer_drivers = result.get("top_drivers", [])
+    if scorer_drivers:
+        drivers = [
+            FeatureDriver(
+                feature=d["feature"],
+                value=d["value"],
+                impact=d["impact"],
+                direction=d["direction"],
+                description=d["description"],
+            )
+            for d in scorer_drivers
+        ]
+    else:
+        drivers = _get_shap_drivers(feat_dict)
 
     # 5. Build response
     bc_desc = BLDGCLASS_DESCRIPTIONS.get(

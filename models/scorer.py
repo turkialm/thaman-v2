@@ -90,6 +90,7 @@ class ThamanScorer:
                 self._riyadh_meta = json.load(f)
             print(f"  [scorer] Riyadh stack loaded — {self._riyadh_meta.get('n_features',0)} features")
         self._riyadh_shap_explainer = None   # lazy-built on first SHAP call
+        self._nyc_shap_explainer    = None   # lazy-built on first NYC SHAP call
 
     # ── Internal: preprocess feature matrix ────────────────────────
     def _prepare(self, df: pl.DataFrame) -> np.ndarray:
@@ -182,6 +183,7 @@ class ThamanScorer:
         defaults.update(clean_kwargs)
 
         row   = pl.from_dicts([defaults])
+        Xv    = self._prepare(row)           # keep for SHAP (1-row float32 array)
         price = float(self.predict(row)[0])
 
         if self._stack is not None and "stack" in self.meta:
@@ -198,7 +200,7 @@ class ThamanScorer:
         seg_med = conf["segment_medape"]
         mult    = seg_med / 100.0
 
-        return {
+        result = {
             "predicted_price":    round(price),
             "confidence_low":     round(price * (1.0 - mult)),   # segment-adaptive
             "confidence_high":    round(price * (1.0 + mult)),   # segment-adaptive
@@ -210,6 +212,52 @@ class ThamanScorer:
             "r2_test":            r2,
             "medape_test_pct":    medape,   # global value kept for backward compat
         }
+
+        # ── NYC SHAP drivers ──────────────────────────────────────────────────
+        try:
+            stk = self._stack  # the loaded stack dict with "cat" key
+            if stk and "cat" in stk:
+                if self._nyc_shap_explainer is None:
+                    import shap as _shap
+                    self._nyc_shap_explainer = _shap.TreeExplainer(stk["cat"])
+                feat_names = self.meta.get("feature_names", self.feature_names)
+                sv = np.array(
+                    self._nyc_shap_explainer.shap_values(Xv), dtype=np.float32
+                ).flatten()
+                _meta_learner = stk.get("meta")
+                meta_coeffs = (
+                    _meta_learner.coef_.tolist()
+                    if _meta_learner is not None and hasattr(_meta_learner, "coef_")
+                    else []
+                )
+                # For v5+ stacks: [xgb_a, xgb_b, lgb, cat]; cat is index 3
+                ver = stk.get("version", "v4")
+                if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11") and len(meta_coeffs) >= 4:
+                    w_cat = float(meta_coeffs[3])
+                elif len(meta_coeffs) >= 3:
+                    w_cat = float(meta_coeffs[2])
+                else:
+                    w_cat = 0.95
+                sv_scaled = sv * w_cat
+                top_k = 10
+                indices = np.argsort(np.abs(sv_scaled))[::-1][:top_k]
+                top_drivers = []
+                for i in indices:
+                    if i >= len(feat_names):
+                        continue
+                    fname = feat_names[i]
+                    top_drivers.append({
+                        "feature":     fname,
+                        "value":       float(Xv[0, i]),
+                        "impact":      float(sv_scaled[i]),
+                        "direction":   "positive" if sv_scaled[i] > 0 else "negative",
+                        "description": self._NYC_FEAT_LABELS.get(fname, fname.replace("_", " ").title()),
+                    })
+                result["top_drivers"] = top_drivers
+        except Exception as _shap_err:
+            result["top_drivers"] = []
+
+        return result
 
     # ── Segment-adaptive confidence ────────────────────────────────
     def _adaptive_confidence(self, price: float, borough: int) -> dict:
@@ -282,6 +330,89 @@ class ThamanScorer:
             {col: shap_values[:, i] for i, col in enumerate(self.feature_names)}
         )
 
+
+    # Human-readable labels for NYC features used in SHAP display
+    _NYC_FEAT_LABELS = {
+        "walk_score":            "Walk Score",
+        "walk_score_proxy":      "Walk Score",
+        "subway_dist_m":         "Distance to Subway",
+        "dist_subway_m":         "Distance to Subway",
+        "subway_count_500m":     "Subway Stations (500m)",
+        "bus_count_500m":        "Bus Stops (500m)",
+        "dist_bus_m":            "Distance to Bus Stop",
+        "park_dist_m":           "Distance to Park",
+        "dist_park_m":           "Distance to Park",
+        "school_dist_m":         "Distance to School",
+        "dist_school_m":         "Distance to School",
+        "dist_elem_school_m":    "Distance to Elem. School",
+        "dist_hospital_m":       "Distance to Hospital",
+        "dist_waterfront_m":     "Distance to Waterfront",
+        "dist_bike_lane_m":      "Distance to Bike Lane",
+        "dist_express_subway_m": "Distance to Express Subway",
+        "complaint_density":     "311 Complaint Density",
+        "crime_density":         "Crime Rate (NTA)",
+        "crime_rate_nta":        "Crime Rate (NTA)",
+        "noise_density_nta":     "Noise Complaints (NTA)",
+        "livability_complaint_rate": "311 Livability Rate",
+        "nta_median_income":     "Neighborhood Median Income",
+        "median_income_nta":     "Neighborhood Median Income",
+        "nta_price_sqft_median": "NTA Median Price/sqft",
+        "nta_median_psf":        "NTA Median Price/sqft",
+        "bldg_age":              "Building Age (years)",
+        "building_age":          "Building Age (years)",
+        "floors":                "Number of Floors",
+        "numfloors":             "Number of Floors",
+        "units_total":           "Total Units in Building",
+        "residential_units":     "Residential Units",
+        "gross_square_feet":     "Gross Sqft",
+        "land_square_feet":      "Land Sqft",
+        "commercial_units":      "Commercial Units",
+        "mortgage_rate":         "30yr Mortgage Rate",
+        "mortgage_rate_30yr":    "30yr Mortgage Rate",
+        "log_gross_sqft":        "Log Gross Sqft",
+        "prior_sale_price":      "Prior Sale Price",
+        "bldgclass_encoded":     "Building Class",
+        "borough_bldg_encoded":  "Borough × Building Class",
+        "nta_encoded":           "Neighborhood (NTA)",
+        "nta_bldg_encoded":      "NTA × Building Class",
+        "borough_encoded":       "Borough",
+        "borough":               "Borough",
+        "sale_year":             "Sale Year",
+        "sale_month_sin":        "Sale Season",
+        "sale_month_cos":        "Sale Season",
+        "waterfront_dist_m":     "Distance to Waterfront",
+        "bike_lane_dist_m":      "Distance to Bike Lane",
+        "poi_count_500m":        "Points of Interest (500m)",
+        "airbnb_count_500m":     "Airbnb Density (500m)",
+        "has_elevator":          "Has Elevator",
+        "is_condo":              "Is Condo",
+        "is_multifamily":        "Is Multi-Family",
+        "is_single_fam":         "Is Single-Family",
+        "is_mixed_use":          "Is Mixed-Use",
+        "is_manhattan":          "Is Manhattan",
+        "crime_x_manhattan":     "Crime × Manhattan",
+        "nearest_station_is_express": "Nearest Station is Express",
+        "district_avg_score":    "School District Score",
+        "population_2020":       "NTA Population",
+        "builtfar":              "Built FAR",
+        "far_utilization":       "FAR Utilization",
+        "has_prior_sale":        "Has Prior Sale Record",
+        "price_appreciation":    "Price Appreciation",
+        "years_since_prior_sale":"Years Since Prior Sale",
+        "renovated_since_2018":  "Renovated Since 2018",
+        "rat_density_nta":       "Rodent Density (NTA)",
+        "heat_density_nta":      "Heat Complaints (NTA)",
+        "hpd_severity_score_zip":"HPD Violation Severity (ZIP)",
+        "nearest_station_is_cbd":"Nearest Station: CBD",
+        "nearest_station_route_count": "Station Route Count",
+        "log_dist_subway_m":     "Log Distance to Subway",
+        "log_dist_park_m":       "Log Distance to Park",
+        "log_dist_school_m":     "Log Distance to School",
+        "log_dist_hospital_m":   "Log Distance to Hospital",
+        "log_dist_bus_m":        "Log Distance to Bus Stop",
+        "log_dist_waterfront_m": "Log Distance to Waterfront",
+        "log_dist_bike_lane_m":  "Log Distance to Bike Lane",
+    }
 
     # Human-readable labels for Riyadh features used in SHAP display
     _RIYADH_FEAT_LABELS = {

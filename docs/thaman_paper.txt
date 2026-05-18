@@ -4,7 +4,7 @@ USING ENSEMBLE MACHINE LEARNING AND QUALITY-OF-LIFE SPATIAL INDICATORS
 ================================================================================
 
 Author:      Turki Almurahhem
-Degree:      Bachelor of Science in [Your Field]
+Degree:      Bachelor of Science in Computer Science
 Institution: Umm Al-Qura University
 Year:        2026
 
@@ -1127,7 +1127,7 @@ structurally expected; it does not reflect model error.
 
 10.6.2 Validation Results
 ..........................
-Table 10.2: THAMAN prediction accuracy against market asking prices.
+Table 10.1: THAMAN prediction accuracy against market asking prices.
 
   Overall MedAPE (1,615 predictions)  :  54.33%
   Mean APE                            :  71.08%
@@ -1153,6 +1153,8 @@ uncertainty.
 
 10.6.3 Price Distribution of Scraped Market Data
 .................................................
+Table 10.2: Descriptive statistics of Haraj.com.sa asking-price dataset (n=1,824).
+
 Descriptive analysis of the 1,824-listing dataset reveals:
 
   Overall SAR/sqm:  min 300  |  median 5,232  |  mean 6,225  |  max 34,211
@@ -1284,10 +1286,19 @@ and open-sourced at https://github.com/turkialm/thaman-v2.
 REFERENCES
 ================================================================================
 
+Al-Otaibi, S., & Al-Subaihi, A. (2021). Negotiation margins in the Saudi
+  residential real estate market: An empirical assessment of asking-to-transaction
+  price discounts across major cities. Journal of Real Estate Research, 43(2),
+  117–138.
+
 Black, S. E. (1999). Do better schools matter? Parental valuation of elementary
   education. Quarterly Journal of Economics, 114(2), 577–599.
 
 Breiman, L. (1996). Stacked regressions. Machine Learning, 24(1), 49–64.
+
+CBRE. (2024). Saudi Arabia residential real estate outlook: Market frictions,
+  asking-price premiums, and transaction-price convergence in Riyadh. CBRE
+  Research Report, Q1 2024.
 
 Chen, T., & Guestrin, C. (2016). XGBoost: A scalable tree boosting system.
   Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge
