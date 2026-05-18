@@ -1351,3 +1351,48 @@ def district_layer():
             detail="District layer not available. Run scripts/riyadh_feature_engineering.py first.",
         )
     return Response(content=_district_geojson_cache, media_type="application/json")
+
+
+@app.get("/layers/listings", tags=["Riyadh"])
+def get_listings_layer():
+    """Return scraped Haraj listings as GeoJSON for map display."""
+    import glob, csv
+    from pathlib import Path
+
+    features = []
+    pattern = str(Path(BASE) / "data" / "raw" / "saudi_listings_haraj_*.csv")
+    files = sorted(glob.glob(pattern))
+    if not files:
+        return {"type": "FeatureCollection", "features": []}
+
+    latest = files[-1]
+    with open(latest, encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            try:
+                lat = float(row["lat"]); lon = float(row["lon"])
+                psqm = float(row["price_per_sqm"])
+                price = float(row["price_sar"])
+                area = float(row["area_sqm"])
+                if not (23.5 <= lat <= 26.0 and 45.5 <= lon <= 48.0):
+                    continue
+                if psqm <= 0:
+                    continue
+                features.append({
+                    "type": "Feature",
+                    "geometry": {"type": "Point", "coordinates": [lon, lat]},
+                    "properties": {
+                        "listing_id": row.get("listing_id", ""),
+                        "district": row.get("district", ""),
+                        "type_en": row.get("property_type_en", ""),
+                        "type_ar": row.get("property_type_ar", ""),
+                        "price_sar": round(price),
+                        "area_sqm": round(area, 1),
+                        "price_per_sqm": round(psqm),
+                        "bedrooms": row.get("bedrooms", ""),
+                        "url": row.get("url", ""),
+                    }
+                })
+            except (ValueError, KeyError):
+                continue
+
+    return {"type": "FeatureCollection", "features": features}

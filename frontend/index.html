@@ -95,6 +95,10 @@
           <button class="layer-btn" data-layer="price_trend">📊 Price Trend</button>
           <button class="layer-btn" data-layer="connectivity">🔗 Connectivity</button>
         </div>
+        <!-- Market Listings overlay button (Riyadh only, outside layer groups so it doesn't reset) -->
+        <button class="layer-btn" id="listingsLayerBtn" onclick="toggleListingsLayer(this)" style="display:none">
+          🏠 Listings
+        </button>
       </div>
       <!-- Choropleth legend -->
       <div class="layer-legend" id="layerLegend" style="display:none">

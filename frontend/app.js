@@ -406,6 +406,68 @@ document.getElementById('layerBar').addEventListener('click', e => {
   showLayer(btn.dataset.layer);
 });
 
+// ── Market Listings Layer ──────────────────────────────────────────────
+let _listingsLayer = null;
+
+async function toggleListingsLayer(btn) {
+  if (_listingsLayer && map.hasLayer(_listingsLayer)) {
+    map.removeLayer(_listingsLayer);
+    btn.classList.remove('active');
+    return;
+  }
+  if (_listingsLayer) {
+    map.addLayer(_listingsLayer);
+    btn.classList.add('active');
+    return;
+  }
+  // First load
+  btn.textContent = '⏳';
+  try {
+    const geojson = await fetch('/layers/listings').then(r => r.json());
+    const typeColors = {
+      apartment: '#3b82f6',
+      villa:     '#10b981',
+      plot:      '#f59e0b',
+      building:  '#8b5cf6',
+      other:     '#6b7280'
+    };
+    _listingsLayer = L.geoJSON(geojson, {
+      pointToLayer: (feat, latlng) => {
+        const color = typeColors[feat.properties.type_en] || '#6b7280';
+        return L.circleMarker(latlng, {
+          radius: 6, fillColor: color, color: '#fff',
+          weight: 1, opacity: 1, fillOpacity: 0.8
+        });
+      },
+      onEachFeature: (feat, layer) => {
+        const p = feat.properties;
+        const fmtSAR = n => n >= 1e6 ? `﷼${(n/1e6).toFixed(2)}M` : `﷼${(n/1e3).toFixed(0)}K`;
+        layer.bindPopup(`
+          <div style="min-width:200px;font-family:inherit">
+            <div style="font-weight:700;font-size:1rem;margin-bottom:6px">${p.district || '—'}</div>
+            <div style="color:#64748b;font-size:0.8rem;margin-bottom:8px">${p.type_ar || p.type_en}</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.85rem">
+              <span style="color:#64748b">Asking/sqm</span>
+              <span style="font-weight:600;color:#0f172a">﷼${p.price_per_sqm.toLocaleString()}</span>
+              <span style="color:#64748b">Total</span>
+              <span style="font-weight:600">${fmtSAR(p.price_sar)}</span>
+              <span style="color:#64748b">Area</span>
+              <span>${p.area_sqm} sqm</span>
+              ${p.bedrooms ? `<span style="color:#64748b">Beds</span><span>${p.bedrooms}</span>` : ''}
+            </div>
+            ${p.url ? `<a href="${p.url}" target="_blank" rel="noopener" style="display:block;margin-top:8px;font-size:0.8rem;color:#3b82f6">View on Haraj ↗</a>` : ''}
+          </div>
+        `);
+      }
+    }).addTo(map);
+    btn.classList.add('active');
+  } catch(e) {
+    console.error('Listings layer failed:', e);
+  } finally {
+    btn.textContent = '🏠 Listings';
+  }
+}
+
 // ── City mode toggle ──────────────────────────────────────────────────
 function setCityMode(mode) {
   _cityMode = mode;
@@ -442,6 +504,14 @@ function setCityMode(mode) {
 
   // NYC-only: red mask marks area outside city limits
   _setNycOutOfBoundsMask(!isRiyadh);
+
+  // Show/hide the Listings overlay button (Riyadh only)
+  const listingsBtn = document.getElementById('listingsLayerBtn');
+  if (listingsBtn) listingsBtn.style.display = isRiyadh ? '' : 'none';
+  // Remove listings layer when switching away from Riyadh
+  if (!isRiyadh && _listingsLayer && map.hasLayer(_listingsLayer)) {
+    map.removeLayer(_listingsLayer);
+  }
 
   // Fly map to the selected city
   map.flyTo(isRiyadh ? RIYADH_CENTER : NYC_CENTER, 11, { duration: 1.5 });
