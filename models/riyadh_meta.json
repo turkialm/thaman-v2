@@ -104,24 +104,28 @@
     "dist_entertain_m",
     "log_dist_entertain_m",
     "entertain_count_500m",
-    "riyadh_connectivity_score"
+    "riyadh_connectivity_score",
+    "aqar_median_size_sqm",
+    "aqar_median_bedrooms",
+    "aqar_median_property_age",
+    "aqar_rent_per_sqm"
   ],
-  "n_features": 72,
-  "holdout_r2": 0.6749,
-  "holdout_medape_pct": 23.43,
-  "holdout_mae_sar_sqm": 1207.07,
-  "oof_r2": 0.9431,
-  "oof_medape_pct": 8.38,
+  "n_features": 76,
+  "holdout_r2": 0.6747,
+  "holdout_medape_pct": 23.45,
+  "holdout_mae_sar_sqm": 1205.79,
+  "oof_r2": 0.9427,
+  "oof_medape_pct": 8.28,
   "model_version": "riyadh_v1",
   "n_folds": 5,
   "train_rows": 4664,
   "holdout_rows": 2246,
   "meta_coefficients": [
-    0.13824809255314457,
-    -0.12318115899631565,
-    0.9867341103160718
+    0.1984168298894445,
+    -0.1473358117780393,
+    0.9544078876284079
   ],
-  "meta_intercept": -0.010202790302852094,
+  "meta_intercept": -0.039852655992627106,
   "target": "log1p(sale_price_sar_sqm)",
   "y_unit": "SAR/sqm"
 }

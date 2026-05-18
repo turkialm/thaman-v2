@@ -77,6 +77,11 @@ FEATURES = [
     "dist_entertain_m", "log_dist_entertain_m", "entertain_count_500m",
     # Connectivity
     "riyadh_connectivity_score",
+    # Structural (SA_Aqar rental listings — district-level medians)
+    "aqar_median_size_sqm",
+    "aqar_median_bedrooms",
+    "aqar_median_property_age",
+    "aqar_rent_per_sqm",
 ]
 
 TARGET = "sale_price_sar_sqm"
