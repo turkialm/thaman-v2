@@ -89,6 +89,7 @@ class ThamanScorer:
             with open(riyadh_meta_path) as f:
                 self._riyadh_meta = json.load(f)
             print(f"  [scorer] Riyadh stack loaded — {self._riyadh_meta.get('n_features',0)} features")
+        self._riyadh_shap_explainer = None   # lazy-built on first SHAP call
 
     # ── Internal: preprocess feature matrix ────────────────────────
     def _prepare(self, df: pl.DataFrame) -> np.ndarray:
@@ -282,6 +283,86 @@ class ThamanScorer:
         )
 
 
+    # Human-readable labels for Riyadh features used in SHAP display
+    _RIYADH_FEAT_LABELS = {
+        "district_median_price_sqm":    "District median price",
+        "district_encoded":             "District (target-encoded)",
+        "district_price_vs_city_avg":   "Price vs city average",
+        "district_price_trend_slope":   "District price trend",
+        "district_transaction_volume":  "District transaction volume",
+        "district_median_price_apt_sqm":"Apartment median price",
+        "district_type_encoded":        "District type (encoded)",
+        "rei_residential_qtr_idx":      "Real estate price index",
+        "rei_apt_idx":                  "Apartment price index",
+        "rei_yoy_change":               "Price index YoY change",
+        "rei_qoq_change":               "Price index QoQ change",
+        "avg_saudi_salary_yr":          "Average Saudi salary",
+        "salary_yoy_change":            "Salary YoY change",
+        "sale_year":                    "Sale year",
+        "sale_quarter_sin":             "Quarter (seasonal)",
+        "sale_quarter_cos":             "Quarter (seasonal)",
+        "log_deed_count":               "Transaction deed count",
+        "dist_metro_m":                 "Distance to metro station",
+        "log_dist_metro_m":             "Distance to metro (log)",
+        "metro_stations_1km":           "Metro stations within 1 km",
+        "nearest_metro_line_num":       "Nearest metro line",
+        "nearest_metro_type_cd":        "Metro station type",
+        "dist_metro_line1_m":           "Distance to Metro Line 1",
+        "dist_bus_m":                   "Distance to bus stop",
+        "log_dist_bus_m":               "Distance to bus stop (log)",
+        "bus_stops_500m":               "Bus stops within 500 m",
+        "brt_stops_500m":               "BRT stops within 500 m",
+        "commercial_count_1km":         "Commercial services (1 km)",
+        "commercial_density_score":     "Commercial density score",
+        "district_commercial_count":    "District commercial count",
+        "district_commercial_mix":      "Commercial mix diversity",
+        "hypermarket_count_1km":        "Hypermarkets (1 km)",
+        "supermarket_count_1km":        "Supermarkets (1 km)",
+        "bank_count_1km":               "Banks (1 km)",
+        "restaurant_count_1km":         "Restaurants (1 km)",
+        "hotel_count_1km":              "Hotels (1 km)",
+        "gas_station_count_1km":        "Gas stations (1 km)",
+        "no2_nearest_mean":             "NO₂ air pollution",
+        "so2_nearest_mean":             "SO₂ air pollution",
+        "pm10_nearest_mean":            "PM10 particulate matter",
+        "o3_nearest_mean":              "Ozone (O₃) level",
+        "dist_air_station_m":           "Distance to air station",
+        "air_quality_score":            "Air quality score",
+        "riyadh_connectivity_score":    "Connectivity score",
+        "dist_mosque_m":                "Distance to mosque",
+        "log_dist_mosque_m":            "Distance to mosque (log)",
+        "mosque_count_500m":            "Mosques within 500 m",
+        "dist_mall_m":                  "Distance to mall",
+        "log_dist_mall_m":              "Distance to mall (log)",
+        "mall_count_500m":              "Malls within 500 m",
+        "dist_school_m":                "Distance to school",
+        "log_dist_school_m":            "Distance to school (log)",
+        "school_count_500m":            "Schools within 500 m",
+        "dist_hospital_m":              "Distance to hospital",
+        "log_dist_hospital_m":          "Distance to hospital (log)",
+        "hospital_count_500m":          "Hospitals within 500 m",
+        "dist_park_m":                  "Distance to park",
+        "log_dist_park_m":              "Distance to park (log)",
+        "park_count_500m":              "Parks within 500 m",
+        "dist_entertain_m":             "Distance to entertainment",
+        "log_dist_entertain_m":         "Distance to entertainment (log)",
+        "entertain_count_500m":         "Entertainment venues (500 m)",
+        "aqar_median_size_sqm":         "Median rental unit size",
+        "aqar_median_bedrooms":         "Median rental bedrooms",
+        "aqar_median_property_age":     "Median rental property age",
+        "aqar_rent_per_sqm":            "Median rent per sqm",
+        "is_apartment":                 "Property: apartment",
+        "is_villa":                     "Property: villa",
+        "is_residential_plot":          "Property: residential plot",
+        "is_building":                  "Property: building",
+        "district_lat":                 "District latitude",
+        "district_lon":                 "District longitude",
+        "dist_major_intersection_m":    "Distance to intersection",
+        "log_dist_intersection_m":      "Distance to intersection (log)",
+        "intersections_1km":            "Intersections within 1 km",
+        "intersections_500m":           "Intersections within 500 m",
+    }
+
     # ── Riyadh prediction ───────────────────────────────────────────
     def predict_riyadh(self, **kwargs) -> dict:
         """
@@ -307,8 +388,38 @@ class ThamanScorer:
         log_pred = stk["meta"].predict(preds)[0]
         price_sqm = float(np.expm1(log_pred))
 
+        # ── SHAP feature drivers (lazy-build CatBoost explainer) ─────────
+        top_drivers = []
+        try:
+            if self._riyadh_shap_explainer is None:
+                import shap as _shap
+                self._riyadh_shap_explainer = _shap.TreeExplainer(stk["cat"])
+            sv = np.array(self._riyadh_shap_explainer.shap_values(X), dtype=np.float32).flatten()
+            # Scale by CatBoost meta-weight (≈0.95) so values represent ensemble contribution
+            w_cat = float(self._riyadh_meta.get("meta_coefficients", [0.2, -0.15, 0.95])[2])
+            sv_scaled = sv * w_cat
+            top_k = 10
+            indices = np.argsort(np.abs(sv_scaled))[::-1][:top_k]
+            top_drivers = [
+                {
+                    "feature":     feat_names[i],
+                    "value":       float(X[0, i]),
+                    "impact":      float(sv_scaled[i]),
+                    "direction":   "positive" if sv_scaled[i] > 0 else "negative",
+                    "description": self._RIYADH_FEAT_LABELS.get(
+                        feat_names[i],
+                        feat_names[i].replace("_", " ").title()
+                    ),
+                }
+                for i in indices
+                if i < len(feat_names)
+            ]
+        except Exception:
+            top_drivers = []
+
         return {
             "predicted_price_sqm": price_sqm,
+            "top_drivers":         top_drivers,
             "medape_pct":  self._riyadh_meta.get("holdout_medape_pct", 23.43),
             "r2_test":     self._riyadh_meta.get("holdout_r2", 0.675),
             "model":       self._riyadh_meta.get("model_version", "riyadh_stack_v1"),

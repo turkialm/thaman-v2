@@ -235,3 +235,4 @@ class RiyadhPredictResponse(BaseModel):
     r2_test:              float
     medape_pct:           float
     spatial_features:     dict
+    top_drivers:          List[FeatureDriver] = Field(default=[], description="Top SHAP feature drivers")

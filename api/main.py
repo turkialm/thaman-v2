@@ -944,6 +944,7 @@ def predict_riyadh(req: RiyadhPredictRequest):
                                           "dist_hospital_m", "dist_park_m",
                                           "air_quality_score",
                                           "riyadh_connectivity_score")},
+        top_drivers          = result.get("top_drivers", []),
     )
 
 
