@@ -77,8 +77,12 @@ _NEARBY_COLS = [
 
 
 def _build_nta_geojson() -> str:
-    """Build NTA boundary GeoJSON enriched with per-NTA statistics from features CSV."""
-    geojson_path = os.path.join(BASE, "data", "raw", "nta_boundaries.geojson")
+    """Build NTA boundary GeoJSON enriched with per-NTA statistics from features CSV.
+    Prefers simplified geometry (436 KB) over raw (4.4 MB) for frontend performance."""
+    # Prefer simplified version (10× smaller, visually identical at choropleth zoom)
+    simplified_path = os.path.join(BASE, "data", "processed", "nta_simplified.geojson")
+    raw_path        = os.path.join(BASE, "data", "raw",       "nta_boundaries.geojson")
+    geojson_path    = simplified_path if os.path.exists(simplified_path) else raw_path
     if not os.path.exists(geojson_path):
         return ""
 
@@ -1207,11 +1211,21 @@ def nta_layer():
 
 def _build_district_geojson(riyadh_spatial) -> str:
     """
-    Build Riyadh district-level Point GeoJSON from per-district stats in features_riyadh.csv.
-    Each feature = one district centroid with choropleth metrics as properties.
-    Upgrades to polygon geometry when a district boundary file is added.
+    Build Riyadh district choropleth GeoJSON.
+    Priority: polygon file (data/processed/riyadh_district_polygons.geojson) → centroid points fallback.
     """
     import json as _json
+
+    # ── Polygon path (preferred) ──────────────────────────────────────
+    poly_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "..", "data", "processed",
+        "riyadh_district_polygons.geojson"
+    )
+    if os.path.exists(poly_path):
+        with open(poly_path, encoding="utf-8") as f:
+            return f.read()
+
+    # ── Fallback: centroid points from spatial lookup ─────────────────
     district_stats = riyadh_spatial.get_district_stats() if riyadh_spatial else {}
     if not district_stats:
         return ""
@@ -1234,7 +1248,7 @@ def _build_district_geojson(riyadh_spatial) -> str:
         props = {"district_ar": district_ar}
         for col in METRIC_COLS:
             v = stats.get(col)
-            if v is not None and not (isinstance(v, float) and v != v):  # skip NaN
+            if v is not None and not (isinstance(v, float) and v != v):
                 props[col] = round(float(v), 4)
         features.append({
             "type": "Feature",

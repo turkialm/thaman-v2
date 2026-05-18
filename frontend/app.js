@@ -190,57 +190,72 @@ function isInNYC(lat, lng) {
   return false;
 }
 
-// ── Inverse mask: red overlay over whole world EXCEPT real NYC boundary ──
+// ── Inverse mask: red overlay outside NYC (NYC mode only) ─────────────
 // Fetches nyc_boundary.geojson (MultiPolygon dissolved from NTA data).
-// Each NYC land-mass polygon becomes a "hole" in the world rectangle.
+// Hidden in Riyadh mode — otherwise the whole city appears red-tinted.
+let _nycOutOfBoundsMask = null;
+
+const _MASK_STYLE = { stroke: false, fillColor: '#ef4444', fillOpacity: 0.25, interactive: false };
+
+function _setNycOutOfBoundsMask(visible) {
+  if (!_nycOutOfBoundsMask) return;
+  if (visible) {
+    if (!map.hasLayer(_nycOutOfBoundsMask)) _nycOutOfBoundsMask.addTo(map);
+  } else {
+    if (map.hasLayer(_nycOutOfBoundsMask)) map.removeLayer(_nycOutOfBoundsMask);
+  }
+}
+
 fetch('/ui/nyc_boundary.geojson')
   .then(r => r.json())
   .then(data => {
-    // GeoJSON uses [lng, lat]; Leaflet uses [lat, lng]
     const toLflt = ring => ring.map(([lng, lat]) => [lat, lng]);
-
     const geom = data.geometry || (data.type === 'MultiPolygon' ? data : null);
-    nycBoundaryCoords = geom ? geom.coordinates : null;   // store for isInNYC()
+    nycBoundaryCoords = geom ? geom.coordinates : null;
     const coords = nycBoundaryCoords || [];
-
-    // Build rings: world outer rect + one hole per NYC land-mass polygon
     const rings = [
-      [[ 90, -180], [ 90,  180], [-90,  180], [-90, -180]], // world
-      ...coords.map(poly => toLflt(poly[0])),                // NYC holes
+      [[ 90, -180], [ 90,  180], [-90,  180], [-90, -180]],
+      ...coords.map(poly => toLflt(poly[0])),
     ];
-
-    L.polygon(rings, {
-      stroke:      false,
-      fillColor:   '#ef4444',
-      fillOpacity: 0.25,
-      interactive: false,
-    }).addTo(map);
+    _nycOutOfBoundsMask = L.polygon(rings, _MASK_STYLE);
+    if (_cityMode === 'nyc') _nycOutOfBoundsMask.addTo(map);
   })
   .catch(() => {
-    // Fallback: simple bounding-box hole if GeoJSON fails to load
-    L.polygon([
+    _nycOutOfBoundsMask = L.polygon([
       [[ 90, -180], [ 90,  180], [-90,  180], [-90, -180]],
       [[40.477399, -74.25909], [40.477399, -73.700272],
        [40.917577, -73.700272], [40.917577, -74.25909]],
-    ], { stroke:false, fillColor:'#ef4444', fillOpacity:0.25, interactive:false }).addTo(map);
+    ], _MASK_STYLE);
+    if (_cityMode === 'nyc') _nycOutOfBoundsMask.addTo(map);
   });
 
-// ── NTA choropleth layer system ───────────────────────────────────────
-fetch(`${API_BASE}/layers/nta`)
-  .then(r => r.ok ? r.json() : null)
-  .then(data => {
-    if (data) {
-      _ntaGeoJSON = data;
-      document.getElementById('layerBar').style.display = 'flex';
-    }
-  })
-  .catch(() => {});
+// ── NTA choropleth — lazy load (only fetched when first layer btn clicked) ──
+let _ntaFetchStarted = false;
+function ensureNtaLoaded() {
+  if (_ntaFetchStarted || _ntaGeoJSON) return;
+  _ntaFetchStarted = true;
+  fetch(`${API_BASE}/layers/nta`)
+    .then(r => r.ok ? r.json() : null)
+    .then(data => {
+      if (data) {
+        _ntaGeoJSON = data;
+        document.getElementById('layerBar').style.display = 'flex';
+      }
+    })
+    .catch(() => {});
+}
 
-// Fetch Riyadh district layer (loaded eagerly so it's ready when user switches)
-fetch(`${API_BASE}/layers/district`)
-  .then(r => r.ok ? r.json() : null)
-  .then(data => { if (data) _districtGeoJSON = data; })
-  .catch(() => {});
+// ── District layer — lazy load (only when Riyadh layer btn clicked) ─────────
+let _districtFetchStarted = false;
+function ensureDistrictLoaded(cb) {
+  if (_districtGeoJSON) { if (cb) cb(); return; }
+  if (_districtFetchStarted) { if (cb) setTimeout(() => { if (_districtGeoJSON && cb) cb(); }, 800); return; }
+  _districtFetchStarted = true;
+  fetch(`${API_BASE}/layers/district`)
+    .then(r => r.ok ? r.json() : null)
+    .then(data => { if (data) { _districtGeoJSON = data; if (cb) cb(); } })
+    .catch(() => {});
+}
 
 // Colour palettes: each is [light, dark] for interpolation
 const _PALETTES = {
@@ -274,9 +289,19 @@ function showLayer(metricId) {
 
   // Choose correct GeoJSON source and metadata table based on city mode
   const isRiyadh   = _cityMode === 'riyadh';
-  const activeGJ   = isRiyadh ? _districtGeoJSON : _ntaGeoJSON;
   const metaTable  = isRiyadh ? LAYER_META_RIYADH : LAYER_META;
 
+  // Lazy-load GeoJSON on first layer click
+  if (isRiyadh && !_districtGeoJSON) {
+    ensureDistrictLoaded(() => showLayer(metricId));
+    return;
+  }
+  if (!isRiyadh && !_ntaGeoJSON) {
+    ensureNtaLoaded();
+    return;
+  }
+
+  const activeGJ = isRiyadh ? _districtGeoJSON : _ntaGeoJSON;
   if (metricId === 'none' || !activeGJ) { legend.style.display = 'none'; return; }
 
   const meta = metaTable[metricId];
@@ -289,24 +314,50 @@ function showLayer(metricId) {
 
   const min = Math.min(...values), max = Math.max(...values);
 
-  // For Riyadh district points: render as circles; for NYC NTA polygons: fill polygons
-  if (isRiyadh) {
+  // Detect geometry type from first feature to support both polygon and point GeoJSON
+  const firstGeomType = activeGJ.features.length ? activeGJ.features[0].geometry.type : 'Point';
+  const riyadhIsPolygon = isRiyadh && firstGeomType !== 'Point';
+
+  if (isRiyadh && !riyadhIsPolygon) {
+    // Legacy centroid-point fallback
     _activeLayer = L.geoJSON(activeGJ, {
       pointToLayer: (feat, latlng) => L.circleMarker(latlng, {
         radius: 10,
         fillColor:   colorScale(feat.properties[meta.key], min, max, meta.palette, meta.invert || false),
         fillOpacity: 0.75,
-        weight: 1,
-        color: '#ffffff',
-        opacity: 0.8,
+        weight: 1, color: '#ffffff', opacity: 0.8,
       }),
       onEachFeature: (feat, layer) => {
         const v = feat.properties[meta.key];
         const fmtVal = (v !== null && v !== undefined) ? meta.fmt(v) : 'N/A';
         layer.bindTooltip(
-          `<b>${feat.properties.district_ar || ''}</b><br>${meta.label}: ${fmtVal} ${meta.unit}`,
+          `<b>${feat.properties.name_ar || feat.properties.district_ar || ''}</b><br>${meta.label}: ${fmtVal} ${meta.unit}`,
           { sticky: true, className: 'layer-tooltip' }
         );
+      },
+    }).addTo(map);
+  } else if (riyadhIsPolygon) {
+    // Polygon choropleth for Riyadh districts
+    _activeLayer = L.geoJSON(activeGJ, {
+      style: feat => {
+        const v = feat.properties[meta.key];
+        return {
+          fillColor:   colorScale(v, min, max, meta.palette, meta.invert || false),
+          fillOpacity: v != null ? 0.65 : 0.10,
+          weight: 1,
+          color: '#ffffff',
+          opacity: 0.6,
+        };
+      },
+      onEachFeature: (feat, layer) => {
+        const v = feat.properties[meta.key];
+        const fmtVal = (v !== null && v !== undefined) ? meta.fmt(v) : 'N/A';
+        layer.bindTooltip(
+          `<b>${feat.properties.name_ar || feat.properties.district_ar || ''}</b><br>${meta.label}: ${fmtVal} ${meta.unit}`,
+          { sticky: true, className: 'layer-tooltip' }
+        );
+        layer.on({ mouseover: e => e.target.setStyle({ fillOpacity: 0.85, weight: 2 }),
+                   mouseout:  e => _activeLayer.resetStyle(e.target) });
       },
     }).addTo(map);
   } else {
@@ -359,6 +410,9 @@ document.getElementById('layerBar').addEventListener('click', e => {
 function setCityMode(mode) {
   _cityMode = mode;
   const isRiyadh = mode === 'riyadh';
+  // Kick off background prefetch so GeoJSON is ready when first layer clicked
+  if (isRiyadh) ensureDistrictLoaded();
+  else           ensureNtaLoaded();
 
   // Update toggle button styles
   document.getElementById('cityBtnNYC').classList.toggle('active', !isRiyadh);
@@ -378,6 +432,9 @@ function setCityMode(mode) {
   document.getElementById('predictForm').style.display  = isRiyadh ? 'none' : '';
   document.getElementById('riyadhForm').style.display   = isRiyadh ? ''     : 'none';
   document.getElementById('riyadhResults').style.display = 'none';
+
+  // NYC-only: red mask marks area outside city limits
+  _setNycOutOfBoundsMask(!isRiyadh);
 
   // Fly map to the selected city
   map.flyTo(isRiyadh ? RIYADH_CENTER : NYC_CENTER, 11, { duration: 1.5 });
@@ -871,7 +928,7 @@ map.on('click', (e) => {
 // ── Map moveend: refresh sale bubbles (debounced) ─────────────────────
 map.on('moveend', () => {
   clearTimeout(_salesTimer);
-  _salesTimer = setTimeout(fetchSalesForView, 250);
+  _salesTimer = setTimeout(fetchSalesForView, 600);
 });
 
 // Initial bubble load
@@ -1158,6 +1215,7 @@ function _viewportTiles(bounds) {
 }
 
 async function fetchSalesForView() {
+  if (_cityMode === 'riyadh') return;  // no NYC sales in Riyadh mode
   const tiles   = _viewportTiles(map.getBounds());
   const missing = tiles.filter(t => !_tileCache.has(t.key) && !_tileInflight.has(t.key));
 
