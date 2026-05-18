@@ -1556,6 +1556,10 @@ function hideResults() {
   spatialCard.style.display = 'none';
   document.getElementById('marketCard').style.display  = 'none';
   document.getElementById('avmQcRow').style.display    = 'none';
+  const nycDs = document.getElementById('nycDriversSection');
+  const nycDb = document.getElementById('nycDriversBars');
+  if (nycDs) nycDs.style.display = 'none';
+  if (nycDb) nycDb.innerHTML = '';
   _compsLoaded = false;
 }
 
@@ -1736,6 +1740,29 @@ function renderResults(data) {
     </div>`;
   }).join('');
   spatialCard.style.display = 'block';
+
+  // ── NYC SHAP drivers (inline section inside shapCard) ─────────────
+  const nycDriversSection = document.getElementById('nycDriversSection');
+  const nycDriversBars    = document.getElementById('nycDriversBars');
+  const nycDrivers = data.top_drivers || [];
+  if (nycDriversSection && nycDriversBars && nycDrivers.length) {
+    const maxImpact = Math.max(...nycDrivers.map(d => Math.abs(d.impact)));
+    nycDriversBars.innerHTML = nycDrivers.map(drv => {
+      const isPos = drv.direction === 'positive';
+      const pct   = maxImpact > 0 ? Math.round(Math.abs(drv.impact) / maxImpact * 100) : 0;
+      const cls   = isPos ? 'positive' : 'negative';
+      const arrow = isPos ? '↑' : '↓';
+      return `<div class="shap-row">
+        <span class="shap-arrow ${cls}">${arrow}</span>
+        <div class="shap-label-wrap"><span class="shap-label">${drv.description || drv.feature}</span></div>
+        <div class="shap-bar-wrap"><div class="shap-bar-fill ${cls}" style="width:${pct}%"></div></div>
+        <span class="shap-impact ${cls}">${drv.impact > 0 ? '+' : ''}${drv.impact.toFixed(3)}</span>
+      </div>`;
+    }).join('');
+    nycDriversSection.style.display = '';
+  } else if (nycDriversSection) {
+    nycDriversSection.style.display = 'none';
+  }
 
   // Scroll sidebar to results
   resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
