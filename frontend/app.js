@@ -1421,6 +1421,32 @@ function renderRiyadhResults(data) {
     ).openPopup();
   }
 
+  // SHAP drivers
+  const driversSection = document.getElementById('riyadhDriversSection');
+  const driversBars    = document.getElementById('riyadhDriversBars');
+  const drivers = data.top_drivers || [];
+  if (driversSection && driversBars) {
+    if (drivers.length) {
+      const maxImpact = Math.max(...drivers.map(d => Math.abs(d.impact)));
+      driversBars.innerHTML = drivers.map(drv => {
+        const isPos = drv.direction === 'positive';
+        const pct   = maxImpact > 0 ? Math.round(Math.abs(drv.impact) / maxImpact * 100) : 0;
+        const cls   = isPos ? 'positive' : 'negative';
+        const arrow = isPos ? '↑' : '↓';
+        const label = drv.description || drv.feature;
+        return `<div class="shap-row">
+          <span class="shap-arrow ${cls}">${arrow}</span>
+          <div class="shap-label-wrap"><span class="shap-label">${label}</span></div>
+          <div class="shap-bar-wrap"><div class="shap-bar-fill ${cls}" style="width:${pct}%"></div></div>
+          <span class="shap-impact ${cls}">${drv.impact > 0 ? '+' : ''}${drv.impact.toFixed(3)}</span>
+        </div>`;
+      }).join('');
+      driversSection.style.display = '';
+    } else {
+      driversSection.style.display = 'none';
+    }
+  }
+
   document.getElementById('riyadhResults').style.display = 'block';
   document.getElementById('riyadhResults').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
