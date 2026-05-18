@@ -92,7 +92,11 @@ TYPE_MAP: list[tuple[str, str]] = [
 ]
 
 # Description field patterns (Arabic labels)
-_RE_PRICE    = re.compile(r"سعر(?:\s*الوحدة)?\s*[:\-–]\s*([\d,\.]+)", re.UNICODE)
+_RE_PRICE    = re.compile(
+    r"(?:سعر(?:\s*الوحدة)?|السعر)\s*[:\-–]\s*([\d,\.]+)\s*"
+    r"(ألف|الف|مليون|مليار)?",
+    re.UNICODE,
+)
 _RE_AREA     = re.compile(r"مساحة(?:\s*العقار)?\s*[:\-–]\s*([\d,\.]+)", re.UNICODE)
 _RE_ROOMS    = re.compile(r"عدد\s*الغرف\s*[:\-–]\s*([\d]+)", re.UNICODE)
 _RE_BATHS    = re.compile(r"(?:عدد\s*)?(?:الحمامات?|دورات?\s*المياه)\s*[:\-–]\s*([\d]+)", re.UNICODE)
@@ -149,7 +153,22 @@ def _parse_description(desc: str) -> dict:
     result: dict = {}
 
     m = _RE_PRICE.search(desc)
-    result["price_sar"] = _parse_number(m.group(1)) if m else None
+    if m:
+        val = _parse_number(m.group(1))
+        unit = (m.group(2) or "").strip()
+        if val is not None:
+            if unit in ("ألف", "الف"):
+                val *= 1_000
+            elif unit == "مليون":
+                val *= 1_000_000
+            elif unit == "مليار":
+                val *= 1_000_000_000
+            elif val < 50_000:
+                # bare small number → Saudi custom of quoting in thousands
+                val *= 1_000
+        result["price_sar"] = val
+    else:
+        result["price_sar"] = None
 
     m = _RE_AREA.search(desc)
     result["area_sqm"] = _parse_number(m.group(1)) if m else None
@@ -228,6 +247,22 @@ def _parse_json_ld_page(json_ld: dict, prop_type_hint: str) -> list[dict]:
                 continue
 
             price_per_sqm = round(price_sar / area_sqm, 2)
+
+            # Sanity: Riyadh residential price bounds
+            prop_type_check = parsed.get("property_type_en") or prop_type_hint
+            if not (300 <= price_per_sqm <= 40_000):
+                continue
+            if not (100_000 <= price_sar <= 50_000_000):
+                continue
+            # Sanity: area bounds per type
+            area_ok = (
+                (prop_type_check == "apartment" and 20 <= area_sqm <= 1_000) or
+                (prop_type_check == "villa"     and 50 <= area_sqm <= 5_000) or
+                (prop_type_check == "plot"      and 50 <= area_sqm <= 50_000) or
+                (prop_type_check == "building"  and 50 <= area_sqm <= 20_000)
+            )
+            if not area_ok:
+                continue
 
             type_ar = parsed.get("property_type_ar") or ""
             type_en = parsed.get("property_type_en") or prop_type_hint
