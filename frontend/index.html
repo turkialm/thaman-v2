@@ -353,6 +353,14 @@
           <input type="hidden" id="riyadhLat" />
           <input type="hidden" id="riyadhLon" />
 
+          <!-- Riyadh address search -->
+          <div class="addr-search-wrap" id="riyadhAddrSearchWrap">
+            <input type="text" id="riyadhAddrInput" autocomplete="off"
+                   placeholder="Search district or address / ابحث عن حي أو عنوان" />
+            <button type="button" id="riyadhAddrBtn" class="addr-btn">🔍</button>
+            <div class="addr-error" id="riyadhAddrError" style="display:none"></div>
+          </div>
+
           <div class="field-row">
             <div class="field field-full">
               <label for="riyadhType" id="lblRiyadhType">Property Type / نوع العقار</label>

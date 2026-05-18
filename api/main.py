@@ -871,6 +871,74 @@ def predict_batch(requests: list[PredictRequest]):
     return {"count": len(results), "results": results}
 
 
+# ── Riyadh analytics stats cache ─────────────────────────────────────
+_riyadh_stats_cache: dict | None = None
+
+def _build_riyadh_stats() -> dict:
+    """Precompute Riyadh analytics stats from features_riyadh.csv."""
+    import pandas as _pd, numpy as _np
+    _csv = os.path.join(BASE, "data", "processed", "features_riyadh.csv")
+    if not os.path.exists(_csv):
+        return {}
+    df = _pd.read_csv(_csv, encoding="utf-8-sig")
+
+    # Overview
+    overview = {
+        "total_rows":     int(len(df)),
+        "districts":      int(df["district_ar"].nunique()),
+        "year_range":     f"{int(df['sale_year'].min())}–{int(df['sale_year'].max())}",
+        "median_price_sqm": round(float(df["sale_price_sar_sqm"].median()), 0),
+        "model_r2":       0.6747,
+        "model_medape":   23.45,
+        "oof_r2":         0.9427,
+        "oof_medape":     8.28,
+    }
+
+    # Price by year
+    py = df.groupby("sale_year")["sale_price_sar_sqm"].agg(
+        median="median", q1=lambda x: x.quantile(0.25), q3=lambda x: x.quantile(0.75)
+    ).reset_index()
+    price_by_year = [
+        {"year": int(r["sale_year"]), "median": round(float(r["median"]), 0),
+         "q1": round(float(r["q1"]), 0), "q3": round(float(r["q3"]), 0)}
+        for _, r in py.iterrows()
+    ]
+
+    # Price by property type
+    type_map = {"is_apartment": "Apartment", "is_villa": "Villa",
+                "is_residential_plot": "Residential Plot", "is_building": "Building"}
+    price_by_type = []
+    for col, label in type_map.items():
+        if col in df.columns:
+            sub = df[df[col] == 1]["sale_price_sar_sqm"]
+            if len(sub) > 5:
+                price_by_type.append({
+                    "type": col, "label": label,
+                    "median": round(float(sub.median()), 0),
+                    "count":  int(len(sub))
+                })
+
+    # Top 25 districts by median price (min 10 transactions)
+    dg = df.groupby("district_ar")["sale_price_sar_sqm"].agg(median="median", count="count")
+    dg = dg[dg["count"] >= 10].sort_values("median", ascending=False).head(25).reset_index()
+    top_districts = [
+        {"district": str(r["district_ar"]), "median": round(float(r["median"]), 0), "count": int(r["count"])}
+        for _, r in dg.iterrows()
+    ]
+
+    return {"overview": overview, "price_by_year": price_by_year,
+            "price_by_type": price_by_type, "top_districts": top_districts}
+
+
+@app.get("/riyadh/stats", tags=["Riyadh"])
+def riyadh_stats():
+    """Precomputed Riyadh analytics: overview KPIs, price by year, type breakdown, top districts."""
+    global _riyadh_stats_cache
+    if _riyadh_stats_cache is None:
+        _riyadh_stats_cache = _build_riyadh_stats()
+    return _riyadh_stats_cache
+
+
 @app.post("/predict/riyadh", response_model=RiyadhPredictResponse, tags=["Prediction"])
 def predict_riyadh(req: RiyadhPredictRequest):
     """
@@ -919,9 +987,20 @@ def predict_riyadh(req: RiyadhPredictRequest):
         _, idx = _riyadh_spatial._district_centroid_tree.query([[req.latitude, req.longitude]], k=1)
         district_ar = _riyadh_spatial._district_names[int(idx[0])]
 
-    psqm        = int(round(result["predicted_price_sqm"]))
-    total       = int(round(psqm * req.area_sqm))
-    medape_frac = result["medape_pct"] / 100.0
+    psqm  = int(round(result["predicted_price_sqm"]))
+    total = int(round(psqm * req.area_sqm))
+
+    # District-adaptive confidence: look up per-district holdout MedAPE
+    # Falls back to global model MedAPE (23.45%) if district not in table
+    global_medape = result["medape_pct"]
+    district_medape_tbl = {}
+    if _scorer and hasattr(_scorer, '_riyadh_meta'):
+        district_medape_tbl = _scorer._riyadh_meta.get("district_medape", {})
+    raw_district_medape = district_medape_tbl.get(district_ar, global_medape) if district_ar else global_medape
+    # Cap at 50%, floor at 10% to avoid absurd intervals
+    conf_medape = float(max(10.0, min(50.0, raw_district_medape)))
+    medape_frac = conf_medape / 100.0
+
     return RiyadhPredictResponse(
         predicted_price_sqm  = psqm,
         predicted_total_sar  = total,
@@ -934,7 +1013,7 @@ def predict_riyadh(req: RiyadhPredictRequest):
         district_ar          = district_ar,
         model                = result.get("model", "riyadh_stack_v1"),
         r2_test              = result.get("r2_test", 0.675),
-        medape_pct           = result["medape_pct"],
+        medape_pct           = round(conf_medape, 2),
         spatial_features     = {k: round(v, 3) if isinstance(v, float) else v
                                  for k, v in feat_dict.items()
                                  if k in ("dist_metro_m", "metro_stations_1km",
