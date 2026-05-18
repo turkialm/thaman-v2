@@ -1,0 +1,314 @@
+﻿osm_id,osm_type,name,name_en,place,admin_level,latitude,longitude
+53447620,way,المنار,Al Manar,neighbourhood,,24.7250989,46.7975701
+329088577,way,,,neighbourhood,,24.9063209,46.4348761
+329088579,way,,,neighbourhood,,24.9042893,46.4314041
+329088593,way,,,neighbourhood,,24.9126945,46.436316
+329088594,way,,,neighbourhood,,24.9196576,46.4255208
+329088595,way,,,neighbourhood,,24.9138666,46.4297096
+329203398,way,اسكان الرياض,Riyadh housing,neighbourhood,,24.9692796,46.6197605
+329964310,way,,,neighbourhood,,24.6182099,46.5392126
+329992138,way,,,neighbourhood,11,24.658057,46.6429976
+331516928,way,,,neighbourhood,,24.5103366,46.5283315
+331516949,way,,,neighbourhood,,24.4886861,46.5465345
+331530602,way,,,neighbourhood,,24.5115998,46.4559159
+331530621,way,,,neighbourhood,,24.4882074,46.5185087
+331530622,way,,,neighbourhood,,24.4826378,46.5390919
+331544943,way,,,neighbourhood,,24.5590852,46.5110399
+331557521,way,,,neighbourhood,,24.5171969,46.5713867
+331878226,way,,,neighbourhood,,24.5236346,46.6557628
+332014310,way,حي الإسكان,Askan 1,neighbourhood,,24.5195501,46.7345983
+332014316,way,,Askan 3,neighbourhood,,24.5114826,46.7183205
+332017166,way,,Askan 2,neighbourhood,,24.5322676,46.7458204
+332170438,way,البجيري,Albujairi,neighbourhood,,24.7359848,46.5753721
+384467052,way,,,neighbourhood,,24.6291971,46.5455077
+385269959,way,,,neighbourhood,,24.8566401,46.6516256
+509090912,way,,,neighbourhood,,24.5644335,46.5104892
+509091048,way,,,neighbourhood,,24.7809571,46.5650762
+558542796,way,,,neighbourhood,,24.5580455,46.5420353
+558542799,way,,,neighbourhood,,24.5651356,46.532624
+558542801,way,,,neighbourhood,,24.571106,46.5305992
+558542805,way,,,neighbourhood,,24.5655559,46.5277324
+558542806,way,,,neighbourhood,,24.5591874,46.5172796
+558542807,way,,,neighbourhood,,24.5594331,46.5221598
+558542809,way,,,neighbourhood,,24.5594411,46.5271444
+558542810,way,,,neighbourhood,,24.5654569,46.5208787
+558587295,way,,,neighbourhood,,25.1129733,46.3625392
+558587365,way,,,neighbourhood,,24.8411922,46.5909932
+558587440,way,,,neighbourhood,,24.8685923,46.6559561
+558642967,way,,,neighbourhood,,24.9418934,46.8421233
+558643129,way,,,neighbourhood,,24.8488831,46.8673244
+595948255,way,,,neighbourhood,,24.811713,46.8584709
+595958271,way,,,neighbourhood,,24.6848288,46.8703681
+636252484,way,,,neighbourhood,,24.7459913,46.5273818
+636252486,way,,,neighbourhood,,24.7491674,46.5244156
+636252488,way,,,neighbourhood,,24.7496788,46.5285816
+636252504,way,,,neighbourhood,,24.7485955,46.5331702
+636252505,way,,,neighbourhood,,24.746315,46.5324268
+636252625,way,,,neighbourhood,,24.8489924,46.5859315
+636417334,way,,,neighbourhood,,24.6943559,46.8014084
+636433846,way,,,neighbourhood,,24.6130996,46.7436576
+636444372,way,حي الملك فيصل,King Faisal District,suburb,,24.7616872,46.7746681
+636659064,way,,Ghusaybah District in ad-Dir'iyah,neighbourhood,,24.7414051,46.5678186
+636713280,way,,,neighbourhood,11,24.5793537,46.6239382
+636713281,way,,,neighbourhood,11,24.5748704,46.6145003
+636713285,way,,,neighbourhood,11,24.5712478,46.6299183
+636713287,way,,,neighbourhood,11,24.5688112,46.622665
+636713288,way,,,neighbourhood,11,24.5644671,46.6373753
+636713313,way,,,neighbourhood,11,24.5875122,46.632142
+636713315,way,,,neighbourhood,11,24.5934904,46.6418407
+636724123,way,,,neighbourhood,11,24.5970999,46.6533665
+636724134,way,,,neighbourhood,11,24.6032666,46.6629406
+636758853,way,,,neighbourhood,,24.658996,46.6502953
+636778526,way,,,neighbourhood,11,24.6981526,46.622903
+638013451,way,,,neighbourhood,11,24.6704238,46.8611368
+638013455,way,,,neighbourhood,11,24.6756639,46.8647348
+638013456,way,,,neighbourhood,11,24.6754054,46.8740093
+638013457,way,,,neighbourhood,11,24.673482,46.8801921
+638013460,way,,,neighbourhood,11,24.6714712,46.8733397
+638013461,way,,,neighbourhood,11,24.6661134,46.8791453
+638013462,way,,,neighbourhood,11,24.6649023,46.8742103
+638013465,way,,,neighbourhood,11,24.669256,46.8657573
+638013466,way,,,neighbourhood,11,24.6617902,46.8614195
+638013467,way,,,neighbourhood,11,24.6644956,46.8672898
+638013468,way,,,neighbourhood,11,24.6600625,46.8684332
+638013471,way,,,neighbourhood,11,24.6595972,46.8763724
+638520262,way,,,neighbourhood,11,24.5554477,46.8069828
+766599181,way,حي السفارات,Diplomatic Quarter,neighbourhood,,24.6767611,46.6235341
+846335895,way,,,neighbourhood,,24.847602,46.5643094
+907836888,way,,,neighbourhood,,24.5206356,46.5326998
+907836894,way,,,neighbourhood,,24.5001185,46.553049
+907836895,way,,,neighbourhood,,24.4964038,46.5647192
+907836896,way,,,neighbourhood,,24.4843566,46.5575099
+907836937,way,,,neighbourhood,,24.4932977,46.5341732
+907836938,way,,,neighbourhood,,24.5051664,46.5392267
+907836939,way,,,neighbourhood,,24.4985322,46.523529
+907836954,way,,,neighbourhood,,24.4835468,46.5299776
+907836958,way,,,neighbourhood,,24.4962086,46.4981208
+907836959,way,,,neighbourhood,,24.4916419,46.5087254
+907836960,way,,,neighbourhood,,24.5040744,46.4775441
+907836961,way,,,neighbourhood,,24.4995755,46.4883854
+907836983,way,,,neighbourhood,,24.4886007,46.4835004
+907836984,way,,,neighbourhood,,24.4857778,46.4923817
+907836985,way,,,neighbourhood,,24.5072938,46.4671987
+907837020,way,,,neighbourhood,,24.6072639,46.4688926
+907837021,way,,,neighbourhood,,24.6073223,46.4620832
+907837022,way,,,neighbourhood,,24.6042869,46.4603873
+907837024,way,,,neighbourhood,,24.6077108,46.4735874
+907837032,way,,,neighbourhood,,24.6087721,46.4915521
+907837033,way,,,neighbourhood,,24.6104883,46.4980059
+907837034,way,,,neighbourhood,,24.6156293,46.4959135
+907837035,way,,,neighbourhood,,24.6112065,46.5037139
+907837036,way,,,neighbourhood,,24.6162889,46.5069104
+907837037,way,,,neighbourhood,,24.6184011,46.5102897
+907837038,way,,,neighbourhood,,24.6132,46.5081254
+907837039,way,,,neighbourhood,,24.6163574,46.5130398
+907837040,way,,,neighbourhood,,24.6142083,46.5145636
+907837041,way,,,neighbourhood,,24.6111487,46.5096939
+907837042,way,,,neighbourhood,,24.618619,46.4981177
+907837043,way,,,neighbourhood,,24.6141239,46.5025173
+907837044,way,,,neighbourhood,,24.6213917,46.5139562
+907837045,way,,,neighbourhood,,24.6133066,46.5201705
+907837046,way,,,neighbourhood,,24.6174952,46.5270121
+907837047,way,,,neighbourhood,,24.6081647,46.5060422
+907837048,way,,,neighbourhood,,24.6091336,46.5123021
+907837049,way,,,neighbourhood,,24.6163001,46.5190376
+907837050,way,,,neighbourhood,,24.6226355,46.5219687
+907837051,way,,,neighbourhood,,24.6195748,46.5242653
+907837052,way,,,neighbourhood,,24.6193898,46.5167075
+907837053,way,,,neighbourhood,,24.6278512,46.5252998
+907837054,way,,,neighbourhood,,24.6206208,46.5306499
+907837055,way,,,neighbourhood,,24.6228835,46.5341976
+907837056,way,,,neighbourhood,,24.6197104,46.5364721
+907837057,way,,,neighbourhood,,24.6175256,46.5329387
+907837058,way,,,neighbourhood,,24.6257705,46.5208564
+907837059,way,,,neighbourhood,,24.6247951,46.5264157
+907837060,way,,,neighbourhood,,24.6226494,46.5279891
+907837061,way,,,neighbourhood,,24.6258875,46.532996
+907837062,way,,,neighbourhood,,24.6280088,46.5314975
+907837063,way,,,neighbourhood,,24.6249122,46.5386321
+907837064,way,,,neighbourhood,,24.6226755,46.5402773
+907837065,way,,,neighbourhood,,24.6270579,46.5470722
+907837066,way,,,neighbourhood,,24.6274935,46.537688
+907837067,way,,,neighbourhood,,24.6206858,46.5428808
+907837068,way,,,neighbourhood,,24.624093,46.5482023
+907837069,way,,,neighbourhood,,24.630946,46.5350702
+907837070,way,,,neighbourhood,,24.6299837,46.5287187
+907837071,way,,,neighbourhood,,24.6329334,46.5325669
+1061517088,way,,,neighbourhood,,24.8761889,46.9374519
+1064125541,way,Ad Diriyah Al Jadida,Ad Diriyah Al Jadida,neighbourhood,,24.748754,46.5308796
+1064128638,way,At Turayf Al Jadid,At Turayf Al Jadid,neighbourhood,10,24.744713,46.575436
+1064188716,way,,,neighbourhood,,25.0614489,46.6818127
+1218658187,way,Square 2,Square 2,neighbourhood,,24.7679877,46.6061111
+1218658188,way,Square 1,Square 1,neighbourhood,,24.7694416,46.603148
+1220645868,way,مركز الملك عبدالله المالي,KAFD,neighbourhood,,24.7656298,46.6405141
+1285193878,way,ضاحية خزام,ضاحية خزام,suburb,,24.9415952,46.6434606
+1317010967,way,الدوبية,Al-Dubiyah,neighbourhood,10,24.621916,46.7121396
+1317021524,way,الملك فيصل,King Faisal,neighbourhood,10,24.7615799,46.7747047
+1317112225,way,العارض,Al Aarid,neighbourhood,10,24.9002791,46.600247
+1317251041,way,القيروان,Al Qirawan,neighbourhood,10,24.8732742,46.5553599
+1317279489,way,حي الفرسان,حي الفرسان,neighbourhood,10,24.958744,46.8223697
+1317387688,way,خشم العان,Khashm Al Aan,neighbourhood,10,24.6864634,46.9082006
+8835053,relation,بلدية المعذر,Al Maathar Municipality,municipality,9,24.7123867,46.6395742
+8835054,relation,بلدية العليا,Municipality of Olaya,municipality,9,24.7304349,46.7044674
+8835056,relation,بلدية الروضة,Al Rawda Muncipality,,9,24.8297436,46.8621522
+8835185,relation,بلدية النسيم,Al Naseem Municipality,municipality,9,24.8159414,46.9120057
+8835186,relation,بلدية السلي,As Sali Municipality,municipality,9,24.6380797,46.839082
+8835309,relation,Al Batha Muncipality,Al Batha Muncipality,,9,24.6193224,46.753201
+8835310,relation,بلدية الملز,Al Malaz Municipality,municipality,9,24.6792651,46.7469703
+8835311,relation,Al Aziziyah Municipality,Al Aziziyah Municipality,,9,24.5480881,46.8012552
+8835312,relation,بلدية الشفا,Municipality of Shifa,,9,24.5418612,46.7050717
+8838064,relation,بلدية الشميسي,Shmeisi Municipality,municipality,9,24.6444539,46.6572954
+8838262,relation,بلدية العريجاء,Al-Urayja Municipality,municipality,9,24.6096016,46.6363246
+8838263,relation,بلدية نمار,Namar Municipality,municipality,9,24.5597327,46.5736773
+8838771,relation,بلدية الشمال,Municipality of Al Shamal,municipality,9,24.7952484,46.6435503
+8838772,relation,بلدية عرقة,Municipalty of Irqah,municipality,9,24.6510576,46.5408055
+13253978,relation,القدس,Al Qouds District,neighbourhood,10,24.7538748,46.7543965
+13253979,relation,الروضة,Al Rawdah District,neighbourhood,10,24.7337976,46.7678703
+13253980,relation,الأندلس,Al Andalus District,neighbourhood,10,24.7434698,46.7886063
+13253981,relation,النهضة,Al Nahdhah District,neighbourhood,10,24.7605267,46.8158178
+13253982,relation,حي الخليج,Al Khalij District,neighbourhood,10,24.7768606,46.80298
+13253983,relation,اشبيلية,Al Ishbiliyah District,neighbourhood,10,24.7928027,46.792279
+13253984,relation,الحمراء,Hamra District,neighbourhood,10,24.7755155,46.7535417
+13253985,relation,اليرموك,Al Yarmouk District,neighbourhood,10,24.8078691,46.7834871
+13253986,relation,قرطبة,Qurtubah,neighbourhood,10,24.8162225,46.7357856
+13253987,relation,المونسية,المونسية,neighbourhood,10,24.832702,46.7697712
+13253988,relation,حي الفيحاء,Al Fayha District,neighbourhood,10,24.6818742,46.8114923
+13253989,relation,حي السعادة,As Sa`adah District,neighbourhood,10,24.6976162,46.8366319
+13253990,relation,حي النور,Al Nour District,neighbourhood,10,24.6317406,46.8161164
+13253991,relation,حي السلى,As Sulayy District,neighbourhood,10,24.6539619,46.8542998
+13253992,relation,حي المشاعل,Al Mashael District,neighbourhood,10,24.6159471,46.868556
+13253993,relation,حي الجزيرة,Al Jazirah District,neighbourhood,10,24.664647,46.7964098
+13253994,relation,حي الروابي,Al Rawabi District,neighbourhood,10,24.6960834,46.7914926
+13253995,relation,حي الريان,Rayyan District,neighbourhood,10,24.7113314,46.7782867
+13253996,relation,حي المنار,Al Manar District,neighbourhood,10,24.725371,46.7972475
+13253997,relation,النسيم الغربي,Al Naseem District West,neighbourhood,10,24.7256904,46.8239764
+13253998,relation,النسيم الشرقي,Al Naseem District East,neighbourhood,10,24.7375478,46.8426396
+13253999,relation,حي المعيزيلة,Al Maizliyyah District,neighbourhood,10,24.7876494,46.8249263
+13254000,relation,حي القادسية,Al-Qadisiyah District,neighbourhood,10,24.8198219,46.8239404
+13254001,relation,حي الرمال,Al Rimal District,neighbourhood,10,24.8633788,46.8138366
+13254002,relation,حي الجنادرية,Al Janadriyah District,neighbourhood,10,24.8666956,46.9239218
+13254003,relation,حي الرماية,Al Rimayah District,neighbourhood,10,24.7752006,46.8735045
+13254004,relation,حي النظيم,Al-Nazim District,neighbourhood,10,24.8633408,46.9676111
+13254005,relation,الشرق,الشرق,neighbourhood,10,24.8723999,46.8636159
+13254378,relation,النرجس,Al Nargis District,neighbourhood,10,24.8945526,46.6448507
+13254379,relation,جامعة الإمام محمد بن سعود الإسلامية,Imam Muhammad ibn Saud University,,10,24.812593,46.7023443
+13254380,relation,الندى,Al Nada District,neighbourhood,10,24.8058522,46.6829683
+13254381,relation,الصحافة,As Sahafah District,neighbourhood,10,24.7963772,46.6376544
+13254382,relation,الياسمين,Al Yasmin District,neighbourhood,10,24.8218455,46.6419719
+13254383,relation,الفلاح,Al Falah District,neighbourhood,10,24.7970459,46.709201
+13254384,relation,الوادي,Al Wadi District,neighbourhood,10,24.7894852,46.6912353
+13254385,relation,النفل,Al Nafil District,neighbourhood,10,24.7818897,46.673287
+13254386,relation,العقيق,Al Aqeeq District,neighbourhood,10,24.7736192,46.6299827
+13254387,relation,الربيع,Al Rabiea District,neighbourhood,10,24.7945691,46.6606285
+13254388,relation,الغدير,Al Ghadir District,neighbourhood,10,24.7736583,46.6546198
+13254389,relation,حطين,Hittin District,neighbourhood,10,24.7613192,46.6008961
+13254390,relation,النخيل,Al Nakheel District,neighbourhood,10,24.7424069,46.62296
+13254391,relation,المروج,Almuruj Dstrict,neighbourhood,10,24.7572552,46.6619573
+13254392,relation,المصيف,Al Masif District,neighbourhood,10,24.7654898,46.681536
+13254393,relation,التعاون,At Taawun Distrikt,neighbourhood,10,24.7730503,46.6994968
+13254394,relation,الازدهار,Al Izdihar District,neighbourhood,10,24.780614,46.7174689
+13254395,relation,المحمدية,Al Muhammadiyah,neighbourhood,10,24.7325641,46.6488285
+13254396,relation,الملك فهد,King Fahd District,neighbourhood,10,24.7406273,46.6703366
+13254397,relation,المرسلات,Mursalat District,neighbourhood,10,24.7488722,46.6898869
+13254398,relation,النزهة,Al Nuzhah District,neighbourhood,10,24.7564399,46.7079116
+13254399,relation,المغرزات,Al Mugharzat District,neighbourhood,10,24.7640196,46.7257219
+13254400,relation,الواحة,Al Waha District,neighbourhood,10,24.7411843,46.7144942
+13254401,relation,صلاح الدين,Salah ad Din District,neighbourhood,10,24.7328058,46.6972634
+13254402,relation,الورود,Al Wuroud District,neighbourhood,10,24.7243738,46.6784981
+13254403,relation,الرحمانية,Ar Rahmaniyah District,neighbourhood,10,24.7161022,46.6593948
+13254404,relation,جامعة الملك سعود,King Saud University,neighbourhood,10,24.7240028,46.6244546
+13254405,relation,الرائد,Al Raid District,neighbourhood,10,24.7073495,46.6386318
+13254406,relation,الخزامى,Al Khuzama District,neighbourhood,10,24.7148167,46.5997709
+13254407,relation,عرقة,Irqah District,neighbourhood,10,24.6890591,46.5872079
+13254408,relation,المهدية,Mahdia District,neighbourhood,10,24.646829,46.5311274
+13254409,relation,السفارات,Al Safarat District,neighbourhood,10,24.6814326,46.6226055
+13254410,relation,الهدا,Al Hada District,neighbourhood,10,24.6639386,46.6277935
+13254411,relation,أم الحمام الغربي,District of Umm Al-Hamam (West),neighbourhood,10,24.6894698,46.6434151
+13254412,relation,أم الحمام الشرقي,أم الحمام الشرقي,neighbourhood,10,24.6828333,46.6593107
+13254413,relation,الشرفية,Ash Sharafiyah,neighbourhood,10,24.6639136,46.6608517
+13254414,relation,المعذر,Al Madhar ash Shamali District,neighbourhood,10,24.6656118,46.6768021
+13254415,relation,المؤتمرات,Al Mutamarat District,neighbourhood,10,24.6698558,46.6869858
+13254416,relation,المعذر الشمالي,North Maathar District,neighbourhood,10,24.6916491,46.6662311
+13254417,relation,العليا,Al Olaya District,neighbourhood,10,24.6923969,46.6834325
+13254418,relation,السليمانية,As Sulaymaniyah District,neighbourhood,10,24.6986005,46.702523
+13254419,relation,ظهرة لبن,Zahrat Laban District,neighbourhood,10,24.6336277,46.550461
+13254420,relation,العريجاء,Al Urayja,neighbourhood,10,24.6259923,46.656686
+13254421,relation,الرفعية,Al Rafiah District,neighbourhood,10,24.6378309,46.6604239
+13254422,relation,الناصرية,An Nasiriyah District,neighbourhood,10,24.6518679,46.6679056
+13254423,relation,الفاخرية,Al Fakhiriyah District,neighbourhood,10,24.6423358,46.6831056
+13254424,relation,عليشه,عليشه,neighbourhood,10,24.6333529,46.6840898
+13254425,relation,النموذجية,An Namudhajiyah,neighbourhood,10,24.6571643,46.6936093
+13254426,relation,الوشام,Al Washam District,neighbourhood,10,24.6436367,46.6982554
+13254427,relation,أم سليم,Umm Salim District,neighbourhood,10,24.633783,46.6984746
+13254428,relation,الشميسي,Ash Shumaysi District,neighbourhood,10,24.6241601,46.6993461
+13254429,relation,الجرادية,Al Jarradiyah District,neighbourhood,10,24.6144742,46.6998159
+13254430,relation,صياح,Siyah District,neighbourhood,10,24.6081096,46.7014542
+13254431,relation,الملقا,Al Malga District,neighbourhood,10,24.800765,46.5977264
+13254432,relation,غرناطة,Ghirnatah District,neighbourhood,10,24.7919274,46.7443464
+13254433,relation,المربع,Al Murabba District,neighbourhood,10,24.6628848,46.7070539
+13254434,relation,الفوطة,Al Futah District,neighbourhood,10,24.6421551,46.7104455
+13254435,relation,الديرة,Al Deerah District,neighbourhood,10,24.6305883,46.7105727
+13254436,relation,العمل,Al Amal,neighbourhood,10,24.6457824,46.7244264
+13254437,relation,ثليم,Thulaym District,neighbourhood,10,24.6413128,46.7271811
+13254438,relation,المرقب,Al Marqab District,neighbourhood,10,24.6349341,46.7257149
+13254439,relation,سلام,Salam District,neighbourhood,10,24.6216843,46.7084959
+13254441,relation,البطيحا,Batha District,neighbourhood,10,24.6218746,46.7200893
+13254442,relation,جبرة,Jabrah District,neighbourhood,10,24.6254186,46.7189071
+13254443,relation,الوسيطا,Al Wasitiyya District,neighbourhood,10,24.6242066,46.7157191
+13254444,relation,معكال,Mikal District,neighbourhood,10,24.6230985,46.7147347
+13254445,relation,السكيرينه,As Skirinah District,neighbourhood,10,24.6163753,46.7178086
+13254446,relation,منفوحة الجديدة,Manfuha Al-Jadidah District,neighbourhood,10,24.613365,46.7192109
+13254447,relation,غبيرا,Gbraya District,neighbourhood,10,24.6172585,46.7364032
+13254448,relation,عتيقه,عتيقه,neighbourhood,10,24.6016168,46.7074664
+13254449,relation,البديعة,Al Badiah District,neighbourhood,10,24.6164985,46.6840619
+13254450,relation,سلطانة,Sultanah District,neighbourhood,10,24.6042877,46.6877731
+13254451,relation,وادي لبن,Wadi Laban,,10,24.5991474,46.5465742
+13254452,relation,الملك عبدالله,King Abdullah District,neighbourhood,10,24.7324161,46.741411
+13254453,relation,حديقة الملك سلمان,حديقة الملك سلمان,neighbourhood,10,24.7218175,46.7197668
+13254454,relation,الوزارات,Al Wizarat District,neighbourhood,10,24.6791431,46.7131979
+13254455,relation,الزهراء,Al Zahraa District,neighbourhood,10,24.6871267,46.731978
+13254456,relation,الضباط,Ad Dubbat District,neighbourhood,10,24.6799305,46.7232451
+13254457,relation,العود,Al Oud District,neighbourhood,10,24.6266583,46.7263472
+13254458,relation,الصالحية,As Salihiyah District,neighbourhood,10,24.6302967,46.7357943
+13254459,relation,الخالدية,Al Khalideyeh District,neighbourhood,10,24.6232746,46.7533042
+13254460,relation,الصناعية القديمة,As Sinaiyah District,neighbourhood,10,24.6418977,46.7465938
+13254461,relation,الملز,Al Malaz District,neighbourhood,10,24.6635678,46.735222
+13254462,relation,جرير,Jarir District,neighbourhood,10,24.677353,46.7511092
+13254463,relation,الربوة,Al Rabwah District,neighbourhood,10,24.6937606,46.7546417
+13254464,relation,الصفا,As Safah District,neighbourhood,10,24.666854,46.7664618
+13254465,relation,الفاروق,Al Faruq District,neighbourhood,10,24.6537411,46.7732647
+13254466,relation,الفيصلية,Al Faisaliah District,neighbourhood,10,24.6343619,46.7817125
+13254467,relation,المنصوره,Al Mansurah District,neighbourhood,10,24.6081233,46.7468645
+13254468,relation,منفوحة,Manfuhah District,neighbourhood,10,24.5994586,46.7283747
+13254469,relation,اليمامة,Al Yamamah District,neighbourhood,10,24.5962039,46.7158947
+13254470,relation,الدريهمية,Ad Duraihimiyah District,neighbourhood,10,24.5894847,46.6952857
+13254471,relation,السويدي,As-Suwaidi District,neighbourhood,10,24.5908078,46.6790643
+13254472,relation,شبرا,Shubra District,neighbourhood,10,24.5787888,46.6680571
+13254473,relation,العريجاء الوسطى,Al Urayja al Wusta District,neighbourhood,10,24.6050826,46.6408019
+13254474,relation,ظهرة البديعة,Zahrat al Badiah District,neighbourhood,10,24.597134,46.6509616
+13254475,relation,الزهرة,Al Zahrah District,neighbourhood,10,24.5786748,46.645746
+13254476,relation,السويدي الغربي,As Suwaydi al Gharbi District,neighbourhood,10,24.5744197,46.6247843
+13254477,relation,العريجاء الغربية,Al Uarayja al Gharbiyah District,neighbourhood,10,24.5971364,46.5995652
+13254478,relation,طويق,Tuwayq District,neighbourhood,10,24.5694366,46.518817
+13254479,relation,السلام,السلام,neighbourhood,10,24.7077853,46.8112203
+13254480,relation,الفواز,Al Fawwaz,neighbourhood,11,24.4898089,46.6184162
+13254481,relation,ديراب,Dirab,neighbourhood,11,24.4994054,46.6249989
+13254482,relation,ظهرة نمار,Dhrat Nemar,neighbourhood,10,24.5583332,46.6181646
+13254483,relation,الحزم,Al Hazm District,neighbourhood,10,24.5382004,46.6468468
+13254484,relation,نمار,Namar District,neighbourhood,10,24.5688707,46.6804439
+13254485,relation,أحد,أحد,neighbourhood,10,24.4870247,46.6333184
+13254486,relation,عكاظ,Okaz District,neighbourhood,10,24.5133864,46.6646557
+13254487,relation,الشفا,Ash Shifa District,neighbourhood,10,24.5625039,46.6957031
+13254488,relation,المروة,Al Marwah District,neighbourhood,10,24.538269,46.6736965
+13254489,relation,بدر,Badr District,neighbourhood,10,24.5362158,46.711707
+13254490,relation,المصانع,Al Masani District,neighbourhood,10,24.5529517,46.7441684
+13254491,relation,المنصورية,Al Mansuriyah District,neighbourhood,10,24.5194399,46.801484
+13254492,relation,طيبة,Taybah District,neighbourhood,10,24.5417262,46.8305772
+13254493,relation,الدار البيضاء,Ad Dar Al Baida District,neighbourhood,10,24.5650115,46.7922736
+13254494,relation,المناخ,Al Manakh District,neighbourhood,10,24.6090682,46.7946442
+13254495,relation,العزيزية,Al Aziziyah District,neighbourhood,10,24.5867109,46.7728511
+13254496,relation,الدفاع,Ad Difa' District,neighbourhood,10,24.5926575,46.8324312
+13254497,relation,الاسكان,Al Iskan District,neighbourhood,10,24.573835,46.8477698
+14187222,relation,At Turayf Al Jadid,At Turayf Al Jadid,neighbourhood,10,24.744713,46.575436
+14187232,relation,Ad Diriyah Al Jadida,Ad Diriyah Al Jadida,,10,24.748754,46.5308796
+19523174,relation,الرفايع,Al Rafaye,,10,24.3135203,47.1737479
