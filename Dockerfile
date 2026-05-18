@@ -44,6 +44,9 @@ COPY data/raw/nyc_coastline_pts.npy              data/raw/nyc_coastline_pts.npy
 COPY data/raw/nyc_bike_lanes.geojson             data/raw/nyc_bike_lanes.geojson
 # Riyadh spatial + district layer
 COPY data/processed/features_riyadh.csv          data/processed/features_riyadh.csv
+COPY data/processed/riyadh_district_polygons.geojson  data/processed/riyadh_district_polygons.geojson
+COPY data/processed/nta_simplified.geojson        data/processed/nta_simplified.geojson
+COPY data/processed/district_centroids.csv        data/processed/district_centroids.csv
 COPY data/raw/metro-stations-in-riyadh-by-metro-line-and-station-type-2024.geojson  data/raw/metro-stations-in-riyadh-by-metro-line-and-station-type-2024.geojson
 COPY data/raw/bus-stops-in-riyadh-by-bus-route-direction-and-shelter-type-2024.geojson  data/raw/bus-stops-in-riyadh-by-bus-route-direction-and-shelter-type-2024.geojson
 COPY data/raw/traffic-intersections-by-main-street-and-cross-street-2024.geojson  data/raw/traffic-intersections-by-main-street-and-cross-street-2024.geojson
