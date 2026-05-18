@@ -499,17 +499,27 @@ const addrBtn   = document.getElementById('addrBtn');
 const addrError = document.getElementById('addrError');
 
 function showAddrError(msg) {
-  addrError.textContent = msg;
-  addrError.style.display = 'block';
-  setTimeout(() => { addrError.style.display = 'none'; }, 4000);
+  const errEl = (_cityMode === 'riyadh')
+    ? (document.getElementById('riyadhAddrError') || addrError)
+    : addrError;
+  errEl.textContent = msg;
+  errEl.style.display = 'block';
+  setTimeout(() => { errEl.style.display = 'none'; }, 4000);
 }
 
 async function geocodeAddress() {
-  const q = addrInput.value.trim();
+  const riyadhInput = document.getElementById('riyadhAddrInput');
+  const riyadhBtn   = document.getElementById('riyadhAddrBtn');
+  const activeInput = (_cityMode === 'riyadh' && riyadhInput) ? riyadhInput : addrInput;
+  const activeBtn   = (_cityMode === 'riyadh' && riyadhBtn)   ? riyadhBtn   : addrBtn;
+
+  const q = activeInput.value.trim();
   if (!q) return;
 
-  addrBtn.classList.add('loading');
+  activeBtn.classList.add('loading');
   addrError.style.display = 'none';
+  const riyadhErrEl = document.getElementById('riyadhAddrError');
+  if (riyadhErrEl) riyadhErrEl.style.display = 'none';
 
   const isRiyadhMode = _cityMode === 'riyadh';
 
@@ -628,12 +638,21 @@ async function geocodeAddress() {
     showAddrError(TR[currentLang].addrError);
     console.error('Geocoding error:', err);
   } finally {
-    addrBtn.classList.remove('loading');
+    const rBtn = document.getElementById('riyadhAddrBtn');
+    const aBtn = document.getElementById('addrBtn');
+    if (rBtn) rBtn.classList.remove('loading');
+    if (aBtn) aBtn.classList.remove('loading');
   }
 }
 
 addrBtn.addEventListener('click', geocodeAddress);
 addrInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); geocodeAddress(); }
+});
+
+// Riyadh address search listeners (elements added to #riyadhForm)
+document.getElementById('riyadhAddrBtn').addEventListener('click', geocodeAddress);
+document.getElementById('riyadhAddrInput').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') { e.preventDefault(); geocodeAddress(); }
 });
 

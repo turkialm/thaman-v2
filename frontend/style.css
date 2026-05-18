@@ -1785,6 +1785,13 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   .addr-btn     { min-height: 40px; min-width: 40px; }
 }
 
+/* ── Riyadh mobile fixes ────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .riyadh-spatial-grid { grid-template-columns: 1fr; }
+  .riyadh-price-main { font-size: 1.8rem; }
+  #riyadhAddrSearchWrap input { font-size: 13px; }
+}
+
 /* ── Riyadh form & results ──────────────────────────────────────── */
 .riyadh-results {
   margin-top: 16px;
