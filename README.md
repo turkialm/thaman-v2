@@ -7,29 +7,50 @@ sdk: docker
 pinned: false
 ---
 
-# 🏙️ THAMAN — AI-Powered NYC Property Valuation
+# 🏙️🕌 THAMAN — Dual-City AI Property Valuation
 
-> BSc Graduation Project — Umm Al-Qura University
-> An interactive map-based web app that estimates NYC property prices using machine learning and Quality-of-Life spatial indicators.
+> BSc Graduation Project — Umm Al-Qura University  
+> Interactive map-based AVM for **New York City** and **Riyadh** using ensemble ML and Quality-of-Life spatial indicators.
+
+**Live demo:** https://huggingface.co/spaces/Turki-Almurahhem/thaman  
+**GitHub:** https://github.com/turkialm/thaman-v2
 
 ---
 
 ## What It Does
 
-1. **Click** anywhere on an NYC map
-2. **Fill in** building details (type, size, age, floors, units)
-3. **Get** an instant price estimate with confidence range + top SHAP feature drivers
+| City | Flow |
+|---|---|
+| 🗽 **NYC** | Click map → fill building details → get USD price estimate + SHAP drivers |
+| 🕌 **Riyadh** | Click map → fill area + type → get SAR/sqm estimate + spatial feature grid |
+
+Toggle between cities with the NYC / Riyadh button in the top-left of the map.
 
 ---
 
 ## Model Performance
 
+### NYC — Stack v11 (104 features, 185K sales, 2022–2026)
+
 | Metric | Value |
 |---|---|
-| R² (holdout) | 0.6509 |
-| MedAPE | 20.29% |
-| Features | 71 |
-| CV Strategy | Spatial GroupKFold |
+| R² (holdout) | 0.6450 |
+| MedAPE | 20.24% |
+| Holdout rows | 27,763 |
+| CV Strategy | 5-fold Spatial GroupKFold (by NTA) |
+| Stack | XGBoost + LightGBM + CatBoost + Ridge meta |
+
+### Riyadh — Stack v1 (76 features, 6,910 district-quarter rows, 2018–2025)
+
+| Metric | Value |
+|---|---|
+| OOF R² | 0.9427 |
+| OOF MedAPE | 8.28% |
+| Holdout R² | 0.6747 |
+| Holdout MedAPE | 23.45% |
+| Holdout MAE | 1,206 SAR/sqm |
+| Holdout period | 2025 Q1–Q3 (fully unseen) |
+| CV Strategy | 5-fold Spatial GroupKFold (by district) |
 | Stack | XGBoost + LightGBM + CatBoost + Ridge meta |
 
 ---
@@ -38,54 +59,26 @@ pinned: false
 
 | Layer | Technology |
 |---|---|
-| ML | XGBoost, LightGBM, CatBoost, scikit-learn |
+| ML | XGBoost, LightGBM, CatBoost, scikit-learn Ridge |
 | Backend | FastAPI + Uvicorn |
-| Spatial | GeoPandas, SciPy KD-trees, BallTree |
+| Spatial | SciPy KD-trees, GeoPandas, Polars |
 | Frontend | Leaflet.js, Chart.js, vanilla JS |
 | Deployment | Docker (Hugging Face Spaces) |
+| Data pipeline | Polars (Riyadh), Pandas (NYC) |
 
 ---
 
 ## Run Locally
 
-### Requirements
-- Python 3.10+
-- Git
-
-### Step 1 — Clone the repo
-
 ```bash
 git clone https://github.com/turkialm/thaman-v2.git
 cd thaman-v2
-```
-
-### Step 2 — Install dependencies
-
-```bash
 pip install -r requirements.txt
-```
-
-> If you get a geopandas error on macOS:
-> ```bash
-> brew install gdal
-> pip install geopandas
-> ```
-
-### Step 3 — Start the API
-
-```bash
 uvicorn api.main:app --port 8000
+# Open: http://localhost:8000/ui
 ```
 
-> First startup takes ~25 seconds — it loads the ML models and spatial data.
-
-### Step 4 — Open the app
-
-| Page | URL |
-|---|---|
-| Map UI | http://localhost:8000/ui |
-| API Docs (Swagger) | http://localhost:8000/docs |
-| Health check | http://localhost:8000/health |
+> First startup ~30 seconds — loads both ML stacks and all spatial data.
 
 ---
 
@@ -93,45 +86,31 @@ uvicorn api.main:app --port 8000
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/` | Redirects to map UI |
-| `GET` | `/health` | Model + spatial data status |
-| `GET` | `/bldgclasses` | All valid NYC building class codes |
-| `POST` | `/predict` | Predict price for one property |
-| `POST` | `/batch` | Predict up to 50 properties |
+| `GET` | `/health` | Model + spatial status |
+| `GET` | `/bldgclasses` | NYC building class codes |
+| `POST` | `/predict` | NYC price estimate (USD) |
+| `POST` | `/predict/riyadh` | Riyadh price estimate (SAR/sqm) |
+| `GET` | `/layers/nta` | NYC NTA choropleth GeoJSON |
+| `GET` | `/layers/district` | Riyadh district polygon GeoJSON |
+| `GET` | `/docs` | Swagger UI |
 
-### Example Request
+### NYC Example
 
 ```bash
 curl -X POST http://localhost:8000/predict \
   -H "Content-Type: application/json" \
-  -d '{
-    "latitude": 40.6892,
-    "longitude": -73.9442,
-    "gross_square_feet": 1800,
-    "building_age": 55,
-    "bldgclass": "A1",
-    "borough": 3,
-    "numfloors": 2,
-    "residential_units": 1
-  }'
+  -d '{"latitude":40.6892,"longitude":-73.9442,"gross_square_feet":1800,
+       "building_age":55,"bldgclass":"A1","borough":3,
+       "numfloors":2,"residential_units":1}'
 ```
 
-### Example Response
+### Riyadh Example
 
-```json
-{
-  "predicted_price": 1307229,
-  "confidence_low": 1061969,
-  "confidence_high": 1552489,
-  "model": "XGBoost + LightGBM Stack",
-  "r2_test": 0.6509,
-  "medape_pct": 20.29,
-  "borough_name": "Brooklyn",
-  "top_drivers": [
-    { "feature": "bldgclass", "impact": 0.149, "direction": "positive" },
-    { "feature": "airbnb_count_500m", "impact": 0.118, "direction": "positive" }
-  ]
-}
+```bash
+curl -X POST http://localhost:8000/predict/riyadh \
+  -H "Content-Type: application/json" \
+  -d '{"latitude":24.7136,"longitude":46.6753,
+       "property_type":"شقة","area_sqm":150}'
 ```
 
 ---
@@ -141,61 +120,73 @@ curl -X POST http://localhost:8000/predict \
 ```
 thaman-v2/
 ├── api/
-│   ├── main.py          # FastAPI app — all endpoints
-│   ├── spatial.py       # GIS lookups (subway, parks, income, crime...)
-│   └── models.py        # Pydantic request/response schemas
+│   ├── main.py          # FastAPI — all endpoints (NYC + Riyadh)
+│   ├── spatial.py       # NYC SpatialLookup + RiyadhSpatialLookup
+│   └── models.py        # Pydantic schemas
 ├── models/
-│   ├── scorer.py        # ThamanScorer inference class
-│   ├── xgboost_model.json   # Trained XGBoost (917 trees)
-│   ├── thaman_stack.pkl     # LGB + CatBoost + Ridge meta-learner
-│   └── meta.json            # Feature names, encodings, metrics
+│   ├── scorer.py            # ThamanScorer (NYC inference)
+│   ├── xgboost_model.json   # NYC XGBoost base learner
+│   ├── thaman_stack.pkl     # NYC LGB+CAT+Ridge meta
+│   ├── meta.json            # NYC feature names + metrics
+│   ├── riyadh_stack.pkl     # Riyadh XGB+LGB+CAT+Ridge stack
+│   └── riyadh_meta.json     # Riyadh feature names + metrics
 ├── frontend/
-│   ├── index.html       # Interactive map UI
-│   ├── app.js           # Leaflet map + API calls + result rendering
+│   ├── index.html       # Dual-city map UI
+│   ├── app.js           # Leaflet + city toggle + both forms
 │   ├── style.css        # Styles
-│   └── charts.html      # Analytics dashboard
+│   └── charts.html      # NYC analytics dashboard
+├── training/
+│   ├── train_stack_v2.py         # NYC Stack v11 training
+│   └── train_stack_riyadh_v1.py  # Riyadh Stack v1 training
+├── scripts/
+│   └── riyadh_feature_engineering.py  # Riyadh Polars pipeline
 ├── data/
-│   ├── processed/features.csv    # Feature matrix (LFS tracked)
-│   └── raw/                      # Spatial reference files (runtime only)
-├── Dockerfile           # For Hugging Face Spaces deployment
-├── requirements.txt
-└── README.md
+│   ├── processed/
+│   │   ├── features_v4.csv                  # NYC feature matrix
+│   │   ├── features_riyadh.csv              # Riyadh feature matrix (6,910 × 87)
+│   │   ├── nta_simplified.geojson           # NYC NTA polygons (436 KB)
+│   │   ├── riyadh_district_polygons.geojson # 133 Riyadh district polygons
+│   │   └── district_centroids.csv           # 147 district lat/lon
+│   └── raw/                                 # Spatial reference files
+├── docs/
+│   ├── thaman_paper.txt     # BSc paper (1,334 lines)
+│   ├── DATA_CATALOG.md
+│   └── PROJECT_STATUS.md
+├── Dockerfile
+└── requirements.txt
 ```
 
 ---
 
 ## Data Sources
 
+### NYC
 | Dataset | Source |
 |---|---|
-| Property Sales | NYC Open Data — Citywide Rolling Sales |
+| Property Sales (185K) | NYC Open Data — Citywide Rolling Sales |
 | Building Data | NYC DCP — PLUTO 2025 |
-| Subway Stations | MTA Open Data |
-| Bus Stops | MTA Open Data |
-| Crime Complaints | NYPD Complaint Data |
-| 311 Noise | NYC Open Data |
-| Parks | NYC Parks Properties |
-| Schools | NYC Open Data |
+| Subway / Bus | MTA Open Data |
+| Crime / 311 | NYPD + NYC Open Data |
+| Parks / Schools | NYC Open Data |
 | Airbnb Listings | Inside Airbnb |
-| NTA Boundaries | NYC DCP — NTA 2020 |
+| NTA Boundaries | NYC DCP |
 | Mortgage Rates | FRED Economic Data |
 
+### Riyadh
+| Dataset | Source |
+|---|---|
+| Real Estate Transactions | Saudi Open Data Portal (quarterly reports) |
+| Metro Stations | Saudi Open Data Portal |
+| Bus Stops | Saudi Open Data Portal |
+| Commercial Services | Saudi Open Data Portal |
+| Traffic Intersections | Saudi Open Data Portal |
+| Air Quality (NO₂/SO₂/PM₁₀/O₃) | RCRC / Saudi Open Data Portal |
+| Rental Listings (SA_Aqar) | SA_Aqar platform |
+| District Polygons | OSM Overpass API (admin_level=10) |
+| Real Estate Price Index | Saudi Open Data Portal |
+
 ---
 
-## Spatial Features Auto-Computed from lat/lng
+## Author
 
-When you click a point on the map, the system automatically computes:
-
-- Distance to nearest subway, express subway, bus stop
-- Distance to nearest park, school, hospital
-- Airbnb listing density within 500m
-- Neighborhood crime rate, noise level, income
-- School district + average district score
-- Current 30-year mortgage rate
-- Urban gravity distances (Midtown, Downtown, LIC)
-
----
-
-## Authors
-
-- **Turki Almurahhem** — BSc Computer Science, Umm Al-Qura University
+**Turki Almurahhem** — BSc Computer Science, Umm Al-Qura University

@@ -4,6 +4,37 @@
 
 ---
 
+## Riyadh Data Sources
+
+| # | Dataset | File | Records | Notes |
+|---|---|---|---|---|
+| R1 | Real Estate Transactions (2018–2023) | `data/raw/quarter_report SI.xlsx` | ~6,500 rows | Saudi Open Data baseline; district-level quarterly aggregates |
+| R2 | RE Transactions 2024 Q1 | `data/raw/` (Saudi Open Data CSV) | ~300 rows | Property transactions by type + district |
+| R3 | RE Transactions 2024 Q3 | `data/raw/` (Saudi Open Data CSV) | ~300 rows | |
+| R4 | RE Transactions 2024 Q4 | `data/raw/` (Saudi Open Data CSV) | ~300 rows | |
+| R5 | RE Transactions 2025 Q1–Q3 | `data/raw/` (Saudi Open Data CSVs) | ~600 rows | Holdout period |
+| R6 | Metro Stations | `data/raw/metro-stations-in-riyadh-*.geojson` | 85 stations | 6 lines; opened 2024 |
+| R7 | Bus Stops | `data/raw/bus-stops-in-riyadh-*.geojson` | ~2,500 stops | Includes BRT stops |
+| R8 | Traffic Intersections | `data/raw/traffic-intersections-*.geojson` | ~8,000 intersections | Major street crossings |
+| R9 | Commercial Services | `data/raw/commercial-services-*.geojson` | ~12,000 POIs | 10 categories (hypermarkets, banks, restaurants…) |
+| R10 | Air Quality Stations | `data/raw/air-quality-stations-*.geojson` | 12 stations | NO₂, SO₂, PM₁₀, O₃ measurements |
+| R11 | Air Quality Readings | `data/raw/air-quality.csv` | ~500 rows | Station-level pollutant means |
+| R12 | Mosques | `data/raw/riyadh_mosques.csv` | ~3,000 | OSM-derived |
+| R13 | Malls | `data/raw/riyadh_malls.csv` | ~80 | OSM-derived |
+| R14 | Schools | `data/raw/riyadh_schools.csv` | ~600 | OSM-derived |
+| R15 | Hospitals | `data/raw/riyadh_hospitals.csv` | ~120 | OSM-derived |
+| R16 | Parks | `data/raw/riyadh_parks.csv` | ~200 | OSM-derived |
+| R17 | Entertainment Venues | `data/raw/rcrc_entertainment.csv` | ~150 | RCRC leisure venues |
+| R18 | Rental Listings (SA_Aqar) | `data/raw/SA_Aqar.csv` | 960 listings | District-level medians: size, bedrooms, age, rent/sqm |
+| R19 | Real Estate Price Index | `data/raw/real-estate-indices.csv` | ~200 rows | REI residential + apartment quarterly (2019–2025) |
+| R20 | District Polygons | `data/processed/riyadh_district_polygons.geojson` | 133 polygons | OSM Overpass admin_level=10; 107/133 enriched |
+| R21 | District Centroids | `data/processed/district_centroids.csv` | 147 centroids | Derived from OSM polygon centroids |
+
+**Processed output:** `data/processed/features_riyadh.csv` — 6,910 rows × 87 columns  
+**Pipeline:** `scripts/riyadh_feature_engineering.py` (Polars-native)
+
+---
+
 ## Changelog
 
 | Date | File | Change |
