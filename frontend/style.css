@@ -162,7 +162,7 @@ html, body {
 
 .layer-bar {
   position: absolute;
-  top: 10px;
+  top: 52px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
