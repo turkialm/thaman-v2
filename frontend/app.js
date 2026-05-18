@@ -433,6 +433,13 @@ function setCityMode(mode) {
   document.getElementById('riyadhForm').style.display   = isRiyadh ? ''     : 'none';
   document.getElementById('riyadhResults').style.display = 'none';
 
+  // Swap header badges and tagline
+  document.getElementById('nycBadgeGroup').style.display    = isRiyadh ? 'none'    : '';
+  document.getElementById('riyadhBadgeGroup').style.display = isRiyadh ? ''        : 'none';
+  document.getElementById('headerTagline').textContent      = isRiyadh
+    ? 'Riyadh Property Valuation · AI-Powered'
+    : 'NYC Property Valuation · AI-Powered';
+
   // NYC-only: red mask marks area outside city limits
   _setNycOutOfBoundsMask(!isRiyadh);
 
@@ -2360,6 +2367,7 @@ const TR = {
     analytics:      'Analytics',
     mapHint:        'Click anywhere in New York City to place a pin',
     tagline:        'NYC Property Valuation · AI-Powered',
+    taglineRiyadh:  'Riyadh Property Valuation · AI-Powered',
     outOfNYC:       'Click within New York City boundaries',
     addrPlaceholder:'Search address, e.g. 350 5th Ave, Manhattan…',
     addrNotFound:   'Address not found in NYC. Try a more specific address.',
@@ -2423,6 +2431,7 @@ const TR = {
     analytics:      'التحليلات',
     mapHint:        'انقر في أي مكان بمدينة نيويورك لوضع الدبوس',
     tagline:        'تقييم عقارات نيويورك · مدعوم بالذكاء الاصطناعي',
+    taglineRiyadh:  'تقييم عقارات الرياض · مدعوم بالذكاء الاصطناعي',
     outOfNYC:       'انقر داخل حدود مدينة نيويورك',
     addrPlaceholder:'ابحث عن عنوان، مثل: 350 5th Ave, Manhattan…',
     addrNotFound:   'لم يُعثر على العنوان في نيويورك. حاول بعنوان أكثر تفصيلاً.',
@@ -2463,7 +2472,7 @@ function setLang(lang) {
   document.getElementById('btnAR').classList.toggle('active', lang === 'ar');
 
   // Header
-  document.getElementById('headerTagline').textContent = T.tagline;
+  document.getElementById('headerTagline').textContent = _cityMode === 'riyadh' ? T.taglineRiyadh : T.tagline;
   document.getElementById('analyticsLabel').textContent = T.analytics;
   document.getElementById('mapHintText').textContent   = T.mapHint;
 
