@@ -1,5 +1,5 @@
 ================================================================================
-THAMAN: AN AUTOMATED VALUATION MODEL FOR NEW YORK CITY RESIDENTIAL PROPERTIES
+THAMAN: A DUAL-CITY AUTOMATED VALUATION MODEL FOR NEW YORK CITY AND RIYADH
 USING ENSEMBLE MACHINE LEARNING AND QUALITY-OF-LIFE SPATIAL INDICATORS
 ================================================================================
 
@@ -39,9 +39,20 @@ and real-time neighbourhood-level encoding resolved from a 185K-sale spatial
 index. The complete system is deployed on Hugging Face Spaces and open-sourced
 on GitHub.
 
+The system is extended to Riyadh, Saudi Arabia as a parallel AVM trained on
+6,910 district-level real estate transactions (2018–2025) sourced from the Saudi
+Open Data Portal. Across 76 features covering metro and bus transit, commercial
+density, air quality (NO₂, SO₂, PM₁₀, O₃), QoL proximity to mosques, malls,
+schools, hospitals, parks and entertainment venues, macroeconomic indices
+(REI quarterly index, Saudi average salary), district price aggregates, and
+rental market signals (SA_Aqar), the Riyadh stack achieves OOF R² = 0.9427 /
+MedAPE = 8.28% and holdout R² = 0.6747 / MedAPE = 23.45% on a 2025 Q1–Q3
+out-of-sample test set of 2,246 district-quarter observations.
+
 Keywords: automated valuation model, ensemble learning, XGBoost, LightGBM,
 CatBoost, stacking, target encoding, spatial features, SHAP, New York City,
-real estate, quality of life indicators, adaptive confidence, NTA encoding.
+Riyadh, Saudi Arabia, dual-city AVM, real estate, quality of life indicators,
+adaptive confidence, NTA encoding, district-level prediction.
 
 ================================================================================
 1. INTRODUCTION
@@ -98,6 +109,11 @@ This project addresses four gaps:
   RQ4: Does incorporating neighbourhood price appreciation momentum (NTA price
        trend slope) further improve model accuracy?
 
+  RQ5: Can the same stacking architecture generalise to a data-scarce emerging
+       market (Riyadh) where observations are district-level aggregates rather
+       than individual transactions, and how does the OOF-to-holdout gap behave
+       when the holdout represents entirely unseen calendar quarters?
+
 1.3 Contributions
 -----------------
   - A full end-to-end AVM pipeline from raw NYC open data to deployed web app.
@@ -110,6 +126,11 @@ This project addresses four gaps:
   - A formal AVM QC block with four risk flags.
   - A bilingual (English/Arabic) interactive valuation interface with SHAP
     waterfall plots, natural-language explanations, and 11-layer NTA choropleth.
+  - Riyadh Stack v1: a dual-city extension to Saudi Arabia using 6,910 district-
+    quarter observations, 76 features (transit, QoL POIs, air quality, macro,
+    rental), and the identical stacking architecture. Achieves holdout R² = 0.6747
+    / MedAPE = 23.45% on a fully out-of-sample 2025 Q1–Q3 test set (2,246 rows).
+    Includes 133 Riyadh district polygons from OSM and a 12-layer choropleth.
 
 ================================================================================
 2. RELATED WORK
@@ -956,10 +977,130 @@ retrain.sh logic:
   tests/test_api.py    (22 tests): endpoints, AVM QC block, comparable counts
 
 ================================================================================
-10. DISCUSSION
+10. RIYADH EXTENSION
 ================================================================================
 
-10.1 Key Findings
+10.1 Motivation and Data
+-------------------------
+Saudi Arabia's real estate market has undergone significant structural change
+since 2016 under Vision 2030, with Riyadh experiencing rapid urban expansion,
+new metro infrastructure, and growing institutional investment. Unlike NYC —
+where individual transaction records are publicly available — Saudi data is
+published as district-level quarterly aggregates by the General Authority for
+Statistics and the Ministry of Justice.
+
+The Riyadh dataset comprises 6,910 district-quarter observations covering 163
+Riyadh districts across Q1 2018–Q3 2025, sourced from two channels:
+  (a) Saudi Open Data Portal quarterly real estate reports (XLSX/CSV format)
+      covering 2018–2023 baseline and 2024 Q1, Q3, Q4 and 2025 Q1–Q3.
+  (b) SA_Aqar rental platform: 960 active Riyadh listings scraped and aggregated
+      to 4 district-level medians (unit size, bedrooms, property age, rent/sqm).
+
+Price range: 222–12,565 SAR/sqm; median 3,303 SAR/sqm. Property type
+distribution: residential plots (44%), villas (31%), apartments (24%),
+buildings (<1%). The train/holdout split is strictly temporal: training on
+Q1 2018–Q4 2024 (4,664 rows), holdout on Q1–Q3 2025 (2,246 rows) — an entirely
+unseen calendar horizon that stress-tests temporal generalisation.
+
+10.2 Feature Engineering
+-------------------------
+76 features are engineered across eleven categories:
+
+  (1) Location — district centroid lat/lon (KD-tree lookup to nearest centroid).
+  (2) Property type — 4 binary flags: is_apartment, is_villa, is_residential_plot,
+      is_building.
+  (3) Metro transit — distance to nearest station, log-distance, station count
+      within 1 km, metro line number and type, distance to Line 1 (the busiest
+      east–west corridor). Riyadh Metro opened in 2024 and represents a novel
+      infrastructure signal absent from earlier models.
+  (4) Bus and BRT — distance to nearest stop, log-distance, bus/BRT stop counts
+      within 500 m.
+  (5) Traffic connectivity — distance to nearest major intersection, intersection
+      counts within 500 m and 1 km. A composite Riyadh Connectivity Score
+      (0–100) aggregates metro density, commercial density, bus density, inverse
+      metro distance, and intersection density via min-max normalisation.
+  (6) Commercial density — counts within 1 km of hypermarkets, supermarkets,
+      banks, restaurants, hotels, and gas stations; a district-level commercial
+      mix index; overall commercial count and density score.
+  (7) Air quality — mean NO₂, SO₂, PM₁₀, and O₃ from the nearest of 12 RCRC
+      monitoring stations; distance to nearest station; composite Air Quality
+      Score (0–100, higher = cleaner).
+  (8) Macroeconomic indices — Saudi Real Estate Index (REI) quarterly residential
+      and apartment sub-indices, YoY and QoQ change rates; average Saudi annual
+      salary and its YoY change.
+  (9) District aggregates — median price/sqm (all types and apartment-specific),
+      quarterly transaction volume, price relative to city average, and a
+      per-district OLS price trend slope (analogous to the NTA trend slope used
+      in the NYC model). District and district-type target encodings computed
+      via leave-one-quarter-out to prevent leakage.
+  (10) QoL proximity — for each of six POI categories (mosques, malls, schools,
+      hospitals, parks, entertainment venues): Euclidean distance, log-distance,
+      and count within 500 m, giving 18 QoL features total.
+  (11) Rental signals — SA_Aqar platform data aggregated to 4 district-level
+      medians: median unit size (sqm), median bedrooms, median property age
+      (years), and median rent per sqm. These proxy unobserved structural quality.
+  (12) Temporal — sale year, cyclical quarter encoding (sin/cos), log deed count.
+
+All spatial lookups use KD-trees (scipy.spatial.KDTree) built at startup.
+District centroid assignment uses the nearest centroid in a 147-entry table
+derived from OSM Overpass admin_level=10 polygon centroids.
+
+10.3 Model Training
+--------------------
+The identical stacking architecture used for NYC is applied without modification:
+XGBoost + LightGBM + CatBoost base learners with early stopping, blended by a
+Ridge meta-learner trained on 5-fold Spatial GroupKFold out-of-fold predictions
+(groups = district_ar). GroupKFold ensures districts appear in only one fold,
+providing a spatial cross-validation regime analogous to the NYC borough-blocked
+CV strategy.
+
+Hyperparameters: n_estimators=1,500, learning_rate=0.03, max_depth=5,
+subsample=0.70, colsample_bytree=0.70, early_stopping_rounds=50.
+Target: log1p(sale_price_sar_sqm).
+
+10.4 Results
+-------------
+  OOF  (5-fold spatial GroupKFold):  R² = 0.9427 | MedAPE =  8.28%
+  Holdout (Q1–Q3 2025, n=2,246):     R² = 0.6747 | MedAPE = 23.45%
+                                      MAE = 1,206 SAR/sqm
+
+The large OOF-to-holdout gap (R² 0.94 → 0.67, MedAPE 8% → 23%) is attributable
+to three factors:
+  (a) Temporal distribution shift: the holdout is entirely Q1–Q3 2025, a period
+      of Riyadh market acceleration post-Metro opening that the training data
+      represents only partially.
+  (b) District-level granularity: each row represents a district × quarter
+      aggregate, not an individual sale. OOF folds share temporal overlap
+      (same quarters appear across folds), inflating OOF performance.
+  (c) Data volume: 4,664 training rows across 163 districts yield sparse per-
+      district coverage, limiting neighbourhood-specific learning.
+
+The meta-learner coefficients (XGB: 0.198, LGB: −0.147, CAT: 0.954) reveal
+CatBoost dominance with a small negative LGB correction — consistent with
+CatBoost's superior performance on small datasets with sparse group structure.
+
+10.5 Spatial Interface
+-----------------------
+The Riyadh prediction interface is exposed at POST /predict/riyadh and mirrors
+the NYC API contract: it returns predicted_price_sqm (SAR), predicted_total_sar,
+confidence_low/high_sqm, district_ar, and a spatial_features dict containing
+12 live-computed proximity metrics (metro distance, bus stops, commercial count,
+air quality score, mosque/mall/school/hospital/park distances).
+
+A GET /layers/district endpoint serves a 133-polygon GeoJSON built from OSM
+Overpass API (admin_level=10 relations within Riyadh bbox), enriched with
+district metric medians from features_riyadh.csv. 107/133 polygons are enriched
+(Arabic name normalisation: strip حي prefix, normalise alef variants and ta
+marbuta). The frontend renders a 12-layer choropleth (metro access, metro
+density, bus stops, commercial, hypermarkets, air quality NO₂/PM₁₀/score,
+price index, median price, price trend, connectivity) as interactive polygon
+fill with hover tooltips.
+
+================================================================================
+11. DISCUSSION
+================================================================================
+
+11.1 Key Findings
 ------------------
   1. Stacking consistently outperforms every individual base learner (§7.3).
      The 4-model diverse ensemble reduces MedAPE by 0.05–0.46pp over the best
@@ -990,7 +1131,7 @@ retrain.sh logic:
      discounts, unobservable interior finishes, and view premiums create
      heterogeneity that no tabular dataset can capture.
 
-10.2 Limitations
+11.2 Limitations
 -----------------
   1. Snapshot model: cannot extrapolate to future market states (rate shocks,
      recession scenarios).
@@ -1007,7 +1148,7 @@ retrain.sh logic:
      appreciating markets the cap-induced assessment lag introduces systematic
      bias.
 
-10.3 Future Work
+11.3 Future Work
 -----------------
   1. Interior features: partner with StreetEasy / Zillow API for floor number,
      renovation year, and interior photos (CNN features).
@@ -1022,7 +1163,7 @@ retrain.sh logic:
      and apply a learned discount factor.
 
 ================================================================================
-11. CONCLUSION
+12. CONCLUSION
 ================================================================================
 
 This paper presented THAMAN, a production-deployed AVM for NYC residential
@@ -1048,9 +1189,14 @@ The key technical contributions are:
       6-monthly automated retraining pipeline with model acceptance/rejection
       logic.
 
-A parallel Riyadh extension (Saudi open-data district transactions, 6,910 sales)
-achieves holdout R² = 0.675 and MedAPE = 23.43% (SAR/m²) via the same stacking
-architecture, exposed at POST /predict/riyadh with bilingual map UI support.
+A parallel Riyadh extension demonstrates cross-market generalisability of the
+stacking architecture. Trained on 6,910 Saudi Open Data district-quarter
+observations (2018–2025) across 76 features, the Riyadh stack achieves OOF
+R² = 0.9427 / MedAPE = 8.28% and holdout R² = 0.6747 / MedAPE = 23.45%
+(SAR/sqm) on a fully out-of-sample 2025 Q1–Q3 horizon. The identical pipeline
+— GroupKFold CV, Ridge meta-learner, KD-tree spatial lookups, FastAPI inference
+endpoint — required no architectural changes to operate on a data-scarce
+emerging market with district-aggregate rather than individual-transaction data.
 
 The system is deployed at https://huggingface.co/spaces/Turki-Almurahhem/thaman
 and open-sourced at https://github.com/turkialm/thaman-v2.
