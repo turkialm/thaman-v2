@@ -936,6 +936,10 @@ function initBldgTypeCards() {
 
 initBldgTypeCards();
 
+// ── Hover-prefetch GeoJSON on city button hover ───────────────────────
+document.getElementById('cityBtnRiyadh').addEventListener('mouseenter', () => ensureDistrictLoaded(), { once: true });
+document.getElementById('cityBtnNYC').addEventListener('mouseenter',    () => ensureNtaLoaded(),      { once: true });
+
 // ── Riyadh property type card selector ───────────────────────────────
 (function initRiyadhTypeCards() {
   const cards  = document.querySelectorAll('.riyadh-type-card');
@@ -1484,12 +1488,12 @@ function renderRiyadhResults(data) {
   const high  = data.confidence_high_sar;
   const sf    = data.spatial_features || {};
 
-  // Price hero
+  // Price hero — animated
   const sqmEl = document.getElementById('riyadhPriceSqm');
-  if (sqmEl) sqmEl.textContent = fmtSAR(psqm);
+  if (sqmEl) animateSAR(sqmEl, psqm, fmtSAR);
 
   const totalEl = document.getElementById('riyadhPriceTotal');
-  if (totalEl) totalEl.textContent = `Total: ${fmtSAR(total)}`;
+  if (totalEl) animateSAR(totalEl, total, n => `Total: ${fmtSAR(n)}`);
 
   const confEl = document.getElementById('riyadhConfidence');
   if (confEl) confEl.textContent = `Range: ${fmtSAR(low)} – ${fmtSAR(high)}`;
@@ -1556,7 +1560,7 @@ function renderRiyadhResults(data) {
     }
   }
 
-  document.getElementById('riyadhResults').style.display = 'block';
+  showCard(document.getElementById('riyadhResults'), 0);
   document.getElementById('riyadhResults').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -1570,11 +1574,46 @@ function setLoading(on) {
   });
 }
 
+// ── Smooth card show / hide helpers ──────────────────────────────────
+function showCard(el, delayMs) {
+  el.style.display = 'block';
+  el.classList.add('card-animated');
+  el.classList.remove('card-in');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      el.style.transitionDelay = delayMs ? `${delayMs}ms` : '';
+      el.classList.add('card-in');
+    });
+  });
+}
+function hideCard(el) {
+  el.classList.remove('card-in');
+  el.style.transitionDelay = '';
+  let done = false;
+  const finish = () => { if (!done) { done = true; el.style.display = 'none'; } };
+  el.addEventListener('transitionend', finish, { once: true });
+  setTimeout(finish, 300); // safety fallback
+}
+
+// ── SAR price animation (mirrors animatePrice for USD) ────────────────
+function animateSAR(el, target, formatter) {
+  const start = target * 0.72;
+  const dur   = 600;
+  const t0    = performance.now();
+  function tick(now) {
+    const p    = Math.min((now - t0) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = formatter(Math.round(start + (target - start) * ease));
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
 function hideResults() {
-  resultCard.style.display  = 'none';
-  shapCard.style.display    = 'none';
-  spatialCard.style.display = 'none';
-  document.getElementById('marketCard').style.display  = 'none';
+  hideCard(resultCard);
+  hideCard(shapCard);
+  hideCard(spatialCard);
+  hideCard(document.getElementById('marketCard'));
   document.getElementById('avmQcRow').style.display    = 'none';
   // (nycDriversSection removed — shapBars handles top_drivers directly)
   _compsLoaded = false;
@@ -1629,7 +1668,7 @@ function renderResults(data) {
   tierBadge.className    = `tier-badge ${tier.cls}`;
   tierBadge.style.display = 'inline-flex';
 
-  resultCard.style.display = 'block';
+  showCard(resultCard, 0);
 
   // ── Confidence bar ────────────────────────────────────────────────
   const low  = data.confidence_low;
@@ -1720,7 +1759,7 @@ function renderResults(data) {
       `;
       shapBars.appendChild(row);
     });
-    shapCard.style.display = 'block';
+    showCard(shapCard, 80);
     // Reset to bar view (waterfall renders on demand)
     if (_shapView === 'waterfall') setShapView('bars');
   }
@@ -1756,7 +1795,7 @@ function renderResults(data) {
       </div>
     </div>`;
   }).join('');
-  spatialCard.style.display = 'block';
+  showCard(spatialCard, 160);
 
   // Scroll sidebar to results
   resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1889,7 +1928,7 @@ function renderNearby(sales) {
     `;
   }).join('');
 
-  nearbyCard.style.display = 'block';
+  showCard(nearbyCard, 240);
 }
 
 // ── Market Intelligence tab state ─────────────────────────────────────
