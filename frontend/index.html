@@ -29,9 +29,9 @@
         <button class="badge badge-gray" onclick="openCompare()" style="cursor:pointer;border:none">⚖ Compare</button>
       </span>
       <span id="riyadhBadgeGroup" style="display:none">
-        <span class="badge badge-green">Riyadh Stack v1</span>
-        <span class="badge badge-blue">R² = 0.675</span>
-        <span class="badge badge-purple">MedAPE 23.45%</span>
+        <span class="badge badge-green">Riyadh Stack v2</span>
+        <span class="badge badge-blue">R² = 0.798</span>
+        <span class="badge badge-purple">MedAPE 18.16%</span>
       </span>
       <a href="/docs" target="_blank" class="badge badge-gray">API Docs ↗</a>
       <!-- Language Toggle -->
@@ -365,17 +365,31 @@
             <div class="addr-error" id="riyadhAddrError" style="display:none"></div>
           </div>
 
-          <div class="field-row">
-            <div class="field field-full">
-              <label for="riyadhType" id="lblRiyadhType">Property Type / نوع العقار</label>
-              <select id="riyadhType" required>
-                <option value="">Select… / اختر…</option>
-                <option value="شقة">Apartment / شقة</option>
-                <option value="فيلا">Villa / فيلا</option>
-                <option value="قطعة أرض-سكنى">Residential Plot / قطعة أرض سكنية</option>
-                <option value="عمارة">Residential Building / عمارة</option>
-              </select>
+          <div class="field field-full" style="margin-bottom:12px">
+            <label id="lblRiyadhType" style="display:block;margin-bottom:6px">Property Type / نوع العقار</label>
+            <div class="riyadh-type-grid" id="riyadhTypeGrid" role="group" aria-label="Property type">
+              <button type="button" class="riyadh-type-card" data-value="شقة">
+                <span class="rti">🏢</span>
+                <span class="rtl-en">Apartment</span>
+                <span class="rtl-ar">شقة</span>
+              </button>
+              <button type="button" class="riyadh-type-card" data-value="فيلا">
+                <span class="rti">🏡</span>
+                <span class="rtl-en">Villa</span>
+                <span class="rtl-ar">فيلا</span>
+              </button>
+              <button type="button" class="riyadh-type-card" data-value="قطعة أرض-سكنى">
+                <span class="rti">🌐</span>
+                <span class="rtl-en">Plot</span>
+                <span class="rtl-ar">أرض سكنية</span>
+              </button>
+              <button type="button" class="riyadh-type-card" data-value="عمارة">
+                <span class="rti">🏗️</span>
+                <span class="rtl-en">Building</span>
+                <span class="rtl-ar">عمارة</span>
+              </button>
             </div>
+            <input type="hidden" id="riyadhType" />
           </div>
 
           <div class="field-row">
@@ -396,9 +410,9 @@
             </button>
           </div>
           <p class="disclaimer">
-            Predictions based on Saudi open-data quarterly transactions 2018–2025.
-            Model accuracy: median error ±23.43% (MedAPE).
-            تنبؤات مبنية على بيانات صفقات البيع الفصلية المفتوحة 2018–2025.
+            Predictions based on Saudi open-data quarterly transactions 2018–2024.
+            Model accuracy: median error ±18.16% (MedAPE, 2025 holdout).
+            تنبؤات مبنية على بيانات صفقات البيع الفصلية المفتوحة 2018–2024.
           </p>
         </form>
 
@@ -512,10 +526,6 @@
           <div class="waterfall-wrap">
             <canvas id="waterfallCanvas"></canvas>
           </div>
-        </div>
-        <div id="nycDriversSection" style="display:none; margin-top:1rem">
-          <h4 style="font-size:0.85rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Key Price Drivers</h4>
-          <div id="nycDriversBars"></div>
         </div>
       </div>
 

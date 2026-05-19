@@ -1867,3 +1867,50 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   font-weight: 600;
   font-size: .88rem;
 }
+
+/* ── Riyadh property type cards ───────────────────────────────────── */
+.riyadh-type-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.riyadh-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  cursor: pointer;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+  font-family: var(--font);
+  line-height: 1.2;
+}
+.riyadh-type-card:hover {
+  border-color: var(--blue);
+  background: var(--blue-light);
+}
+.riyadh-type-card.selected {
+  border-color: var(--blue);
+  background: var(--blue-light);
+  box-shadow: 0 0 0 2px var(--blue);
+}
+.riyadh-type-grid.invalid .riyadh-type-card {
+  border-color: var(--red);
+}
+.riyadh-type-card .rti {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.riyadh-type-card .rtl-en {
+  font-size: .68rem;
+  font-weight: 600;
+  color: var(--gray-700);
+}
+.riyadh-type-card .rtl-ar {
+  font-size: .65rem;
+  color: var(--gray-500);
+  font-family: var(--font-ar);
+}
