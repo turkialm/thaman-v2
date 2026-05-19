@@ -176,7 +176,8 @@ Print this section and keep it in your pocket.
 | NYC holdout rows | 27,763 | Time-based, newest 15% |
 | NYC R² (holdout) | 0.6450 | Stack v11 |
 | NYC MedAPE (holdout) | 20.24% | Stack v11 |
-| Riyadh training rows | 6,910 | District-quarter obs., 2018–2024 |
+| Riyadh total rows | 6,910 | District-quarter obs., 2018–2025 |
+| Riyadh training rows | 4,664 | Pre-2025 Q1 (training split) |
 | Riyadh features | 76 | Transit, QoL, macro, rental |
 | Riyadh OOF R² | **0.9427** | 5-fold spatial GroupKFold |
 | Riyadh OOF MedAPE | **8.28%** | In-sample cross-validation |
