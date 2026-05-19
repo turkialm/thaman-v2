@@ -58,6 +58,7 @@ COPY data/raw/riyadh_schools.csv                 data/raw/riyadh_schools.csv
 COPY data/raw/riyadh_hospitals.csv               data/raw/riyadh_hospitals.csv
 COPY data/raw/riyadh_parks.csv                   data/raw/riyadh_parks.csv
 COPY data/raw/rcrc_entertainment.csv             data/raw/rcrc_entertainment.csv
+COPY data/raw/saudi_listings_haraj_20260518.csv  data/raw/saudi_listings_haraj_20260518.csv
 # Note: overture_places.geojson (590MB) is gitignored; POI counts degrade to 0 on HF
 
 # Hugging Face Spaces requires port 7860
