@@ -105,14 +105,14 @@ Riyadh click target:  24.6877,  46.7219   (Downtown Riyadh / King Fahd Road)
 **[Toggle on the Haraj active listings layer]**
 
 **English:**
-> "This layer shows 1,824 active property listings scraped from Haraj.com.sa — Saudi Arabia's largest classifieds marketplace. Each point is colour-coded by type: blue for apartments, green for villas, amber for plots."
+> "This layer shows 1,615 active property listings scraped from Haraj.com.sa — Saudi Arabia's largest classifieds marketplace. Each point is colour-coded by type: blue for apartments, green for villas, amber for plots."
 
 > "Click any bubble and you'll see the asking price versus our model's estimate, plus a direct link to the actual listing."
 
 > "The model systematically predicts lower than asking prices — and that's expected. THAMAN was trained on deed-recorded transaction prices from the Ministry of Justice. Haraj shows what sellers are asking for, before negotiation. The overall gap is 54% MedAPE against asking prices, which is consistent with documented Saudi negotiation margins of 20 to 50 percent."
 
 **Arabic:**
-> "هذه الطبقة تُظهر 1824 عرضاً نشطاً من موقع حراج.كوم — أكبر سوق للعقارات في السعودية. كل نقطة مُلوَّنة حسب نوع العقار."
+> "هذه الطبقة تُظهر 1615 عرضاً نشطاً من موقع حراج.كوم — أكبر سوق للعقارات في السعودية. كل نقطة مُلوَّنة حسب نوع العقار."
 
 > "النموذج يتنبأ بأسعار أقل من أسعار العرض بشكل منتظم — وهذا متوقع. ثمان تدرّب على أسعار العقود المسجّلة، بينما حراج يعرض أسعار البائعين قبل التفاوض."
 
@@ -185,7 +185,7 @@ Print this section and keep it in your pocket.
 | Riyadh holdout MedAPE | 18.16% | Out-of-sample stress test |
 | Riyadh holdout MAE | 991 SAR/sqm | Out-of-sample stress test |
 | Haraj validation MedAPE | 54.33% | Asking vs. transaction — expected gap |
-| Haraj listings scraped | 1,824 | 474 apts, 693 villas, 640 plots |
+| Haraj listings scraped | 1,615 | 444 apts, 630 villas, 526 plots, 15 buildings |
 | NYC NTA groups | 212 | Neighbourhood spatial units |
 | Riyadh district polygons | 133 | From OSM admin_level=10 |
 | Base learners | 4 | XGB-A, XGB-B, LGB, CatBoost |
