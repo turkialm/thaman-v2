@@ -252,6 +252,7 @@ html, body {
   width: var(--sidebar-w);
   height: 100%;
   overflow-y: auto;
+  scroll-behavior: smooth;
   background: var(--gray-50);
   border-left: 1px solid var(--gray-200);
   padding: 12px;
@@ -279,6 +280,23 @@ html, body {
   transform: translateY(-2px);
 }
 #formCard:hover { transform: none; }
+
+/* ── Smooth card reveal (JS-driven: showCard / hideCard) ─────────────── */
+.card-animated {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  will-change: opacity, transform;
+}
+.card-animated.card-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Riyadh price hero number — smooth SAR animation */
+#riyadhPriceSqm, #riyadhPriceTotal {
+  will-change: contents;
+}
 
 .card-title {
   font-size: .9rem;
