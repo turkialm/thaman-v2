@@ -135,8 +135,10 @@ df["log_price"] = np.log1p(df[TARGET])
 # ── Train / holdout split (time-based) ────────────────────────────────────────
 
 all_qids = sorted(df["quarter_id"].unique())
-cutoff_idx = int(len(all_qids) * 0.80)
-cutoff_qid = all_qids[cutoff_idx]
+# Fixed cutoff at 2025 Q1 — trains on 2018-2024, holds out 2025 Q1-Q3.
+# Previously 80% percentile was used but landed on wrong quarter after
+# the 2024 quarter_id encoding bug was fixed in features_riyadh.csv.
+cutoff_qid = 20251
 
 work_mask = df["quarter_id"] < cutoff_qid
 work = df[work_mask].copy()
