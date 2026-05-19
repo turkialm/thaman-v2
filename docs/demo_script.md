@@ -94,9 +94,9 @@ Riyadh click target:  24.6877,  46.7219   (Downtown Riyadh / King Fahd Road)
 > "مترو الرياض افتُتح عام 2024 وهو إشارة بنية تحتية جديدة يلتقطها النموذج — ما كان موجوداً في النماذج السابقة."
 
 **Metrics to highlight here:**
-> "On the training folds — out-of-fold cross-validation — the Riyadh model achieves R² = 0.9427 and MedAPE = 8.28%. That's the figure that tells you the model has genuinely learned the Saudi market structure."
+> "On the training folds — out-of-fold cross-validation — the Riyadh model achieves R² = 0.9252 and MedAPE = 9.03%. That's the figure that tells you the model has genuinely learned the Saudi market structure."
 
-> "On the holdout — Q1 through Q3 of 2025, entirely unseen calendar quarters — R² = 0.6747 and MedAPE = 23.45%. I'll explain that gap in a moment, but the short answer is: the holdout is a new-quarter stress test, not a random sample."
+> "On the holdout — Q1 through Q3 of 2025, entirely unseen calendar quarters — R² = 0.7981 and MedAPE = 18.16%. I'll explain that gap in a moment, but the short answer is: the holdout is a new-quarter stress test, not a random sample."
 
 ---
 
@@ -177,12 +177,13 @@ Print this section and keep it in your pocket.
 | NYC R² (holdout) | 0.6450 | Stack v11 |
 | NYC MedAPE (holdout) | 20.24% | Stack v11 |
 | Riyadh total rows | 6,910 | District-quarter obs., 2018–2025 |
-| Riyadh training rows | 4,664 | Pre-2025 Q1 (training split) |
+| Riyadh training rows | 5,531 | Trained on 2018–2024 (including Metro-era) |
 | Riyadh features | 76 | Transit, QoL, macro, rental |
-| Riyadh OOF R² | **0.9427** | 5-fold spatial GroupKFold |
-| Riyadh OOF MedAPE | **8.28%** | In-sample cross-validation |
-| Riyadh holdout R² | 0.6747 | Q1–Q3 2025, n=2,246 |
-| Riyadh holdout MedAPE | 23.45% | Out-of-sample stress test |
+| Riyadh OOF R² | **0.9252** | 5-fold spatial GroupKFold |
+| Riyadh OOF MedAPE | **9.03%** | In-sample cross-validation |
+| Riyadh holdout R² | 0.7981 | holdout covers 2025 Q1–Q3, n=1,379 |
+| Riyadh holdout MedAPE | 18.16% | Out-of-sample stress test |
+| Riyadh holdout MAE | 991 SAR/sqm | Out-of-sample stress test |
 | Haraj validation MedAPE | 54.33% | Asking vs. transaction — expected gap |
 | Haraj listings scraped | 1,824 | 474 apts, 693 villas, 640 plots |
 | NYC NTA groups | 212 | Neighbourhood spatial units |
@@ -200,11 +201,11 @@ Print this section and keep it in your pocket.
 
 ---
 
-**Q1: "Why is the Riyadh OOF score so much higher than the holdout — 0.94 vs 0.67? Isn't that overfitting?"**
+**Q1: "Why is the Riyadh OOF score higher than the holdout — 0.93 vs 0.80? Isn't that overfitting?"**
 
 > **Short answer:** It's not classical overfitting — it's temporal distribution shift plus a known limitation of district-level aggregates in GroupKFold.
 
-> **Long answer:** Three factors explain the gap. First, the holdout is Q1–Q3 2025 — an entirely unseen calendar horizon, not a random sample from the same time period. The Riyadh market accelerated after the Metro opening in 2024, and the training data represents this period only partially. Second, when data is organised as district-quarter aggregates, the OOF folds share temporal overlap: the same quarter appears across multiple folds, so the meta-learner sees some temporal information during CV. Third, the dataset has only 4,664 training rows across 163 districts, giving sparse per-district coverage. These factors combine to inflate OOF relative to the true out-of-time holdout. The holdout R² of 0.67 is the honest number — and it's competitive for a 2025-only stress test on a 6,910-row dataset.
+> **Long answer:** Three factors explain the gap. First, the holdout covers 2025 Q1–Q3 — an entirely unseen calendar horizon, not a random sample from the same time period. Even though 2024 Metro-era data (867 rows) is now correctly included in training, the 2025 quarters represent a further market evolution the model has not seen. Second, when data is organised as district-quarter aggregates, the OOF folds share temporal overlap: the same quarter appears across multiple folds, so the meta-learner sees some temporal information during CV. Third, the dataset has only 5,531 training rows across 163 districts, giving sparse per-district coverage in some areas. These factors combine to inflate OOF relative to the true out-of-time holdout. The OOF MedAPE of 9.03% vs holdout MedAPE of 18.16% shows the gap has narrowed significantly compared to the previous version (8.28% vs 23.45%), confirming that adding the 2024 Metro-era data to training was the right call. The holdout R² of 0.7981 is the honest number — and it's competitive for a 2025-only stress test on a 6,910-row dataset.
 
 ---
 

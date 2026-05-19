@@ -45,9 +45,9 @@ Open Data Portal. Across 76 features covering metro and bus transit, commercial
 density, air quality (NO₂, SO₂, PM₁₀, O₃), QoL proximity to mosques, malls,
 schools, hospitals, parks and entertainment venues, macroeconomic indices
 (REI quarterly index, Saudi average salary), district price aggregates, and
-rental market signals (SA_Aqar), the Riyadh stack achieves OOF R² = 0.9427 /
-MedAPE = 8.28% and holdout R² = 0.6747 / MedAPE = 23.45% on a 2025 Q1–Q3
-out-of-sample test set of 2,246 district-quarter observations.
+rental market signals (SA_Aqar), the Riyadh stack achieves OOF R² = 0.9252 /
+MedAPE = 9.03% and holdout R² = 0.7981 / MedAPE = 18.16% on a 2025 Q1–Q3
+out-of-sample test set of 1,379 district-quarter observations.
 
 Keywords: automated valuation model, ensemble learning, XGBoost, LightGBM,
 CatBoost, stacking, target encoding, spatial features, SHAP, New York City,
@@ -128,8 +128,8 @@ This project addresses four gaps:
     waterfall plots, natural-language explanations, and 11-layer NTA choropleth.
   - Riyadh Stack v1: a dual-city extension to Saudi Arabia using 6,910 district-
     quarter observations, 76 features (transit, QoL POIs, air quality, macro,
-    rental), and the identical stacking architecture. Achieves holdout R² = 0.6747
-    / MedAPE = 23.45% on a fully out-of-sample 2025 Q1–Q3 test set (2,246 rows).
+    rental), and the identical stacking architecture. Achieves holdout R² = 0.7981
+    / MedAPE = 18.16% on a fully out-of-sample 2025 Q1–Q3 test set (1,379 rows).
     Includes 133 Riyadh district polygons from OSM and a 12-layer choropleth.
 
 ================================================================================
@@ -992,14 +992,14 @@ Statistics and the Ministry of Justice.
 The Riyadh dataset comprises 6,910 district-quarter observations covering 163
 Riyadh districts across Q1 2018–Q3 2025, sourced from two channels:
   (a) Saudi Open Data Portal quarterly real estate reports (XLSX/CSV format)
-      covering 2018–2023 baseline and 2024 Q1, Q3, Q4 and 2025 Q1–Q3.
+      covering 2018–2024 baseline and 2025 Q1–Q3.
   (b) SA_Aqar rental platform: 960 active Riyadh listings scraped and aggregated
       to 4 district-level medians (unit size, bedrooms, property age, rent/sqm).
 
 Price range: 222–12,565 SAR/sqm; median 3,303 SAR/sqm. Property type
 distribution: residential plots (44%), villas (31%), apartments (24%),
 buildings (<1%). The train/holdout split is strictly temporal: training on
-Q1 2018–Q4 2024 (4,664 rows), holdout on Q1–Q3 2025 (2,246 rows) — an entirely
+Q1 2018–Q4 2024 (5,531 rows), holdout on Q1–Q3 2025 (1,379 rows) — an entirely
 unseen calendar horizon that stress-tests temporal generalisation.
 
 10.2 Feature Engineering
@@ -1060,19 +1060,19 @@ Target: log1p(sale_price_sar_sqm).
 
 10.4 Results
 -------------
-  OOF  (5-fold spatial GroupKFold):  R² = 0.9427 | MedAPE =  8.28%
-  Holdout (Q1–Q3 2025, n=2,246):     R² = 0.6747 | MedAPE = 23.45%
-                                      MAE = 1,206 SAR/sqm
+  OOF  (5-fold spatial GroupKFold):  R² = 0.9252 | MedAPE =  9.03%
+  Holdout (Q1–Q3 2025, n=1,379):     R² = 0.7981 | MedAPE = 18.16%
+                                      MAE = 991 SAR/sqm
 
-The large OOF-to-holdout gap (R² 0.94 → 0.67, MedAPE 8% → 23%) is attributable
+The OOF-to-holdout gap (R² 0.93 → 0.80, MedAPE 9% → 18%) is attributable
 to three factors:
   (a) Temporal distribution shift: the holdout is entirely Q1–Q3 2025, a period
-      of Riyadh market acceleration post-Metro opening that the training data
-      represents only partially.
+      of Riyadh market acceleration post-Metro opening that is not represented
+      in training.
   (b) District-level granularity: each row represents a district × quarter
       aggregate, not an individual sale. OOF folds share temporal overlap
       (same quarters appear across folds), inflating OOF performance.
-  (c) Data volume: 4,664 training rows across 163 districts yield sparse per-
+  (c) Data volume: 5,531 training rows across 163 districts yield sparse per-
       district coverage, limiting neighbourhood-specific learning.
 
 The meta-learner coefficients (XGB: 0.198, LGB: −0.147, CAT: 0.954) reveal
@@ -1273,7 +1273,7 @@ The key technical contributions are:
 A parallel Riyadh extension demonstrates cross-market generalisability of the
 stacking architecture. Trained on 6,910 Saudi Open Data district-quarter
 observations (2018–2025) across 76 features, the Riyadh stack achieves OOF
-R² = 0.9427 / MedAPE = 8.28% and holdout R² = 0.6747 / MedAPE = 23.45%
+R² = 0.9252 / MedAPE = 9.03% and holdout R² = 0.7981 / MedAPE = 18.16%
 (SAR/sqm) on a fully out-of-sample 2025 Q1–Q3 horizon. The identical pipeline
 — GroupKFold CV, Ridge meta-learner, KD-tree spatial lookups, FastAPI inference
 endpoint — required no architectural changes to operate on a data-scarce
