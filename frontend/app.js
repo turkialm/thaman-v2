@@ -40,6 +40,7 @@ function isInRiyadh(lat, lng) {
 let _ntaGeoJSON      = null;   // raw NTA GeoJSON (NYC)
 let _districtGeoJSON = null;   // raw district GeoJSON (Riyadh)
 let _activeLayer     = null;   // current Leaflet GeoJSON layer on map
+let _riyadhBorderLayer = null; // permanent district border outline (Riyadh)
 let _activeMetric    = 'none'; // which layer is showing
 
 // ── Layer metadata ────────────────────────────────────────────────────
@@ -72,9 +73,7 @@ const LAYER_META_RIYADH = {
   metro_density: { key: 'metro_stations_1km',          label: 'Metro Density',       unit: 'stations/1km', palette: 'blue',   fmt: v => Math.round(v)                                      },
   bus_access:    { key: 'bus_stops_500m',              label: 'Bus Stop Density',    unit: '/500m',        palette: 'blue',   fmt: v => Math.round(v)                                      },
   commercial:    { key: 'commercial_count_1km',        label: 'Commercial Services', unit: '/1km',         palette: 'green',  fmt: v => Math.round(v)                                      },
-  hypermarkets:  { key: 'hypermarket_count_1km',       label: 'Hypermarkets',        unit: '/1km',         palette: 'green',  fmt: v => Math.round(v)                                      },
   air_no2:       { key: 'no2_nearest_mean',            label: 'NO₂ Level',           unit: 'ppb avg',      palette: 'red',    fmt: v => v.toFixed(1),                        invert: true  },
-  air_pm10:      { key: 'pm10_nearest_mean',           label: 'PM10 Level',          unit: 'ppb avg',      palette: 'red',    fmt: v => v.toFixed(1),                        invert: true  },
   air_quality:   { key: 'air_quality_score',           label: 'Air Quality Score',   unit: '0–100',        palette: 'green',  fmt: v => v.toFixed(0)                                       },
   price_index:   { key: 'rei_residential_qtr_idx',     label: 'Price Index',         unit: '2023=100',     palette: 'orange', fmt: v => v.toFixed(1)                                       },
   apt_price:     { key: 'district_median_price_sqm',   label: 'Median Price/sqm',    unit: 'SAR/sqm',      palette: 'green',  fmt: v => `﷼${Math.round(v).toLocaleString()}`               },
@@ -535,6 +534,12 @@ function setCityMode(mode) {
       if (aptBtn) aptBtn.classList.add('active');
       showLayer('apt_price');
     });
+    ensureDistrictLoaded(() => {
+      if (_riyadhBorderLayer) { map.removeLayer(_riyadhBorderLayer); _riyadhBorderLayer = null; }
+      _riyadhBorderLayer = L.geoJSON(_districtGeoJSON, { style: { color: '#374151', weight: 1, fillOpacity: 0, opacity: 0.5 } }).addTo(map);
+    });
+  } else {
+    if (_riyadhBorderLayer) { map.removeLayer(_riyadhBorderLayer); _riyadhBorderLayer = null; }
   }
 
   // Fly map to the selected city
