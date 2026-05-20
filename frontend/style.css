@@ -1859,6 +1859,12 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   margin-top: 6px;
   opacity: .92;
 }
+.riyadh-total-label {
+  font-weight: 400;
+  font-size: .85rem;
+  opacity: .7;
+  margin-right: 2px;
+}
 .riyadh-confidence {
   font-size: .76rem;
   opacity: .75;
