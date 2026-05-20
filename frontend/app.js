@@ -192,9 +192,19 @@ function isInNYC(lat, lng) {
 // ── Inverse mask: red overlay outside NYC (NYC mode only) ─────────────
 // Fetches nyc_boundary.geojson (MultiPolygon dissolved from NTA data).
 // Hidden in Riyadh mode — otherwise the whole city appears red-tinted.
-let _nycOutOfBoundsMask = null;
+let _nycOutOfBoundsMask    = null;
+let _riyadhOutOfBoundsMask = null;
 
 const _MASK_STYLE = { stroke: false, fillColor: '#ef4444', fillOpacity: 0.25, interactive: false };
+
+// Build Riyadh out-of-bounds mask once (world minus Riyadh bbox hole)
+function _ensureRiyadhMask() {
+  if (_riyadhOutOfBoundsMask) return;
+  _riyadhOutOfBoundsMask = L.polygon([
+    [[ 90, -180], [ 90,  180], [-90,  180], [-90, -180]],          // world
+    [[24.35, 46.30], [25.10, 46.30], [25.10, 47.20], [24.35, 47.20]], // Riyadh hole
+  ], _MASK_STYLE);
+}
 
 function _setNycOutOfBoundsMask(visible) {
   if (!_nycOutOfBoundsMask) return;
@@ -506,8 +516,14 @@ function setCityMode(mode) {
     ? 'THAMAN — Riyadh Property Valuation'
     : 'THAMAN — NYC Property Valuation';
 
-  // NYC-only: red mask marks area outside city limits
+  // Red out-of-bounds mask — each city masks areas outside its limits
   _setNycOutOfBoundsMask(!isRiyadh);
+  _ensureRiyadhMask();
+  if (isRiyadh) {
+    if (!map.hasLayer(_riyadhOutOfBoundsMask)) _riyadhOutOfBoundsMask.addTo(map);
+  } else {
+    if (_riyadhOutOfBoundsMask && map.hasLayer(_riyadhOutOfBoundsMask)) map.removeLayer(_riyadhOutOfBoundsMask);
+  }
 
   // Show/hide the Listings overlay button (Riyadh only)
   const listingsBtn = document.getElementById('listingsLayerBtn');
