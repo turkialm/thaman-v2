@@ -971,10 +971,10 @@ def predict_riyadh(req: RiyadhPredictRequest):
     if not hasattr(_scorer, "predict_riyadh"):
         raise HTTPException(status_code=503, detail="Riyadh scorer not available.")
 
-    # Default year/quarter to current
+    # Default year/quarter to current; cap year at 2025 (last training year)
     import datetime as _dt
     now = _dt.datetime.now()
-    year    = req.year    or now.year
+    year    = min(req.year or now.year, 2025)   # model trained on 2018–2024; 2025 is safe extrapolation ceiling
     quarter = req.quarter or ((now.month - 1) // 3 + 1)
 
     # Build feature row
