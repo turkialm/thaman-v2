@@ -516,6 +516,25 @@ function setCityMode(mode) {
     map.removeLayer(_listingsLayer);
   }
 
+  // Update map hint text for correct city
+  const mapHintTextEl = document.getElementById('mapHintText');
+  if (mapHintTextEl) {
+    mapHintTextEl.textContent = isRiyadh
+      ? TR[currentLang].mapHintRiyadh
+      : TR[currentLang].mapHint;
+  }
+
+  // Auto-load district price layer when entering Riyadh
+  if (isRiyadh) {
+    ensureDistrictLoaded(() => {
+      // Activate apt_price layer and update button state
+      document.querySelectorAll('#riyadhLayerGroup .layer-btn').forEach(b => b.classList.remove('active'));
+      const aptBtn = document.querySelector('#riyadhLayerGroup [data-layer="apt_price"]');
+      if (aptBtn) aptBtn.classList.add('active');
+      showLayer('apt_price');
+    });
+  }
+
   // Fly map to the selected city
   map.flyTo(isRiyadh ? RIYADH_CENTER : NYC_CENTER, 11, { duration: 1.5 });
 }
@@ -2540,6 +2559,7 @@ const TR = {
     belowMedian:    'below median',
     analytics:      'Analytics',
     mapHint:        'Click anywhere in New York City to place a pin',
+    mapHintRiyadh:  'Click anywhere in Riyadh to place a pin',
     tagline:        'NYC Property Valuation · AI-Powered',
     taglineRiyadh:  'Riyadh Property Valuation · AI-Powered',
     outOfNYC:       'Click within New York City boundaries',
@@ -2604,6 +2624,7 @@ const TR = {
     belowMedian:    'تحت الوسيط',
     analytics:      'التحليلات',
     mapHint:        'انقر في أي مكان بمدينة نيويورك لوضع الدبوس',
+    mapHintRiyadh:  'انقر في أي مكان في الرياض لوضع الدبوس',
     tagline:        'تقييم عقارات نيويورك · مدعوم بالذكاء الاصطناعي',
     taglineRiyadh:  'تقييم عقارات الرياض · مدعوم بالذكاء الاصطناعي',
     outOfNYC:       'انقر داخل حدود مدينة نيويورك',
@@ -2648,7 +2669,7 @@ function setLang(lang) {
   // Header
   document.getElementById('headerTagline').textContent = _cityMode === 'riyadh' ? T.taglineRiyadh : T.tagline;
   document.getElementById('analyticsLabel').textContent = T.analytics;
-  document.getElementById('mapHintText').textContent   = T.mapHint;
+  document.getElementById('mapHintText').textContent   = _cityMode === 'riyadh' ? T.mapHintRiyadh : T.mapHint;
 
   // How-to card
   document.getElementById('howToTitle').textContent = T.howToUse;
