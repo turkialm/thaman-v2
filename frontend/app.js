@@ -528,18 +528,20 @@ function setCityMode(mode) {
   // Auto-load district price layer when entering Riyadh
   if (isRiyadh) {
     ensureDistrictLoaded(() => {
-      // Activate apt_price layer and update button state
+      if (_cityMode !== 'riyadh') return;  // guard: user may have switched back before GeoJSON loaded
       document.querySelectorAll('#riyadhLayerGroup .layer-btn').forEach(b => b.classList.remove('active'));
       const aptBtn = document.querySelector('#riyadhLayerGroup [data-layer="apt_price"]');
       if (aptBtn) aptBtn.classList.add('active');
       showLayer('apt_price');
     });
     ensureDistrictLoaded(() => {
+      if (_cityMode !== 'riyadh') return;  // guard
       if (_riyadhBorderLayer) { map.removeLayer(_riyadhBorderLayer); _riyadhBorderLayer = null; }
       _riyadhBorderLayer = L.geoJSON(_districtGeoJSON, { style: { color: '#374151', weight: 1, fillOpacity: 0, opacity: 0.5 } }).addTo(map);
     });
   } else {
     if (_riyadhBorderLayer) { map.removeLayer(_riyadhBorderLayer); _riyadhBorderLayer = null; }
+    showLayer('none');  // ensure legend cleared when returning to NYC
   }
 
   // Fly map to the selected city
