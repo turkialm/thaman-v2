@@ -58,3 +58,18 @@ config.env
 data/raw/nyc_waterfront.geojson
 data/processed/features_v5.csv
 data/raw/quarter_report SI.xlsx
+
+# ── Untracked raw data (large, not needed in repo) ───────────────────────
+data/raw/SAMA_StatisticalReport_*.xls
+data/raw/bus-roads-*.geojson
+data/raw/by-type-of-housing-unit-*.parquet
+data/raw/housing-units-*.parquet
+data/raw/number-of-vehicles-*.geojson
+data/raw/residential-in-land-use-*.csv
+data/raw/riyadh_district_polygons.geojson
+data/raw/saudi-arabia-traffic-accidents-*.geojson
+data/raw/saudi-hourly-weather-data_Historical.zip
+data/processed/features_v3.csv
+data/processed/features_v5.csv
+logs/
+data/raw/commercial-services-by-category-sub-municipality-and-district-2024*
