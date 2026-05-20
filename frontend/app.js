@@ -1520,9 +1520,8 @@ function renderRiyadhResults(data) {
     ];
     grid.innerHTML = items.map(item => `
       <div class="riyadh-spatial-item">
-        <div class="riyadh-spatial-icon">${item.icon}</div>
-        <div class="riyadh-spatial-label">${item.label}</div>
-        <div class="riyadh-spatial-value">${item.value}</div>
+        <span class="rs-label">${item.icon} ${item.label}</span>
+        <span class="rs-val">${item.value}</span>
       </div>`).join('');
   }
 
