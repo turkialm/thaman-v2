@@ -54,6 +54,7 @@ _spatial:     SpatialLookup | None = None
 _nearby_df                         = None   # pl.DataFrame — runtime sales lookup
 _nearby_tree                       = None   # scipy cKDTree for nearby queries
 _nta_geojson_cache: str | None     = None   # pre-built NTA choropleth GeoJSON
+_listings_geojson_cache: str | None = None  # pre-built Haraj listings GeoJSON
 _riyadh_spatial: RiyadhSpatialLookup | None = None
 _district_geojson_cache: str | None = None  # pre-built Riyadh district GeoJSON
 _mta_tree                          = None   # KDTree for MTA station nearest-neighbor
@@ -196,7 +197,7 @@ def _build_sales_tiles():
 async def lifespan(app: FastAPI):
     """Load model + spatial data once at startup."""
     global _scorer, _spatial, _nearby_df, _nearby_tree, _nta_geojson_cache
-    global _mta_tree, _mta_feats, _riyadh_spatial, _district_geojson_cache
+    global _mta_tree, _mta_feats, _riyadh_spatial, _district_geojson_cache, _listings_geojson_cache
     print("=" * 60)
     print("THAMAN API — Starting up (v2)")
     print("=" * 60)
@@ -1299,7 +1300,11 @@ def nta_layer():
     """Return NTA boundary GeoJSON enriched with per-NTA statistics for map choropleth layers."""
     if not _nta_geojson_cache:
         raise HTTPException(status_code=503, detail="NTA layer not available.")
-    return Response(content=_nta_geojson_cache, media_type="application/json")
+    return Response(
+        content=_nta_geojson_cache,
+        media_type="application/json",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
 
 
 def _build_district_geojson(riyadh_spatial) -> str:
@@ -1363,14 +1368,26 @@ def district_layer():
             status_code=503,
             detail="District layer not available. Run scripts/riyadh_feature_engineering.py first.",
         )
-    return Response(content=_district_geojson_cache, media_type="application/json")
+    return Response(
+        content=_district_geojson_cache,
+        media_type="application/json",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
 
 
 @app.get("/layers/listings", tags=["Riyadh"])
 def get_listings_layer():
     """Return scraped Haraj listings as GeoJSON for map display."""
-    import glob, csv
+    global _listings_geojson_cache
+    import glob, csv, json as _json
     from pathlib import Path
+
+    if _listings_geojson_cache:
+        return Response(
+            content=_listings_geojson_cache,
+            media_type="application/json",
+            headers={"Cache-Control": "public, max-age=1800"},
+        )
 
     features = []
     pattern = str(Path(BASE) / "data" / "raw" / "saudi_listings_haraj_*.csv")
@@ -1408,4 +1425,9 @@ def get_listings_layer():
             except (ValueError, KeyError):
                 continue
 
-    return {"type": "FeatureCollection", "features": features}
+    _listings_geojson_cache = _json.dumps({"type": "FeatureCollection", "features": features})
+    return Response(
+        content=_listings_geojson_cache,
+        media_type="application/json",
+        headers={"Cache-Control": "public, max-age=1800"},
+    )
