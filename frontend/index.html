@@ -26,10 +26,9 @@
     </div>
     <div class="header-badges">
       <span id="nycBadgeGroup">
-        <span class="badge badge-green">Stack v11</span>
-        <span class="badge badge-blue">R² = 0.647</span>
-        <span class="badge badge-purple">MedAPE 20.23%</span>
-        <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
+        <span id="hdrStack" class="badge badge-green">Stack v11</span>
+        <span id="hdrR2" class="badge badge-blue">R² = 0.647</span>
+        <span id="hdrMedape" class="badge badge-purple">MedAPE 20.23%</span>
         <button class="badge badge-gray" onclick="openCompare()" style="cursor:pointer;border:none">⚖ Compare</button>
       </span>
       <span id="riyadhBadgeGroup" style="display:none">
@@ -37,6 +36,7 @@
         <span class="badge badge-blue">R² = 0.798</span>
         <span class="badge badge-purple">MedAPE 18.16%</span>
       </span>
+      <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
       <a href="/docs" target="_blank" class="badge badge-gray">API Docs ↗</a>
       <!-- Language Toggle -->
       <div class="lang-toggle" role="group" aria-label="Language">
@@ -90,9 +90,7 @@
           <button class="layer-btn" data-layer="metro_density">🚉 Metro Density</button>
           <button class="layer-btn" data-layer="bus_access">🚌 Bus Stops</button>
           <button class="layer-btn" data-layer="commercial">🏪 Commercial</button>
-          <button class="layer-btn" data-layer="hypermarkets">🛒 Hypermarkets</button>
           <button class="layer-btn" data-layer="air_no2">🌫️ NO₂ Air</button>
-          <button class="layer-btn" data-layer="air_pm10">💨 PM10 Air</button>
           <button class="layer-btn" data-layer="air_quality">✅ Air Quality</button>
           <button class="layer-btn" data-layer="price_index">📈 Price Index</button>
           <button class="layer-btn" data-layer="apt_price">💰 Apt Price</button>
