@@ -491,9 +491,11 @@ function setCityMode(mode) {
   showLayer('none');
 
   // Show/hide city-specific predict forms and clear Riyadh results
-  document.getElementById('predictForm').style.display  = isRiyadh ? 'none' : '';
-  document.getElementById('riyadhForm').style.display   = isRiyadh ? ''     : 'none';
-  document.getElementById('riyadhResults').style.display = 'none';
+  document.getElementById('addrSearchWrap').style.display  = isRiyadh ? 'none' : '';
+  document.getElementById('locationDisplay').style.display = isRiyadh ? 'none' : '';
+  document.getElementById('predictForm').style.display     = isRiyadh ? 'none' : '';
+  document.getElementById('riyadhForm').style.display      = isRiyadh ? ''     : 'none';
+  document.getElementById('riyadhResults').style.display   = 'none';
 
   // Swap header badges, tagline, and page title
   document.getElementById('nycBadgeGroup').style.display    = isRiyadh ? 'none'    : '';
