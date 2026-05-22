@@ -24,6 +24,11 @@ let _waterfallChart  = null;  // Chart.js waterfall instance
 let _shapView        = 'bars'; // 'bars' | 'waterfall'
 let _lastDrivers     = [];    // cache top_drivers for view toggle
 
+// ── Fetch abort controllers — cancel in-flight requests on re-submit ──
+let _geocodeAbort      = null;  // geocode (Nominatim)
+let _predictAbort      = null;  // NYC /predict
+let _riyadhPredictAbort= null;  // Riyadh /predict/riyadh
+
 // ── City mode ─────────────────────────────────────────────────────────
 let _cityMode = 'nyc';  // 'nyc' | 'riyadh'
 
@@ -450,7 +455,6 @@ async function toggleListingsLayer(btn) {
       },
       onEachFeature: (feat, layer) => {
         const p = feat.properties;
-        const fmtSAR = n => n >= 1e6 ? `﷼${(n/1e6).toFixed(2)}M` : `﷼${(n/1e3).toFixed(0)}K`;
         layer.bindPopup(`
           <div style="min-width:200px;font-family:inherit">
             <div style="font-weight:700;font-size:1rem;margin-bottom:6px">${p.district || '—'}</div>
@@ -649,7 +653,12 @@ async function geocodeAddress() {
         `q=${encodeURIComponent(q + ', New York City')}&format=json&limit=1` +
         `&countrycodes=us&bounded=1&viewbox=-74.26,40.47,-73.70,40.92`;
 
-    const res  = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+    if (_geocodeAbort) _geocodeAbort.abort();
+    _geocodeAbort = new AbortController();
+    const res  = await fetch(url, {
+      headers: { 'Accept-Language': 'en' },
+      signal:  _geocodeAbort.signal,
+    });
     const data = await res.json();
 
     if (!data || data.length === 0) {
@@ -752,6 +761,7 @@ async function geocodeAddress() {
     }
 
   } catch (err) {
+    if (err.name === 'AbortError') return;  // superseded by newer request
     showAddrError(TR[currentLang].addrError);
     console.error('Geocoding error:', err);
   } finally {
@@ -1386,6 +1396,8 @@ async function fetchSalesForView() {
       try {
         const r = await fetch(`${API_BASE}/sales/tile?tx=${tx}&ty=${ty}`);
         _tileCache.set(key, r.ok ? (await r.json()).sales || [] : []);
+        // LRU eviction: keep at most 300 tiles (~8 MB) to prevent memory growth
+        if (_tileCache.size > 300) _tileCache.delete(_tileCache.keys().next().value);
       } catch (_) { _tileCache.set(key, []); }
       finally     { _tileInflight.delete(key); }
     }));
@@ -1450,10 +1462,14 @@ predictForm.addEventListener('submit', async (e) => {
   hideResults();
 
   try {
+    if (_predictAbort) _predictAbort.abort();
+    _predictAbort = new AbortController();
+
     const res  = await fetch(`${API_BASE}/predict`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload),
+      signal:  _predictAbort.signal,
     });
 
     if (!res.ok) {
@@ -1466,6 +1482,7 @@ predictForm.addEventListener('submit', async (e) => {
     fetchNearby(lat, lon, sqft);
 
   } catch (err) {
+    if (err.name === 'AbortError') return;
     console.error(err);
     alert(`Prediction failed: ${err.message}\n\nMake sure the API server is running at http://localhost:8000`);
   } finally {
@@ -1503,10 +1520,14 @@ document.getElementById('riyadhForm').addEventListener('submit', async (e) => {
   document.getElementById('riyadhResults').style.display = 'none';
 
   try {
+    if (_riyadhPredictAbort) _riyadhPredictAbort.abort();
+    _riyadhPredictAbort = new AbortController();
+
     const res = await fetch(`${API_BASE}/predict/riyadh`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ latitude: lat, longitude: lon, property_type: type, area_sqm: area }),
+      signal:  _riyadhPredictAbort.signal,
     });
     if (!res.ok) {
       const err = await res.json();
@@ -1515,6 +1536,7 @@ document.getElementById('riyadhForm').addEventListener('submit', async (e) => {
     const data = await res.json();
     renderRiyadhResults(data);
   } catch (err) {
+    if (err.name === 'AbortError') return;
     console.error(err);
     alert(`Riyadh prediction failed: ${err.message}\n\nMake sure the API server is running at http://localhost:8000`);
   } finally {
