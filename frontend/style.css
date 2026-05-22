@@ -1938,3 +1938,141 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   color: var(--gray-500);
   font-family: var(--font-ar);
 }
+
+/* ── City Comparison Modal ─────────────────────────────────────────── */
+.cc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,.55);
+  z-index: 9100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+.cc-modal {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 860px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.cc-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px 13px;
+  border-bottom: 1px solid var(--gray-200);
+  flex-shrink: 0;
+}
+.cc-modal-header h2 {
+  font-size: .98rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+.cc-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.05rem;
+  color: var(--gray-500);
+  padding: 2px 7px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.cc-close:hover { background: var(--gray-100); color: var(--gray-900); }
+
+/* grid: label | NYC | Riyadh */
+.cc-table {
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: 175px 1fr 1fr;
+}
+
+/* sticky column headers */
+.cc-thead { display: contents; }
+.cc-thead .cc-cell {
+  position: sticky;
+  top: 0;
+  background: var(--white);
+  z-index: 2;
+  padding: 10px 16px 10px;
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  border-bottom: 2px solid var(--gray-200);
+}
+.cc-head-nyc { color: var(--blue-dark); }
+.cc-head-riy { color: var(--green); }
+
+/* section divider */
+.cc-section {
+  grid-column: 1 / -1;
+  padding: 9px 16px 7px;
+  font-size: .68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--gray-500);
+  background: var(--gray-50);
+  border-top: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+/* data rows */
+.cc-row { display: contents; }
+.cc-row .cc-cell {
+  padding: 7px 16px;
+  font-size: .8rem;
+  color: var(--gray-700);
+  border-bottom: 1px solid var(--gray-100);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.cc-row .cc-cell.cc-label {
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+/* bar rows */
+.cc-bar-row .cc-cell { flex-direction: column; align-items: flex-start; gap: 3px; padding-bottom: 9px; }
+.cc-bar-wrap { width: 100%; height: 5px; background: var(--gray-200); border-radius: 3px; overflow: hidden; }
+.cc-bar { height: 100%; border-radius: 3px; }
+.cc-bar-nyc  { background: var(--blue); }
+.cc-bar-riy  { background: var(--green); }
+.cc-bar-warn { background: var(--orange); }
+
+/* value highlights */
+.cc-num { font-weight: 700; font-size: .88rem; }
+.cc-num-nyc  { color: var(--blue-dark); }
+.cc-num-riy  { color: var(--green); }
+.cc-num-warn { color: var(--orange); }
+.cc-num-good { color: var(--green); }
+
+.cc-strong { font-weight: 700; color: var(--gray-900); }
+.cc-chip {
+  display: inline-block;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  font-size: .63rem;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.cc-yes { color: var(--green); font-weight: 700; }
+.cc-no  { color: var(--gray-300); }
+
+@media (max-width: 580px) {
+  .cc-table { grid-template-columns: 100px 1fr 1fr; }
+  .cc-row .cc-cell { font-size: .72rem; padding: 6px 10px; }
+  .cc-modal-header h2 { font-size: .85rem; }
+}
