@@ -92,6 +92,32 @@ class ThamanScorer:
         self._riyadh_shap_explainer = None   # lazy-built on first SHAP call
         self._nyc_shap_explainer    = None   # lazy-built on first NYC SHAP call
 
+    # ── Fast single-row path: direct numpy, no Polars overhead ─────
+    def _prepare_single(self, feat_dict: dict) -> np.ndarray:
+        """
+        Build float32[1, n_features] directly from a dict — bypasses Polars
+        DataFrame creation for single-row inference (~3ms faster per request).
+        Applies winsorize clipping and ACRIS median fill identical to _prepare().
+        """
+        vals = np.empty(len(self.feature_names), dtype=np.float32)
+        for i, f in enumerate(self.feature_names):
+            v = feat_dict.get(f)
+            # Fill null / NaN with ACRIS median if available, else 0
+            if v is None or (isinstance(v, float) and v != v):
+                v = self.acris_medians.get(f)
+                v = 0.0 if (v is None or (isinstance(v, float) and v != v)) else float(v)
+            else:
+                try:
+                    v = float(v)
+                except (ValueError, TypeError):
+                    v = 0.0
+            # Winsorize
+            cap = self.winsorize.get(f)
+            if cap is not None and v > cap:
+                v = float(cap)
+            vals[i] = v
+        return vals.reshape(1, -1)
+
     # ── Internal: preprocess feature matrix ────────────────────────
     def _prepare(self, df: pl.DataFrame) -> np.ndarray:
         X = df.select(self.feature_names)
@@ -111,27 +137,24 @@ class ThamanScorer:
             X = X.with_columns(fill_exprs)
         return X.fill_null(0).fill_nan(0.0).to_numpy().astype(np.float32)
 
-    # ── Main prediction method ──────────────────────────────────────
-    def predict(self, df: pl.DataFrame) -> np.ndarray:
+    # ── Core prediction from pre-built numpy array ─────────────────
+    def _predict_from_array(self, Xv: np.ndarray) -> np.ndarray:
         """
-        Predict prices for a DataFrame. Returns USD array.
-        Uses stack (XGB + LGB + Ridge) when available, else XGB alone.
+        Run stacked ensemble on a pre-built float32 array.
+        Used by both predict() (batch) and predict_single() (fast single-row path).
         """
-        Xv = self._prepare(df)
         dmat = xgb.DMatrix(Xv, feature_names=self.feature_names)
         log_xgb = self.model.predict(dmat)
 
         if self._stack is not None:
             ver = self._stack.get("version", "v4")
             if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11"):
-                # 4-model diverse stack: XGB-A + XGB-B + LGB + CAT
                 log_xa  = self._stack["xgb_a"].predict(Xv).astype(np.float32)
                 log_xb  = self._stack["xgb_b"].predict(Xv).astype(np.float32)
                 log_lgb = self._stack["lgb"].predict(Xv).astype(np.float32)
                 log_cat = self._stack["cat"].predict(Xv).astype(np.float32)
                 S = np.column_stack([log_xa, log_xb, log_lgb, log_cat])
             else:
-                # Legacy v4 / v3 stack: XGB (base model) + LGB [+ CAT]
                 log_lgb = self._stack["lgb"].predict(Xv).astype(np.float32)
                 cols = [log_xgb, log_lgb]
                 if "cat" in self._stack:
@@ -144,16 +167,20 @@ class ThamanScorer:
 
         stack_prices = np.expm1(log_final)
 
-        # Luxury blend: soft ramp from threshold → threshold*2 for Manhattan $3M+
         if self._luxury is not None:
-            log_lux     = self._luxury.predict(dmat).astype(np.float32)
-            lux_prices  = np.expm1(log_lux)
-            lo          = float(self._luxury_threshold)
-            hi          = lo * 2.0
-            alpha       = np.clip((stack_prices - lo) / (hi - lo), 0.0, 1.0)
+            log_lux    = self._luxury.predict(dmat).astype(np.float32)
+            lux_prices = np.expm1(log_lux)
+            lo         = float(self._luxury_threshold)
+            hi         = lo * 2.0
+            alpha      = np.clip((stack_prices - lo) / (hi - lo), 0.0, 1.0)
             return (1.0 - alpha) * stack_prices + alpha * lux_prices
 
         return stack_prices
+
+    # ── Main prediction method ──────────────────────────────────────
+    def predict(self, df: pl.DataFrame) -> np.ndarray:
+        """Predict prices for a DataFrame. Returns USD array."""
+        return self._predict_from_array(self._prepare(df))
 
     # ── Single property convenience method ─────────────────────────
     def predict_single(self, **kwargs) -> dict:
@@ -182,9 +209,9 @@ class ThamanScorer:
         }
         defaults.update(clean_kwargs)
 
-        row   = pl.from_dicts([defaults])
-        Xv    = self._prepare(row)           # keep for SHAP (1-row float32 array)
-        price = float(self.predict(row)[0])
+        # Fast numpy path — skip Polars DataFrame creation for single-row inference
+        Xv    = self._prepare_single(defaults)         # float32[1, n_features]
+        price = float(self._predict_from_array(Xv)[0]) # returns array; take scalar
 
         if self._stack is not None and "stack" in self.meta:
             medape = self.meta["stack"]["medape_holdout"]

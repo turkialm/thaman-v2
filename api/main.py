@@ -24,6 +24,7 @@ import json
 import time
 import asyncio
 import datetime
+import hashlib
 
 import numpy as np
 import polars as pl
@@ -68,6 +69,11 @@ _sales_tiles: dict = {}                     # (tx,ty) → list[dict]
 # ── Comps cache (zip_code → (result_dict, unix_timestamp)) ────────────
 _comps_cache: dict[str, tuple[dict, float]] = {}
 _COMPS_TTL   = 86_400   # 24 h
+
+_v11_zip_fallbacks: dict = {}   # pre-computed fallback medians by col (ZIP features)
+_v11_nta_fallbacks: dict = {}   # pre-computed fallback medians by col (NTA features)
+_nta_etag:      str = ""        # MD5 of NTA GeoJSON for 304 support
+_district_etag: str = ""        # MD5 of district GeoJSON for 304 support
 
 _NEARBY_COLS = [
     "latitude", "longitude", "sale_price", "address",
@@ -193,24 +199,54 @@ def _build_sales_tiles():
     print(f"  Sales tiles: {len(tiles)} tiles pre-baked")
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Load model + spatial data once at startup."""
-    global _scorer, _spatial, _nearby_df, _nearby_tree, _nta_geojson_cache
-    global _mta_tree, _mta_feats, _riyadh_spatial, _district_geojson_cache, _listings_geojson_cache
-    print("=" * 60)
-    print("THAMAN API — Starting up (v2)")
-    print("=" * 60)
-    _scorer  = ThamanScorer()
-    _spatial = SpatialLookup()
+def _build_v11_fallbacks():
+    """Pre-compute global median fallbacks for _lookup_v11_features (called once at startup)."""
+    global _v11_zip_fallbacks, _v11_nta_fallbacks
+    if _scorer is None:
+        return
+    meta = _scorer.meta
+    zip_lookup = meta.get("v11_zip_lookup", {})
+    nta_lookup = meta.get("v11_nta_lookup", {})
+    _ZIP_COLS = ["hpd_class_b_viol_zip", "hpd_class_c_viol_zip",
+                 "hpd_severity_score_zip", "dob_reno_permit_count", "dob_newbld_permit_count"]
+    _NTA_COLS = ["rat_density_nta", "heat_density_nta"]
+    for col in _ZIP_COLS:
+        vals = [float(v[col]) for v in zip_lookup.values() if col in v]
+        _v11_zip_fallbacks[col] = float(np.median(vals)) if vals else 0.0
+    for col in _NTA_COLS:
+        vals = [float(v[col]) for v in nta_lookup.values() if col in v]
+        _v11_nta_fallbacks[col] = float(np.median(vals)) if vals else 0.0
+    print(f"  v11 fallbacks: {len(_v11_zip_fallbacks)} ZIP cols, {len(_v11_nta_fallbacks)} NTA cols")
 
-    # Load lightweight nearby-sales index (subset of features.csv)
+
+# ── Startup init helpers (run in parallel via asyncio.to_thread) ──────
+
+def _startup_scorer():
+    global _scorer
+    _scorer = ThamanScorer()
+
+def _startup_spatial():
+    global _spatial
+    try:
+        _spatial = SpatialLookup()
+    except Exception as e:
+        print(f"  Spatial lookup: init failed — {e}")
+
+def _startup_riyadh_spatial():
+    global _riyadh_spatial
+    try:
+        _riyadh_spatial = RiyadhSpatialLookup()
+    except Exception as e:
+        print(f"  Riyadh spatial: init failed — {e}")
+
+def _startup_nearby_df():
+    global _nearby_df, _nearby_tree
     try:
         from scipy.spatial import cKDTree as _KDTree
         _nearby_path = os.path.join(BASE, "data", "processed", "features.csv")
-        available    = [c for c in _NEARBY_COLS
-                        if c in pl.read_csv(_nearby_path, n_rows=0).columns]
-        _nearby_df   = (
+        available = [c for c in _NEARBY_COLS
+                     if c in pl.read_csv(_nearby_path, n_rows=0).columns]
+        _nearby_df = (
             pl.read_csv(_nearby_path, columns=available)
             .drop_nulls(subset=["latitude", "longitude", "sale_price"])
         )
@@ -219,18 +255,85 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"  [nearby] Could not load nearby index: {e}")
 
-    # Build MTA station KDTree for v11 transit-quality features
+def _startup_nta_geojson():
+    global _nta_geojson_cache, _nta_etag
+    try:
+        _nta_geojson_cache = _build_nta_geojson()
+        if _nta_geojson_cache:
+            _nta_etag = hashlib.md5(_nta_geojson_cache.encode()).hexdigest()[:16]
+            print(f"  NTA layer: GeoJSON built ({len(_nta_geojson_cache)//1024} KB)")
+        else:
+            print("  NTA layer: nta_boundaries.geojson not found — /layers/nta unavailable")
+    except Exception as e:
+        print(f"  NTA layer: build failed — {e}")
+
+def _startup_riyadh_stats():
+    global _riyadh_stats_cache
+    try:
+        _riyadh_stats_cache = _build_riyadh_stats()
+        if _riyadh_stats_cache:
+            print(f"  Riyadh stats: cached ({_riyadh_stats_cache.get('overview',{}).get('total_rows',0):,} rows)")
+    except Exception as e:
+        print(f"  Riyadh stats: build failed — {e}")
+
+def _startup_listings_geojson():
+    global _listings_geojson_cache
+    import glob, csv
+    from pathlib import Path
+    try:
+        pattern = str(Path(BASE) / "data" / "raw" / "saudi_listings_haraj_*.csv")
+        files = sorted(glob.glob(pattern))
+        if not files:
+            return
+        features = []
+        with open(files[-1], encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                try:
+                    lat = float(row["lat"]); lon = float(row["lon"])
+                    psqm = float(row["price_per_sqm"])
+                    price = float(row["price_sar"])
+                    area = float(row["area_sqm"])
+                    if not (23.5 <= lat <= 26.0 and 45.5 <= lon <= 48.0):
+                        continue
+                    if psqm <= 0:
+                        continue
+                    features.append({
+                        "type": "Feature",
+                        "geometry": {"type": "Point", "coordinates": [lon, lat]},
+                        "properties": {
+                            "listing_id":    row.get("listing_id", ""),
+                            "district":      row.get("district", ""),
+                            "type_en":       row.get("property_type_en", ""),
+                            "type_ar":       row.get("property_type_ar", ""),
+                            "price_sar":     round(price),
+                            "area_sqm":      round(area, 1),
+                            "price_per_sqm": round(psqm),
+                            "bedrooms":      row.get("bedrooms", ""),
+                            "url":           row.get("url", ""),
+                        }
+                    })
+                except (ValueError, KeyError):
+                    continue
+        _listings_geojson_cache = json.dumps({"type": "FeatureCollection", "features": features})
+        print(f"  Listings GeoJSON: {len(features)} features cached")
+    except Exception as e:
+        print(f"  Listings GeoJSON: build failed — {e}")
+
+def _startup_mta_tree():
+    global _mta_tree, _mta_feats
+    if _scorer is None:
+        return
     try:
         from scipy.spatial import KDTree as _SciKDTree
         _stations = _scorer.meta.get("mta_stations", [])
         if _stations:
             _slats = np.array([s["lat"] for s in _stations], dtype=np.float64)
             _slons = np.array([s["lon"] for s in _stations], dtype=np.float64)
-            _mta_tree  = _SciKDTree(np.column_stack([_slats, _slons]))
+            _mta_tree = _SciKDTree(np.column_stack([_slats, _slons]))
             _mta_feats = {
-                "is_cbd":       np.array([s.get("is_cbd",       0) for s in _stations], dtype=np.int32),
-                "route_count":  np.array([s.get("route_count",  1) for s in _stations], dtype=np.int32),
-                "is_ada":       np.array([s.get("is_ada",       0) for s in _stations], dtype=np.int32),
+                "is_cbd":      np.array([s.get("is_cbd",      0) for s in _stations], dtype=np.int32),
+                "route_count": np.array([s.get("route_count", 1) for s in _stations], dtype=np.int32),
+                "is_ada":      np.array([s.get("is_ada",      0) for s in _stations], dtype=np.int32),
             }
             print(f"  MTA station index: {len(_stations)} complexes loaded")
         else:
@@ -238,30 +341,57 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"  [MTA] KDTree build failed: {e}")
 
-    # Build NTA choropleth GeoJSON cache
-    try:
-        _nta_geojson_cache = _build_nta_geojson()
-        if _nta_geojson_cache:
-            print(f"  NTA layer: GeoJSON built ({len(_nta_geojson_cache)//1024} KB)")
-        else:
-            print("  NTA layer: nta_boundaries.geojson not found — /layers/nta unavailable")
-    except Exception as e:
-        print(f"  NTA layer: build failed — {e}")
-
-    # Pre-bake sales tile grid for instant map rendering
+def _startup_sales_tiles():
+    if _nearby_df is None:
+        return
     try:
         _build_sales_tiles()
     except Exception as e:
         print(f"  Sales tiles: build failed — {e}")
 
-    # Riyadh spatial lookup + district choropleth
+def _startup_district_geojson():
+    global _district_geojson_cache, _district_etag
+    if _riyadh_spatial is None:
+        return
     try:
-        _riyadh_spatial = RiyadhSpatialLookup()
         _district_geojson_cache = _build_district_geojson(_riyadh_spatial)
         if _district_geojson_cache:
+            _district_etag = hashlib.md5(_district_geojson_cache.encode()).hexdigest()[:16]
             print(f"  Riyadh district layer: {len(_district_geojson_cache)//1024} KB built")
     except Exception as e:
-        print(f"  Riyadh spatial: init failed — {e}")
+        print(f"  Riyadh district: build failed — {e}")
+
+def _startup_v11_fallbacks():
+    if _scorer is None:
+        return
+    _build_v11_fallbacks()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load model + spatial data in parallel at startup (two dependency waves)."""
+    print("=" * 60)
+    print("THAMAN API — Starting up (v2) — parallel load")
+    print("=" * 60)
+
+    # Wave 1: fully independent tasks — run all in parallel
+    await asyncio.gather(
+        asyncio.to_thread(_startup_scorer),
+        asyncio.to_thread(_startup_spatial),
+        asyncio.to_thread(_startup_riyadh_spatial),
+        asyncio.to_thread(_startup_nearby_df),
+        asyncio.to_thread(_startup_nta_geojson),
+        asyncio.to_thread(_startup_riyadh_stats),
+        asyncio.to_thread(_startup_listings_geojson),
+    )
+
+    # Wave 2: tasks that depend on Wave 1 results
+    await asyncio.gather(
+        asyncio.to_thread(_startup_mta_tree),
+        asyncio.to_thread(_startup_sales_tiles),
+        asyncio.to_thread(_startup_district_geojson),
+        asyncio.to_thread(_startup_v11_fallbacks),
+    )
 
     print("=" * 60)
     print("THAMAN API — Ready at http://localhost:8000")
@@ -515,17 +645,12 @@ def _lookup_v11_features(ntacode: str, lat: float, lon: float,
                  "dob_newbld_permit_count"]
     zip_data = zip_lookup.get(zip_code, {})
     if not zip_data and zip_lookup:
-        # Fall back to median across all ZIPs
         zip_data = {}
     for col in _ZIP_COLS:
         if col in zip_data:
             out[col] = float(zip_data[col])
-        elif zip_lookup:
-            # Global median fallback: median of all zip values for this column
-            vals = [float(v[col]) for v in zip_lookup.values() if col in v]
-            out[col] = float(np.median(vals)) if vals else 0.0
         else:
-            out[col] = 0.0
+            out[col] = _v11_zip_fallbacks.get(col, 0.0)
 
     # ── 2. NTA-level rodent + heat density ───────────────────────────
     _NTA_COLS = ["rat_density_nta", "heat_density_nta"]
@@ -533,11 +658,8 @@ def _lookup_v11_features(ntacode: str, lat: float, lon: float,
     for col in _NTA_COLS:
         if col in nta_data:
             out[col] = float(nta_data[col])
-        elif nta_lookup:
-            vals = [float(v[col]) for v in nta_lookup.values() if col in v]
-            out[col] = float(np.median(vals)) if vals else 0.0
         else:
-            out[col] = 0.0
+            out[col] = _v11_nta_fallbacks.get(col, 0.0)
 
     # ── 3. MTA nearest-station quality ───────────────────────────────
     if _mta_tree is not None:
@@ -646,12 +768,12 @@ def api_info():
     """API info and available endpoints."""
     return {
         "name":        "THAMAN Property Valuation API",
-        "version":     "2.1.0",
+        "version":     "2.2.0",
         "description": "AI-powered NYC property price estimator",
-        "model":       "XGBoost + LightGBM + CatBoost Stack (71 features, spatial CV validated)",
+        "model":       "XGBoost + LightGBM + CatBoost Stack (104 features, spatial CV validated)",
         "performance": {
-            "R2_holdout":   0.6509,
-            "MedAPE_pct":   20.29,
+            "R2_holdout":   0.645,
+            "MedAPE_pct":   20.24,
             "MAE_usd":      1055713,
             "base_xgb_r2":  0.6537,
             "base_lgb_r2":  0.6511,
@@ -889,33 +1011,38 @@ def predict_batch(requests: list[PredictRequest]):
 _riyadh_stats_cache: dict | None = None
 
 def _build_riyadh_stats() -> dict:
-    """Precompute Riyadh analytics stats from features_riyadh.csv."""
-    import pandas as _pd, numpy as _np
+    """Precompute Riyadh analytics stats from features_riyadh.csv — pure Polars."""
     _csv = os.path.join(BASE, "data", "processed", "features_riyadh.csv")
     if not os.path.exists(_csv):
         return {}
-    df = _pd.read_csv(_csv, encoding="utf-8-sig")
+    df = pl.read_csv(_csv, encoding="utf-8-sig")
 
     # Overview
     overview = {
-        "total_rows":     int(len(df)),
-        "districts":      int(df["district_ar"].nunique()),
-        "year_range":     f"{int(df['sale_year'].min())}–{int(df['sale_year'].max())}",
+        "total_rows":       int(len(df)),
+        "districts":        int(df["district_ar"].n_unique()),
+        "year_range":       f"{int(df['sale_year'].min())}–{int(df['sale_year'].max())}",
         "median_price_sqm": round(float(df["sale_price_sar_sqm"].median()), 0),
-        "model_r2":       0.6747,
-        "model_medape":   23.45,
-        "oof_r2":         0.9427,
-        "oof_medape":     8.28,
+        "model_r2":         0.7981,
+        "model_medape":     18.16,
+        "oof_r2":           0.9252,
+        "oof_medape":       9.03,
     }
 
     # Price by year
-    py = df.groupby("sale_year")["sale_price_sar_sqm"].agg(
-        median="median", q1=lambda x: x.quantile(0.25), q3=lambda x: x.quantile(0.75)
-    ).reset_index()
+    py = (
+        df.group_by("sale_year")
+        .agg([
+            pl.col("sale_price_sar_sqm").median().alias("median"),
+            pl.col("sale_price_sar_sqm").quantile(0.25).alias("q1"),
+            pl.col("sale_price_sar_sqm").quantile(0.75).alias("q3"),
+        ])
+        .sort("sale_year")
+    )
     price_by_year = [
         {"year": int(r["sale_year"]), "median": round(float(r["median"]), 0),
          "q1": round(float(r["q1"]), 0), "q3": round(float(r["q3"]), 0)}
-        for _, r in py.iterrows()
+        for r in py.iter_rows(named=True)
     ]
 
     # Price by property type
@@ -924,20 +1051,29 @@ def _build_riyadh_stats() -> dict:
     price_by_type = []
     for col, label in type_map.items():
         if col in df.columns:
-            sub = df[df[col] == 1]["sale_price_sar_sqm"]
+            sub = df.filter(pl.col(col) == 1)["sale_price_sar_sqm"]
             if len(sub) > 5:
                 price_by_type.append({
-                    "type": col, "label": label,
+                    "type":   col,
+                    "label":  label,
                     "median": round(float(sub.median()), 0),
-                    "count":  int(len(sub))
+                    "count":  int(len(sub)),
                 })
 
     # Top 25 districts by median price (min 10 transactions)
-    dg = df.groupby("district_ar")["sale_price_sar_sqm"].agg(median="median", count="count")
-    dg = dg[dg["count"] >= 10].sort_values("median", ascending=False).head(25).reset_index()
+    dg = (
+        df.group_by("district_ar")
+        .agg([
+            pl.col("sale_price_sar_sqm").median().alias("median"),
+            pl.len().alias("count"),
+        ])
+        .filter(pl.col("count") >= 10)
+        .sort("median", descending=True)
+        .head(25)
+    )
     top_districts = [
         {"district": str(r["district_ar"]), "median": round(float(r["median"]), 0), "count": int(r["count"])}
-        for _, r in dg.iterrows()
+        for r in dg.iter_rows(named=True)
     ]
 
     return {"overview": overview, "price_by_year": price_by_year,
@@ -1296,15 +1432,17 @@ async def market_comps(lat: float, lon: float):
 
 
 @app.get("/layers/nta", tags=["Reference"])
-def nta_layer():
+def nta_layer(request: Request):
     """Return NTA boundary GeoJSON enriched with per-NTA statistics for map choropleth layers."""
     if not _nta_geojson_cache:
         raise HTTPException(status_code=503, detail="NTA layer not available.")
-    return Response(
-        content=_nta_geojson_cache,
-        media_type="application/json",
-        headers={"Cache-Control": "public, max-age=3600"},
-    )
+    etag = f'"{_nta_etag}"' if _nta_etag else ""
+    if etag and request.headers.get("If-None-Match") == etag:
+        return Response(status_code=304)
+    hdrs: dict = {"Cache-Control": "public, max-age=3600"}
+    if etag:
+        hdrs["ETag"] = etag
+    return Response(content=_nta_geojson_cache, media_type="application/json", headers=hdrs)
 
 
 def _build_district_geojson(riyadh_spatial) -> str:
@@ -1358,74 +1496,31 @@ def _build_district_geojson(riyadh_spatial) -> str:
 
 
 @app.get("/layers/district", tags=["Reference"])
-def district_layer():
-    """
-    Return Riyadh district centroid GeoJSON enriched with per-district statistics
-    (transit access, commercial density, air quality, price index) for map choropleth.
-    """
+def district_layer(request: Request):
+    """Return Riyadh district centroid GeoJSON enriched with per-district statistics for map choropleth."""
     if not _district_geojson_cache:
         raise HTTPException(
             status_code=503,
             detail="District layer not available. Run scripts/riyadh_feature_engineering.py first.",
         )
-    return Response(
-        content=_district_geojson_cache,
-        media_type="application/json",
-        headers={"Cache-Control": "public, max-age=3600"},
-    )
+    etag = f'"{_district_etag}"' if _district_etag else ""
+    if etag and request.headers.get("If-None-Match") == etag:
+        return Response(status_code=304)
+    hdrs: dict = {"Cache-Control": "public, max-age=3600"}
+    if etag:
+        hdrs["ETag"] = etag
+    return Response(content=_district_geojson_cache, media_type="application/json", headers=hdrs)
 
 
 @app.get("/layers/listings", tags=["Riyadh"])
 def get_listings_layer():
     """Return scraped Haraj listings as GeoJSON for map display."""
-    global _listings_geojson_cache
-    import glob, csv, json as _json
-    from pathlib import Path
-
-    if _listings_geojson_cache:
+    if not _listings_geojson_cache:
         return Response(
-            content=_listings_geojson_cache,
+            content='{"type":"FeatureCollection","features":[]}',
             media_type="application/json",
             headers={"Cache-Control": "public, max-age=1800"},
         )
-
-    features = []
-    pattern = str(Path(BASE) / "data" / "raw" / "saudi_listings_haraj_*.csv")
-    files = sorted(glob.glob(pattern))
-    if not files:
-        return {"type": "FeatureCollection", "features": []}
-
-    latest = files[-1]
-    with open(latest, encoding="utf-8") as f:
-        for row in csv.DictReader(f):
-            try:
-                lat = float(row["lat"]); lon = float(row["lon"])
-                psqm = float(row["price_per_sqm"])
-                price = float(row["price_sar"])
-                area = float(row["area_sqm"])
-                if not (23.5 <= lat <= 26.0 and 45.5 <= lon <= 48.0):
-                    continue
-                if psqm <= 0:
-                    continue
-                features.append({
-                    "type": "Feature",
-                    "geometry": {"type": "Point", "coordinates": [lon, lat]},
-                    "properties": {
-                        "listing_id": row.get("listing_id", ""),
-                        "district": row.get("district", ""),
-                        "type_en": row.get("property_type_en", ""),
-                        "type_ar": row.get("property_type_ar", ""),
-                        "price_sar": round(price),
-                        "area_sqm": round(area, 1),
-                        "price_per_sqm": round(psqm),
-                        "bedrooms": row.get("bedrooms", ""),
-                        "url": row.get("url", ""),
-                    }
-                })
-            except (ValueError, KeyError):
-                continue
-
-    _listings_geojson_cache = _json.dumps({"type": "FeatureCollection", "features": features})
     return Response(
         content=_listings_geojson_cache,
         media_type="application/json",
