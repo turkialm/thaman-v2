@@ -29,6 +29,7 @@ import hashlib
 import numpy as np
 import polars as pl
 import httpx as _httpx
+from scipy.spatial import cKDTree as _cKDTree
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -242,7 +243,6 @@ def _startup_riyadh_spatial():
 def _startup_nearby_df():
     global _nearby_df, _nearby_tree
     try:
-        from scipy.spatial import cKDTree as _KDTree
         _nearby_path = os.path.join(BASE, "data", "processed", "features.csv")
         available = [c for c in _NEARBY_COLS
                      if c in pl.read_csv(_nearby_path, n_rows=0).columns]
@@ -250,7 +250,7 @@ def _startup_nearby_df():
             pl.read_csv(_nearby_path, columns=available)
             .drop_nulls(subset=["latitude", "longitude", "sale_price"])
         )
-        _nearby_tree = _KDTree(_nearby_df.select(["latitude", "longitude"]).to_numpy())
+        _nearby_tree = _cKDTree(_nearby_df.select(["latitude", "longitude"]).to_numpy())
         print(f"  Nearby index: {len(_nearby_df):,} sales loaded")
     except Exception as e:
         print(f"  [nearby] Could not load nearby index: {e}")
@@ -324,7 +324,7 @@ def _startup_mta_tree():
     if _scorer is None:
         return
     try:
-        from scipy.spatial import KDTree as _SciKDTree
+        from scipy.spatial import KDTree as _SciKDTree  # noqa: F811 — different tree variant
         _stations = _scorer.meta.get("mta_stations", [])
         if _stations:
             _slats = np.array([s["lat"] for s in _stations], dtype=np.float64)
@@ -740,7 +740,7 @@ def _get_shap_drivers(feat_dict: dict) -> list[FeatureDriver]:
                 value=feat_val,
                 impact=round(impact, 4),
                 direction="positive" if impact > 0 else "negative",
-                description=_spatial.get_feature_description(fname),
+                description=_spatial.get_feature_description(fname) if _spatial else fname,
             ))
         return drivers
 
@@ -862,7 +862,6 @@ def predict(req: PredictRequest):
     _zip_str = ""
     if _nearby_df is not None and _nearby_tree is not None and "zip_code" in _nearby_df.columns:
         try:
-            from scipy.spatial import cKDTree as _KDT
             _, _nidx = _nearby_tree.query([req.latitude, req.longitude], k=1)
             _zip_raw = _nearby_df.row(int(_nidx), named=True).get("zip_code")
             _zip_str = str(int(_zip_raw)).zfill(5) if _zip_raw else ""

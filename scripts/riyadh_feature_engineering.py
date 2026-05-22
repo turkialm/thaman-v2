@@ -36,8 +36,9 @@ from sklearn.preprocessing import MinMaxScaler
 
 warnings.filterwarnings("ignore")
 
-RAW = Path("data/raw")
-PROCESSED = Path("data/processed")
+_ROOT = Path(__file__).resolve().parent.parent
+RAW = _ROOT / "data" / "raw"
+PROCESSED = _ROOT / "data" / "processed"
 PROCESSED.mkdir(parents=True, exist_ok=True)
 
 
