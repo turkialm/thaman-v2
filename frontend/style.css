@@ -1939,6 +1939,19 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   font-family: var(--font-ar);
 }
 
+/* ── NYC per-sqft / per-sqm secondary price row ─────────────────────── */
+.price-psf-row {
+  font-size: .78rem;
+  color: var(--gray-500);
+  margin: 1px 0 5px;
+  font-weight: 500;
+  letter-spacing: .01em;
+}
+.price-psf-row span {
+  font-weight: 700;
+  color: var(--gray-700);
+}
+
 /* ── City Comparison Modal ─────────────────────────────────────────── */
 .cc-overlay {
   position: fixed;
