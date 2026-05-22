@@ -1,3 +1,9 @@
+# ── Documentation output files (local only — not pushed to repo) ─────────
+docs/*.tex
+docs/*.docx
+docs/generate_docx.py
+docs/*.pdf
+
 # ── Large training-only data files ──────────────────────────────────────
 data/raw/overture_places.geojson
 data/raw/road_network/
