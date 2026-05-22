@@ -944,8 +944,17 @@ def predict(req: PredictRequest):
         "mortgage_rate_30yr":         spatial_feats.get("mortgage_rate_30yr", 0.0),
     }
 
+    # Per-unit rates (sqft = input; sqm via conversion 1 sqft = 0.0929 m²)
+    _sqft = req.gross_square_feet or 0
+    _sqm  = _sqft * 0.0929
+    _pred = result["predicted_price"]
+    price_per_sqft = round(_pred / _sqft) if _sqft > 0 else None
+    price_per_sqm  = round(_pred / _sqm)  if _sqm  > 0 else None
+
     return {
-        "predicted_price":    result["predicted_price"],
+        "predicted_price":    _pred,
+        "price_per_sqft":     price_per_sqft,
+        "price_per_sqm":      price_per_sqm,
         "confidence_low":     result["confidence_low"],
         "confidence_high":    result["confidence_high"],
         "confidence_note":    f"±{round(seg_medape, 1)}% segment MedAPE confidence interval",

@@ -1680,6 +1680,8 @@ function hideResults() {
   hideCard(spatialCard);
   hideCard(document.getElementById('marketCard'));
   document.getElementById('avmQcRow').style.display    = 'none';
+  const _psfRow = document.getElementById('pricePsfRow');
+  if (_psfRow) _psfRow.style.display = 'none';
   // (nycDriversSection removed — shapBars handles top_drivers directly)
   _compsLoaded = false;
 }
@@ -1716,6 +1718,19 @@ function renderResults(data) {
   void priceMain.offsetWidth;
   priceMain.classList.add('price-reveal');
   animatePrice(priceMain, data.predicted_price);
+
+  // Per-sqft / per-sqm secondary row
+  const _psfRow = document.getElementById('pricePsfRow');
+  if (_psfRow) {
+    if (data.price_per_sqft) {
+      document.getElementById('pricePsfVal').textContent = `$${Math.round(data.price_per_sqft).toLocaleString()}`;
+      document.getElementById('pricePsmVal').textContent = `$${Math.round(data.price_per_sqm).toLocaleString()}`;
+      _psfRow.style.display = '';
+    } else {
+      _psfRow.style.display = 'none';
+    }
+  }
+
   priceRange.textContent   = `Range: ${fmt$(data.confidence_low)} – ${fmt$(data.confidence_high)}`;
   priceContext.textContent = `🏠 ${data.borough_name} · ${data.bldgclass_description}`;
 
