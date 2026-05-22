@@ -2279,6 +2279,15 @@ function parseURLParams() {
   }
 }
 
+// ── City Comparison Modal ─────────────────────────────────────────────
+function openCityCompare() {
+  document.getElementById('cityCompareOverlay').style.display = 'flex';
+}
+function closeCityCompare(e) {
+  if (e && e.target.id !== 'cityCompareOverlay') return;
+  document.getElementById('cityCompareOverlay').style.display = 'none';
+}
+
 // ── Property Comparison Tool ──────────────────────────────────────────
 let _compareResults = { A: null, B: null };
 

@@ -37,6 +37,7 @@
         <span class="badge badge-purple">MedAPE 18.16%</span>
       </span>
       <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
+      <button class="badge badge-gray" onclick="openCityCompare()" style="cursor:pointer;border:none">🌍 Cities</button>
       <a href="/docs" target="_blank" class="badge badge-gray">API Docs ↗</a>
       <!-- Language Toggle -->
       <div class="lang-toggle" role="group" aria-label="Language">
@@ -704,6 +705,261 @@
     <div class="bldg-info-list" id="bldgInfoList"></div>
   </div>
   <div id="bldgInfoOverlay" class="bldg-info-overlay" style="display:none"></div>
+
+  <!-- ── City Comparison Modal ──────────────────────────────────────────── -->
+  <div class="cc-overlay" id="cityCompareOverlay" style="display:none" onclick="closeCityCompare(event)">
+    <div class="cc-modal" id="cityCompareModal">
+      <div class="cc-modal-header">
+        <h2>🌍 NYC vs Riyadh — Full System Comparison</h2>
+        <button class="cc-close" onclick="closeCityCompare()" aria-label="Close">✕</button>
+      </div>
+
+      <div class="cc-table">
+
+        <!-- Column headers -->
+        <div class="cc-thead">
+          <div class="cc-cell"></div>
+          <div class="cc-cell cc-head-nyc">🗽 New York City</div>
+          <div class="cc-cell cc-head-riy">🕌 Riyadh</div>
+        </div>
+
+        <!-- ── Model Performance ──────────────────── -->
+        <div class="cc-section">🤖 Model Performance</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Algorithm</div>
+          <div class="cc-cell">XGBa · XGBb · LGB · CAT → Ridge</div>
+          <div class="cc-cell">XGB · LGB · CAT → Ridge</div>
+        </div>
+
+        <div class="cc-row cc-bar-row">
+          <div class="cc-cell cc-label">R² Score (holdout)</div>
+          <div class="cc-cell">
+            <span class="cc-num cc-num-nyc">0.645</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-nyc" style="width:64.5%"></div></div>
+          </div>
+          <div class="cc-cell">
+            <span class="cc-num cc-num-riy">0.798</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:79.8%"></div></div>
+          </div>
+        </div>
+
+        <div class="cc-row cc-bar-row">
+          <div class="cc-cell cc-label">MedAPE (median error)</div>
+          <div class="cc-cell">
+            <span class="cc-num cc-num-warn">20.2%</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-warn" style="width:20.2%"></div></div>
+          </div>
+          <div class="cc-cell">
+            <span class="cc-num cc-num-good">18.2%</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:18.2%"></div></div>
+          </div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Features</div>
+          <div class="cc-cell"><span class="cc-strong">104</span> <span class="cc-chip">structural + QoL + market</span></div>
+          <div class="cc-cell"><span class="cc-strong">76</span> <span class="cc-chip">spatial + macro + POIs</span></div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Base learners</div>
+          <div class="cc-cell">4 models (XGBa, XGBb, LGB, CatBoost)</div>
+          <div class="cc-cell">3 models (XGB, LGB, CatBoost)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Meta-learner</div>
+          <div class="cc-cell">Ridge regression</div>
+          <div class="cc-cell">Ridge regression</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Cross-validation</div>
+          <div class="cc-cell">Spatial GroupKFold · 10 folds · by NTA</div>
+          <div class="cc-cell">Spatial GroupKFold · 5 folds · by district</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">OOF R² (in-sample)</div>
+          <div class="cc-cell">—</div>
+          <div class="cc-cell"><span class="cc-num cc-num-riy">0.925</span> <span class="cc-chip">OOF CV</span></div>
+        </div>
+
+        <!-- ── Dataset ─────────────────────────────── -->
+        <div class="cc-section">📊 Dataset</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Training rows</div>
+          <div class="cc-cell"><span class="cc-strong">185,092</span> sales records</div>
+          <div class="cc-cell"><span class="cc-strong">5,531</span> transactions</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Holdout rows</div>
+          <div class="cc-cell">— (time-series split)</div>
+          <div class="cc-cell"><span class="cc-strong">1,379</span> (2025 Q1–Q3)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Total rows</div>
+          <div class="cc-cell"><span class="cc-strong">185,092</span></div>
+          <div class="cc-cell"><span class="cc-strong">6,910</span></div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Years covered</div>
+          <div class="cc-cell">2022 – 2026</div>
+          <div class="cc-cell">2018 – 2024</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Data frequency</div>
+          <div class="cc-cell">Individual property sales</div>
+          <div class="cc-cell">Quarterly district aggregates</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Currency / unit</div>
+          <div class="cc-cell">USD · total property price ($)</div>
+          <div class="cc-cell">SAR · per square metre (﷼/m²)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Median price</div>
+          <div class="cc-cell"><span class="cc-strong">$820,000</span></div>
+          <div class="cc-cell"><span class="cc-strong">﷼3,303 / m²</span></div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Typical range (P10–P90)</div>
+          <div class="cc-cell">$304K – $2.6M</div>
+          <div class="cc-cell">﷼1,040 – ﷼7,269 / m²</div>
+        </div>
+
+        <!-- ── Geography ──────────────────────────── -->
+        <div class="cc-section">🗺 Geography</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Administrative units</div>
+          <div class="cc-cell">5 boroughs · 195 NTAs</div>
+          <div class="cc-cell">147 districts</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Primary data source</div>
+          <div class="cc-cell">NYC Open Data · PLUTO · ACRIS</div>
+          <div class="cc-cell">Saudi Open Data Portal · REGA</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Spatial enrichment</div>
+          <div class="cc-cell">OSM POIs · NTA polygons · NYPD</div>
+          <div class="cc-cell">OSM POIs · Riyadh metro/bus GTFS</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Map coverage bbox</div>
+          <div class="cc-cell">40.48°N – 40.92°N · 74.26°W – 73.70°W</div>
+          <div class="cc-cell">24.35°N – 25.10°N · 46.30°E – 47.20°E</div>
+        </div>
+
+        <!-- ── Feature Engineering ────────────────── -->
+        <div class="cc-section">🏗 Feature Engineering</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Structural</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> sq ft, age, floors, units, bldg class</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> area (m²), property type</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Transit</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> subway distance + density</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> metro dist/density · bus stops</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Air quality</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> PM2.5, NO₂ (NTA mean)</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> PM10, NO₂ (nearest sensor)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">QoL / safety</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> crime, noise, HPD, 311 livability</div>
+          <div class="cc-cell"><span class="cc-no">—</span> not available in open data</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">POIs (amenities)</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> restaurants, bars, grocery, gym, Airbnb</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> mosques, malls, schools, hospitals, parks</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Green space</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> tree count (200m), park proximity</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> park POI count</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Market / price history</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> prior sale price · appreciation rate</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> district price trend · REI index</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Macroeconomic</div>
+          <div class="cc-cell"><span class="cc-no">—</span> not included</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> CPI, GDP, oil price, interest rates</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Road connectivity</div>
+          <div class="cc-cell"><span class="cc-no">—</span></div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> intersection density · connectivity score</div>
+        </div>
+
+        <!-- ── Property Types ─────────────────────── -->
+        <div class="cc-section">🏠 Property Types</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Supported types</div>
+          <div class="cc-cell">9 classes: Single Family, 2-Family, 3-Family, Row House, Condo, Elevator Apt, Walk-up, Co-op, Mixed Use</div>
+          <div class="cc-cell">4 types: شقة (Apt) · فيلا (Villa) · قطعة أرض (Plot) · عمارة (Bldg)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Total bldg codes</div>
+          <div class="cc-cell"><span class="cc-strong">200+</span> NYC building class codes</div>
+          <div class="cc-cell"><span class="cc-strong">4</span> standardised Arabic categories</div>
+        </div>
+
+        <!-- ── Map Layers ──────────────────────────── -->
+        <div class="cc-section">🗺 Interactive Map Layers</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Choropleth layers</div>
+          <div class="cc-cell"><span class="cc-strong">20</span> NTA layers (income, crime, noise, air…)</div>
+          <div class="cc-cell"><span class="cc-strong">10</span> district layers (metro, price, air…)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Market overlay</div>
+          <div class="cc-cell">— (sales in result panel)</div>
+          <div class="cc-cell">🏠 Live listings cluster layer</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Out-of-bounds mask</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> red highlight outside NYC bbox</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> red highlight outside Riyadh bbox</div>
+        </div>
+
+      </div><!-- /.cc-table -->
+    </div><!-- /.cc-modal -->
+  </div><!-- /.cc-overlay -->
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
