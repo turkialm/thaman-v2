@@ -516,6 +516,8 @@
   <script>
   'use strict';
 
+  const API_BASE = '';  // same-origin; set to 'http://localhost:8000' for dev
+
   // ── Palette ──────────────────────────────────────────────────
   const C = {
     blue:      '#2563eb',
@@ -546,7 +548,11 @@
   Chart.defaults.font.size   = 12;
   Chart.defaults.color       = '#475569';
 
-  function ctx(id) { return document.getElementById(id).getContext('2d'); }
+  function ctx(id) {
+    const el = document.getElementById(id);
+    if (!el) { console.warn(`ctx: element #${id} not found`); return null; }
+    return el.getContext('2d');
+  }
 
   // ────────────────────────────────────────────────────────────────
   // 0. Stack v9 Model Comparison
@@ -572,7 +578,7 @@
           borderColor: C.orange,
           backgroundColor: 'transparent',
           borderWidth: 2.5,
-          pointRadius: [5, 5, 5, 7],
+          pointRadius: [5, 5, 5, 5, 7],
           pointBackgroundColor: C.orange,
           borderDash: [5, 4],
           yAxisID: 'y2',
@@ -1301,15 +1307,15 @@
     en: {
       tagline:    'Model Analytics Dashboard v2.1',
       backLink:   '← Back to Map',
-      features:   '71 Features',
+      features:   '104 Features',
       pageTitle:  'THAMAN v11 — NYC Property Valuation Stack',
       pageSub:    'XGBoost + LightGBM + CatBoost + Ridge meta · 104 features · HPD/DOB/QoL/transit signals · Spatial GroupKFold CV · 185K NYC sales',
       kpi1: 'R² Stack Holdout',
-      kpi2: 'Median APE',       kpi2s: '±20.23% confidence interval',
-      kpi3: 'Mean Abs Error',   kpi3s: 'holdout set (185K rows)',
+      kpi2: 'Median APE',       kpi2s: '±20.24% on 27,763 holdout sales',
+      kpi3: 'Mean Abs Error',   kpi3s: 'holdout set (27,763 rows)',
       kpi4: 'Tier Accuracy',    kpi4s: 'Within-1-tier: 96.7%',
-      kpi5: 'Boosting Rounds',  kpi5s: 'v5: 2000 rounds → v6: 4000',
-      kpi6: 'Features',         kpi6s: 'v5: 85 features (+8 NTA+structural)',
+      kpi5: 'Boosting Rounds',  kpi5s: 'v11: 5,000 rounds · early stopping 50',
+      kpi6: 'Features',         kpi6s: 'v11: 104 features (+10 HPD/DOB/MTA v11)',
       c0t: '⚖️ Stack v11 — Base Learner Comparison (XGB + LGB + CatBoost)',
       c0s: 'Holdout R² and MedAPE for each base model vs the v11 Ridge stack — 10-fold OOF + 5000 rounds + 104 features; MedAPE 20.24%',
       c1t: '🔍 SHAP Feature Importance — Top 20 (v2)',
@@ -1458,7 +1464,9 @@ async function loadRiyadhCharts() {
   if (_riyadhLoaded) return;
   _riyadhLoaded = true;
   try {
-    const data = await fetch('/riyadh/stats').then(r => r.json());
+    const _r = await fetch(`${API_BASE}/riyadh/stats`);
+    if (!_r.ok) throw new Error(`/riyadh/stats returned ${_r.status}`);
+    const data = await _r.json();
     const ov = data.overview || {};
 
     // KPI cards
@@ -1477,7 +1485,8 @@ async function loadRiyadhCharts() {
 
     // Price by year chart
     const py = data.price_by_year || [];
-    new Chart(document.getElementById('riyadhYearChart'), {
+    const _ryc = document.getElementById('riyadhYearChart');
+    if (_ryc) new Chart(_ryc, {
       type: 'line',
       data: {
         labels: py.map(d => d.year),
@@ -1495,7 +1504,8 @@ async function loadRiyadhCharts() {
 
     // Price by type chart
     const pt = data.price_by_type || [];
-    new Chart(document.getElementById('riyadhTypeChart'), {
+    const _rtc = document.getElementById('riyadhTypeChart');
+    if (_rtc) new Chart(_rtc, {
       type: 'bar',
       data: {
         labels: pt.map(d => d.label),
@@ -1512,7 +1522,8 @@ async function loadRiyadhCharts() {
 
     // Top districts chart
     const td = data.top_districts || [];
-    new Chart(document.getElementById('riyadhDistrictChart'), {
+    const _rdc = document.getElementById('riyadhDistrictChart');
+    if (_rdc) new Chart(_rdc, {
       type: 'bar',
       data: {
         labels: td.map(d => d.district),
@@ -1628,7 +1639,12 @@ async function loadRiyadhCharts() {
       }
     });
 
-  } catch (e) { console.error('Riyadh stats load failed', e); }
+  } catch (e) {
+    console.error('Riyadh stats load failed', e);
+    const kpiEl = document.getElementById('riyadhKpis');
+    if (kpiEl) kpiEl.innerHTML = `<div style="color:#ef4444;padding:1rem">
+      Failed to load Riyadh data: ${e.message}</div>`;
+  }
 }
   </script>
 </body>

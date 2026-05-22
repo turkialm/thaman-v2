@@ -437,7 +437,7 @@ async function toggleListingsLayer(btn) {
   // First load
   btn.textContent = '⏳';
   try {
-    const geojson = await fetch('/layers/listings').then(r => r.json());
+    const geojson = await fetch(`${API_BASE}/layers/listings`).then(r => r.json());
     const typeColors = {
       apartment: '#3b82f6',
       villa:     '#10b981',
