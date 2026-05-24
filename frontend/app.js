@@ -1574,6 +1574,26 @@ function renderRiyadhResults(data) {
     distEl.textContent = `${district ? district + ' · ' : ''}MedAPE ${medape.toFixed(1)}%`;
   }
 
+  // Asking-price overlay (Bayut)
+  const askingOverlay = document.getElementById('riyadhAskingOverlay');
+  if (askingOverlay) {
+    if (data.asking_price_psqm != null) {
+      const apsqm   = data.asking_price_psqm;
+      const atotal  = data.asking_price_total;
+      const spread  = data.asking_spread_pct;
+      const src     = data.asking_price_source || 'Bayut';
+      document.getElementById('riyadhAskingPsqm').textContent =
+        `${fmtSAR(apsqm)}/m²  ·  ${fmtSAR(atotal)}`;
+      const badge = document.getElementById('riyadhSpreadBadge');
+      const sign  = spread >= 0 ? '+' : '';
+      badge.textContent  = `${sign}${spread?.toFixed(0)}% asking premium over THAMAN · Source: ${src}`;
+      badge.className    = `asking-spread-badge ${spread >= 0 ? 'spread-up' : 'spread-down'}`;
+      askingOverlay.style.display = '';
+    } else {
+      askingOverlay.style.display = 'none';
+    }
+  }
+
   // Spatial grid
   const grid = document.getElementById('riyadhSpatialGrid');
   if (grid && sf) {
@@ -1798,6 +1818,26 @@ function renderResults(data) {
     document.getElementById('avmQcRow').style.display = 'flex';
   } else {
     confFill.style.width = '100%';
+  }
+
+  // ── Asking-price overlay (Redfin) ─────────────────────────────────
+  const nycAskingOverlay = document.getElementById('nycAskingOverlay');
+  if (nycAskingOverlay) {
+    if (data.asking_price_psqm != null) {
+      const apsqm  = data.asking_price_psqm;
+      const atotal = data.asking_price_total;
+      const spread = data.asking_spread_pct;
+      const src    = data.asking_price_source || 'Redfin';
+      document.getElementById('nycAskingPsqm').textContent =
+        `$${Math.round(apsqm).toLocaleString()}/m²  ·  $${Math.round(atotal).toLocaleString()}`;
+      const badge = document.getElementById('nycSpreadBadge');
+      const sign  = spread >= 0 ? '+' : '';
+      badge.textContent = `${sign}${spread?.toFixed(0)}% asking premium over THAMAN · Source: ${src}`;
+      badge.className   = `asking-spread-badge ${spread >= 0 ? 'spread-up' : 'spread-down'}`;
+      nycAskingOverlay.style.display = '';
+    } else {
+      nycAskingOverlay.style.display = 'none';
+    }
   }
 
   // ── Update map popup ──────────────────────────────────────────────

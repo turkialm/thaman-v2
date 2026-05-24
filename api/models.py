@@ -236,3 +236,8 @@ class RiyadhPredictResponse(BaseModel):
     medape_pct:           float
     spatial_features:     dict
     top_drivers:          List[FeatureDriver] = Field(default_factory=list, description="Top SHAP feature drivers")
+    # Asking-price overlay (Bayut listing median for matched district)
+    asking_price_psqm:    Optional[int]   = Field(None, description="Bayut median asking price per sqm (SAR/m²)")
+    asking_price_total:   Optional[int]   = Field(None, description="Estimated Bayut asking total for given area (SAR)")
+    asking_spread_pct:    Optional[float] = Field(None, description="Asking-price premium over THAMAN transaction estimate (%)")
+    asking_price_source:  Optional[str]   = Field(None, description="Source platform for asking-price data")

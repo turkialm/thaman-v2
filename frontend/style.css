@@ -1870,6 +1870,41 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   opacity: .75;
   margin-top: 4px;
 }
+/* ── Asking-price overlay (Bayut / Redfin) ─────────────────────────── */
+.asking-overlay {
+  margin: 10px 0 4px;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1px solid #fbbf24;
+  border-radius: 10px;
+  padding: 10px 14px 8px;
+}
+.asking-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.asking-label {
+  font-size: .73rem;
+  font-weight: 600;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.asking-val {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #78350f;
+}
+.asking-spread-badge {
+  margin-top: 5px;
+  font-size: .72rem;
+  color: #92400e;
+  line-height: 1.35;
+}
+.asking-spread-badge.spread-up   { color: #b45309; }
+.asking-spread-badge.spread-down { color: #065f46; }
+
 .riyadh-spatial-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

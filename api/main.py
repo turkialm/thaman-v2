@@ -73,6 +73,12 @@ _COMPS_TTL   = 86_400   # 24 h
 
 _v11_zip_fallbacks: dict = {}   # pre-computed fallback medians by col (ZIP features)
 _v11_nta_fallbacks: dict = {}   # pre-computed fallback medians by col (NTA features)
+
+# ── Asking-price spread tables ────────────────────────────────────────
+_riyadh_spreads: dict = {}      # district_ar → {bayut_median_psqm, spread_pct, …}
+_nyc_spreads:    dict = {}      # borough_name → {redfin_median_psqm, spread_pct, …}
+_riyadh_spread_global: float = 39.7
+_nyc_spread_global:    float = 14.4
 _nta_etag:      str = ""        # MD5 of NTA GeoJSON for 304 support
 _district_etag: str = ""        # MD5 of district GeoJSON for 304 support
 
@@ -361,6 +367,28 @@ def _startup_district_geojson():
     except Exception as e:
         print(f"  Riyadh district: build failed — {e}")
 
+def _startup_spread_tables():
+    global _riyadh_spreads, _nyc_spreads, _riyadh_spread_global, _nyc_spread_global
+    try:
+        _rp = os.path.join(BASE, "data", "processed", "asking_price_spreads_riyadh.json")
+        with open(_rp, encoding="utf-8") as f:
+            _rd = json.load(f)
+        _riyadh_spread_global = _rd.get("global_spread_pct", 39.7)
+        _riyadh_spreads       = _rd.get("districts", {})
+        print(f"  Riyadh spreads: {len(_riyadh_spreads)} districts loaded")
+    except Exception as e:
+        print(f"  Riyadh spreads: load failed — {e}")
+    try:
+        _np = os.path.join(BASE, "data", "processed", "asking_price_spreads_nyc.json")
+        with open(_np, encoding="utf-8") as f:
+            _nd = json.load(f)
+        _nyc_spread_global = _nd.get("global_spread_pct", 14.4)
+        _nyc_spreads       = _nd.get("boroughs", {})
+        print(f"  NYC spreads: {len(_nyc_spreads)} boroughs loaded")
+    except Exception as e:
+        print(f"  NYC spreads: load failed — {e}")
+
+
 def _startup_v11_fallbacks():
     if _scorer is None:
         return
@@ -383,6 +411,7 @@ async def lifespan(app: FastAPI):
         asyncio.to_thread(_startup_nta_geojson),
         asyncio.to_thread(_startup_riyadh_stats),
         asyncio.to_thread(_startup_listings_geojson),
+        asyncio.to_thread(_startup_spread_tables),
     )
 
     # Wave 2: tasks that depend on Wave 1 results
@@ -953,6 +982,16 @@ def predict(req: PredictRequest):
     price_per_sqft = round(_pred / _sqft) if _sqft > 0 else None
     price_per_sqm  = round(_pred / _sqm)  if _sqm  > 0 else None
 
+    # Asking-price overlay: Redfin borough spread
+    _borough_name = BOROUGH_NAMES.get(req.borough, str(req.borough))
+    _nyc_row      = _nyc_spreads.get(_borough_name, {})
+    _nyc_asking_psqm = _nyc_row.get("redfin_median_psqm") if _nyc_row else None
+    _nyc_spread_pct  = _nyc_row.get("spread_pct") if _nyc_row else None
+    if _nyc_asking_psqm is None:
+        _nyc_spread_pct  = _nyc_spread_global
+        _nyc_asking_psqm = (price_per_sqm or 0) * (1 + _nyc_spread_global / 100.0)
+    _nyc_asking_total = int(round(_nyc_asking_psqm * (_sqm or 1))) if _nyc_asking_psqm else None
+
     return {
         "predicted_price":    _pred,
         "price_per_sqft":     price_per_sqft,
@@ -963,12 +1002,16 @@ def predict(req: PredictRequest):
         "model":              result["model"],
         "r2_test":            result["r2_test"],
         "medape_pct":         result["medape_test_pct"],
-        "borough_name":       BOROUGH_NAMES.get(req.borough, str(req.borough)),
+        "borough_name":       _borough_name,
         "bldgclass_description": bc_desc,
         "spatial_features":   spatial_summary,
         "top_drivers":        [d.model_dump() for d in drivers],
         "avm_qc":             avm_qc_dict,
         "nta_code":           _resolved_nta or None,
+        "asking_price_psqm":  int(round(_nyc_asking_psqm)) if _nyc_asking_psqm else None,
+        "asking_price_total": _nyc_asking_total,
+        "asking_spread_pct":  round(float(_nyc_spread_pct), 1) if _nyc_spread_pct is not None else None,
+        "asking_price_source": "Redfin",
     }
 
 
@@ -1165,6 +1208,16 @@ def predict_riyadh(req: RiyadhPredictRequest):
     conf_medape = float(max(10.0, min(50.0, raw_district_medape)))
     medape_frac = conf_medape / 100.0
 
+    # Asking-price overlay: look up Bayut district spread
+    _spread_row  = _riyadh_spreads.get(district_ar, {}) if district_ar else {}
+    _asking_psqm = _spread_row.get("bayut_median_psqm") if _spread_row else None
+    _spread_pct  = _spread_row.get("spread_pct") if _spread_row else None
+    # Fallback to global spread if district not in table
+    if _asking_psqm is None:
+        _spread_pct  = _riyadh_spread_global
+        _asking_psqm = psqm * (1 + _riyadh_spread_global / 100.0)
+    _asking_total = int(round(_asking_psqm * req.area_sqm)) if _asking_psqm is not None else None
+
     return RiyadhPredictResponse(
         predicted_price_sqm  = psqm,
         predicted_total_sar  = total,
@@ -1188,6 +1241,10 @@ def predict_riyadh(req: RiyadhPredictRequest):
                                           "air_quality_score",
                                           "riyadh_connectivity_score")},
         top_drivers          = result.get("top_drivers", []),
+        asking_price_psqm    = int(round(_asking_psqm)) if _asking_psqm is not None else None,
+        asking_price_total   = _asking_total,
+        asking_spread_pct    = round(float(_spread_pct), 1) if _spread_pct is not None else None,
+        asking_price_source  = "Bayut.sa",
     )
 
 
