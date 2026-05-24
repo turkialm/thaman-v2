@@ -850,6 +850,30 @@ district_type_enc = (
     .agg(pl.col("_log_price").mean().alias("district_type_encoded"))
 )
 
+# Apartment-specific district encoding (filters to is_apartment==1)
+district_apt_enc = (
+    work_log
+    .filter(pl.col("is_apartment") == 1)
+    .group_by("district_ar")
+    .agg(pl.col("_log_price").mean().alias("district_apt_encoded"))
+)
+
+# Recent-period district encoding (2023+)
+district_recent_enc = (
+    work_log
+    .filter(pl.col("year") >= 2023)
+    .group_by("district_ar")
+    .agg(pl.col("_log_price").mean().alias("district_recent_encoded"))
+)
+
+# Apartment + recent (2023+) district encoding
+district_apt_recent_enc = (
+    work_log
+    .filter((pl.col("is_apartment") == 1) & (pl.col("year") >= 2023))
+    .group_by("district_ar")
+    .agg(pl.col("_log_price").mean().alias("district_apt_recent_encoded"))
+)
+
 # Join all district stats into main df
 df = (
     df
@@ -860,6 +884,9 @@ df = (
     .join(apt_median, on="district_ar", how="left")
     .join(district_enc, on="district_ar", how="left")
     .join(district_type_enc, on=["district_ar", "typecategoryar"], how="left")
+    .join(district_apt_enc, on="district_ar", how="left")
+    .join(district_recent_enc, on="district_ar", how="left")
+    .join(district_apt_recent_enc, on="district_ar", how="left")
 )
 
 # Fill nulls in aggregate columns with medians/global mean
@@ -873,6 +900,9 @@ for col in agg_fill_cols:
 df = df.with_columns([
     pl.col("district_encoded").fill_null(global_mean_log),
     pl.col("district_type_encoded").fill_null(global_mean_log),
+    pl.col("district_apt_encoded").fill_null(global_mean_log),
+    pl.col("district_recent_encoded").fill_null(global_mean_log),
+    pl.col("district_apt_recent_encoded").fill_null(global_mean_log),
 ])
 
 
@@ -939,7 +969,8 @@ MACRO_COLS = ["rei_residential_qtr_idx", "rei_apt_idx", "rei_yoy_change", "rei_q
               "avg_saudi_salary_yr", "salary_yoy_change"]
 DIST_COLS  = ["district_median_price_sqm", "district_transaction_volume",
               "district_price_vs_city_avg", "district_price_trend_slope",
-              "district_median_price_apt_sqm", "district_encoded", "district_type_encoded"]
+              "district_median_price_apt_sqm", "district_encoded", "district_type_encoded",
+              "district_apt_encoded", "district_recent_encoded", "district_apt_recent_encoded"]
 TIME_COLS  = ["sale_year", "sale_quarter", "sale_quarter_sin", "sale_quarter_cos", "log_deed_count"]
 SCORE_COLS = ["riyadh_connectivity_score"]
 

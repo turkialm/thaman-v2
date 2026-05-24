@@ -1194,7 +1194,22 @@ def predict_riyadh(req: RiyadhPredictRequest):
         _, idx = _riyadh_spatial._district_centroid_tree.query([[req.latitude, req.longitude]], k=1)
         district_ar = _riyadh_spatial._district_names[int(idx[0])]
 
-    psqm  = int(round(result["predicted_price_sqm"]))
+    psqm  = result["predicted_price_sqm"]
+
+    # Apartment calibration: blend model output toward district apartment-specific encoding
+    # when district is plot-heavy (apt encoding >> mixed encoding). Proportional to the gap.
+    if req.property_type == "شقة":
+        _apt_enc  = feat_dict.get("district_apt_recent_encoded", 7.8)
+        _mix_enc  = feat_dict.get("district_encoded", 7.8)
+        _apt_impl = float(np.expm1(_apt_enc))
+        _mix_impl = float(np.expm1(_mix_enc))
+        _ratio    = _apt_impl / max(_mix_impl, 1.0)
+        if _ratio > 1.2:
+            # Blend weight rises from 0 at ratio=1.2 to 0.45 at ratio=3.0+
+            _w = min(0.45, (_ratio - 1.2) / (3.0 - 1.2) * 0.45)
+            psqm = (1 - _w) * psqm + _w * _apt_impl
+
+    psqm  = int(round(psqm))
     total = int(round(psqm * req.area_sqm))
 
     # District-adaptive confidence: look up per-district holdout MedAPE

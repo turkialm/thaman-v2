@@ -659,7 +659,10 @@ class RiyadhSpatialLookup:
         )
         # Separate lookup for target-encoded district features (excluded from feat_cols
         # to avoid leakage during training, but valid and important at inference time).
-        _enc_cols = [c for c in ["district_encoded", "district_type_encoded"] if c in df.columns]
+        _enc_cols = [c for c in [
+            "district_encoded", "district_type_encoded",
+            "district_apt_encoded", "district_recent_encoded", "district_apt_recent_encoded",
+        ] if c in df.columns]
         _enc_agg = df.groupby("district_ar")[_enc_cols].median()
         self._district_encoded_map: dict = _enc_agg.to_dict("index")  # district_ar → {col: val}
         # KDTree on district centroids — use district_centroids.csv + a hardcoded
@@ -838,11 +841,19 @@ class RiyadhSpatialLookup:
         _GLOBAL_TYPE = 7.8
         if _matched_district and hasattr(self, "_district_encoded_map"):
             _enc = self._district_encoded_map.get(_matched_district, {})
-            feats["district_encoded"]      = float(_enc.get("district_encoded",      _GLOBAL_ENC))
-            feats["district_type_encoded"] = float(_enc.get("district_type_encoded", _GLOBAL_TYPE))
+            feats["district_encoded"]            = float(_enc.get("district_encoded",            _GLOBAL_ENC))
+            feats["district_type_encoded"]       = float(_enc.get("district_type_encoded",       _GLOBAL_TYPE))
+            feats["district_recent_encoded"]     = float(_enc.get("district_recent_encoded",     _GLOBAL_ENC))
+            # Always use apartment-specific encoding regardless of property type —
+            # matches training where district_apt_encoded is a district-level feature (same value for all rows in district)
+            feats["district_apt_encoded"]        = float(_enc.get("district_apt_encoded",        _GLOBAL_ENC))
+            feats["district_apt_recent_encoded"] = float(_enc.get("district_apt_recent_encoded", _GLOBAL_ENC))
         else:
-            feats.setdefault("district_encoded",      _GLOBAL_ENC)
-            feats.setdefault("district_type_encoded", _GLOBAL_TYPE)
+            feats.setdefault("district_encoded",            _GLOBAL_ENC)
+            feats.setdefault("district_type_encoded",       _GLOBAL_TYPE)
+            feats.setdefault("district_apt_encoded",        _GLOBAL_ENC)
+            feats.setdefault("district_recent_encoded",     _GLOBAL_ENC)
+            feats.setdefault("district_apt_recent_encoded", _GLOBAL_ENC)
 
         # 7. Connectivity score (recalculate from live spatial if scaler params available)
         # Keep the district median value from step 3 unless live override is possible
