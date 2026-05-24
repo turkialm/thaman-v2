@@ -60,8 +60,8 @@ class ThamanScorer:
             self._stack = joblib.load(stack_path)
             # v6/v5: xgb_a + xgb_b + lgb + cat; v4: lgb + cat; v3: lgb only
             ver = self._stack.get("version", "v4")
-            if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11"):
-                label = f"XGB-A + XGB-B + LGB + CAT + Ridge ({ver})"
+            if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12"):
+                label = f"XGB-A + XGB-B + LGB + CAT + Ridge/LGB-meta ({ver})"
             elif "cat" in self._stack:
                 label = "XGB + LGB + CAT + Ridge (v4)"
             else:
@@ -148,7 +148,7 @@ class ThamanScorer:
 
         if self._stack is not None:
             ver = self._stack.get("version", "v4")
-            if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11"):
+            if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12"):
                 log_xa  = self._stack["xgb_a"].predict(Xv).astype(np.float32)
                 log_xb  = self._stack["xgb_b"].predict(Xv).astype(np.float32)
                 log_lgb = self._stack["lgb"].predict(Xv).astype(np.float32)
@@ -217,7 +217,7 @@ class ThamanScorer:
             medape = self.meta["stack"]["medape_holdout"]
             r2     = self.meta["stack"]["r2_holdout"]
             ver    = self._stack.get("version", "v4") if self._stack else "v4"
-            model_label = f"Stack {ver} · 4-Model Ensemble" if ver in ("v5","v6","v7","v8","v9","v10","v11") else "XGBoost + LightGBM Stack"
+            model_label = f"Stack {ver} · 4-Model Ensemble" if ver in ("v5","v6","v7","v8","v9","v10","v11","v12") else "XGBoost + LightGBM Stack"
         else:
             medape = self.meta["xgboost"]["medape_test"]
             r2     = self.meta["xgboost"]["r2_test"]
@@ -259,7 +259,7 @@ class ThamanScorer:
                 )
                 # For v5+ stacks: [xgb_a, xgb_b, lgb, cat]; cat is index 3
                 ver = stk.get("version", "v4")
-                if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11") and len(meta_coeffs) >= 4:
+                if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12") and len(meta_coeffs) >= 4:
                     w_cat = float(meta_coeffs[3])
                 elif len(meta_coeffs) >= 3:
                     w_cat = float(meta_coeffs[2])
