@@ -65,6 +65,7 @@ FEATURES = [
     "district_median_price_apt_sqm",
     # Target-encoded
     "district_encoded", "district_type_encoded",
+    "district_apt_encoded", "district_recent_encoded", "district_apt_recent_encoded",
     # Time
     "sale_year", "sale_quarter_sin", "sale_quarter_cos",
     "log_deed_count",
