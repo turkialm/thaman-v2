@@ -509,6 +509,13 @@ class ThamanScorer:
         "aqar_median_bedrooms":         "Median rental bedrooms",
         "aqar_median_property_age":     "Median rental property age",
         "aqar_rent_per_sqm":            "Median rent per sqm",
+        # v2 features
+        "district_enc_oof":             "District price (historical avg)",
+        "district_apt_enc_oof":         "District apartment price (historical)",
+        "district_lookback_mean":       "District price history",
+        "district_lookback_apt_mean":   "District apartment price history",
+        "city_quarter_mean":            "City market level",
+        "bayut_asking_psqm":            "Bayut listing price signal",
         "is_apartment":                 "Property: apartment",
         "is_villa":                     "Property: villa",
         "is_residential_plot":          "Property: residential plot",

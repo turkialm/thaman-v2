@@ -75,20 +75,11 @@
     "rei_qoq_change",
     "avg_saudi_salary_yr",
     "salary_yoy_change",
-    "district_median_price_sqm",
     "district_transaction_volume",
-    "district_price_vs_city_avg",
-    "district_price_trend_slope",
-    "district_median_price_apt_sqm",
-    "district_encoded",
-    "district_type_encoded",
-    "district_apt_encoded",
-    "district_recent_encoded",
-    "district_apt_recent_encoded",
+    "log_deed_count",
     "sale_year",
     "sale_quarter_sin",
     "sale_quarter_cos",
-    "log_deed_count",
     "dist_mosque_m",
     "log_dist_mosque_m",
     "mosque_count_500m",
@@ -107,24 +98,47 @@
     "dist_entertain_m",
     "log_dist_entertain_m",
     "entertain_count_500m",
-    "riyadh_connectivity_score"
+    "riyadh_connectivity_score",
+    "district_lookback_mean",
+    "district_lookback_apt_mean",
+    "city_quarter_mean",
+    "bayut_asking_psqm",
+    "district_enc_oof",
+    "district_apt_enc_oof"
   ],
-  "n_features": 75,
-  "holdout_r2": 0.6726,
-  "holdout_medape_pct": 23.57,
-  "holdout_mae_sar_sqm": 1217.48,
-  "oof_r2": 0.9429,
-  "oof_medape_pct": 8.49,
-  "model_version": "riyadh_v1",
+  "n_features": 72,
+  "holdout_r2": 0.6841,
+  "holdout_medape_pct": 22.24,
+  "holdout_mae_sar_sqm": 1207.75,
+  "oof_r2": 0.7453,
+  "oof_medape_pct": 19.75,
+  "model_version": "riyadh_v2",
   "n_folds": 5,
   "train_rows": 4664,
   "holdout_rows": 2246,
   "meta_coefficients": [
-    0.10818990872676582,
-    -0.07751499278932764,
-    0.9720090805484194
+    2.7399130089834887,
+    -0.4474983967841456,
+    -1.1297291125901259
   ],
-  "meta_intercept": -0.017251516322116522,
+  "meta_intercept": -1.1932465062291273,
   "target": "log1p(sale_price_sar_sqm)",
-  "y_unit": "SAR/sqm"
+  "y_unit": "SAR/sqm",
+  "v2_improvements": [
+    "OOF target encodings (no leakage)",
+    "District look-back mean (past quarters only)",
+    "Bayut asking price as feature",
+    "LGB min_child_samples 10->20",
+    "CAT l2_leaf_reg 2->3"
+  ],
+  "v3_improvements": [
+    "Per-type look-back: villa, plot",
+    "Type x spatial interactions: apt*metro, apt*commercial, villa*park, villa*school, plot*intersections",
+    "XGB min_child_weight 5->7"
+  ],
+  "v4_improvements": [
+    "SA_Aqar rental structure features (size, age, rent/sqm)",
+    "Bayut per-type structural features (villa/apt/plot area + psqm)",
+    "Haraj property age proxy (villa, apt)"
+  ]
 }
