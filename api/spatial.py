@@ -657,11 +657,64 @@ class RiyadhSpatialLookup:
             .median()
             .reset_index()
         )
-        # KDTree on district centroids for fast nearest-district lookup
-        cents = self._district_feat_df[["district_lat", "district_lon"]].values.astype(np.float64)
+        # Separate lookup for target-encoded district features (excluded from feat_cols
+        # to avoid leakage during training, but valid and important at inference time).
+        _enc_cols = [c for c in ["district_encoded", "district_type_encoded"] if c in df.columns]
+        _enc_agg = df.groupby("district_ar")[_enc_cols].median()
+        self._district_encoded_map: dict = _enc_agg.to_dict("index")  # district_ar → {col: val}
+        # KDTree on district centroids — use district_centroids.csv + a hardcoded
+        # fallback table for 13 districts whose geocodes defaulted to city-centre
+        # (24.7136, 46.6753) in features_riyadh.csv and are absent from the CSV.
+        cent_csv = os.path.join(PROC, "district_centroids.csv")
+        _cent_override: dict = {}
+        if os.path.exists(cent_csv):
+            import pandas as _pd2
+            _c = _pd2.read_csv(cent_csv)
+            _cent_override = {
+                row["district_ar"]: (float(row["district_lat"]), float(row["district_lon"]))
+                for _, row in _c.iterrows()
+                if not (_pd2.isna(row["district_lat"]) or _pd2.isna(row["district_lon"]))
+            }
+
+        # Hardcoded real centroids for districts missing from district_centroids.csv
+        # (verified against Google Maps / OSM district polygons)
+        _HARDCODED: dict = {
+            "ظهره العودة غرب":  (24.7389, 46.5165),  # Zahrat Al Awda West — Diriyah fringe
+            "ظهرة العودة شرق":  (24.7530, 46.5454),  # Zahrat Al Awda East — Diriyah fringe
+            "الشفاء":           (24.5608, 46.6930),  # Al Shifa — south Riyadh
+            "الصفاء":           (24.6717, 46.7700),  # Al Safa — east-central Riyadh
+            "المنصورة":         (24.6091, 46.7444),  # Al Mansourah — south Riyadh
+            "الوسام":           (24.6275, 46.6800),  # Al Wisam — south Riyadh
+            "وادي لبن":         (24.6200, 46.5650),  # Wadi Laban — west Riyadh
+            "الرابية":          (24.8000, 46.6600),  # Al Rabi'a — north Riyadh
+            "السحاب":           (24.7700, 46.7150),  # Al Sahab — north-east Riyadh
+            "الملك سلمان":      (24.7630, 46.6440),  # King Salman — north Riyadh (KAFD area)
+            "المرجان":          (24.6600, 46.7500),  # Al Murjan — east Riyadh
+            "سدرة":             (24.7650, 46.7000),  # Sidra — north Riyadh
+            "أخرى":             (99.0, 0.0),          # "Other" catch-all — sentinel far outside Riyadh so it never wins
+        }
+        _cent_override.update(_HARDCODED)
+
+        _DEFAULT_LAT, _DEFAULT_LON = 24.7136, 46.6753
+        cent_lats, cent_lons = [], []
+        _fixed = 0
+        for _, row in self._district_feat_df.iterrows():
+            d_ar = row["district_ar"]
+            feat_lat = float(row.get("district_lat", _DEFAULT_LAT) or _DEFAULT_LAT)
+            feat_lon = float(row.get("district_lon", _DEFAULT_LON) or _DEFAULT_LON)
+            is_default = (abs(feat_lat - _DEFAULT_LAT) < 0.001 and abs(feat_lon - _DEFAULT_LON) < 0.001)
+            if is_default and d_ar in _cent_override:
+                cent_lats.append(_cent_override[d_ar][0])
+                cent_lons.append(_cent_override[d_ar][1])
+                _fixed += 1
+            else:
+                cent_lats.append(feat_lat)
+                cent_lons.append(feat_lon)
+
+        cents = np.array(list(zip(cent_lats, cent_lons)), dtype=np.float64)
         self._district_centroid_tree = cKDTree(cents)
         self._district_names = self._district_feat_df["district_ar"].tolist()
-        print(f"  District stats: {len(self._district_stats)} districts | predict features: {len(feat_cols)}")
+        print(f"  District stats: {len(self._district_stats)} districts | predict features: {len(feat_cols)} | centroid-corrected: {_fixed}")
 
     # ── Lookup ────────────────────────────────────────────────────────────────
 
@@ -760,9 +813,11 @@ class RiyadhSpatialLookup:
         quarter_id = year * 10 + quarter
 
         # 3. Nearest district baseline features
+        _matched_district: str = ""
         if self._district_centroid_tree is not None and self._district_feat_df is not None:
             _, idx = self._district_centroid_tree.query([[lat, lon]], k=1)
             row = self._district_feat_df.iloc[int(idx[0])].to_dict()
+            _matched_district = str(row.get("district_ar", ""))
             feats.update({
                 k: v for k, v in row.items()
                 if k != "district_ar"
@@ -776,11 +831,18 @@ class RiyadhSpatialLookup:
         # 5. Log deed count (use district median as a proxy for a typical transaction)
         feats.setdefault("log_deed_count", float(np.log1p(5)))
 
-        # 6. District target encoding — district_encoded and district_type_encoded
-        # Already carried from district_feat_df medians via step 3
-        # Ensure they exist
-        feats.setdefault("district_encoded",      feats.get("district_encoded", 7.8))
-        feats.setdefault("district_type_encoded", feats.get("district_type_encoded", 7.8))
+        # 6. District target encoding — look up per-district medians.
+        # These were excluded from feat_cols to avoid leakage during training but
+        # are valid and important at inference time (they carry district price signal).
+        _GLOBAL_ENC  = 7.8
+        _GLOBAL_TYPE = 7.8
+        if _matched_district and hasattr(self, "_district_encoded_map"):
+            _enc = self._district_encoded_map.get(_matched_district, {})
+            feats["district_encoded"]      = float(_enc.get("district_encoded",      _GLOBAL_ENC))
+            feats["district_type_encoded"] = float(_enc.get("district_type_encoded", _GLOBAL_TYPE))
+        else:
+            feats.setdefault("district_encoded",      _GLOBAL_ENC)
+            feats.setdefault("district_type_encoded", _GLOBAL_TYPE)
 
         # 7. Connectivity score (recalculate from live spatial if scaler params available)
         # Keep the district median value from step 3 unless live override is possible
