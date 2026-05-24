@@ -1096,6 +1096,12 @@ map.on('click', (e) => {
   mapHint.classList.add('hidden');
 });
 
+// ── Tile-based sales layer constants (must be before first fetchSalesForView call) ─
+const _TILE_DEG    = 0.05;
+const _NYC_MIN_LAT = 40.45, _NYC_MIN_LON = -74.30;
+const _tileCache   = new Map();
+const _tileInflight= new Set();
+
 // ── Map moveend: refresh sale bubbles (debounced) ─────────────────────
 map.on('moveend', () => {
   clearTimeout(_salesTimer);
@@ -1368,10 +1374,6 @@ function shapContext(feature, value, isPositive) {
 
 // ── Fetch sales for the current map viewport (bbox) ──────────────────
 // ── Tile-based sales layer — O(1) server lookups, client-side cache ───
-const _TILE_DEG    = 0.05;
-const _NYC_MIN_LAT = 40.45, _NYC_MIN_LON = -74.30;
-const _tileCache   = new Map();   // "tx_ty" → sales[]
-const _tileInflight= new Set();   // tiles currently fetching
 
 function _viewportTiles(bounds) {
   const minTx = Math.floor((bounds.getWest()  - _NYC_MIN_LON) / _TILE_DEG);
