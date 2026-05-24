@@ -1499,7 +1499,8 @@ document.getElementById('riyadhForm').addEventListener('submit', async (e) => {
   const lat  = parseFloat(document.getElementById('riyadhLat').value);
   const lon  = parseFloat(document.getElementById('riyadhLon').value);
   const type = document.getElementById('riyadhType').value;
-  const area = parseFloat(document.getElementById('riyadhArea').value);
+  const areaRaw = document.getElementById('riyadhArea').value;
+  const area = areaRaw !== '' ? parseFloat(areaRaw) : NaN;
 
   if (!lat || !lon) {
     return;
@@ -1508,7 +1509,7 @@ document.getElementById('riyadhForm').addEventListener('submit', async (e) => {
     document.getElementById('riyadhTypeGrid').classList.add('invalid');
     return;
   }
-  if (!area || area <= 0) {
+  if (isNaN(area) || area <= 0) {
     document.getElementById('riyadhArea').classList.add('invalid');
     return;
   }
