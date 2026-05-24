@@ -709,6 +709,46 @@ def _lookup_v11_features(ntacode: str, lat: float, lon: float,
     return out
 
 
+def _lookup_v12_features(ntacode: str) -> dict:
+    """
+    Resolve v12 quarterly NTA temporal features for inference.
+    Uses today's year/quarter to look up Q-1 and Q-2 NTA market stats
+    from the nta_lag_q_map stored in meta.json.
+    """
+    if _scorer is None:
+        return {}
+    import datetime as _dt
+    meta      = _scorer.meta
+    lag1_map  = meta.get("nta_lag_q_map",  {})
+    lag2_map  = meta.get("nta_lag_q2_map", {})
+    glb       = meta.get("nta_lag_q_globals", {})
+    g_logp    = float(glb.get("mean_logp",  13.0))
+    g_psf     = float(glb.get("median_psf", 500.0))
+    g_cnt     = float(glb.get("count",      50.0))
+
+    now = _dt.date.today()
+    yrq = (now.year - 2018) * 4 + (now.month - 1) // 3
+
+    key1 = f"{ntacode}_{yrq}"
+    key2 = f"{ntacode}_{yrq}"
+    r1   = lag1_map.get(key1, {})
+    r2   = lag2_map.get(key2)
+
+    lag1_logp = float(r1.get("mean_logp",  g_logp))
+    lag1_psf  = float(r1.get("median_psf", g_psf))
+    lag1_cnt  = float(r1.get("count",      g_cnt))
+    lag2_logp = float(r2) if r2 is not None else g_logp
+    momentum  = lag1_logp - lag2_logp
+
+    return {
+        "nta_lag1q_mean_logp":  lag1_logp,
+        "nta_lag1q_median_psf": lag1_psf,
+        "nta_lag1q_count":      lag1_cnt,
+        "nta_lag2q_mean_logp":  lag2_logp,
+        "nta_logp_momentum":    momentum,
+    }
+
+
 def _count_comparables(lat: float, lon: float, radius_m: int = 800) -> int:
     """
     Count training-set sales within radius_m metres using the already-loaded
@@ -802,13 +842,13 @@ def api_info():
         "name":        "THAMAN Property Valuation API",
         "version":     "2.2.0",
         "description": "AI-powered NYC property price estimator",
-        "model":       "XGBoost + LightGBM + CatBoost Stack (104 features, spatial CV validated)",
+        "model":       "XGBoost + LightGBM + CatBoost Stack v12 (109 features, spatial CV validated)",
         "performance": {
-            "R2_holdout":   0.645,
-            "MedAPE_pct":   20.24,
-            "MAE_usd":      1055713,
-            "base_xgb_r2":  0.6537,
-            "base_lgb_r2":  0.6511,
+            "R2_holdout":   0.6446,
+            "MedAPE_pct":   20.31,
+            "MAE_usd":      1065028,
+            "base_xgb_r2":  0.6409,
+            "base_lgb_r2":  0.6386,
         },
         "endpoints": {
             "GET  /api":         "API info (this response)",
@@ -901,6 +941,9 @@ def predict(req: PredictRequest):
             pass
     v11_feats = _lookup_v11_features(_resolved_nta, req.latitude, req.longitude, _zip_str)
     feat_dict.update(v11_feats)
+
+    # 2d. v12 features: quarterly NTA temporal lookback
+    feat_dict.update(_lookup_v12_features(_resolved_nta))
 
     # 3. Run prediction
     try:
@@ -1046,6 +1089,7 @@ def predict_batch(requests: list[PredictRequest]):
                 except Exception:
                     pass
             feat_dict.update(_lookup_v11_features(_b_nta, req.latitude, req.longitude, _b_zip))
+            feat_dict.update(_lookup_v12_features(_b_nta))
             result        = _scorer.predict_single(**feat_dict)
             results.append({
                 "index":           i,
@@ -1078,10 +1122,10 @@ def _build_riyadh_stats() -> dict:
         "districts":        int(df["district_ar"].n_unique()),
         "year_range":       f"{int(df['sale_year'].min())}–{int(df['sale_year'].max())}",
         "median_price_sqm": round(float(df["sale_price_sar_sqm"].median()), 0),
-        "model_r2":         0.6726,
-        "model_medape":     23.57,
-        "oof_r2":           0.9429,
-        "oof_medape":       8.49,
+        "model_r2":         0.6841,
+        "model_medape":     22.24,
+        "oof_r2":           0.8441,
+        "oof_medape":       19.75,
     }
 
     # Price by year
@@ -1221,7 +1265,7 @@ def predict_riyadh(req: RiyadhPredictRequest):
     total = int(round(psqm * req.area_sqm))
 
     # District-adaptive confidence: look up per-district holdout MedAPE
-    # Falls back to global model MedAPE (23.57%) if district not in table
+    # Falls back to global model MedAPE (22.24%) if district not in table
     global_medape = result["medape_pct"]
     district_medape_tbl = {}
     if _scorer and hasattr(_scorer, '_riyadh_meta'):
