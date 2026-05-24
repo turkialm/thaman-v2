@@ -1181,34 +1181,42 @@ def predict_riyadh(req: RiyadhPredictRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Feature build failed: {e}")
 
-    # Predict (SAR/sqm, log-space)
-    try:
-        result = _scorer.predict_riyadh(**feat_dict)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Riyadh prediction failed: {e}")
-
-    # Find nearest district name for display
+    # Resolve district name (needed for v2 feature maps)
     district_ar = None
     if (_riyadh_spatial._district_centroid_tree is not None
             and _riyadh_spatial._district_names):
         _, idx = _riyadh_spatial._district_centroid_tree.query([[req.latitude, req.longitude]], k=1)
         district_ar = _riyadh_spatial._district_names[int(idx[0])]
 
+    # ── Inject v2 features (look-back + OOF encodings + Bayut signal) ────────
+    # Maps are stored in riyadh_stack.pkl at training time.
+    if _scorer and _scorer._riyadh_stack:
+        _rs = _scorer._riyadh_stack
+        _lb_map      = _rs.get("district_lookback_map",     {})
+        _lb_apt_map  = _rs.get("district_lookback_apt_map", {})
+        _city_lb     = float(_rs.get("city_lookback_mean",    8.1))
+        _city_lb_apt = float(_rs.get("city_lookback_apt_mean", 8.1))
+        _enc_map     = _rs.get("district_enc_map",           {})
+        _enc_gm      = float(_rs.get("district_enc_global",  8.1))
+        _apt_enc_map = _rs.get("district_apt_enc_map",       {})
+        _apt_enc_gm  = float(_rs.get("district_apt_enc_global", 8.1))
+        _bayut_map   = _rs.get("bayut_psqm_map",             {})
+        _bayut_gm    = float(_rs.get("bayut_psqm_global",    7402.0))
+        d = district_ar
+        feat_dict["district_lookback_mean"]     = float(_lb_map.get(d, _city_lb))      if d else _city_lb
+        feat_dict["district_lookback_apt_mean"] = float(_lb_apt_map.get(d, _city_lb_apt)) if d else _city_lb_apt
+        feat_dict["city_quarter_mean"]          = _city_lb
+        feat_dict["district_enc_oof"]           = float(_enc_map.get(d, _enc_gm))      if d else _enc_gm
+        feat_dict["district_apt_enc_oof"]       = float(_apt_enc_map.get(d, _apt_enc_gm)) if d else _apt_enc_gm
+        feat_dict["bayut_asking_psqm"]          = float(_bayut_map.get(d, _bayut_gm))  if d else _bayut_gm
+
+    # Predict (SAR/sqm, log-space)
+    try:
+        result = _scorer.predict_riyadh(**feat_dict)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Riyadh prediction failed: {e}")
+
     psqm  = result["predicted_price_sqm"]
-
-    # Apartment calibration: blend model output toward district apartment-specific encoding
-    # when district is plot-heavy (apt encoding >> mixed encoding). Proportional to the gap.
-    if req.property_type == "شقة":
-        _apt_enc  = feat_dict.get("district_apt_recent_encoded", 7.8)
-        _mix_enc  = feat_dict.get("district_encoded", 7.8)
-        _apt_impl = float(np.expm1(_apt_enc))
-        _mix_impl = float(np.expm1(_mix_enc))
-        _ratio    = _apt_impl / max(_mix_impl, 1.0)
-        if _ratio > 1.2:
-            # Blend weight rises from 0 at ratio=1.2 to 0.45 at ratio=3.0+
-            _w = min(0.45, (_ratio - 1.2) / (3.0 - 1.2) * 0.45)
-            psqm = (1 - _w) * psqm + _w * _apt_impl
-
     psqm  = int(round(psqm))
     total = int(round(psqm * req.area_sqm))
 

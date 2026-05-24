@@ -419,8 +419,8 @@
           </p>
         </form>
 
-        <!-- ── Riyadh results (shown after predict/riyadh response) ─── -->
-        <div id="riyadhResults" style="display:none" class="riyadh-results">
+        <!-- ── Riyadh results card ──────────────────────────────────────── -->
+        <div id="riyadhResults" style="display:none" class="card riyadh-results">
           <div class="riyadh-price-hero">
             <div class="riyadh-price-label" id="riyadhDistrictLabel">—</div>
             <div class="riyadh-price-main">
@@ -429,6 +429,30 @@
             </div>
             <div class="riyadh-price-total"><span class="riyadh-total-label">Total </span><span id="riyadhPriceTotal">—</span></div>
             <div class="riyadh-confidence" id="riyadhConfidence">—</div>
+          </div>
+
+          <!-- Confidence bar (same structure as NYC) -->
+          <div class="confidence-bar-wrap" id="riyadhConfBarWrap" style="display:none">
+            <div class="conf-label">
+              <span id="riyadhConfLow">—</span>
+              <span class="conf-mid-label">Predicted</span>
+              <span id="riyadhConfHigh">—</span>
+            </div>
+            <div class="confidence-bar">
+              <div class="conf-range-fill" id="riyadhConfFill"></div>
+              <div class="conf-marker" id="riyadhConfMarker"></div>
+            </div>
+          </div>
+
+          <!-- AVM grade row -->
+          <div class="avm-qc-row" id="riyadhAvmQcRow" style="display:none">
+            <div class="avm-qc-grade-wrap">
+              <div class="conf-grade-badge" id="riyadhGradeBadge">—</div>
+            </div>
+            <div class="avm-qc-meta">
+              <div class="avm-qc-comps" id="riyadhDistrictInfo">—</div>
+              <div id="riyadhQcFlagsRow"></div>
+            </div>
           </div>
 
           <!-- Asking-price overlay (Bayut) -->
@@ -440,12 +464,26 @@
             <div class="asking-spread-badge" id="riyadhSpreadBadge"></div>
           </div>
 
-          <div class="riyadh-spatial-grid" id="riyadhSpatialGrid"></div>
-
-          <div id="riyadhDriversSection" style="display:none;margin-top:14px">
-            <div style="font-size:.72rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">📊 Price Drivers</div>
-            <div id="riyadhDriversBars"></div>
+          <!-- Share / Copy actions -->
+          <div class="share-actions" id="riyadhShareActions">
+            <button class="share-btn" onclick="shareRiyadhEstimate()" title="Copy shareable link">🔗 Share Link</button>
+            <button class="share-btn" onclick="copyRiyadhResults()" title="Copy estimate to clipboard">📋 Copy Results</button>
           </div>
+        </div>
+
+        <!-- ── Riyadh SHAP card (separate, like NYC) ───────────────────── -->
+        <div class="card card-shap" id="riyadhShapCard" style="display:none">
+          <h3 class="card-title">
+            <span>Price Drivers</span>
+            <span class="card-subtitle">What factors most influenced this estimate</span>
+          </h3>
+          <div id="riyadhDriversBars"></div>
+        </div>
+
+        <!-- ── Riyadh spatial card (separate, like NYC) ───────────────── -->
+        <div class="card card-spatial" id="riyadhSpatialCard" style="display:none">
+          <h3 class="card-title">Location Quality</h3>
+          <div class="spatial-grid" id="riyadhSpatialGrid"></div>
         </div>
       </div>
 

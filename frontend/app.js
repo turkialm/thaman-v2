@@ -503,12 +503,18 @@ function setCityMode(mode) {
   if (defaultBtn) defaultBtn.classList.add('active');
   showLayer('none');
 
-  // Show/hide city-specific predict forms and clear Riyadh results
+  // Show/hide city-specific predict forms and clear results
   document.getElementById('addrSearchWrap').style.display  = isRiyadh ? 'none' : '';
   document.getElementById('locationDisplay').style.display = isRiyadh ? 'none' : '';
   document.getElementById('predictForm').style.display     = isRiyadh ? 'none' : '';
   document.getElementById('riyadhForm').style.display      = isRiyadh ? ''     : 'none';
-  document.getElementById('riyadhResults').style.display   = 'none';
+  // Hide all result cards for both cities on switch
+  ['riyadhResults','riyadhShapCard','riyadhSpatialCard'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+  ['resultCard','shapCard','spatialCard'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
 
   // Swap header badges, tagline, and page title
   document.getElementById('nycBadgeGroup').style.display    = isRiyadh ? 'none'    : '';
@@ -1556,25 +1562,51 @@ function renderRiyadhResults(data) {
   const low   = data.confidence_low_sar;
   const high  = data.confidence_high_sar;
   const sf    = data.spatial_features || {};
+  const medape = data.medape_pct || 23.6;
 
-  // Price hero — animated
+  // ── Price hero ────────────────────────────────────────────────────────
   const sqmEl = document.getElementById('riyadhPriceSqm');
   if (sqmEl) animateSAR(sqmEl, psqm, fmtSAR);
-
   const totalEl = document.getElementById('riyadhPriceTotal');
   if (totalEl) animateSAR(totalEl, total, fmtSAR);
-
   const confEl = document.getElementById('riyadhConfidence');
   if (confEl) confEl.textContent = `Range: ${fmtSAR(low)} – ${fmtSAR(high)}`;
-
   const distEl = document.getElementById('riyadhDistrictLabel');
   if (distEl) {
     const district = data.district_ar || '';
-    const medape   = data.medape_pct  || 23.4;
     distEl.textContent = `${district ? district + ' · ' : ''}MedAPE ${medape.toFixed(1)}%`;
   }
 
-  // Asking-price overlay (Bayut)
+  // ── Confidence bar ────────────────────────────────────────────────────
+  const span = high - low;
+  if (span > 0) {
+    document.getElementById('riyadhConfLow').textContent  = fmtSAR(low);
+    document.getElementById('riyadhConfHigh').textContent = fmtSAR(high);
+    document.getElementById('riyadhConfFill').style.width = '100%';
+    document.getElementById('riyadhConfMarker').style.left =
+      `${Math.min(98, Math.max(2, Math.round(((total - low) / span) * 100)))}%`;
+    document.getElementById('riyadhConfBarWrap').style.display = 'block';
+  }
+
+  // ── AVM grade badge ───────────────────────────────────────────────────
+  const score = Math.max(0, Math.round(100 - medape));
+  const grade = score >= 85 ? 'A' : score >= 75 ? 'B' : score >= 65 ? 'C' : 'D';
+  const gradeEl = document.getElementById('riyadhGradeBadge');
+  gradeEl.textContent = grade;
+  gradeEl.className   = `conf-grade-badge conf-grade-${grade}`;
+  document.getElementById('riyadhDistrictInfo').textContent =
+    `${data.district_ar || 'Riyadh'} · MedAPE ${medape.toFixed(1)}%`;
+  const flagsEl = document.getElementById('riyadhQcFlagsRow');
+  flagsEl.innerHTML = '';
+  if (medape > 30) {
+    const sp = document.createElement('span');
+    sp.className = 'avm-qc-flag avm-flag-sparse';
+    sp.textContent = 'SPARSE MARKET';
+    flagsEl.appendChild(sp);
+  }
+  document.getElementById('riyadhAvmQcRow').style.display = 'flex';
+
+  // ── Asking-price overlay (Bayut) ──────────────────────────────────────
   const askingOverlay = document.getElementById('riyadhAskingOverlay');
   if (askingOverlay) {
     if (data.asking_price_psqm != null) {
@@ -1590,35 +1622,36 @@ function renderRiyadhResults(data) {
       const negStr  = negRoom > 0
         ? `  ·  Negotiation room ≈ ${fmtSAR(Math.round(negRoom))}`
         : '';
-      badge.textContent  = `${sign}${spread?.toFixed(0)}% asking premium · Source: ${src}${negStr}`;
-      badge.className    = `asking-spread-badge ${spread >= 0 ? 'spread-up' : 'spread-down'}`;
+      badge.textContent = `${sign}${spread?.toFixed(0)}% asking premium · Source: ${src}${negStr}`;
+      badge.className   = `asking-spread-badge ${spread >= 0 ? 'spread-up' : 'spread-down'}`;
       askingOverlay.style.display = '';
     } else {
       askingOverlay.style.display = 'none';
     }
   }
 
-  // Spatial grid
+  // ── Spatial grid (in riyadhSpatialCard, uses .spatial-grid class) ─────
   const grid = document.getElementById('riyadhSpatialGrid');
   if (grid && sf) {
     const items = [
-      { icon: '🚇', label: 'Metro',        value: sf.dist_metro_m      != null ? fmtDist(sf.dist_metro_m)      : '—' },
-      { icon: '🚌', label: 'Bus stop',     value: sf.dist_bus_m        != null ? fmtDist(sf.dist_bus_m)        : '—' },
-      { icon: '🏪', label: 'Commercial',   value: sf.commercial_count_1km != null ? `${Math.round(sf.commercial_count_1km)} /1km` : '—' },
-      { icon: '🕌', label: 'Mosque',       value: sf.dist_mosque_m     != null ? fmtDist(sf.dist_mosque_m)     : '—' },
-      { icon: '🛍️', label: 'Mall',         value: sf.dist_mall_m       != null ? fmtDist(sf.dist_mall_m)       : '—' },
-      { icon: '🌿', label: 'Air quality',  value: sf.air_quality_score != null ? `${Math.round(sf.air_quality_score)}/100` : '—' },
-      { icon: '🏫', label: 'School',       value: sf.dist_school_m     != null ? fmtDist(sf.dist_school_m)     : '—' },
-      { icon: '🏥', label: 'Hospital',     value: sf.dist_hospital_m   != null ? fmtDist(sf.dist_hospital_m)   : '—' },
+      { icon: '🚇', label: 'Metro',       value: sf.dist_metro_m         != null ? fmtDist(sf.dist_metro_m)                                : '—' },
+      { icon: '🚌', label: 'Bus stop',    value: sf.dist_bus_m           != null ? fmtDist(sf.dist_bus_m)                                  : '—' },
+      { icon: '🏪', label: 'Commercial',  value: sf.commercial_count_1km != null ? `${Math.round(sf.commercial_count_1km)} /1km`           : '—' },
+      { icon: '🕌', label: 'Mosque',      value: sf.dist_mosque_m        != null ? fmtDist(sf.dist_mosque_m)                               : '—' },
+      { icon: '🛍️', label: 'Mall',        value: sf.dist_mall_m          != null ? fmtDist(sf.dist_mall_m)                                 : '—' },
+      { icon: '🌿', label: 'Air quality', value: sf.air_quality_score    != null ? `${Math.round(sf.air_quality_score)}/100`               : '—' },
+      { icon: '🏫', label: 'School',      value: sf.dist_school_m        != null ? fmtDist(sf.dist_school_m)                               : '—' },
+      { icon: '🏥', label: 'Hospital',    value: sf.dist_hospital_m      != null ? fmtDist(sf.dist_hospital_m)                             : '—' },
     ];
     grid.innerHTML = items.map(item => `
-      <div class="riyadh-spatial-item">
-        <span class="rs-label">${item.icon} ${item.label}</span>
-        <span class="rs-val">${item.value}</span>
+      <div class="spatial-item">
+        <span class="spatial-item-icon">${item.icon}</span>
+        <span class="spatial-item-label">${item.label}</span>
+        <span class="spatial-item-value">${item.value}</span>
       </div>`).join('');
   }
 
-  // Map marker popup
+  // ── Map marker popup ──────────────────────────────────────────────────
   if (marker) {
     marker.bindPopup(
       `<div class="map-popup"><strong>${fmtSAR(psqm)}/sqm</strong><br>${data.property_type || ''}</div>`,
@@ -1626,11 +1659,10 @@ function renderRiyadhResults(data) {
     ).openPopup();
   }
 
-  // SHAP drivers
-  const driversSection = document.getElementById('riyadhDriversSection');
-  const driversBars    = document.getElementById('riyadhDriversBars');
+  // ── SHAP drivers (in riyadhShapCard) ──────────────────────────────────
+  const driversBars = document.getElementById('riyadhDriversBars');
   const drivers = data.top_drivers || [];
-  if (driversSection && driversBars) {
+  if (driversBars) {
     if (drivers.length) {
       const maxImpact = Math.max(...drivers.map(d => Math.abs(d.impact)));
       driversBars.innerHTML = drivers.map(drv => {
@@ -1646,13 +1678,15 @@ function renderRiyadhResults(data) {
           <span class="shap-impact ${cls}">${drv.impact > 0 ? '+' : ''}${drv.impact.toFixed(3)}</span>
         </div>`;
       }).join('');
-      driversSection.style.display = '';
     } else {
-      driversSection.style.display = 'none';
+      driversBars.innerHTML = '';
     }
   }
 
+  // ── Show cards with stagger ───────────────────────────────────────────
   showCard(document.getElementById('riyadhResults'), 0);
+  if (drivers.length) showCard(document.getElementById('riyadhShapCard'), 80);
+  showCard(document.getElementById('riyadhSpatialCard'), 160);
   document.getElementById('riyadhResults').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -2295,6 +2329,67 @@ function copyResults() {
     '',
     `Generated by THAMAN · AI-Powered Property Valuation`,
     `R² 0.647 · MedAPE 20.23% · 185K NYC sales 2022–2026`,
+  ].filter(l => l !== null && l !== undefined).join('\n').replace(/\n{3,}/g, '\n\n');
+
+  navigator.clipboard.writeText(text)
+    .then(() => showToast('📋 Results copied to clipboard!'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('📋 Results copied to clipboard!');
+    });
+}
+
+function shareRiyadhEstimate() {
+  const lat = document.getElementById('riyadhLat')?.value;
+  const lon = document.getElementById('riyadhLon')?.value;
+  const url = `${location.origin}${location.pathname}?city=riyadh&lat=${lat}&lon=${lon}`;
+  navigator.clipboard.writeText(url)
+    .then(() => showToast('🔗 Share link copied!'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+      showToast('🔗 Share link copied!');
+    });
+}
+
+function copyRiyadhResults() {
+  const psqm  = document.getElementById('riyadhPriceSqm')?.textContent  || '—';
+  const total = document.getElementById('riyadhPriceTotal')?.textContent || '—';
+  const dist  = document.getElementById('riyadhDistrictLabel')?.textContent || '';
+  const conf  = document.getElementById('riyadhConfidence')?.textContent || '';
+  const grade = document.getElementById('riyadhGradeBadge')?.textContent || '';
+  const ask   = document.getElementById('riyadhAskingPsqm')?.textContent || '—';
+  const spread = document.getElementById('riyadhSpreadBadge')?.textContent || '';
+
+  const driverLines = Array.from(document.querySelectorAll('#riyadhDriversBars .shap-row'))
+    .slice(0, 5)
+    .map(row => {
+      const arrow  = row.querySelector('.shap-arrow')?.textContent.trim() || '';
+      const label  = row.querySelector('.shap-label')?.textContent.trim() || '';
+      const impact = row.querySelector('.shap-impact')?.textContent.trim() || '';
+      return `  ${arrow} ${label}: ${impact}`;
+    }).join('\n');
+
+  const text = [
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    '  THAMAN Riyadh Property Valuation',
+    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+    dist ? `📍 ${dist}` : '',
+    `💰 Transaction Estimate: ${psqm}/m²  ·  Total: ${total}`,
+    conf ? `   ${conf}` : '',
+    grade ? `🏅 Confidence Grade: ${grade}` : '',
+    ask !== '—' ? `📋 Bayut Asking: ${ask}` : '',
+    spread ? `   ${spread}` : '',
+    '',
+    driverLines ? `Top Price Drivers:\n${driverLines}` : '',
+    '',
+    `Generated by THAMAN · AI-Powered Property Valuation`,
+    `R² 0.6726 · MedAPE 23.57% · Riyadh Transactions`,
   ].filter(l => l !== null && l !== undefined).join('\n').replace(/\n{3,}/g, '\n\n');
 
   navigator.clipboard.writeText(text)
