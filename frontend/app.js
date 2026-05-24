@@ -1584,9 +1584,13 @@ function renderRiyadhResults(data) {
       const src     = data.asking_price_source || 'Bayut';
       document.getElementById('riyadhAskingPsqm').textContent =
         `${fmtSAR(apsqm)}/m²  ·  ${fmtSAR(atotal)}`;
-      const badge = document.getElementById('riyadhSpreadBadge');
-      const sign  = spread >= 0 ? '+' : '';
-      badge.textContent  = `${sign}${spread?.toFixed(0)}% asking premium over THAMAN · Source: ${src}`;
+      const badge   = document.getElementById('riyadhSpreadBadge');
+      const sign    = spread >= 0 ? '+' : '';
+      const negRoom = atotal - total;
+      const negStr  = negRoom > 0
+        ? `  ·  Negotiation room ≈ ${fmtSAR(Math.round(negRoom))}`
+        : '';
+      badge.textContent  = `${sign}${spread?.toFixed(0)}% asking premium · Source: ${src}${negStr}`;
       badge.className    = `asking-spread-badge ${spread >= 0 ? 'spread-up' : 'spread-down'}`;
       askingOverlay.style.display = '';
     } else {
@@ -1830,9 +1834,13 @@ function renderResults(data) {
       const src    = data.asking_price_source || 'Redfin';
       document.getElementById('nycAskingPsqm').textContent =
         `$${Math.round(apsqm).toLocaleString()}/m²  ·  $${Math.round(atotal).toLocaleString()}`;
-      const badge = document.getElementById('nycSpreadBadge');
-      const sign  = spread >= 0 ? '+' : '';
-      badge.textContent = `${sign}${spread?.toFixed(0)}% asking premium over THAMAN · Source: ${src}`;
+      const badge   = document.getElementById('nycSpreadBadge');
+      const sign    = spread >= 0 ? '+' : '';
+      const negRoom = atotal - data.predicted_price;
+      const negStr  = negRoom > 0
+        ? `  ·  Negotiation room ≈ $${Math.round(negRoom).toLocaleString()}`
+        : '';
+      badge.textContent = `${sign}${spread?.toFixed(0)}% asking premium · Source: ${src}${negStr}`;
       badge.className   = `asking-spread-badge ${spread >= 0 ? 'spread-up' : 'spread-down'}`;
       nycAskingOverlay.style.display = '';
     } else {
