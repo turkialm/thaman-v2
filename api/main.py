@@ -1078,10 +1078,10 @@ def _build_riyadh_stats() -> dict:
         "districts":        int(df["district_ar"].n_unique()),
         "year_range":       f"{int(df['sale_year'].min())}–{int(df['sale_year'].max())}",
         "median_price_sqm": round(float(df["sale_price_sar_sqm"].median()), 0),
-        "model_r2":         0.7981,
-        "model_medape":     18.16,
-        "oof_r2":           0.9252,
-        "oof_medape":       9.03,
+        "model_r2":         0.6726,
+        "model_medape":     23.57,
+        "oof_r2":           0.9429,
+        "oof_medape":       8.49,
     }
 
     # Price by year
@@ -1213,7 +1213,7 @@ def predict_riyadh(req: RiyadhPredictRequest):
     total = int(round(psqm * req.area_sqm))
 
     # District-adaptive confidence: look up per-district holdout MedAPE
-    # Falls back to global model MedAPE (23.45%) if district not in table
+    # Falls back to global model MedAPE (23.57%) if district not in table
     global_medape = result["medape_pct"]
     district_medape_tbl = {}
     if _scorer and hasattr(_scorer, '_riyadh_meta'):
