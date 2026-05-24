@@ -270,7 +270,7 @@ class ThamanScorer:
                 indices = np.argsort(np.abs(sv_scaled))[::-1][:top_k]
                 top_drivers = []
                 for i in indices:
-                    if i >= len(feat_names):
+                    if i >= len(feat_names) or i >= Xv.shape[1]:
                         continue
                     fname = feat_names[i]
                     top_drivers.append({

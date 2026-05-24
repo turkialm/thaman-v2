@@ -687,9 +687,12 @@ def _count_comparables(lat: float, lon: float, radius_m: int = 800) -> int:
     """
     if _nearby_df is None or _nearby_tree is None:
         return 0
-    radius_deg = radius_m / 111_000.0
-    idxs = _nearby_tree.query_ball_point([lat, lon], radius_deg)
-    return len(idxs)
+    try:
+        radius_deg = radius_m / 111_000.0
+        idxs = _nearby_tree.query_ball_point([lat, lon], radius_deg)
+        return len(idxs)
+    except Exception:
+        return 0
 
 
 def _build_qc_flags(seg_medape: float, comps: int, price: float, borough: int) -> list:
@@ -1017,6 +1020,7 @@ def predict_batch(requests: list[PredictRequest]):
 
 # ── Riyadh analytics stats cache ─────────────────────────────────────
 _riyadh_stats_cache: dict | None = None
+_riyadh_stats_building: bool = False
 
 def _build_riyadh_stats() -> dict:
     """Precompute Riyadh analytics stats from features_riyadh.csv — pure Polars."""
@@ -1091,10 +1095,12 @@ def _build_riyadh_stats() -> dict:
 @app.get("/riyadh/stats", tags=["Riyadh"])
 def riyadh_stats():
     """Precomputed Riyadh analytics: overview KPIs, price by year, type breakdown, top districts."""
-    global _riyadh_stats_cache
-    if _riyadh_stats_cache is None:
+    global _riyadh_stats_cache, _riyadh_stats_building
+    if _riyadh_stats_cache is None and not _riyadh_stats_building:
+        _riyadh_stats_building = True
         _riyadh_stats_cache = _build_riyadh_stats()
-    return _riyadh_stats_cache
+        _riyadh_stats_building = False
+    return _riyadh_stats_cache or {}
 
 
 @app.post("/predict/riyadh", response_model=RiyadhPredictResponse, tags=["Prediction"])
