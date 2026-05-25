@@ -30,25 +30,27 @@ Toggle between cities with the NYC / Riyadh button in the top-left of the map.
 
 ## Model Performance
 
-### NYC — Stack v11 (104 features, 185K sales, 2022–2026)
+### NYC — Stack v12 (109 features, 185K sales, 2022–2026)
 
 | Metric | Value |
 |---|---|
-| R² (holdout) | 0.6450 |
-| MedAPE | 20.24% |
+| R² (holdout) | 0.6446 |
+| MedAPE | 20.31% |
 | Holdout rows | 27,763 |
 | CV Strategy | 5-fold Spatial GroupKFold (by NTA) |
 | Stack | XGBoost + LightGBM + CatBoost + Ridge meta |
 
-### Riyadh — Stack v1 (76 features, 6,910 district-quarter rows, 2018–2025)
+v12 adds 5 quarterly NTA temporal features (lagged mean log-price, median $/sqft,
+sale count, 2-quarter lag, momentum) for leakage-free market trend signals.
+
+### Riyadh — Stack v2 (76 features, 6,910 district-quarter rows, 2018–2025)
 
 | Metric | Value |
 |---|---|
-| OOF R² | 0.9427 |
-| OOF MedAPE | 8.28% |
-| Holdout R² | 0.6747 |
-| Holdout MedAPE | 23.45% |
-| Holdout MAE | 1,206 SAR/sqm |
+| OOF R² | 0.8441 |
+| OOF MedAPE | 19.75% |
+| Holdout R² | 0.6841 |
+| Holdout MedAPE | 22.24% |
 | Holdout period | 2025 Q1–Q3 (fully unseen) |
 | CV Strategy | 5-fold Spatial GroupKFold (by district) |
 | Stack | XGBoost + LightGBM + CatBoost + Ridge meta |
@@ -90,6 +92,7 @@ uvicorn api.main:app --port 8000
 | `GET` | `/bldgclasses` | NYC building class codes |
 | `POST` | `/predict` | NYC price estimate (USD) |
 | `POST` | `/predict/riyadh` | Riyadh price estimate (SAR/sqm) |
+| `POST` | `/batch` | NYC batch predictions (up to 50 properties) |
 | `GET` | `/layers/nta` | NYC NTA choropleth GeoJSON |
 | `GET` | `/layers/district` | Riyadh district polygon GeoJSON |
 | `GET` | `/docs` | Swagger UI |
@@ -135,9 +138,19 @@ thaman-v2/
 │   ├── app.js           # Leaflet + city toggle + both forms
 │   ├── style.css        # Styles
 │   └── charts.html      # NYC analytics dashboard
+├── tests/
+│   ├── test_api.py              # Smoke + integration (13 tests)
+│   ├── test_scorer.py           # Unit tests for ThamanScorer (7 tests)
+│   ├── test_regression.py       # Pinned output regression (6 tests, ±5%)
+│   ├── test_golden.py           # Market-range golden dataset (14 tests)
+│   ├── test_feature_parity.py   # Feature completeness checks (13 tests)
+│   ├── test_distribution.py     # Distribution shift detection (12 tests)
+│   ├── test_shap.py             # SHAP explainability (15 tests)
+│   └── test_load.py             # API load/stress benchmarks (20 tests)
 ├── training/
+│   ├── train_stack_v12.py        # NYC Stack v12 training (current)
 │   ├── train_stack_v2.py         # NYC Stack v11 training
-│   └── train_stack_riyadh_v1.py  # Riyadh Stack v1 training
+│   └── train_stack_riyadh_v1.py  # Riyadh Stack v2 training
 ├── scripts/
 │   └── riyadh_feature_engineering.py  # Riyadh Polars pipeline
 ├── data/
@@ -155,6 +168,23 @@ thaman-v2/
 ├── Dockerfile
 └── requirements.txt
 ```
+
+---
+
+## Test Suite
+
+100 tests across 8 files — run with `pytest tests/ -v` (~90 s).
+
+| File | Type | Tests |
+|---|---|---|
+| `test_api.py` | Smoke / integration | 13 |
+| `test_scorer.py` | Unit (ThamanScorer) | 7 |
+| `test_regression.py` | Pinned output regression (±5%) | 6 |
+| `test_golden.py` | Market-range sanity + ordering | 14 |
+| `test_feature_parity.py` | NTA / v11 / v12 feature completeness | 13 |
+| `test_distribution.py` | Distribution shift detection | 12 |
+| `test_shap.py` | SHAP driver structure + sensitivity | 15 |
+| `test_load.py` | Load / stress benchmarks | 20 |
 
 ---
 
