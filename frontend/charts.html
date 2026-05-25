@@ -212,9 +212,9 @@
       </div>
     </div>
     <div class="header-badges">
-      <span class="badge badge-green" id="hdrStack">Stack v11</span>
-      <span class="badge badge-blue"  id="hdrR2">R² = 0.647</span>
-      <span class="badge badge-purple" id="chartsFeaturesBadge">104 Features</span>
+      <span class="badge badge-green" id="hdrStack">Stack v12</span>
+      <span class="badge badge-blue"  id="hdrR2">R² = 0.645</span>
+      <span class="badge badge-purple" id="chartsFeaturesBadge">109 Features</span>
       <span class="badge badge-gray">Spatial CV</span>
       <div class="lang-toggle">
         <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
@@ -229,8 +229,8 @@
 
     <!-- Title -->
     <div class="page-title">
-      <h1 id="pageTitle">THAMAN v11 — NYC Property Valuation Stack</h1>
-      <p id="pageSubtitle">XGBoost + LightGBM + CatBoost + Ridge meta · 104 features · HPD/DOB/QoL/transit signals · Spatial GroupKFold CV · 185K NYC sales</p>
+      <h1 id="pageTitle">THAMAN v12 — NYC Property Valuation Stack</h1>
+      <p id="pageSubtitle">XGBoost + LightGBM + CatBoost + Ridge meta · 109 features · HPD/DOB/QoL/transit signals · Spatial GroupKFold CV · 185K NYC sales</p>
     </div>
 
     <!-- ── KPI Metric Cards ───────────────────────────────── -->
@@ -243,9 +243,9 @@
       </div>
       <div class="metric-card">
         <div class="metric-icon">📊</div>
-        <div class="metric-value green-val">20.24%</div>
+        <div class="metric-value green-val">20.31%</div>
         <div class="metric-label" id="kpi2Label">Median APE</div>
-        <div class="metric-sub" id="kpi2Sub">±20.24% confidence interval</div>
+        <div class="metric-sub" id="kpi2Sub">±20.31% confidence interval</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">💵</div>
@@ -275,8 +275,8 @@
 
     <!-- ── Chart 0: Model Comparison — Full width ──────── -->
     <div class="chart-card span-2">
-      <h2 id="c0Title">⚖️ Stack v11 — Base Learner Comparison (XGB + LGB + CatBoost)</h2>
-      <div class="chart-sub" id="c0Sub">Holdout R² and MedAPE for each of the 4 diverse base models vs the v11 stack — 10-fold OOF + 5000 rounds + 104 features (HPD/DOB/QoL/transit); Ridge meta-learner, MedAPE 20.24%</div>
+      <h2 id="c0Title">⚖️ Stack v12 — Base Learner Comparison (XGB + LGB + CatBoost)</h2>
+      <div class="chart-sub" id="c0Sub">Holdout R² and MedAPE for each of the 4 diverse base models vs the v12 stack — 10-fold OOF + 5000 rounds + 109 features (HPD/DOB/QoL/transit); Ridge meta-learner, MedAPE 20.31%</div>
       <div class="chart-wrap" style="height:200px">
         <canvas id="stackCompareChart"></canvas>
       </div>
@@ -293,8 +293,8 @@
 
     <!-- ── Chart 2: v1 vs v2 vs v2.1 vs Baseline ─────────── -->
     <div class="chart-card">
-      <h2 id="c2Title">⚡ Baseline → v1 → v2 → Stack v11</h2>
-      <div class="chart-sub" id="c2Sub">v11 stack on 185K rows achieves R²=0.647 vs baseline R²=0.238 — 104 features including HPD violations, DOB permits, rodent/heat complaints, MTA transit quality</div>
+      <h2 id="c2Title">⚡ Baseline → v1 → v2 → Stack v12</h2>
+      <div class="chart-sub" id="c2Sub">v12 stack on 185K rows achieves R²=0.645 vs baseline R²=0.238 — 109 features including HPD violations, DOB permits, rodent/heat complaints, MTA transit quality</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="baselineChart"></canvas>
       </div>
@@ -311,8 +311,8 @@
 
     <!-- ── Chart 4: Feature Categories Donut ────────────── -->
     <div class="chart-card">
-      <h2 id="c4Title">🗂️ Feature Categories Breakdown (104 Features)</h2>
-      <div class="chart-sub" id="c4Sub">v11 stack: 104 features — transit, QoL, HPD violations, DOB permits, prior sale price, NTA demographics, target-encoded building class</div>
+      <h2 id="c4Title">🗂️ Feature Categories Breakdown (109 Features)</h2>
+      <div class="chart-sub" id="c4Sub">v12 stack: 109 features — transit, QoL, HPD violations, DOB permits, prior sale price, NTA demographics, target-encoded building class</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="categoryDonut"></canvas>
       </div>
@@ -560,7 +560,7 @@
   new Chart(ctx('stackCompareChart'), {
     type: 'bar',
     data: {
-      labels: ['XGB-A (deep)', 'XGB-B (shallow)', 'LGB (wide)', 'CAT (high-cap)', 'Stack v11\n(4-Model+Ridge)'],
+      labels: ['XGB-A (deep)', 'XGB-B (shallow)', 'LGB (wide)', 'CAT (high-cap)', 'Stack v12\n(4-Model+Ridge)'],
       datasets: [
         {
           label: 'R² Holdout',
@@ -573,7 +573,7 @@
         },
         {
           label: 'MedAPE (%)',
-          data: [20.21, 20.35, 20.40, 20.22, 20.24],
+          data: [20.21, 20.35, 20.40, 20.22, 20.31],
           type: 'line',
           borderColor: C.orange,
           backgroundColor: 'transparent',
@@ -712,7 +712,7 @@
           borderRadius: 5,
         },
         {
-          label: 'THAMAN v11 Stack ✓',
+          label: 'THAMAN v12 Stack ✓',
           data:  [0.6467, 1.076, 20.23],
           backgroundColor: [C.tealLt, C.tealLt, C.tealLt],
           borderColor:     [C.teal,   C.teal,   C.teal],
@@ -1307,25 +1307,25 @@
     en: {
       tagline:    'Model Analytics Dashboard v2.1',
       backLink:   '← Back to Map',
-      features:   '104 Features',
-      pageTitle:  'THAMAN v11 — NYC Property Valuation Stack',
-      pageSub:    'XGBoost + LightGBM + CatBoost + Ridge meta · 104 features · HPD/DOB/QoL/transit signals · Spatial GroupKFold CV · 185K NYC sales',
+      features:   '109 Features',
+      pageTitle:  'THAMAN v12 — NYC Property Valuation Stack',
+      pageSub:    'XGBoost + LightGBM + CatBoost + Ridge meta · 109 features · HPD/DOB/QoL/transit signals · Spatial GroupKFold CV · 185K NYC sales',
       kpi1: 'R² Stack Holdout',
-      kpi2: 'Median APE',       kpi2s: '±20.24% on 27,763 holdout sales',
+      kpi2: 'Median APE',       kpi2s: '±20.31% on 27,763 holdout sales',
       kpi3: 'Mean Abs Error',   kpi3s: 'holdout set (27,763 rows)',
       kpi4: 'Tier Accuracy',    kpi4s: 'Within-1-tier: 96.7%',
-      kpi5: 'Boosting Rounds',  kpi5s: 'v11: 5,000 rounds · early stopping 50',
-      kpi6: 'Features',         kpi6s: 'v11: 104 features (+10 HPD/DOB/MTA v11)',
-      c0t: '⚖️ Stack v11 — Base Learner Comparison (XGB + LGB + CatBoost)',
-      c0s: 'Holdout R² and MedAPE for each base model vs the v11 Ridge stack — 10-fold OOF + 5000 rounds + 104 features; MedAPE 20.24%',
+      kpi5: 'Boosting Rounds',  kpi5s: 'v12: 5,000 rounds · early stopping 50',
+      kpi6: 'Features',         kpi6s: 'v12: 109 features (+10 HPD/DOB/MTA v11, +5 NTA temporal v12)',
+      c0t: '⚖️ Stack v12 — Base Learner Comparison (XGB + LGB + CatBoost)',
+      c0s: 'Holdout R² and MedAPE for each base model vs the v12 Ridge stack — 10-fold OOF + 5000 rounds + 109 features; MedAPE 20.31%',
       c1t: '🔍 SHAP Feature Importance — Top 20 (v2)',
       c1s: 'Mean |SHAP| on holdout set — target-encoded bldgclass is now the strongest predictor, replacing raw building size',
-      c2t: '⚡ Baseline → v1 → v2 → Stack v11',
-      c2s: 'v11 stack on 185K rows achieves R²=0.647 vs baseline R²=0.238 — 104 features including HPD violations, DOB permits, MTA transit quality',
+      c2t: '⚡ Baseline → v1 → v2 → Stack v12',
+      c2s: 'v12 stack on 185K rows achieves R²=0.645 vs baseline R²=0.238 — 109 features including HPD violations, DOB permits, MTA transit quality',
       c3t: '📈 Train · Val · Holdout · Spatial CV',
       c3s: 'Spatial CV (0.559±0.06) is the true generalisation estimate — fold variance reveals borough-level difficulty',
-      c4t: '🗂️ Feature Categories Breakdown (104 Features)',
-      c4s: 'v11 stack: 104 features — transit, QoL, HPD violations, DOB permits, prior sale price, NTA demographics, target-encoded building class',
+      c4t: '🗂️ Feature Categories Breakdown (109 Features)',
+      c4s: 'v12 stack: 109 features — transit, QoL, HPD violations, DOB permits, prior sale price, NTA demographics, target-encoded building class',
       c5t: '📦 SHAP Importance by Feature Group',
       c5s: 'Target encoding + urban gravity now dominate — together accounting for >50% of total model explanation',
       c6t: '🔲 Price Tier Confusion Matrix (Holdout: 5,256 properties)',
@@ -1452,9 +1452,9 @@ function showCity(city) {
   document.getElementById('tabRiyadh').style.color      = isRiyadh ? '#fff'    : '#374151';
   document.getElementById('tabRiyadh').style.border     = isRiyadh ? 'none'    : '1px solid #d1d5db';
   // Swap header badges
-  document.getElementById('hdrStack').textContent            = isRiyadh ? 'Stack v2'    : 'Stack v11';
-  document.getElementById('hdrR2').textContent               = isRiyadh ? 'R² = 0.798'  : 'R² = 0.647';
-  document.getElementById('chartsFeaturesBadge').textContent = isRiyadh ? '76 Features' : '104 Features';
+  document.getElementById('hdrStack').textContent            = isRiyadh ? 'Stack v2'    : 'Stack v12';
+  document.getElementById('hdrR2').textContent               = isRiyadh ? 'R² = 0.798'  : 'R² = 0.645';
+  document.getElementById('chartsFeaturesBadge').textContent = isRiyadh ? '76 Features' : '109 Features';
   if (isRiyadh) loadRiyadhCharts();
 }
 
