@@ -217,7 +217,7 @@ class ThamanScorer:
             medape = self.meta["stack"]["medape_holdout"]
             r2     = self.meta["stack"]["r2_holdout"]
             ver    = self._stack.get("version", "v4") if self._stack else "v4"
-            model_label = f"Stack {ver} · 4-Model Ensemble" if ver in ("v5","v6","v7","v8","v9","v10","v11","v12","v13","v14","v15","v16","v17","v18","v19","v20","v21") else "XGBoost + LightGBM Stack"
+            model_label = f"Stack {ver} · 4-Model Ensemble" if ver in ("v5","v6","v7","v8","v9","v10","v11","v12","v13","v14","v15","v16","v17","v18","v19","v20","v21","v22") else "XGBoost + LightGBM Stack"
         else:
             medape = self.meta["xgboost"]["medape_test"]
             r2     = self.meta["xgboost"]["r2_test"]
