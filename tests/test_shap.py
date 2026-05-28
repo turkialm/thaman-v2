@@ -155,11 +155,16 @@ def test_riyadh_property_type_in_drivers(client):
 
 
 def test_riyadh_district_signal_present(client):
-    """District encoding should appear in top 10 Riyadh drivers."""
+    """District temporal/encoding features should appear in top 10 Riyadh drivers (v11)."""
     drivers = client.post("/predict/riyadh", json=_RYD_VILLA).json()["top_drivers"]
     feat_names = {d["feature"] for d in drivers}
-    district_feats = {"district_enc_oof", "district_lookback_mean",
-                      "district_apt_enc_oof", "district_lookback_apt_mean"}
+    # v11 district features (type-stratified lags, encoded, or any district-related signal)
+    district_feats = {
+        "district_type_lag1q_psqm", "district_type_lag2q_psqm",
+        "district_lag1q_median_psqm", "district_lag2q_median_psqm",
+        "district_type_encoded", "district_enc_oof",
+        "district_lookback_mean", "district_lookback_apt_mean",
+    }
     assert feat_names & district_feats, (
         f"No district encoding in Riyadh top drivers: {feat_names}"
     )

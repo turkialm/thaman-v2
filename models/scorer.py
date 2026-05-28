@@ -60,7 +60,7 @@ class ThamanScorer:
             self._stack = joblib.load(stack_path)
             # v6/v5: xgb_a + xgb_b + lgb + cat; v4: lgb + cat; v3: lgb only
             ver = self._stack.get("version", "v4")
-            if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12"):
+            if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18", "v19", "v20", "v21", "v22"):
                 label = f"XGB-A + XGB-B + LGB + CAT + Ridge/LGB-meta ({ver})"
             elif "cat" in self._stack:
                 label = "XGB + LGB + CAT + Ridge (v4)"
@@ -148,7 +148,7 @@ class ThamanScorer:
 
         if self._stack is not None:
             ver = self._stack.get("version", "v4")
-            if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12"):
+            if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18", "v19", "v20", "v21", "v22"):
                 log_xa  = self._stack["xgb_a"].predict(Xv).astype(np.float32)
                 log_xb  = self._stack["xgb_b"].predict(Xv).astype(np.float32)
                 log_lgb = self._stack["lgb"].predict(Xv).astype(np.float32)
@@ -217,7 +217,7 @@ class ThamanScorer:
             medape = self.meta["stack"]["medape_holdout"]
             r2     = self.meta["stack"]["r2_holdout"]
             ver    = self._stack.get("version", "v4") if self._stack else "v4"
-            model_label = f"Stack {ver} · 4-Model Ensemble" if ver in ("v5","v6","v7","v8","v9","v10","v11","v12") else "XGBoost + LightGBM Stack"
+            model_label = f"Stack {ver} · 4-Model Ensemble" if ver in ("v5","v6","v7","v8","v9","v10","v11","v12","v13","v14","v15","v16","v17","v18","v19","v20","v21") else "XGBoost + LightGBM Stack"
         else:
             medape = self.meta["xgboost"]["medape_test"]
             r2     = self.meta["xgboost"]["r2_test"]
@@ -259,7 +259,7 @@ class ThamanScorer:
                 )
                 # For v5+ stacks: [xgb_a, xgb_b, lgb, cat]; cat is index 3
                 ver = stk.get("version", "v4")
-                if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12") and len(meta_coeffs) >= 4:
+                if ver in ("v5", "v6", "v7", "v8", "v9", "v10", "v11", "v12", "v13", "v14", "v15", "v16", "v17", "v18", "v19", "v20", "v21") and len(meta_coeffs) >= 4:
                     w_cat = float(meta_coeffs[3])
                 elif len(meta_coeffs) >= 3:
                     w_cat = float(meta_coeffs[2])
@@ -526,6 +526,49 @@ class ThamanScorer:
         "log_dist_intersection_m":      "Distance to intersection (log)",
         "intersections_1km":            "Intersections within 1 km",
         "intersections_500m":           "Intersections within 500 m",
+        # New QoL POIs (v3 model)
+        "dist_pharmacy_m":              "Distance to pharmacy",
+        "log_dist_pharmacy_m":          "Distance to pharmacy (log)",
+        "pharmacy_count_500m":          "Pharmacies within 500 m",
+        "dist_gym_m":                   "Distance to gym",
+        "log_dist_gym_m":               "Distance to gym (log)",
+        "gym_count_500m":               "Gyms within 500 m",
+        "dist_coffee_m":                "Distance to coffee shop",
+        "log_dist_coffee_m":            "Proximity to coffee shops",
+        "coffee_count_500m":            "Coffee shops within 500 m",
+        "dist_clinic_m":                "Distance to clinic",
+        "log_dist_clinic_m":            "Proximity to clinics",
+        "clinic_count_500m":            "Clinics within 500 m",
+        "dist_university_m":            "Distance to university",
+        "log_dist_university_m":        "Distance to university (log)",
+        "university_count_500m":        "Universities within 500 m",
+        "dist_supermarket_m":           "Distance to supermarket",
+        "log_dist_supermarket_m":       "Distance to supermarket (log)",
+        "supermarket_count_500m":       "Supermarkets within 500 m",
+        "dist_cinema_m":                "Distance to cinema",
+        "log_dist_cinema_m":            "Distance to cinema (log)",
+        "cinema_count_500m":            "Cinemas within 500 m",
+        "dist_sports_m":                "Distance to sports centre",
+        "log_dist_sports_m":            "Distance to sports centre (log)",
+        "sports_count_500m":            "Sports centres within 500 m",
+        # Haraj listing signals
+        "haraj_listing_count":          "Haraj active listings (district)",
+        "haraj_median_psqm":            "Haraj median asking price",
+        "haraj_p25_psqm":               "Haraj 25th pct asking price",
+        "haraj_p75_psqm":               "Haraj 75th pct asking price",
+        "haraj_iqr_psqm":               "Haraj price spread (IQR)",
+        "haraj_asking_premium":         "Haraj asking premium vs transaction",
+        # Bayut structural
+        "bayut_apt_median_psqm":        "Bayut apartment asking price",
+        "bayut_plot_median_psqm":       "Bayut plot asking price",
+        "bayut_apt_median_area_sqm":    "Bayut apartment median size",
+        "bayut_plot_median_area_sqm":   "Bayut plot median size",
+        "bayut_apt_median_rooms":       "Bayut apartment median rooms",
+        "bayut_plot_median_rooms":      "Bayut plot median rooms",
+        # Temporal lag features (v4)
+        "district_lag1q_median_psqm":  "District price last quarter",
+        "district_lag2q_median_psqm":  "District price 2 quarters ago",
+        "district_lag_momentum":       "District price trend (quarter-over-quarter)",
     }
 
     # ── Riyadh prediction ───────────────────────────────────────────

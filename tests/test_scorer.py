@@ -25,8 +25,8 @@ def test_scorer_loads(scorer):
 
 
 def test_scorer_has_feature_names(scorer):
-    """Scorer should have 109 feature names (v12: v11 + 5 quarterly NTA temporal features)."""
-    assert len(scorer.feature_names) == 109
+    """Scorer should have 134 feature names (v22: v21 + 3 NTA×bldgtype temporal lag features)."""
+    assert len(scorer.feature_names) == 134
 
 
 def test_scorer_has_bldgclass_means(scorer):

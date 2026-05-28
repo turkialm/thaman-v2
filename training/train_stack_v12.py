@@ -57,12 +57,18 @@ _FLOAT_OVERRIDES = {
     "prior_sale_price": pl.Float64,  "years_since_prior_sale": pl.Float64,
     "price_appreciation": pl.Float64, "is_flip": pl.Float64,
 }
-print("\n[1/9] Loading features_v5.csv (v11 enriched) …")
+print("\n[1/9] Loading features_v6.csv (v13 enriched — Overture QoL) …")
+_V6_PATH = os.path.join(PROC, "features_v6.csv")
 _V5_PATH = os.path.join(PROC, "features_v5.csv")
 _V4_PATH = os.path.join(PROC, "features_v4.csv")
-_csv_path = _V5_PATH if os.path.exists(_V5_PATH) else _V4_PATH
-if _csv_path == _V4_PATH:
-    print("  ⚠ features_v5.csv not found — falling back to v4 (run prepare_v11_features.py first)")
+if os.path.exists(_V6_PATH):
+    _csv_path = _V6_PATH
+elif os.path.exists(_V5_PATH):
+    _csv_path = _V5_PATH
+    print("  ⚠ features_v6.csv not found — falling back to v5")
+else:
+    _csv_path = _V4_PATH
+    print("  ⚠ features_v6.csv not found — falling back to v4")
 df = (
     pl.read_csv(_csv_path, schema_overrides=_FLOAT_OVERRIDES)
     .with_columns(pl.col("sale_date").str.to_datetime(format=None, strict=False))
@@ -75,11 +81,23 @@ _PLUTO_PATH = os.path.join(BASE, "data", "raw", "nyc_pluto_25v4_csv", "pluto_25v
 if os.path.exists(_PLUTO_PATH):
     print("  Joining PLUTO …")
     _pluto = (
-        pl.read_csv(_PLUTO_PATH, columns=["bbl", "assesstot", "assessland"])
+        pl.read_csv(_PLUTO_PATH,
+                    columns=["bbl", "assesstot", "assessland", "histdist", "pfirm15_flag", "landmark", "exempttot"],
+                    ignore_errors=True)
         .with_columns(pl.col("bbl").cast(pl.Float64, strict=False))
         .drop_nulls(subset=["bbl"])
-        .with_columns(pl.col("bbl").cast(pl.Int64).alias("_bbl_int"))
-        .drop("bbl")
+        .with_columns([
+            pl.col("bbl").cast(pl.Int64).alias("_bbl_int"),
+            # is_historic_dist: 1 if property is in an LPC-designated historic district
+            pl.col("histdist").is_not_null().cast(pl.Int8).alias("_is_hist"),
+            # in_flood_zone: 1 if in 2015 FEMA preliminary flood zone
+            (pl.col("pfirm15_flag").cast(pl.Int64, strict=False) == 1).cast(pl.Int8).alias("_flood"),
+            # is_landmark: 1 if individually designated NYC landmark
+            pl.col("landmark").is_not_null().cast(pl.Int8).alias("_is_lm"),
+            # exempttot: tax exemption amount (421-a, J-51, co-op, etc.)
+            pl.col("exempttot").cast(pl.Float64, strict=False).fill_null(0.0).alias("_exempt"),
+        ])
+        .drop(["bbl", "histdist", "pfirm15_flag", "landmark", "exempttot"])
         .rename({"assesstot": "_at", "assessland": "_al"})
     )
     df = (df.with_columns(
@@ -88,10 +106,141 @@ if os.path.exists(_PLUTO_PATH):
     for c, p in [("assesstot","_at"),("assessland","_al")]:
         if c not in df.columns: df = df.with_columns(pl.lit(None).cast(pl.Float64).alias(c))
         df = df.with_columns(pl.coalesce([pl.col(c), pl.col(p)]).alias(c)).drop(p)
+    # Fill new binary features with 0 for unmatched lots
+    # _is_hist/_flood/_is_lm come from the left join (null = no match → 0)
+    for c, p in [("is_historic_dist","_is_hist"),("in_flood_zone","_flood"),("is_landmark","_is_lm")]:
+        if p in df.columns:
+            df = df.with_columns(pl.col(p).fill_null(0).cast(pl.Int8).alias(c)).drop(p)
+        elif c not in df.columns:
+            df = df.with_columns(pl.lit(0).cast(pl.Int8).alias(c))
+    # exempt_amount: fill unmatched lots with 0 (no exemption)
+    if "_exempt" in df.columns:
+        df = df.with_columns(pl.col("_exempt").fill_null(0.0).alias("exempt_amount")).drop("_exempt")
+    else:
+        df = df.with_columns(pl.lit(0.0).cast(pl.Float64).alias("exempt_amount"))
+    df = df.with_columns(pl.col("exempt_amount").log1p().alias("log_exempt_amount"))
+
     print(f"  assesstot coverage: {df['assesstot'].is_not_null().mean()*100:.1f}%")
+    print(f"  historic_dist: {df['is_historic_dist'].sum()} lots | "
+          f"flood_zone: {df['in_flood_zone'].sum()} lots | "
+          f"landmark: {df['is_landmark'].sum()} lots")
+    print(f"  exempt_amount > 0: {(df['exempt_amount'] > 0).sum()} lots "
+          f"({(df['exempt_amount']>0).mean()*100:.1f}%)")
 else:
-    for c in ["assesstot","assessland"]:
+    for c in ["assesstot","assessland","is_historic_dist","in_flood_zone","is_landmark",
+              "exempt_amount","log_exempt_amount"]:
         if c not in df.columns: df = df.with_columns(pl.lit(None).cast(pl.Float64).alias(c))
+
+# ── 1c. Census tract income join (v18) ──────────────────────────────────
+_CENSUS_INCOME_PATH = os.path.join(BASE, "data", "raw", "census_tract_income.csv")
+_CENSUS_TRACTS_SHP  = os.path.join(BASE, "data", "raw", "census_tracts", "tl_2020_36_tract.shp")
+if os.path.exists(_CENSUS_INCOME_PATH) and os.path.exists(_CENSUS_TRACTS_SHP):
+    print("  Joining census tract income (v18) …")
+    import geopandas as _gpd
+    import pandas as _pd_ct
+
+    # Load & filter to NYC boroughs (FIPS county codes)
+    _NYC_COUNTIES = {"061", "005", "047", "081", "085"}
+    _tracts = _gpd.read_file(_CENSUS_TRACTS_SHP)
+    _tracts = _tracts[_tracts["COUNTYFP"].isin(_NYC_COUNTIES)].copy()
+    _tracts = _tracts.to_crs("EPSG:4326")
+
+    # Merge income table (drop ACS null sentinel -666666666)
+    _income = _pd_ct.read_csv(_CENSUS_INCOME_PATH)
+    _income["GEOID"] = _income["geoid"].astype(str).str.zfill(11)
+    _income = _income[_income["median_income"] > 0][["GEOID", "median_income"]]
+    _tracts = _tracts.merge(_income, on="GEOID", how="left")
+
+    # Build point GeoDataFrame from property lat/lon
+    _lats = df["latitude"].to_numpy()
+    _lons = df["longitude"].to_numpy()
+    _pts = _gpd.GeoDataFrame(
+        {"_row_idx": np.arange(len(_lats))},
+        geometry=_gpd.points_from_xy(_lons, _lats),
+        crs="EPSG:4326",
+    )
+    # Point-in-polygon join; keep only left_index to re-align with original rows
+    _joined = _gpd.sjoin(_pts, _tracts[["median_income", "geometry"]], how="left", predicate="within")
+    # sjoin may produce duplicates for points on boundaries — take first match per row
+    _joined = _joined[~_joined.index.duplicated(keep="first")]
+    _income_vals = _joined.reindex(np.arange(len(_lats)))["median_income"].to_numpy(dtype=np.float64)
+
+    # log1p transform (NaN → 0 fill applied at feature-select time)
+    _log_income = np.where(
+        np.isnan(_income_vals) | (_income_vals <= 0),
+        np.nan,
+        np.log1p(_income_vals),
+    )
+    df = df.with_columns(pl.Series("log_tract_median_income", _log_income, dtype=pl.Float64))
+
+    _cov = float(np.isfinite(_log_income).mean()) * 100
+    _med = float(np.nanmedian(_income_vals[_income_vals > 0])) if (_income_vals > 0).any() else 0.0
+    print(f"  Census income coverage: {_cov:.1f}% | median tract income: ${_med:,.0f}")
+else:
+    df = df.with_columns(pl.lit(None).cast(pl.Float64).alias("log_tract_median_income"))
+    print("  Census tract files not found — log_tract_median_income set to null")
+
+# ── 1d. Park size-stratified distances (v19) ─────────────────────────────────
+_PARKS_PATH = os.path.join(BASE, "data", "raw", "parks_with_coords.csv")
+if os.path.exists(_PARKS_PATH):
+    from scipy.spatial import cKDTree as _cKDTree
+    import pandas as _pd_pk
+    _parks = _pd_pk.read_csv(_PARKS_PATH).dropna(subset=["latitude","longitude","ACRES"])
+    _parks["ACRES"] = _pd_pk.to_numeric(_parks["ACRES"], errors="coerce").fillna(0.0)
+
+    _lrg  = _parks[_parks["ACRES"] >= 10.0][["latitude","longitude"]].values   # large ≥10 acres
+    _flag = _parks[_parks["ACRES"] >= 100.0][["latitude","longitude"]].values  # flagship ≥100 acres
+    print(f"  Parks: {len(_parks)} total | large ≥10ac: {len(_lrg)} | flagship ≥100ac: {len(_flag)}")
+
+    _prop_pts = df.select(["latitude","longitude"]).to_numpy().astype(np.float64)
+    _DEG2M    = 111_000.0
+
+    def _kd_dist_m(tree_pts, query_pts, deg2m=_DEG2M):
+        if len(tree_pts) == 0:
+            return np.full(len(query_pts), np.nan)
+        tree = _cKDTree(tree_pts)
+        dists, _ = tree.query(query_pts, k=1)
+        return dists * deg2m
+
+    _d_large  = _kd_dist_m(_lrg,  _prop_pts)
+    _d_flag   = _kd_dist_m(_flag, _prop_pts)
+
+    df = df.with_columns([
+        pl.Series("dist_large_park_m",        _d_large,              dtype=pl.Float64),
+        pl.Series("dist_flagship_park_m",     _d_flag,               dtype=pl.Float64),
+        pl.Series("log_dist_large_park_m",    np.log1p(_d_large),    dtype=pl.Float64),
+        pl.Series("log_dist_flagship_park_m", np.log1p(_d_flag),     dtype=pl.Float64),
+    ])
+    print(f"  dist_large_park: median {np.nanmedian(_d_large):.0f}m | "
+          f"dist_flagship: median {np.nanmedian(_d_flag):.0f}m")
+else:
+    for _c in ["dist_large_park_m","dist_flagship_park_m","log_dist_large_park_m","log_dist_flagship_park_m"]:
+        df = df.with_columns(pl.lit(None).cast(pl.Float64).alias(_c))
+    print("  parks_with_coords.csv not found — park size features null")
+
+# ── 1e. Waterfront / coastline proximity (v20) ───────────────────────────────
+_COAST_PATH = os.path.join(BASE, "data", "raw", "nyc_coastline_pts.npy")
+if os.path.exists(_COAST_PATH):
+    from scipy.spatial import cKDTree as _cKDTree_wf
+    _coast_pts = np.load(_COAST_PATH).astype(np.float64)   # (27116, 2)  [lat, lon]
+    _coast_tree = _cKDTree_wf(_coast_pts)
+    _prop_pts_wf = df.select(["latitude","longitude"]).to_numpy().astype(np.float64)
+    _dists_wf, _ = _coast_tree.query(_prop_pts_wf, k=1)
+    _d_wf = _dists_wf * 111_000.0   # degrees → metres
+    df = df.with_columns([
+        pl.Series("dist_waterfront_m",     _d_wf,                dtype=pl.Float64),
+        pl.Series("log_dist_waterfront_m", np.log1p(_d_wf),      dtype=pl.Float64),
+        pl.Series("waterfront_200m",       (_d_wf < 200).astype(np.int8), dtype=pl.Int8),
+    ])
+    _wf_log_price = np.log1p(df["sale_price"].to_numpy().astype(np.float64))
+    _wf_corr = np.corrcoef(_d_wf, _wf_log_price)[0, 1]
+    print(f"  Coastline pts: {len(_coast_pts):,} | dist_waterfront median "
+          f"{np.median(_d_wf):.0f}m | corr(dist_wf, log_price)={_wf_corr:.3f} "
+          f"| waterfront_200m={(_d_wf < 200).mean() * 100:.1f}%")
+else:
+    for _c in ["dist_waterfront_m", "log_dist_waterfront_m", "waterfront_200m"]:
+        df = df.with_columns(pl.lit(None).cast(pl.Float64).alias(_c))
+    print("  nyc_coastline_pts.npy not found — waterfront features null")
 
 # ── 2. Feature engineering ─────────────────────────────────────────────
 print("\n[2/9] Engineering features …")
@@ -405,6 +554,153 @@ else:
     nta_trend_save    = {}
     global_trend      = 0.0
 
+# ── v21: BBL building-level price history (leave-one-out, May 2026) ───────
+print("\n  Computing BBL building-level price history (v21) …")
+if "bbl" in df_work.columns:
+    # Cast BBL to Int64 for clean grouping
+    df_work = df_work.with_columns(
+        pl.col("bbl").cast(pl.Float64, strict=False).cast(pl.Int64, strict=False).fill_null(0).alias("_bbl_key")
+    )
+    df_hold = df_hold.with_columns(
+        pl.col("bbl").cast(pl.Float64, strict=False).cast(pl.Int64, strict=False).fill_null(0).alias("_bbl_key")
+    )
+    # Per-BBL aggregate from training data only: sum + count for LOO, median for holdout
+    _bbl_agg = (
+        df_work
+        .with_columns(
+            (pl.col("sale_price") / pl.col("gross_square_feet").clip(lower_bound=1.0)).alias("_psf_raw")
+        )
+        .group_by("_bbl_key")
+        .agg([
+            pl.col("_psf_raw").sum().alias("_bbl_sum"),
+            pl.len().alias("_bbl_cnt"),
+            pl.col("_psf_raw").median().alias("_bbl_med"),
+        ])
+    )
+    # Training: LOO mean = (sum − self) / (cnt − 1) when cnt ≥ 2; else null
+    df_work = (
+        df_work
+        .with_columns(
+            (pl.col("sale_price") / pl.col("gross_square_feet").clip(lower_bound=1.0)).alias("_psf_raw")
+        )
+        .join(_bbl_agg, on="_bbl_key", how="left")
+        .with_columns(
+            pl.when(pl.col("_bbl_cnt") >= 2)
+            .then((pl.col("_bbl_sum") - pl.col("_psf_raw")) / (pl.col("_bbl_cnt").cast(pl.Float64) - 1.0))
+            .otherwise(pl.lit(None).cast(pl.Float64))
+            .alias("bbl_hist_psf")
+        )
+        .drop(["_psf_raw", "_bbl_sum", "_bbl_cnt", "_bbl_med", "_bbl_key"])
+    )
+    # Holdout: direct BBL median from training data (no leakage — aggregate is from df_work)
+    df_hold = (
+        df_hold
+        .join(_bbl_agg.select(["_bbl_key", "_bbl_med"]), on="_bbl_key", how="left")
+        .rename({"_bbl_med": "bbl_hist_psf"})
+        .drop("_bbl_key")
+    )
+    # Fill nulls: NTA median psf → global fallback
+    _global_bbl_psf = float(df_work["bbl_hist_psf"].drop_nulls().median() or 0.0)
+    if "nta_median_psf" in df_work.columns:
+        df_work = df_work.with_columns(pl.col("bbl_hist_psf").fill_null(pl.col("nta_median_psf")))
+        df_hold  = df_hold.with_columns(pl.col("bbl_hist_psf").fill_null(pl.col("nta_median_psf")))
+    df_work = df_work.with_columns(pl.col("bbl_hist_psf").fill_null(_global_bbl_psf))
+    df_hold  = df_hold.with_columns(pl.col("bbl_hist_psf").fill_null(_global_bbl_psf))
+    _bbl_multi_ct = int(_bbl_agg.filter(pl.col("_bbl_cnt") >= 2)["_bbl_key"].len())
+    print(f"  BBL buildings with 2+ sales: {_bbl_multi_ct:,} | global_fallback_psf=${_global_bbl_psf:,.0f}")
+    # Save median lookup for inference (BBL int → median $/sqft)
+    bbl_median_lookup = {
+        int(r["_bbl_key"]): round(float(r["_bbl_med"]), 2)
+        for r in _bbl_agg.iter_rows(named=True)
+        if r["_bbl_med"] is not None and r["_bbl_key"] != 0
+    }
+    bbl_hist_psf_global = round(_global_bbl_psf, 2)
+else:
+    df_work = df_work.with_columns(pl.lit(0.0).cast(pl.Float64).alias("bbl_hist_psf"))
+    df_hold  = df_hold.with_columns(pl.lit(0.0).cast(pl.Float64).alias("bbl_hist_psf"))
+    bbl_median_lookup  = {}
+    bbl_hist_psf_global = 0.0
+    print("  ⚠ bbl column not found — bbl_hist_psf = 0")
+
+# ── v22: NTA × building-type temporal lag (May 2026) ─────────────────────────
+print("\n  Computing NTA × building-type temporal lags (v22) …")
+if "ntacode" in df_work.columns and "bldgclass" in df_work.columns and "_yrq" in df_work.columns:
+    # Rebuild _ntab_bt key (ntacode + first letter of bldgclass, e.g. "BX39_D")
+    df_work = df_work.with_columns(
+        (pl.col("ntacode") + "_" + pl.col("bldgclass").str.slice(0, 1)).alias("_ntab_bt")
+    )
+    df_hold = df_hold.with_columns(
+        (pl.col("ntacode") + "_" + pl.col("bldgclass").str.slice(0, 1)).alias("_ntab_bt")
+    )
+    # Aggregate log-price by NTA × bldgtype × quarter (training only — no holdout leakage)
+    _nta_bt_q = (
+        df_work
+        .with_columns(pl.col("sale_price").log1p().alias("_log_sp"))
+        .group_by(["_ntab_bt", "_yrq"])
+        .agg(pl.col("_log_sp").mean().alias("_mean_logp_bt"))
+    )
+    _global_logp_bt = float(_nta_bt_q["_mean_logp_bt"].median())
+
+    _bt_lag1 = (
+        _nta_bt_q.with_columns(pl.col("_yrq") + 1)
+        .rename({"_mean_logp_bt": "nta_bt_lag1q_mean_logp"})
+    )
+    _bt_lag2 = (
+        _nta_bt_q.with_columns(pl.col("_yrq") + 2)
+        .select(["_ntab_bt", "_yrq", pl.col("_mean_logp_bt").alias("nta_bt_lag2q_mean_logp")])
+    )
+
+    df_work = (
+        df_work
+        .join(_bt_lag1, on=["_ntab_bt", "_yrq"], how="left")
+        .join(_bt_lag2, on=["_ntab_bt", "_yrq"], how="left")
+    )
+    df_hold = (
+        df_hold
+        .join(_bt_lag1, on=["_ntab_bt", "_yrq"], how="left")
+        .join(_bt_lag2, on=["_ntab_bt", "_yrq"], how="left")
+    )
+
+    for _col_bt, _fb_bt in [("nta_bt_lag1q_mean_logp", _global_logp_bt),
+                             ("nta_bt_lag2q_mean_logp", _global_logp_bt)]:
+        df_work = df_work.with_columns(pl.col(_col_bt).fill_null(_fb_bt))
+        df_hold  = df_hold.with_columns(pl.col(_col_bt).fill_null(_fb_bt))
+
+    df_work = df_work.with_columns(
+        (pl.col("nta_bt_lag1q_mean_logp") - pl.col("nta_bt_lag2q_mean_logp")).alias("nta_bt_logp_momentum")
+    )
+    df_hold = df_hold.with_columns(
+        (pl.col("nta_bt_lag1q_mean_logp") - pl.col("nta_bt_lag2q_mean_logp")).alias("nta_bt_logp_momentum")
+    )
+    df_work = df_work.with_columns(pl.col("nta_bt_logp_momentum").fill_null(0.0))
+    df_hold  = df_hold.with_columns(pl.col("nta_bt_logp_momentum").fill_null(0.0))
+
+    df_work = df_work.drop("_ntab_bt")
+    df_hold  = df_hold.drop("_ntab_bt")
+
+    # Save lookup for inference: key = "{ntacode}_{bldgclass_letter}_{yrq}"
+    _nta_bt_lag1_save = {}
+    for _r in _bt_lag1.iter_rows(named=True):
+        _key = f"{_r['_ntab_bt']}_{_r['_yrq']}"
+        _ml  = _r["nta_bt_lag1q_mean_logp"]
+        if _ml is None: continue
+        _nta_bt_lag1_save[_key] = round(float(_ml), 6)
+    _nta_bt_lag2_save = {}
+    for _r in _bt_lag2.iter_rows(named=True):
+        _key = f"{_r['_ntab_bt']}_{_r['_yrq']}"
+        _ml2 = _r["nta_bt_lag2q_mean_logp"]
+        if _ml2 is None: continue
+        _nta_bt_lag2_save[_key] = round(float(_ml2), 6)
+
+    _nta_bt_nulls = int(df_work["nta_bt_lag1q_mean_logp"].is_null().sum())
+    _nta_bt_combos = int(len(_nta_bt_lag1_save))
+    print(f"  NTA×BT lag-1 entries: {_nta_bt_combos:,} | nulls after fill: {_nta_bt_nulls}/{len(df_work)}")
+else:
+    _nta_bt_lag1_save = {}
+    _nta_bt_lag2_save = {}
+    _global_logp_bt   = 0.0
+    print("  ⚠ ntacode/bldgclass/_yrq not found — skipping v22 NTA×BT lag")
+
 # ── 5. Feature matrix ──────────────────────────────────────────────────
 print("\n[5/9] Building feature matrix …")
 V4_BASE = [
@@ -462,11 +758,69 @@ V12_FEATS = [
     "nta_lag2q_mean_logp",   # NTA mean log-price from 2 quarters ago
     "nta_logp_momentum",     # Price trend: lag1 − lag2
 ]
-FEATURE_NAMES = [f for f in (V4_BASE + V5_FEATS + V6_FEATS + V11_FEATS + V12_FEATS) if f in df_work.columns]
+# ── v13: New Overture POI categories (May 2026) ──────────────────────────
+V13_FEATS = [
+    "poi_atm_500m",          # ATM density (financial services access)
+    "poi_urgent_care_500m",  # Urgent care / medical clinic density
+    "poi_cinema_500m",       # Cinema density (entertainment)
+    "poi_library_500m",      # Public library density
+    "poi_childcare_500m",    # Childcare / preschool density
+    "poi_beauty_500m",       # Beauty salon density (commercial vibrancy)
+    "poi_hotel_500m",        # Hotel density (tourism/business district)
+]
+# ── v14: Citi Bike access (May 2026) ─────────────────────────────────────
+V14_FEATS = [
+    "citibike_500m",       # Citi Bike stations within 500m (bikeability)
+    "dist_citibike_m",     # Distance to nearest Citi Bike station
+]
+# ── v15: Commuter rail access (May 2026) ──────────────────────────────────
+V15_FEATS = [
+    "dist_commuter_rail_m",      # Distance to nearest LIRR/Metro-North/SIR station
+    # log_dist_commuter_rail_m already included via V4_BASE dist_cols expansion
+    "commuter_rail_1km",         # Commuter rail station within 1km (binary-ish)
+]
+# ── v16: LPC historic district + FEMA flood zone + landmark (May 2026) ─────
+V16_FEATS = [
+    "is_historic_dist",  # In LPC-designated historic district (premium)
+    "in_flood_zone",     # In FEMA 2015 preliminary flood zone (risk discount)
+    "is_landmark",       # Individually designated NYC landmark
+]
+# ── v17: PLUTO tax exemption (May 2026) ─────────────────────────────────────
+V17_FEATS = [
+    "log_exempt_amount",  # log1p(exempttot) — captures 421-a abatements, J-51, co-op exemptions
+]
+# ── v18: Census ACS tract median household income (May 2026) ────────────────
+V18_FEATS = [
+    "log_tract_median_income",  # log1p(ACS median HH income) — strongest socioeconomic predictor
+]
+# ── v19: Park size-stratified distances (May 2026) ───────────────────────────
+V19_FEATS = [
+    "log_dist_large_park_m",    # Distance to nearest park ≥10 acres (neighborhood parks)
+    "log_dist_flagship_park_m", # Distance to nearest park ≥100 acres (Central Park, Prospect Park…)
+]
+# ── v20: NYC waterfront / coastline proximity (May 2026) ─────────────────────
+V20_FEATS = [
+    "log_dist_waterfront_m",    # log dist to nearest NYC coastline point (27k pts)
+    "waterfront_200m",          # binary flag: within 2 blocks of water
+]
+# ── v21: BBL building-level historical price signal (May 2026) ──────────────
+V21_FEATS = [
+    "bbl_hist_psf",  # Leave-one-out median $/sqft from same BBL (building history signal)
+]
+# ── v22: NTA × building-type temporal lag (May 2026) ─────────────────────────
+V22_FEATS = [
+    "nta_bt_lag1q_mean_logp",   # NTA × bldgtype mean log-price from previous quarter
+    "nta_bt_lag2q_mean_logp",   # NTA × bldgtype mean log-price from 2 quarters ago
+    "nta_bt_logp_momentum",     # Price trend: lag1 − lag2 (NTA × bldgtype)
+]
+_all_feats = V4_BASE + V5_FEATS + V6_FEATS + V11_FEATS + V12_FEATS + V13_FEATS + V14_FEATS + V15_FEATS + V16_FEATS + V17_FEATS + V18_FEATS + V19_FEATS + V20_FEATS + V21_FEATS + V22_FEATS
+FEATURE_NAMES = list(dict.fromkeys(f for f in _all_feats if f in df_work.columns))
 n_v11 = len([f for f in V11_FEATS if f in df_work.columns])
 n_v12 = len([f for f in V12_FEATS if f in df_work.columns])
+n_v21 = len([f for f in V21_FEATS if f in df_work.columns])
+n_v22 = len([f for f in V22_FEATS if f in df_work.columns])
 print(f"  Total features: {len(FEATURE_NAMES)}  "
-      f"(+{len([f for f in V6_FEATS if f in df_work.columns])} v6, +{n_v11} v11, +{n_v12} v12)")
+      f"(+{len([f for f in V6_FEATS if f in df_work.columns])} v6, +{n_v11} v11, +{n_v12} v12, +{n_v21} v21, +{n_v22} v22)")
 
 acris_cols    = ["prior_sale_price","price_appreciation","years_since_prior_sale"]
 acris_medians = {c: float(df_work.filter(pl.col(c).is_not_null()&(pl.col(c)!=0))[c].median() or 0)
@@ -641,7 +995,7 @@ joblib.dump({
     "lgb":   final_lg, "cat":   final_ct,
     "meta":  meta_lgb if use_lgb_meta else ridge_pos,
     "meta_type": "lgb" if use_lgb_meta else "ridge",
-    "version": "v12",
+    "version": "v22",
 }, stack_path)
 print(f"\n  thaman_stack.pkl saved  ({os.path.getsize(stack_path)/1e6:.1f} MB)")
 final_xa.save_model(os.path.join(MODEL_DIR, "xgboost_model.json"))
@@ -664,7 +1018,7 @@ meta.update({
     "segment_by_borough": segment_by_borough,
     "segment_by_tier":    segment_by_tier,
     "stack": {
-        "version": "v12",
+        "version": "v22",
         "base_learners": ["xgb_a","xgb_b","lightgbm","catboost"],
         "meta_learner": "lgb" if use_lgb_meta else "ridge",
         "r2_holdout":     round(r2_stk,4), "mae_holdout": round(mae_stk,0),
@@ -684,6 +1038,13 @@ meta.update({
         "median_psf": round(_global_psf, 2),
         "count":      round(_global_cnt, 1),
     },
+    # v21: BBL building-level price history for inference
+    "bbl_median_lookup":   bbl_median_lookup,
+    "bbl_hist_psf_global": bbl_hist_psf_global,
+    # v22: NTA × building-type temporal lag for inference
+    "nta_bt_lag_q_map":     _nta_bt_lag1_save,
+    "nta_bt_lag_q2_map":    _nta_bt_lag2_save,
+    "nta_bt_lag_global_logp": round(_global_logp_bt, 6),
     # v11 inference lookups — used by api/main.py _build_feature_row()
     "v11_zip_lookup": {
         "hpd_class_b_viol_zip":   {},   # populated below
@@ -759,21 +1120,75 @@ if os.path.exists(_mta_path):
     meta["mta_stations"] = _mta_stations
     print(f"  mta_stations: {len(_mta_stations)} stored in meta.json")
 
+# ── v16: NTA-level averages for historic district + flood zone (inference fallback) ──
+if "ntacode" in df_work.columns and "is_historic_dist" in df_work.columns:
+    _v16_nta = {}
+    for _col in ["is_historic_dist", "in_flood_zone", "is_landmark"]:
+        if _col not in df_work.columns:
+            continue
+        _agg = (df_work.group_by("ntacode")
+                .agg(pl.col(_col).cast(pl.Float64).mean().alias("_mean"))
+                .to_pandas())
+        for _, _row in _agg.iterrows():
+            _nta = _row["ntacode"]
+            if _nta not in _v16_nta:
+                _v16_nta[_nta] = {}
+            _v16_nta[_nta][_col] = round(float(_row["_mean"]), 4)
+    meta["v16_nta_lookup"] = _v16_nta
+    _hist_rate = df_work["is_historic_dist"].cast(pl.Float64).mean()
+    _flood_rate = df_work["in_flood_zone"].cast(pl.Float64).mean()
+    meta["v16_global_hist_rate"]  = round(float(_hist_rate), 4)
+    meta["v16_global_flood_rate"] = round(float(_flood_rate), 4)
+    print(f"  v16_nta_lookup: {len(_v16_nta)} NTAs | "
+          f"hist_rate={_hist_rate:.2%} flood_rate={_flood_rate:.2%}")
+
+# ── v17: NTA-level mean log_exempt_amount for inference fallback ──────────────
+if "ntacode" in df_work.columns and "log_exempt_amount" in df_work.columns:
+    _v17_nta = {}
+    _ex_agg = (df_work.group_by("ntacode")
+               .agg(pl.col("log_exempt_amount").cast(pl.Float64).mean().alias("_mean"))
+               .to_pandas())
+    for _, _row in _ex_agg.iterrows():
+        _v17_nta[_row["ntacode"]] = round(float(_row["_mean"]), 4)
+    meta["v17_nta_log_exempt"] = _v17_nta
+    meta["v17_global_log_exempt"] = round(float(df_work["log_exempt_amount"].cast(pl.Float64).mean()), 4)
+    print(f"  v17_nta_log_exempt: {len(_v17_nta)} NTAs | "
+          f"global_mean={meta['v17_global_log_exempt']:.3f}")
+
+# ── v18: NTA-level mean log_tract_median_income for inference fallback ────────
+if "ntacode" in df_work.columns and "log_tract_median_income" in df_work.columns:
+    _v18_nta = {}
+    _inc_agg = (df_work
+                .filter(pl.col("log_tract_median_income").is_not_null() & pl.col("log_tract_median_income").is_finite())
+                .group_by("ntacode")
+                .agg(pl.col("log_tract_median_income").mean().alias("_mean"))
+                .to_pandas())
+    for _, _row in _inc_agg.iterrows():
+        _v18_nta[_row["ntacode"]] = round(float(_row["_mean"]), 4)
+    _v18_glob = round(float(df_work.filter(
+        pl.col("log_tract_median_income").is_not_null() & pl.col("log_tract_median_income").is_finite()
+    )["log_tract_median_income"].mean()), 4)
+    meta["v18_nta_log_income"] = _v18_nta
+    meta["v18_global_log_income"] = _v18_glob
+    print(f"  v18_nta_log_income: {len(_v18_nta)} NTAs | global_mean={_v18_glob:.3f}")
+
 meta["trained_at"] = datetime.date.today().strftime("%Y-%m-%d")
 with open(meta_path,"w") as f: json.dump(meta, f, indent=2)
 print("  meta.json updated ✓")
 
 print("\n" + "="*70)
-print("  THAMAN Stack v11 — Complete")
+print("  THAMAN Stack v22 — Complete")
 print("="*70)
 print(f"\n  {'Model':<24}  {'R²':>7}  {'MAE':>14}  {'MedAPE':>9}")
 print(f"  {'-'*60}")
 for nm, r, m, mp_ in [("XGB-A",r2_xa,mae_xa,mp_xa),("XGB-B",r2_xb,mae_xb,mp_xb),
                        ("LGB",r2_lg,mae_lg,mp_lg),("CAT",r2_ct,mae_ct,mp_ct),
-                       ("Stack v11",r2_stk,mae_stk,mp_stk)]:
+                       ("Stack v22",r2_stk,mae_stk,mp_stk)]:
     print(f"  {nm:<24}  {r:>7.4f}  ${m:>13,.0f}  {mp_:>8.2f}%")
-print(f"\n  vs v11: ΔR²={r2_stk-0.645:+.4f}  ΔMedAPE={20.24-mp_stk:+.2f}pp")
+print(f"\n  vs v21: ΔR²={r2_stk-0.6516:+.4f}  ΔMedAPE={20.10-mp_stk:+.2f}pp")
 print(f"  NTA features: {nta_features}")
 print(f"  v11 new features: {[f for f in V11_FEATS if f in FEATURE_NAMES]}")
 print(f"  v12 new features: {[f for f in V12_FEATS if f in FEATURE_NAMES]}")
+print(f"  v21 new features: {[f for f in V21_FEATS if f in FEATURE_NAMES]}")
+print(f"  v22 new features: {[f for f in V22_FEATS if f in FEATURE_NAMES]}")
 print(f"  Total features: {len(FEATURE_NAMES)}")

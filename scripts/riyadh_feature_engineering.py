@@ -572,12 +572,28 @@ def _load_csv_coords(path: Path, lat_col: str = "latitude", lon_col: str = "long
 
 
 QOL_POIS = {
-    "mosque":      (RAW / "riyadh_mosques.csv",   "lat",  "lon"),
-    "mall":        (RAW / "riyadh_malls.csv",      "lat",  "lon"),
-    "school":      (RAW / "riyadh_schools.csv",    "lat",  "lon"),
-    "hospital":    (RAW / "riyadh_hospitals.csv",  "lat",  "lon"),
-    "park":        (RAW / "riyadh_parks.csv",      "lat",  "lon"),
-    "entertain":   (RAW / "rcrc_entertainment.csv","lat",  "lon"),
+    "mosque":      (RAW / "riyadh_mosques.csv",           "lat",  "lon"),
+    "mall":        (RAW / "riyadh_malls.csv",              "lat",  "lon"),
+    "school":      (RAW / "riyadh_schools.csv",            "lat",  "lon"),
+    "hospital":    (RAW / "riyadh_hospitals.csv",          "lat",  "lon"),
+    "park":        (RAW / "riyadh_parks.csv",              "lat",  "lon"),
+    "entertain":   (RAW / "rcrc_entertainment.csv",        "lat",  "lon"),
+    # ── New QoL POIs (OSM, May 2026) ──────────────────────────
+    "pharmacy":    (RAW / "riyadh_qol_pharmacies.csv",    "lat",  "lon"),
+    "gym":         (RAW / "riyadh_qol_gyms.csv",          "lat",  "lon"),
+    "coffee":      (RAW / "riyadh_qol_coffee_shops.csv",  "lat",  "lon"),
+    "clinic":      (RAW / "riyadh_qol_clinics.csv",       "lat",  "lon"),
+    "university":  (RAW / "riyadh_qol_universities.csv",  "lat",  "lon"),
+    "supermarket": (RAW / "riyadh_qol_supermarkets.csv",  "lat",  "lon"),
+    "cinema":      (RAW / "riyadh_qol_cinemas.csv",       "lat",  "lon"),
+    "sports":      (RAW / "riyadh_qol_sports_centres.csv","lat",  "lon"),
+    # ── Additional QoL POIs (OSM batch 2, May 2026) ───────────
+    "restaurant":  (RAW / "riyadh_qol_restaurants.csv",  "lat",  "lon"),
+    "pool":        (RAW / "riyadh_qol_swimming_pools.csv","lat",  "lon"),
+    "atm":         (RAW / "riyadh_qol_atms.csv",          "lat",  "lon"),
+    "stadium":     (RAW / "riyadh_qol_stadiums.csv",      "lat",  "lon"),
+    "library":     (RAW / "riyadh_qol_libraries.csv",     "lat",  "lon"),
+    "police":      (RAW / "riyadh_qol_police.csv",        "lat",  "lon"),
 }
 
 qol_trees:  dict[str, cKDTree]  = {}
@@ -973,9 +989,42 @@ DIST_COLS  = ["district_median_price_sqm", "district_transaction_volume",
               "district_apt_encoded", "district_recent_encoded", "district_apt_recent_encoded"]
 TIME_COLS  = ["sale_year", "sale_quarter", "sale_quarter_sin", "sale_quarter_cos", "log_deed_count"]
 SCORE_COLS = ["riyadh_connectivity_score"]
+HARAJ_COLS = ["haraj_listing_count", "haraj_median_psqm", "haraj_p25_psqm",
+              "haraj_p75_psqm", "haraj_iqr_psqm", "haraj_asking_premium"]
+
+# ── Step 11 — Haraj asking-price features ──────────────────────────────────
+haraj_path = RAW / "haraj_riyadh_district_agg.csv"
+if haraj_path.exists():
+    print("Step 11 — Haraj asking-price features...")
+    import pandas as _pd, numpy as _np
+    haraj = _pd.read_csv(haraj_path)
+
+    # Compute asking premium vs district median transaction price
+    # Use district_median_price_sqm from REI/aggregate step already in df
+    df_pd = df.to_pandas()
+    dist_med = df_pd.groupby("district_ar")["sale_price_sar_sqm"].median().reset_index()
+    dist_med.columns = ["district_ar", "_tx_median_psqm"]
+    haraj = haraj.merge(dist_med, on="district_ar", how="left")
+    haraj["haraj_asking_premium"] = _np.where(
+        haraj["_tx_median_psqm"] > 0,
+        haraj["haraj_median_psqm"] / haraj["_tx_median_psqm"],
+        _np.nan
+    )
+    keep_haraj = ["district_ar"] + [c for c in HARAJ_COLS if c in haraj.columns]
+    haraj = haraj[keep_haraj]
+
+    df_pd = df_pd.merge(haraj, on="district_ar", how="left")
+    import polars as _pl
+    df = _pl.from_pandas(df_pd)
+    matched = df["haraj_median_psqm"].drop_nulls().len()
+    print(f"  Haraj matched rows: {matched} / {len(df)}")
+else:
+    print("Step 11 — Haraj file not found, skipping.")
+    HARAJ_COLS = []
 
 all_cols  = (ID_COLS + TARGET + TYPE_COLS + METRO_COLS + BUS_COLS
-             + INT_COLS + COMM_COLS + QOL_COLS + AIR_COLS + MACRO_COLS + DIST_COLS + TIME_COLS + SCORE_COLS)
+             + INT_COLS + COMM_COLS + QOL_COLS + AIR_COLS + MACRO_COLS + DIST_COLS
+             + TIME_COLS + SCORE_COLS + HARAJ_COLS)
 final_cols = [c for c in all_cols if c in df.columns]
 
 out = df.select(final_cols)

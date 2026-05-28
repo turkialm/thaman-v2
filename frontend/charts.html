@@ -389,6 +389,44 @@
       </div>
     </div>
 
+    <!-- ── Model Version History ─────────────────────────── -->
+    <div class="chart-card span-2" id="versionHistoryCard">
+      <h2>📈 Model Progression — NYC &amp; Riyadh</h2>
+      <div class="chart-sub">MedAPE improvement across training iterations — lower is better</div>
+      <div style="overflow-x:auto;margin-top:12px">
+        <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+          <thead>
+            <tr style="background:#f9fafb;border-bottom:2px solid #e5e7eb">
+              <th style="padding:8px 12px;text-align:left;color:#374151;font-weight:700">Version</th>
+              <th style="padding:8px 12px;text-align:left;color:#374151;font-weight:700">Key Addition</th>
+              <th style="padding:8px 12px;text-align:center;color:#374151;font-weight:700">Hold R²</th>
+              <th style="padding:8px 12px;text-align:center;color:#374151;font-weight:700">MedAPE</th>
+              <th style="padding:8px 12px;text-align:center;color:#374151;font-weight:700">Features</th>
+              <th style="padding:8px 12px;text-align:center;color:#374151;font-weight:700">Δ MedAPE</th>
+            </tr>
+          </thead>
+          <tbody id="versionTableBody">
+          </tbody>
+        </table>
+      </div>
+      <div style="overflow-x:auto;margin-top:20px">
+        <table style="width:100%;border-collapse:collapse;font-size:.8rem">
+          <thead>
+            <tr style="background:#f0fdf4;border-bottom:2px solid #bbf7d0">
+              <th style="padding:8px 12px;text-align:left;color:#166534;font-weight:700">Riyadh Version</th>
+              <th style="padding:8px 12px;text-align:left;color:#166534;font-weight:700">Key Addition</th>
+              <th style="padding:8px 12px;text-align:center;color:#166534;font-weight:700">Hold R²</th>
+              <th style="padding:8px 12px;text-align:center;color:#166534;font-weight:700">MedAPE</th>
+              <th style="padding:8px 12px;text-align:center;color:#166534;font-weight:700">Features</th>
+              <th style="padding:8px 12px;text-align:center;color:#166534;font-weight:700">Δ MedAPE</th>
+            </tr>
+          </thead>
+          <tbody id="riyadhVersionTableBody">
+          </tbody>
+        </table>
+      </div>
+    </div>
+
     <!-- ── Chart 8: Hyperparameter Radar ────────────────── -->
     <div class="chart-card">
       <h2 id="c9Title">🎛️ Hyperparameter Profile (v2)</h2>
@@ -434,13 +472,23 @@
       </div>
     </div>
 
+    <!-- ── Chart: Predicted vs Actual Scatter ───────────────── -->
+    <div class="chart-card span-2" id="scatterCard">
+      <h2>🎯 Predicted vs Actual — NYC Holdout (v21)</h2>
+      <div class="chart-sub">2,000 randomly sampled holdout transactions · coloured by borough · diagonal = perfect prediction · full-stack R²=0.6516 · MedAPE=20.10%</div>
+      <div id="scatterLoading" style="text-align:center;padding:40px;color:#9ca3af;font-size:.85rem">Loading scatter data…</div>
+      <div id="scatterWrap" style="display:none">
+        <canvas id="scatterChart" style="max-height:420px"></canvas>
+      </div>
+    </div>
+
   </div><!-- end charts-layout -->
 
   <!-- ── Riyadh Analytics ──────────────────────────────────────────── -->
   <div id="riyadhChartsLayout" style="display:none;max-width:1240px;margin:0 auto;padding:0 20px 48px;display:none">
     <div style="text-align:center;padding:8px 0 20px">
       <h1 style="font-size:1.4rem;font-weight:800;color:#111827">🕌 Riyadh Property Market — Analytics</h1>
-      <p style="font-size:.85rem;color:#6b7280;margin-top:4px">Saudi Open Data · 6,910 district-quarter observations · 2018–2024 training + 2025 Q1–Q3 holdout · Riyadh Stack v2</p>
+      <p style="font-size:.85rem;color:#6b7280;margin-top:4px">Saudi Open Data · 7,258 district-quarter observations · 2018–2024 training + 2025 Q1+ holdout · Riyadh Stack v11 · 140 features</p>
     </div>
 
     <!-- Market Overview KPI cards -->
@@ -448,31 +496,31 @@
     <div id="riyadhKpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"></div>
 
     <!-- Model Performance KPI cards (hardcoded from Stack v2 training run) -->
-    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:6px;margin-top:4px">🤖 Model Performance — Stack v2</div>
+    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:6px;margin-top:4px">🤖 Model Performance — Stack v11</div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center">
         <div style="font-size:1.1rem;margin-bottom:4px">🔁</div>
-        <div style="font-size:1.4rem;font-weight:800;color:#059669">9.03%</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#059669">8.28%</div>
         <div style="font-size:.75rem;font-weight:600;color:#6b7280;margin-top:2px">OOF MedAPE</div>
-        <div style="font-size:.7rem;color:#9ca3af">5-fold spatial CV · R²=0.9252</div>
+        <div style="font-size:.7rem;color:#9ca3af">5-fold GroupKFold CV · R²=0.9343</div>
       </div>
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center">
         <div style="font-size:1.1rem;margin-bottom:4px">🎯</div>
-        <div style="font-size:1.4rem;font-weight:800;color:#d97706">18.16%</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#d97706">15.56%</div>
         <div style="font-size:.75rem;font-weight:600;color:#6b7280;margin-top:2px">Holdout MedAPE</div>
-        <div style="font-size:.7rem;color:#9ca3af">2025 Q1–Q3 · unseen data</div>
+        <div style="font-size:.7rem;color:#9ca3af">2025 Q1+ · 1,727 rows unseen</div>
       </div>
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center">
         <div style="font-size:1.1rem;margin-bottom:4px">📈</div>
-        <div style="font-size:1.4rem;font-weight:800;color:#2563eb">0.7981</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#2563eb">0.8003</div>
         <div style="font-size:.75rem;font-weight:600;color:#6b7280;margin-top:2px">Holdout R²</div>
-        <div style="font-size:.7rem;color:#9ca3af">MAE = 991 SAR/m²</div>
+        <div style="font-size:.7rem;color:#9ca3af">MAE = 980 SAR/m²</div>
       </div>
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center">
         <div style="font-size:1.1rem;margin-bottom:4px">🗂️</div>
-        <div style="font-size:1.4rem;font-weight:800;color:#7c3aed">5,531</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#7c3aed">7,258</div>
         <div style="font-size:.75rem;font-weight:600;color:#6b7280;margin-top:2px">Training Rows</div>
-        <div style="font-size:.7rem;color:#9ca3af">1,379 holdout · 76 features</div>
+        <div style="font-size:.7rem;color:#9ca3af">1,727 holdout · 140 features</div>
       </div>
     </div>
 
@@ -494,12 +542,12 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
       <div class="chart-card" style="padding:16px">
         <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">🎯 MedAPE by Property Type (Holdout)</h2>
-        <div class="chart-sub">Stack v2 · 2025 Q1–Q3 · lower = better</div>
+        <div class="chart-sub">Stack v11 · 2025 Q1+ · lower = better · apt+villa both ≈12.8%</div>
         <div class="chart-wrap" style="height:220px"><canvas id="riyadhMedapeTypeChart"></canvas></div>
       </div>
       <div class="chart-card" style="padding:16px">
-        <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">⚖️ OOF vs Holdout — Stack v2</h2>
-        <div class="chart-sub">9 pp gap between CV and holdout — new 2025 Q1–Q3 unseen market</div>
+        <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">⚖️ OOF vs Holdout — Stack v11</h2>
+        <div class="chart-sub">7.3 pp gap between CV and holdout — 2025 Q1+ unseen market (1,727 rows)</div>
         <div class="chart-wrap" style="height:220px"><canvas id="riyadhOofHoldoutChart"></canvas></div>
       </div>
     </div>
@@ -509,6 +557,23 @@
       <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">Top 25 Districts by Median Price/m²</h2>
       <div class="chart-sub">Min. 10 transactions · SAR/m²</div>
       <div class="chart-wrap" style="height:320px"><canvas id="riyadhDistrictChart"></canvas></div>
+    </div>
+
+    <!-- Full-width: Feature importance -->
+    <div class="chart-card" style="padding:16px;margin-bottom:20px">
+      <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">🔍 Top Feature Importances — Riyadh v11</h2>
+      <div class="chart-sub">LGB gain-based importance · district × type encoding dominates; rei_type_idx (v8), metro (v10), type-stratified lag (v11)</div>
+      <div class="chart-wrap" style="height:360px"><canvas id="riyadhFiChart"></canvas></div>
+    </div>
+
+    <!-- Full-width: Predicted vs Actual scatter (Riyadh) -->
+    <div class="chart-card" style="padding:16px;margin-bottom:20px" id="riyadhScatterCard">
+      <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">🎯 Predicted vs Actual — Riyadh Holdout (v10)</h2>
+      <div class="chart-sub">800 randomly sampled holdout transactions · coloured by property type · diagonal = perfect prediction · full-stack R²=0.8003 · MedAPE=15.56%</div>
+      <div id="riyadhScatterLoading" style="text-align:center;padding:40px;color:#9ca3af;font-size:.85rem">Loading scatter data…</div>
+      <div id="riyadhScatterWrap" style="display:none">
+        <div class="chart-wrap" style="height:380px"><canvas id="riyadhScatterChart"></canvas></div>
+      </div>
     </div>
   </div>
 
@@ -557,14 +622,14 @@
   // ────────────────────────────────────────────────────────────────
   // 0. Stack v9 Model Comparison
   // ────────────────────────────────────────────────────────────────
-  new Chart(ctx('stackCompareChart'), {
+  window._stackChart = new Chart(ctx('stackCompareChart'), {
     type: 'bar',
     data: {
-      labels: ['XGB-A (deep)', 'XGB-B (shallow)', 'LGB (wide)', 'CAT (high-cap)', 'Stack v12\n(4-Model+Ridge)'],
+      labels: ['XGB-A (deep)', 'XGB-B (shallow)', 'LGB (wide)', 'CAT (high-cap)', 'Stack v22\n(4-Model+Ridge)'],
       datasets: [
         {
           label: 'R² Holdout',
-          data: [0.6441, 0.6429, 0.6419, 0.6430, 0.6467],
+          data: [0.6470, 0.6416, 0.6466, 0.6482, 0.6507],
           backgroundColor: [C.blueLt, C.tealLt, C.purpleLt, C.greenLt, C.orangeLt || '#fde68a'],
           borderColor:     [C.blue,   C.teal,   C.purple,   C.green,   C.orange],
           borderWidth: 2.5,
@@ -573,7 +638,7 @@
         },
         {
           label: 'MedAPE (%)',
-          data: [20.21, 20.35, 20.40, 20.22, 20.31],
+          data: [20.35, 20.48, 20.66, 20.44, 20.10],
           type: 'line',
           borderColor: C.orange,
           backgroundColor: 'transparent',
@@ -621,63 +686,102 @@
   // ────────────────────────────────────────────────────────────────
   // 1. SHAP Top 20 — v2
   // ────────────────────────────────────────────────────────────────
-  const shapData = [
-    { feature: 'bldgclass_encoded',        label: 'Building Class (target-enc.)', shap: 0.2121,  color: C.blue   },
-    { feature: 'borough_bldg_encoded',     label: 'Borough × Class (target-enc.)',shap: 0.11884, color: C.blue   },
-    { feature: 'gross_square_feet',        label: 'Building Size (sq ft)',        shap: 0.09798, color: C.blue   },
-    { feature: 'prior_sale_price',         label: 'Prior Sale Price',             shap: 0.07496, color: C.purple },
-    { feature: 'dist_downtown_manhattan_m',label: 'Dist. Downtown Manhattan',     shap: 0.07246, color: C.teal   },
-    { feature: 'latitude',                 label: 'Latitude (N-S position)',      shap: 0.05846, color: C.teal   },
-    { feature: 'land_square_feet',         label: 'Land Area (sq ft)',            shap: 0.05378, color: C.blue   },
-    { feature: 'price_appreciation',       label: 'Prior Price Appreciation',     shap: 0.03668, color: C.purple },
-    { feature: 'has_prior_sale',           label: 'Has Prior Sale Record',        shap: 0.03350, color: C.purple },
-    { feature: 'builtfar',                 label: 'Built Floor Area Ratio',       shap: 0.03235, color: C.amber  },
-    { feature: 'dist_downtown_brooklyn_m', label: 'Dist. Downtown Brooklyn',      shap: 0.03179, color: C.teal   },
-    { feature: 'median_income_nta',        label: 'Neighborhood Median Income',   shap: 0.03053, color: C.orange },
-    { feature: 'dist_long_island_city_m',  label: 'Dist. Long Island City',       shap: 0.02671, color: C.teal   },
-    { feature: 'building_age',             label: 'Building Age (years)',         shap: 0.02405, color: C.blue   },
-    { feature: 'residential_units',        label: 'Residential Units',            shap: 0.02289, color: C.blue   },
-    { feature: 'crime_rate_nta',           label: 'Crime Rate (per 1k)',          shap: 0.02233, color: C.red    },
-    { feature: 'borough_income_deviation', label: 'Borough Income Deviation',     shap: 0.02230, color: C.orange },
-    { feature: 'is_single_fam',            label: 'Is Single Family (A-class)',   shap: 0.02207, color: C.blue   },
-    { feature: 'crime_x_non_manhattan',    label: 'Crime × Non-Manhattan',        shap: 0.02036, color: C.red    },
-    { feature: 'numfloors',                label: 'Number of Floors',             shap: 0.02030, color: C.blue   },
-  ];
+  // Feature importance chart — loaded async from /feature-importance
+  const CAT_COLORS = {
+    'Market':       C.orange,  'Valuation':   C.purple, 'Structural': C.blue,
+    'Location':     C.teal,    'Transit':      C.teal,   'Parks/Nature': C.green,
+    'Safety/QoL':   C.red,     'Amenities':    '#f59e0b','Socioeconomic': '#8b5cf6',
+    'Other':        C.gray,
+  };
+  const FEAT_LABELS = {
+    mortgage_rate_30yr:    'Mortgage Rate (30yr macro)',
+    nta_logp_momentum:     'NTA Price Momentum (QoQ)',
+    dist_hospital_m:       'Dist. Hospital',
+    prior_sale_price:      'Prior Sale / Assessment',
+    assessland:            'Land Assessment Value',
+    building_age:          'Building Age',
+    dist_park_m:           'Dist. Nearest Park',
+    tree_count_200m:       'Tree Count (200m)',
+    dist_bike_lane_m:      'Dist. Bike Lane',
+    nta_lag1q_median_psf:  'NTA Lag-1Q Median $/sqft',
+    dist_bus_m:            'Dist. Bus Stop',
+    far_utilization:       'FAR Utilization',
+    log_dist_citibike_m:   'Log Dist. Citi Bike',
+    dist_subway_m:         'Dist. Subway Station',
+    nta_lag1q_count:       'NTA Lag-1Q Sale Count',
+    nta_lag2q_mean_logp:   'NTA Lag-2Q Mean Log-Price',
+    builtfar:              'Built FAR',
+    log_dist_large_park_m: 'Log Dist. Large Park (≥10ac)',
+    dist_waterfront_m:     'Dist. Waterfront',
+    log_exempt_amount:     'Tax Exemption (421-a/J-51)',
+    nta_lag1q_mean_logp:   'NTA Lag-1Q Mean Log-Price',
+    dist_school_m:         'Dist. School',
+    log_tract_median_income:'Census Tract Median Income',
+    nta_bldg_encoded:      'NTA × Building Class Enc.',
+    bldgclass_encoded:     'Building Class Enc.',
+  };
 
-  new Chart(ctx('shapChart'), {
-    type: 'bar',
-    data: {
-      labels: [...shapData].reverse().map(d => d.label),
-      datasets: [{
-        label: 'Mean |SHAP|',
-        data:  [...shapData].reverse().map(d => d.shap),
-        backgroundColor: [...shapData].reverse().map(d => d.color),
-        borderRadius: 4,
-        borderSkipped: false,
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: { label: (c) => ` Mean |SHAP|: ${c.raw.toFixed(5)}` }
-        }
-      },
-      scales: {
-        x: {
-          title: { display: true, text: 'Mean |SHAP| value (log-price units)', color: C.gray },
-          grid: { color: 'rgba(0,0,0,.05)' },
+  async function loadFeatureImportance() {
+    try {
+      const res  = await fetch(`${API_BASE}/feature-importance?city=nyc&top_n=20`);
+      if (!res.ok) throw new Error(res.status);
+      const data = await res.json();
+
+      const reversed = [...data].reverse();
+      const labels   = reversed.map(d => FEAT_LABELS[d.feature] || d.feature.replace(/_/g,' '));
+      const values   = reversed.map(d => d.importance);
+      const colors   = reversed.map(d => CAT_COLORS[d.category] || C.gray);
+
+      new Chart(ctx('shapChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Feature Importance (normalized)',
+            data: values,
+            backgroundColor: colors.map(c => c + 'cc'),
+            borderColor: colors,
+            borderWidth: 1.5,
+            borderRadius: 4,
+            borderSkipped: false,
+          }]
         },
-        y: {
-          ticks: { font: { size: 11 } },
-          grid: { display: false },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (c) => ` Importance: ${c.raw.toFixed(1)} | ${data[data.length-1-c.dataIndex]?.category || ''}`,
+              }
+            }
+          },
+          scales: {
+            x: {
+              min: 0, max: 105,
+              title: { display: true, text: 'Normalized Feature Importance (LGB gain, max=100)', color: C.gray },
+              grid: { color: 'rgba(0,0,0,.05)' },
+            },
+            y: { ticks: { font: { size: 10 } }, grid: { display: false } }
+          }
         }
-      }
+      });
+
+      // Update chart sub with top feature info
+      const sub = document.getElementById('c1Sub');
+      if (sub && data[0]) sub.textContent =
+        `Top feature: ${FEAT_LABELS[data[0].feature] || data[0].feature} (${data[0].category}) — `
+        + `LGB gain-based importance across ${data.length} of ${130} features`;
+    } catch(e) {
+      console.warn('Feature importance load failed:', e.message);
+      // Fallback: render placeholder text in chart area
+      const el = document.getElementById('shapChart');
+      if (el) el.parentElement.innerHTML += `<div style="color:#9ca3af;padding:2rem;text-align:center">Feature importance unavailable</div>`;
     }
-  });
+  }
+  loadFeatureImportance();
 
   // ────────────────────────────────────────────────────────────────
   // 2. v1 vs v2 vs Baseline
@@ -712,8 +816,8 @@
           borderRadius: 5,
         },
         {
-          label: 'THAMAN v12 Stack ✓',
-          data:  [0.6467, 1.076, 20.23],
+          label: 'THAMAN v22 Stack ✓' ✓',
+          data:  [0.6495, 1.047, 20.32],
           backgroundColor: [C.tealLt, C.tealLt, C.tealLt],
           borderColor:     [C.teal,   C.teal,   C.teal],
           borderWidth: 2.5,
@@ -979,13 +1083,13 @@
   // 7. By Borough MedAPE
   // ────────────────────────────────────────────────────────────────
   const boroNames  = ['Staten Island', 'Queens', 'Bronx', 'Brooklyn', 'Manhattan'];
-  const boroMedAPE = [13.32, 16.92, 20.70, 20.85, 36.47];
-  const boroMAE    = [222717, 209665, 293551, 508050, 725413];
+  const boroMedAPE = [13.45, 17.19, 21.12, 20.97, 35.19];
+  const boroMAE    = [222717, 209665, 293551, 508050, 725413];  // MAE kept from v12 (not in v20 meta)
   const boroColors = boroMedAPE.map(v =>
     v < 15 ? C.green : v < 20 ? C.teal : v < 25 ? C.orange : C.red
   );
 
-  new Chart(ctx('boroughChart'), {
+  window._boroughChart = new Chart(ctx('boroughChart'), {
     type: 'bar',
     data: {
       labels: boroNames,
@@ -1349,11 +1453,11 @@
     ar: {
       tagline:    'لوحة تحليلات النموذج v2.1',
       backLink:   'الخريطة →',
-      features:   '71 ميزة',
-      pageTitle:  'ثمن v2.1 — نظام تقييم عقارات نيويورك',
-      pageSub:    'XGBoost + LightGBM + CatBoost + Ridge · 71 ميزة · تحقق مكاني · 185 ألف صفقة عقارية',
+      features:   '131 ميزة',
+      pageTitle:  'ثمن v21 — نظام تقييم عقارات نيويورك',
+      pageSub:    'XGBoost + LightGBM + CatBoost + Ridge · 131 ميزة · تحقق مكاني · 185 ألف صفقة عقارية',
       kpi1: 'دقة النموذج R²',
-      kpi2: 'متوسط الخطأ المئوي',  kpi2s: 'فاصل ثقة ±20.29%',
+      kpi2: 'متوسط الخطأ المئوي',  kpi2s: 'فاصل ثقة ±20.32%',
       kpi3: 'متوسط الخطأ المطلق',  kpi3s: 'مجموعة الاختبار (185 ألف صف)',
       kpi4: 'دقة فئة السعر',       kpi4s: 'ضمن فئة واحدة: 96.7%',
       kpi5: 'جولات التدريب',       kpi5s: 'النموذج القديم: 917 جولة',
@@ -1452,9 +1556,10 @@ function showCity(city) {
   document.getElementById('tabRiyadh').style.color      = isRiyadh ? '#fff'    : '#374151';
   document.getElementById('tabRiyadh').style.border     = isRiyadh ? 'none'    : '1px solid #d1d5db';
   // Swap header badges
-  document.getElementById('hdrStack').textContent            = isRiyadh ? 'Stack v2'    : 'Stack v12';
-  document.getElementById('hdrR2').textContent               = isRiyadh ? 'R² = 0.798'  : 'R² = 0.645';
-  document.getElementById('chartsFeaturesBadge').textContent = isRiyadh ? '76 Features' : '109 Features';
+  const rm = window._riyadhMetrics;
+  document.getElementById('hdrStack').textContent            = isRiyadh ? (rm ? rm.version : 'riyadh_v11') : 'Stack v22';
+  document.getElementById('hdrR2').textContent               = isRiyadh ? (rm ? `R² = ${rm.hold_r2.toFixed(4)}` : 'R² = 0.8003') : 'R² = 0.6495';
+  document.getElementById('chartsFeaturesBadge').textContent = isRiyadh ? (rm ? `${rm.n_features} Features` : '140 Features') : '131 Features';
   if (isRiyadh) loadRiyadhCharts();
 }
 
@@ -1474,7 +1579,7 @@ async function loadRiyadhCharts() {
       { label: 'Transactions', value: (ov.total_rows || 0).toLocaleString(), sub: ov.year_range || '' },
       { label: 'Districts', value: (ov.districts || 0).toString(), sub: 'Riyadh districts' },
       { label: 'Median Price', value: '﷼' + Math.round(ov.median_price_sqm || 0).toLocaleString(), sub: 'SAR/m²' },
-      { label: 'Model MedAPE', value: (ov.model_medape || 18.16).toFixed(1) + '%', sub: 'Holdout 2025 Q1–Q3' },
+      { label: 'Model MedAPE', value: (ov.model_medape || 15.56).toFixed(1) + '%', sub: 'Holdout 2025 Q1+ · v11' },
     ];
     document.getElementById('riyadhKpis').innerHTML = kpis.map(k => `
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center">
@@ -1535,16 +1640,16 @@ async function loadRiyadhCharts() {
         scales: { x: { ticks: { callback: v => '﷼' + v.toLocaleString() } } } }
     });
 
-    // MedAPE by property type (Stack v2 holdout values)
+    // MedAPE by property type (Stack v11 holdout values)
     new Chart(document.getElementById('riyadhMedapeTypeChart'), {
       type: 'bar',
       data: {
-        labels: ['Apartment\nشقة', 'Villa\nفيلا', 'Residential Plot\nقطعة أرض'],
+        labels: ['Apartment\nشقة', 'Villa\nفيلا', 'Residential Plot\nقطعة أرض', 'Building\nعمارة'],
         datasets: [{
           label: 'Holdout MedAPE (%)',
-          data: [16.42, 14.46, 25.84],
-          backgroundColor: ['rgba(37,99,235,.15)', 'rgba(5,150,105,.15)', 'rgba(245,158,11,.15)'],
-          borderColor:     ['#2563eb', '#059669', '#d97706'],
+          data: [12.70, 12.83, 21.20, 21.45],
+          backgroundColor: ['rgba(37,99,235,.15)', 'rgba(5,150,105,.15)', 'rgba(245,158,11,.15)', 'rgba(139,92,246,.15)'],
+          borderColor:     ['#2563eb', '#059669', '#d97706', '#7c3aed'],
           borderWidth: 2,
           borderRadius: 6,
         }]
@@ -1567,7 +1672,7 @@ async function loadRiyadhCharts() {
       }
     });
 
-    // OOF vs Holdout comparison (Stack v2) — dual y-axis: MedAPE left, R² right
+    // OOF vs Holdout comparison (Stack v11) — dual y-axis: MedAPE left, R² right
     new Chart(document.getElementById('riyadhOofHoldoutChart'), {
       type: 'bar',
       data: {
@@ -1575,7 +1680,7 @@ async function loadRiyadhCharts() {
         datasets: [
           {
             label: 'OOF (CV)',
-            data: [9.03, null],
+            data: [8.28, null],
             backgroundColor: 'rgba(5,150,105,.18)',
             borderColor: '#059669',
             borderWidth: 2, borderRadius: 6,
@@ -1583,7 +1688,7 @@ async function loadRiyadhCharts() {
           },
           {
             label: 'Holdout',
-            data: [18.16, null],
+            data: [15.56, null],
             backgroundColor: 'rgba(217,119,6,.18)',
             borderColor: '#d97706',
             borderWidth: 2, borderRadius: 6,
@@ -1591,7 +1696,7 @@ async function loadRiyadhCharts() {
           },
           {
             label: 'OOF R² (CV)',
-            data: [null, 0.9252],
+            data: [null, 0.9343],
             backgroundColor: 'rgba(37,99,235,.18)',
             borderColor: '#2563eb',
             borderWidth: 2, borderRadius: 6,
@@ -1599,7 +1704,7 @@ async function loadRiyadhCharts() {
           },
           {
             label: 'Holdout R²',
-            data: [null, 0.7981],
+            data: [null, 0.8003],
             backgroundColor: 'rgba(124,58,237,.18)',
             borderColor: '#7c3aed',
             borderWidth: 2, borderRadius: 6,
@@ -1639,6 +1744,73 @@ async function loadRiyadhCharts() {
       }
     });
 
+    // ── Riyadh feature importance ──────────────────────────────
+    const rFiRes = await fetch(`${API_BASE}/feature-importance?city=riyadh&top_n=18`);
+    if (rFiRes.ok) {
+      const rFi = await rFiRes.json();
+      const RIYADH_LABELS = {
+        district_type_encoded:      'District × Type Encoding',
+        district_lag1q_median_psqm: 'Lag-1Q District Median SAR/m²',
+        sale_year:                  'Sale Year (temporal trend)',
+        avg_saudi_salary_yr:        'Saudi Avg. Salary (macro)',
+        rei_type_idx:               'Type-Matched REI (v8 fix)',
+        district_lag2q_median_psqm: 'Lag-2Q District Median SAR/m²',
+        log_deed_count:             'Log Deed Count',
+        rei_residential_qtr_idx:    'REI Residential Quarterly',
+        rei_qoq_change:             'REI QoQ Change',
+        rei_apt_idx:                'REI Apartment Index',
+        district_encoded:           'District Encoding',
+        bayut_p25_psqm:             'Bayut P25 Asking SAR/m²',
+        bayut_asking_premium:       'Bayut Asking Premium',
+        is_villa:                   'Property Type: Villa',
+        district_lat:               'District Latitude',
+        dist_metro_m:               'Dist. Metro Station (v10)',
+        metro_500m:                 'Within 500m of Metro',
+        log_dist_metro_m:           'Log Dist. Metro',
+      };
+      const RIYADH_CAT_COLORS = {
+        district_type_encoded: '#3b82f6', district_lag1q_median_psqm: '#f59e0b',
+        sale_year: '#8b5cf6', avg_saudi_salary_yr: '#8b5cf6',
+        rei_type_idx: '#10b981', district_lag2q_median_psqm: '#f59e0b',
+        log_deed_count: '#6b7280', rei_residential_qtr_idx: '#8b5cf6',
+        rei_qoq_change: '#8b5cf6', rei_apt_idx: '#8b5cf6',
+        district_encoded: '#3b82f6', bayut_p25_psqm: '#f97316',
+        bayut_asking_premium: '#f97316', is_villa: '#14b8a6',
+        district_lat: '#3b82f6', dist_metro_m: '#ef4444',
+        metro_500m: '#ef4444', log_dist_metro_m: '#ef4444',
+      };
+      const rFiRev = [...rFi].reverse();
+      const _rFiEl = document.getElementById('riyadhFiChart');
+      if (_rFiEl) new Chart(_rFiEl, {
+        type: 'bar',
+        data: {
+          labels: rFiRev.map(d => RIYADH_LABELS[d.feature] || d.feature.replace(/_/g,' ')),
+          datasets: [{
+            label: 'Feature Importance',
+            data:  rFiRev.map(d => d.importance),
+            backgroundColor: rFiRev.map(d => (RIYADH_CAT_COLORS[d.feature] || '#6b7280') + 'cc'),
+            borderColor:     rFiRev.map(d =>  RIYADH_CAT_COLORS[d.feature] || '#6b7280'),
+            borderWidth: 1.5, borderRadius: 4, borderSkipped: false,
+          }]
+        },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: c => ` Importance: ${c.raw.toFixed(1)}` } }
+          },
+          scales: {
+            x: { min: 0, max: 105,
+              title: { display: true, text: 'Normalized Importance (max=100)', color: '#64748b', font: { size: 10 } },
+              grid: { color: 'rgba(0,0,0,.05)' } },
+            y: { ticks: { font: { size: 10 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // Scatter chart (non-blocking)
+    loadRiyadhScatterChart();
+
   } catch (e) {
     console.error('Riyadh stats load failed', e);
     const kpiEl = document.getElementById('riyadhKpis');
@@ -1646,6 +1818,294 @@ async function loadRiyadhCharts() {
       Failed to load Riyadh data: ${e.message}</div>`;
   }
 }
+
+// ── Live metrics patch — fetches /metrics and updates hardcoded values ───
+const _nycBaseChart = { r2: [], medape: [] };  // store refs for city switch
+async function loadMetrics() {
+  try {
+    const res = await fetch(`${API_BASE}/metrics`);
+    if (!res.ok) return;
+    const { nyc, riyadh } = await res.json();
+
+    if (nyc && nyc.hold_r2 != null) {
+      // Header badges
+      document.getElementById('hdrStack').textContent         = `Stack ${nyc.version || 'v21'}`;
+      document.getElementById('hdrR2').textContent            = `R² = ${nyc.hold_r2.toFixed(4)}`;
+      document.getElementById('chartsFeaturesBadge').textContent = `${nyc.n_features || 130} Features`;
+
+      // Page title subtitle
+      const sub = document.getElementById('pageSubtitle');
+      if (sub) sub.textContent =
+        `XGBoost + LightGBM + CatBoost + Ridge meta · ${nyc.n_features} features · HPD/DOB/QoL/transit/waterfront · Spatial GroupKFold CV · ${(nyc.n_train||185092).toLocaleString()} NYC sales`;
+
+      // KPI card values (select by position — icons are stable)
+      const kpiCards = document.querySelectorAll('.metric-card .metric-value');
+      if (kpiCards[0]) kpiCards[0].textContent = nyc.hold_r2.toFixed(4);
+      if (kpiCards[1]) kpiCards[1].textContent = nyc.hold_medape.toFixed(2) + '%';
+      if (kpiCards[2]) kpiCards[2].textContent = nyc.hold_mae_usd
+        ? '$' + Math.round(nyc.hold_mae_usd / 1000) + 'K' : '—';
+      if (kpiCards[5]) kpiCards[5].textContent = nyc.n_features || 130;
+
+      // KPI subs
+      const kpiSubs = document.querySelectorAll('.metric-card .metric-sub');
+      if (kpiSubs[0]) {
+        const bm = nyc.base_models || {};
+        kpiSubs[0].textContent =
+          `XGB-A: ${(bm['XGB-A']||0).toFixed(4)} · LGB: ${(bm['LGB']||0).toFixed(4)} · CAT: ${(bm['CAT']||0).toFixed(4)}`;
+      }
+      if (kpiSubs[1]) kpiSubs[1].textContent = `±${nyc.hold_medape.toFixed(1)}% median error`;
+      if (kpiSubs[5]) kpiSubs[5].textContent = `v20: ${nyc.n_features - 1} features (+BBL history v21)`;
+
+      // Chart 0: update stack compare chart with live base model data
+      const bm  = nyc.base_models  || {};
+      const bma = nyc.base_medape  || {};
+      if (window._stackChart) {
+        window._stackChart.data.labels[4] = `Stack ${nyc.version}\n(4-Model+Ridge)`;
+        window._stackChart.data.datasets[0].data = [bm['XGB-A'], bm['XGB-B'], bm['LGB'], bm['CAT'], bm['Stack']].map(v => +(v||0).toFixed(4));
+        window._stackChart.data.datasets[1].data = [bma['XGB-A'], bma['XGB-B'], bma['LGB'], bma['CAT'], bma['Stack']].map(v => +(v||0).toFixed(2));
+        window._stackChart.update();
+      }
+
+      // Chart 7: borough MedAPE — live by_borough data
+      const bor = nyc.by_borough || {};
+      const borOrder = ['Staten Island', 'Queens', 'Bronx', 'Brooklyn', 'Manhattan'];
+      if (window._boroughChart) {
+        const liveVals = borOrder.map(b => bor[b] || 0);
+        const liveColors = liveVals.map(v => v < 15 ? '#10b981' : v < 20 ? '#14b8a6' : v < 25 ? '#f59e0b' : '#ef4444');
+        window._boroughChart.data.datasets[0].data            = liveVals;
+        window._boroughChart.data.datasets[0].backgroundColor = liveColors.map(c => c + '33');
+        window._boroughChart.data.datasets[0].borderColor     = liveColors;
+        window._boroughChart.update();
+      }
+    }
+
+    // Riyadh badge update when city switched
+    if (riyadh && riyadh.hold_r2 != null) {
+      window._riyadhMetrics = riyadh;  // stored; used in showCity()
+    }
+  } catch (e) {
+    console.warn('loadMetrics failed:', e.message);
+  }
+}
+
+loadMetrics();
+
+// ── Model version history tables ──────────────────────────────────────
+const NYC_VERSIONS = [
+  { ver: 'v12 (base)', desc: 'Stack: XGB+LGB+CAT+Ridge, HPD/DOB/QoL/MTA', r2: 0.6450, medape: 20.81, feats: 109 },
+  { ver: 'v13',        desc: 'Overture POI (12 categories, 57K points)',     r2: 0.6471, medape: 20.81, feats: 114 },
+  { ver: 'v14',        desc: 'Citi Bike proximity (dist + 500m count)',       r2: 0.6481, medape: 20.69, feats: 116 },
+  { ver: 'v15',        desc: 'Commuter rail (LIRR/Metro-North/SIR)',          r2: 0.6490, medape: 20.55, feats: 118 },
+  { ver: 'v16',        desc: 'PLUTO: historic district, flood zone, landmark',r2: 0.6497, medape: 20.48, feats: 121 },
+  { ver: 'v17',        desc: 'Tax exemptions: 421-a/J-51 (log_exempt)',       r2: 0.6507, medape: 20.40, feats: 122 },
+  { ver: 'v18',        desc: 'Census ACS tract median income (99.4% cov.)',   r2: 0.6520, medape: 20.25, feats: 127 },
+  { ver: 'v19',        desc: 'Park size tiers: ≥10ac & ≥100ac flagship',     r2: 0.6514, medape: 20.33, feats: 129 },
+  { ver: 'v20',        desc: 'NYC coastline proximity (27K pts, waterfront)', r2: 0.6507, medape: 20.32, feats: 130 },
+  { ver: 'v21',        desc: 'BBL building history: LOO $/sqft (12,946 bldgs)', r2: 0.6516, medape: 20.10, feats: 131 },
+  { ver: 'v22 ✓',     desc: 'NTA × bldgtype temporal lag (2 lags + momentum)', r2: 0.6495, medape: 20.32, feats: 134 },
+];
+const RIYADH_VERSIONS = [
+  { ver: 'v1–v5 (base)', desc: 'District aggs, REI index, OSM QoL POIs',       r2: 0.755,  medape: 21.30, feats: 82 },
+  { ver: 'v6',           desc: 'Suhail 2025–2026 transactions (+348 rows)',      r2: 0.760,  medape: 20.10, feats: 92 },
+  { ver: 'v7',           desc: 'Haraj refresh May 2026 (140 districts)',         r2: 0.762,  medape: 19.48, feats: 105 },
+  { ver: 'v8',           desc: 'Type-matched REI (apt/villa/plot/bldg fixed)',   r2: 0.7677, medape: 18.02, feats: 125 },
+  { ver: 'v9',           desc: 'Hub distances: KAFD, old city, airport (≈flat)', r2: 0.7646, medape: 18.36, feats: 133 },
+  { ver: 'v10',          desc: 'Riyadh Metro 94 stations, 6 lines (Dec 2024)',   r2: 0.7634, medape: 18.45, feats: 136 },
+  { ver: 'v11 ✓',        desc: 'Type-stratified lag + price std + suhail density', r2: 0.8003, medape: 15.56, feats: 140 },
+];
+
+function renderVersionTable(data, tbodyId) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  let prev = null;
+  tbody.innerHTML = data.map((d, i) => {
+    const delta = prev != null ? (d.medape - prev).toFixed(2) : '—';
+    const deltaColor = prev == null ? '#6b7280'
+      : d.medape < prev ? '#16a34a' : d.medape > prev ? '#dc2626' : '#6b7280';
+    const deltaStr = prev == null ? '—' : (d.medape < prev ? '▼ ' : d.medape > prev ? '▲ ' : '') + Math.abs(delta) + 'pp';
+    const isCurrent = d.ver.includes('✓');
+    prev = d.medape;
+    return `<tr style="border-bottom:1px solid #f3f4f6;${isCurrent ? 'background:#eff6ff;font-weight:600' : ''}">
+      <td style="padding:7px 12px;white-space:nowrap">${d.ver}</td>
+      <td style="padding:7px 12px;color:#6b7280">${d.desc}</td>
+      <td style="padding:7px 12px;text-align:center">${d.r2.toFixed(4)}</td>
+      <td style="padding:7px 12px;text-align:center">${d.medape.toFixed(2)}%</td>
+      <td style="padding:7px 12px;text-align:center">${d.feats}</td>
+      <td style="padding:7px 12px;text-align:center;color:${deltaColor};font-weight:600">${deltaStr}</td>
+    </tr>`;
+  }).join('');
+}
+
+renderVersionTable(NYC_VERSIONS,    'versionTableBody');
+renderVersionTable(RIYADH_VERSIONS, 'riyadhVersionTableBody');
+
+// ── Scatter chart ─────────────────────────────────────────────
+const RIYADH_TYPE_COLORS = {
+  'Apartment': 'rgba(59,130,246,.65)',
+  'Villa':     'rgba(16,185,129,.65)',
+  'Plot':      'rgba(245,158,11,.65)',
+  'Building':  'rgba(139,92,246,.65)',
+  'Other':     'rgba(107,114,128,.5)',
+};
+
+async function loadRiyadhScatterChart() {
+  try {
+    const res = await fetch('/scatter?city=riyadh');
+    if (!res.ok) {
+      document.getElementById('riyadhScatterLoading').textContent =
+        'Scatter data not yet generated — run: python scripts/generate_scatter.py';
+      return;
+    }
+    const data = await res.json();
+    const pts  = data.points || [];
+
+    const datasets = Object.entries(RIYADH_TYPE_COLORS).map(([tname, color]) => ({
+      label: tname,
+      data:  pts.filter(p => p.type === tname)
+               .map(p => ({ x: p.actual, y: p.predicted })),
+      backgroundColor: color,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+    })).filter(ds => ds.data.length > 0);
+
+    const maxVal = Math.min(
+      Math.max(...pts.map(p => p.actual), ...pts.map(p => p.predicted)),
+      30000
+    );
+    datasets.unshift({
+      label: 'Perfect prediction',
+      data:  [{ x: 0, y: 0 }, { x: maxVal, y: maxVal }],
+      type: 'line',
+      borderColor: '#6b7280',
+      borderDash: [6, 4],
+      borderWidth: 1.5,
+      pointRadius: 0,
+      fill: false,
+      order: -1,
+    });
+
+    document.getElementById('riyadhScatterLoading').style.display = 'none';
+    document.getElementById('riyadhScatterWrap').style.display   = 'block';
+
+    new Chart(document.getElementById('riyadhScatterChart'), {
+      type: 'scatter',
+      data: { datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 10 } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const p = ctx.raw;
+                return `Actual: ﷼${Math.round(p.x).toLocaleString()}/m² → Pred: ﷼${Math.round(p.y).toLocaleString()}/m²`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Actual Price (SAR/m²)', font: { size: 11 } },
+            min: 0, max: maxVal,
+            ticks: { callback: v => '﷼' + v.toLocaleString() }
+          },
+          y: {
+            title: { display: true, text: 'Predicted Price (SAR/m²)', font: { size: 11 } },
+            min: 0, max: maxVal,
+            ticks: { callback: v => '﷼' + v.toLocaleString() }
+          }
+        }
+      }
+    });
+  } catch(e) {
+    document.getElementById('riyadhScatterLoading').textContent = 'Scatter data unavailable';
+  }
+}
+
+const BORO_COLORS = {
+  'Manhattan':    'rgba(239,68,68,.65)',
+  'Brooklyn':     'rgba(59,130,246,.65)',
+  'Queens':       'rgba(16,185,129,.65)',
+  'Bronx':        'rgba(245,158,11,.65)',
+  'Staten Island':'rgba(139,92,246,.65)',
+};
+
+async function loadScatterChart() {
+  try {
+    const res = await fetch('/scatter?city=nyc');
+    if (!res.ok) {
+      document.getElementById('scatterLoading').textContent =
+        'Scatter data not yet generated — run: python scripts/generate_scatter.py';
+      return;
+    }
+    const data = await res.json();
+    const pts  = data.points || [];
+
+    // Group by borough
+    const datasets = Object.entries(BORO_COLORS).map(([bname, color]) => ({
+      label: bname,
+      data:  pts.filter(p => p.borough === bname)
+               .map(p => ({ x: p.actual / 1e6, y: p.predicted / 1e6 })),
+      backgroundColor: color,
+      pointRadius: 3,
+      pointHoverRadius: 5,
+    }));
+
+    // Perfect-prediction line: 0 → max value in millions
+    const maxVal = Math.min(
+      Math.max(...pts.map(p => p.actual / 1e6), ...pts.map(p => p.predicted / 1e6)),
+      30
+    );
+    datasets.unshift({
+      label: 'Perfect prediction',
+      data:  [{ x: 0, y: 0 }, { x: maxVal, y: maxVal }],
+      type: 'line',
+      borderColor: '#6b7280',
+      borderDash: [6, 4],
+      borderWidth: 1.5,
+      pointRadius: 0,
+      fill: false,
+      order: -1,
+    });
+
+    document.getElementById('scatterLoading').style.display = 'none';
+    document.getElementById('scatterWrap').style.display   = 'block';
+
+    new Chart(document.getElementById('scatterChart'), {
+      type: 'scatter',
+      data: { datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 10 } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const p = ctx.raw;
+                return `Actual: $${p.x.toFixed(2)}M → Pred: $${p.y.toFixed(2)}M`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Actual Price ($M)', font: { size: 11 } },
+            min: 0, max: maxVal,
+          },
+          y: {
+            title: { display: true, text: 'Predicted Price ($M)', font: { size: 11 } },
+            min: 0, max: maxVal,
+          }
+        }
+      }
+    });
+  } catch(e) {
+    document.getElementById('scatterLoading').textContent = 'Scatter data unavailable';
+  }
+}
+
+loadScatterChart();
+
   </script>
 </body>
 </html>

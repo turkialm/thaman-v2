@@ -1,0 +1,43 @@
+============================================================
+THAMAN — Thesis Model Performance Tables
+============================================================
+
+### Table 1: Overall Model Comparison ###
+City         Version      R² Holdout     MedAPE              MAE   Features
+-----------------------------------------------------------------
+NYC          v21              0.6516     20.10%           $1045K        131
+Riyadh       v10              0.7634     18.45%         ﷼1095/m²        136
+
+### Table 2: NYC — MedAPE by Borough ###
+Borough                MedAPE        MAE ($)        N
+-------------------------------------------------------
+Manhattan              34.90%      2,715,828    5,411
+Bronx                  21.22%      1,519,919    2,735
+Brooklyn               20.64%        858,237    7,032
+Queens                 17.19%        363,217    9,533
+Staten Island          13.91%        217,731    3,052
+
+### Table 3: Riyadh — MedAPE by Property Type ###
+Type                       MedAPE       R²        N
+----------------------------------------------------
+apartment                  16.13%   0.5194      617
+villa                      13.51%   0.7200      422
+residential_plot           23.95%   0.7360      551
+building                   25.78%   0.4784      137
+
+### Table 4: NYC — MedAPE by Price Tier ###
+Tier                 MedAPE        MAE ($)        N
+----------------------------------------------------
+<$500K               27.17%        227,062    6,497
+$500K–1M             14.78%        179,839   10,980
+$1M–3M               21.30%        450,354    7,978
+$3M–10M              39.24%      2,160,740    1,707
+
+### Table 5: NYC Stack — Per-Model Contributions ###
+Learner            R² Holdout     MedAPE
+------------------------------------------
+xgb_a                  0.6469     20.22%
+xgb_b                  0.6426     20.40%
+lightgbm               0.6453     20.81%
+catboost               0.6497     20.50%
+Stack (Ridge meta)       0.6516     20.10%

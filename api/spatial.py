@@ -111,12 +111,20 @@ FEATURE_DESCRIPTIONS = {
 
 
 OVERTURE_BUCKETS = {
-    "cafe":       {"cafe", "coffee_shop"},
-    "restaurant": {"restaurant", "casual_eatery", "fast_food_restaurant", "pizzaria"},
-    "gym":        {"gym", "fitness_center", "yoga_studio", "martial_arts_club"},
-    "grocery":    {"grocery_store", "supermarket", "convenience_store"},
-    "bar":        {"bar", "cocktail_bar", "night_club"},
-    "pharmacy":   {"pharmacy", "drug_store"},
+    "cafe":         {"cafe", "coffee_shop"},
+    "restaurant":   {"restaurant", "casual_eatery", "fast_food_restaurant", "pizzaria"},
+    "gym":          {"gym", "fitness_center", "yoga_studio", "martial_arts_club"},
+    "grocery":      {"grocery_store", "supermarket", "convenience_store"},
+    "bar":          {"bar", "cocktail_bar", "night_club"},
+    "pharmacy":     {"pharmacy", "drug_store"},
+    # New QoL categories (May 2026)
+    "atm":          {"atm"},
+    "urgent_care":  {"urgent_care", "medical_clinic", "healthcare_location"},
+    "cinema":       {"movie_theater", "cinema"},
+    "library":      {"library", "public_library"},
+    "childcare":    {"childcare", "child_care_facility", "preschool"},
+    "beauty":       {"beauty_salon", "hair_salon", "nail_salon"},
+    "hotel":        {"hotel", "hostel", "motel"},
 }
 
 
@@ -133,6 +141,8 @@ class SpatialLookup:
         self._load_schools()
         self._load_parks()
         self._load_airbnb()
+        self._load_citibike()
+        self._load_commuter_rail()
         self._load_waterfront()
         self._load_bike_lanes()
         self._load_poi_buckets()
@@ -142,10 +152,11 @@ class SpatialLookup:
     # ── Loaders ────────────────────────────────────────────────────────
 
     def _load_nta_stats(self):
-        """Precompute per-NTA medians from features_v4.csv + load NTA boundaries."""
-        feat_path = os.path.join(PROC, "features_v4.csv")
-        if not os.path.exists(feat_path):
-            feat_path = os.path.join(PROC, "features.csv")
+        """Precompute per-NTA medians from features_v6.csv (latest) + load NTA boundaries."""
+        for _p in ["features_v6.csv", "features_v5.csv", "features_v4.csv", "features.csv"]:
+            feat_path = os.path.join(PROC, _p)
+            if os.path.exists(feat_path):
+                break
         features = pl.read_csv(feat_path)
 
         NTA_STAT_COLS = [
@@ -155,6 +166,13 @@ class SpatialLookup:
             "poi_count_500m", "dist_hospital_m", "dist_waterfront_m", "dist_bike_lane_m",
             "poi_cafe_500m", "poi_restaurant_500m", "poi_gym_500m",
             "poi_grocery_500m", "poi_bar_500m", "poi_pharmacy_500m",
+            # New Overture POI categories (v6)
+            "poi_atm_500m", "poi_urgent_care_500m", "poi_cinema_500m",
+            "poi_library_500m", "poi_childcare_500m", "poi_beauty_500m", "poi_hotel_500m",
+            # Citi Bike access (v14)
+            "citibike_500m", "dist_citibike_m",
+            # LPC historic district + FEMA flood zone (v16)
+            "is_historic_dist", "in_flood_zone", "is_landmark",
             "builtfar", "residfar", "commfar", "facilfar", "maxallwfar", "far_utilization",
         ]
         available = [c for c in NTA_STAT_COLS if c in features.columns]
@@ -175,6 +193,41 @@ class SpatialLookup:
             .agg(pl.col("median_income_nta").median())
             .iter_rows(named=True)
         }
+
+        # Merge v16 NTA lookup (historic district + flood zone rates from meta.json)
+        _meta_path = os.path.join(BASE, "models", "meta.json")
+        if os.path.exists(_meta_path):
+            with open(_meta_path) as _f:
+                _meta_j = json.load(_f)
+            _v16_lu = _meta_j.get("v16_nta_lookup", {})
+            _v16_glob_hist  = _meta_j.get("v16_global_hist_rate",  0.0838)
+            _v16_glob_flood = _meta_j.get("v16_global_flood_rate", 0.0834)
+            for _nta, _vals in _v16_lu.items():
+                if _nta not in self._nta_stats:
+                    self._nta_stats[_nta] = {}
+                self._nta_stats[_nta].update(_vals)
+            # Fill global medians for fallback
+            self._global_medians.setdefault("is_historic_dist", _v16_glob_hist)
+            self._global_medians.setdefault("in_flood_zone",    _v16_glob_flood)
+            self._global_medians.setdefault("is_landmark",      0.0)
+
+            # v17: tax exemption NTA lookup
+            _v17_lu = _meta_j.get("v17_nta_log_exempt", {})
+            _v17_glob = _meta_j.get("v17_global_log_exempt", 0.0)
+            for _nta, _val in _v17_lu.items():
+                if _nta not in self._nta_stats:
+                    self._nta_stats[_nta] = {}
+                self._nta_stats[_nta]["log_exempt_amount"] = _val
+            self._global_medians.setdefault("log_exempt_amount", _v17_glob)
+
+            # v18: census tract median household income NTA lookup
+            _v18_lu = _meta_j.get("v18_nta_log_income", {})
+            _v18_glob = _meta_j.get("v18_global_log_income", 10.8)
+            for _nta, _val in _v18_lu.items():
+                if _nta not in self._nta_stats:
+                    self._nta_stats[_nta] = {}
+                self._nta_stats[_nta]["log_tract_median_income"] = _val
+            self._global_medians.setdefault("log_tract_median_income", _v18_glob)
 
         # NTA GeoDataFrame for point-in-polygon
         self._nta_gdf = gpd.read_file(os.path.join(RAW, "nta_boundaries.geojson"))
@@ -231,7 +284,15 @@ class SpatialLookup:
     def _load_parks(self):
         parks = pl.read_csv(os.path.join(RAW, "parks_with_coords.csv"), ignore_errors=True).drop_nulls(subset=["latitude", "longitude"])
         self._park_tree = cKDTree(parks.select(["latitude", "longitude"]).to_numpy())
-        print(f"  Parks: {len(parks)}")
+        # v19: size-stratified park trees
+        _parks_v19 = parks.with_columns(
+            pl.col("ACRES").cast(pl.Float64, strict=False).fill_null(0.0)
+        )
+        _lrg  = _parks_v19.filter(pl.col("ACRES") >= 10.0).select(["latitude","longitude"]).to_numpy()
+        _flag = _parks_v19.filter(pl.col("ACRES") >= 100.0).select(["latitude","longitude"]).to_numpy()
+        self._park_large_tree    = cKDTree(_lrg)  if len(_lrg)  > 0 else None
+        self._park_flagship_tree = cKDTree(_flag) if len(_flag) > 0 else None
+        print(f"  Parks: {len(parks)} total | large≥10ac: {len(_lrg)} | flagship≥100ac: {len(_flag)}")
 
     def _load_airbnb(self):
         airbnb = (
@@ -245,6 +306,41 @@ class SpatialLookup:
         coords_rad = np.radians(airbnb.select(["latitude", "longitude"]).to_numpy())
         self._airbnb_balltree = BallTree(coords_rad, metric="haversine")
         print(f"  Airbnb: {len(airbnb)} listings")
+
+    def _load_citibike(self):
+        cb_path = os.path.join(RAW, "nyc_citibike_stations.csv")
+        self._citibike_tree = None
+        if not os.path.exists(cb_path):
+            return
+        cb = (
+            pl.read_csv(cb_path)
+            .with_columns([
+                pl.col("lat").cast(pl.Float64, strict=False),
+                pl.col("lon").cast(pl.Float64, strict=False),
+            ])
+            .drop_nulls(subset=["lat", "lon"])
+        )
+        coords_rad = np.radians(cb.select(["lat", "lon"]).to_numpy())
+        self._citibike_tree = BallTree(coords_rad, metric="haversine")
+        print(f"  Citi Bike: {len(cb)} stations")
+
+    def _load_commuter_rail(self):
+        cr_path = os.path.join(RAW, "nyc_commuter_rail_stations.csv")
+        self._commuter_rail_tree = None
+        if not os.path.exists(cr_path):
+            print("  Commuter rail: file missing — dist_commuter_rail_m will use NTA fallback")
+            return
+        cr = (
+            pl.read_csv(cr_path)
+            .with_columns([
+                pl.col("lat").cast(pl.Float64, strict=False),
+                pl.col("lon").cast(pl.Float64, strict=False),
+            ])
+            .drop_nulls(subset=["lat", "lon"])
+        )
+        coords_rad = np.radians(cr.select(["lat", "lon"]).to_numpy())
+        self._commuter_rail_tree = BallTree(coords_rad, metric="haversine")
+        print(f"  Commuter rail: {len(cr)} stations (LIRR/Metro-North/SIR)")
 
     def _load_waterfront(self):
         wf_path = os.path.join(RAW, "nyc_coastline_pts.npy")
@@ -358,6 +454,13 @@ class SpatialLookup:
         feats["dist_school_m"]          = self._kdtree_dist_m(self._hs_tree,      lat, lon)
         feats["dist_elem_school_m"]     = self._kdtree_dist_m(self._elem_tree,    lat, lon)
         feats["dist_park_m"]            = self._kdtree_dist_m(self._park_tree,    lat, lon)
+        # v19: size-stratified park distances
+        _d_lp = self._kdtree_dist_m(self._park_large_tree,    lat, lon) if self._park_large_tree    else float("nan")
+        _d_fp = self._kdtree_dist_m(self._park_flagship_tree, lat, lon) if self._park_flagship_tree else float("nan")
+        feats["dist_large_park_m"]        = _d_lp
+        feats["dist_flagship_park_m"]     = _d_fp
+        feats["log_dist_large_park_m"]    = float(np.log1p(_d_lp))   if not np.isnan(_d_lp) else float("nan")
+        feats["log_dist_flagship_park_m"] = float(np.log1p(_d_fp))   if not np.isnan(_d_fp) else float("nan")
 
         # ── Airbnb density within 500m ─────────────────────────────────
         radius_rad = 500.0 / 6_371_000.0
@@ -365,6 +468,28 @@ class SpatialLookup:
             np.radians([[lat, lon]]), r=radius_rad, count_only=True
         )
         feats["airbnb_count_500m"] = int(cnt[0])
+
+        # ── Citi Bike stations within 500m + nearest distance ──────────
+        if self._citibike_tree is not None:
+            pt_rad = np.radians([[lat, lon]])
+            cb_cnt = self._citibike_tree.query_radius(pt_rad, r=radius_rad, count_only=True)
+            feats["citibike_500m"] = int(cb_cnt[0])
+            cb_dist, _ = self._citibike_tree.query(pt_rad, k=1)
+            feats["dist_citibike_m"] = round(float(cb_dist[0][0]) * 6_371_000, 1)
+        else:
+            feats["citibike_500m"] = int(nta_data.get("citibike_500m", 0))
+            feats["dist_citibike_m"] = float(nta_data.get("dist_citibike_m", 9999.0))
+
+        # ── Commuter rail distance + 1km flag ─────────────────────────
+        if self._commuter_rail_tree is not None:
+            pt_rad = np.radians([[lat, lon]])
+            cr_dist, _ = self._commuter_rail_tree.query(pt_rad, k=1)
+            cr_dist_m = round(float(cr_dist[0][0]) * 6_371_000, 1)
+            feats["dist_commuter_rail_m"] = cr_dist_m
+            feats["commuter_rail_1km"]    = int(cr_dist_m <= 1000)
+        else:
+            feats["dist_commuter_rail_m"] = 9999.0
+            feats["commuter_rail_1km"]    = 0
 
         # ── Waterfront distance (real per-point) ───────────────────────
         ntacode  = self._nta_for_point(lat, lon)
@@ -374,6 +499,8 @@ class SpatialLookup:
             feats["dist_waterfront_m"] = self._kdtree_dist_m(self._waterfront_tree, lat, lon)
         else:
             feats["dist_waterfront_m"] = nta_data.get("dist_waterfront_m", self._global_medians.get("dist_waterfront_m", 1414.0))
+        feats["log_dist_waterfront_m"] = float(np.log1p(feats["dist_waterfront_m"]))
+        feats["waterfront_200m"]       = int(feats["dist_waterfront_m"] < 200)
 
         # ── Bike lane distance (real per-point) ────────────────────────
         if self._bike_tree is not None:
@@ -398,6 +525,12 @@ class SpatialLookup:
             "school_district", "district_avg_score", "district_school_count",
             "poi_count_500m", "dist_hospital_m",
             "builtfar", "residfar", "commfar", "facilfar", "maxallwfar", "far_utilization",
+            # v16: LPC historic district rate + FEMA flood zone rate (NTA-level averages)
+            "is_historic_dist", "in_flood_zone", "is_landmark",
+            # v17: tax exemption NTA-level mean
+            "log_exempt_amount",
+            # v18: census tract median household income NTA-level mean
+            "log_tract_median_income",
         ]:
             feats[col] = nta_data.get(col, self._global_medians.get(col, 0.0))
 
@@ -566,12 +699,27 @@ class RiyadhSpatialLookup:
     def _load_poi_csvs(self):
         """Load mosque/mall/school/hospital/park/entertainment POI files from saudi_thaman."""
         _POI_FILES = {
-            "mosque":   os.path.join(RAW, "riyadh_mosques.csv"),
-            "mall":     os.path.join(RAW, "riyadh_malls.csv"),
-            "school":   os.path.join(RAW, "riyadh_schools.csv"),
-            "hospital": os.path.join(RAW, "riyadh_hospitals.csv"),
-            "park":     os.path.join(RAW, "riyadh_parks.csv"),
-            "entertain":os.path.join(RAW, "rcrc_entertainment.csv"),
+            "mosque":     os.path.join(RAW, "riyadh_mosques.csv"),
+            "mall":       os.path.join(RAW, "riyadh_malls.csv"),
+            "school":     os.path.join(RAW, "riyadh_schools.csv"),
+            "hospital":   os.path.join(RAW, "riyadh_hospitals.csv"),
+            "park":       os.path.join(RAW, "riyadh_parks.csv"),
+            "entertain":  os.path.join(RAW, "rcrc_entertainment.csv"),
+            # New QoL POIs (OSM, May 2026) — used in v3 model features
+            "pharmacy":   os.path.join(RAW, "riyadh_qol_pharmacies.csv"),
+            "gym":        os.path.join(RAW, "riyadh_qol_gyms.csv"),
+            "coffee":     os.path.join(RAW, "riyadh_qol_coffee_shops.csv"),
+            "clinic":     os.path.join(RAW, "riyadh_qol_clinics.csv"),
+            "university": os.path.join(RAW, "riyadh_qol_universities.csv"),
+            "supermarket":os.path.join(RAW, "riyadh_qol_supermarkets.csv"),
+            "cinema":        os.path.join(RAW, "riyadh_qol_cinemas.csv"),
+            "sports":        os.path.join(RAW, "riyadh_qol_sports_centres.csv"),
+            # Batch-2 QoL POIs — display only (not in v3 model training)
+            "restaurant":    os.path.join(RAW, "riyadh_qol_restaurants.csv"),
+            "library":       os.path.join(RAW, "riyadh_qol_libraries.csv"),
+            "atm":           os.path.join(RAW, "riyadh_qol_atms.csv"),
+            "kindergarten":  os.path.join(RAW, "riyadh_qol_kindergartens.csv"),
+            "swimming_pool": os.path.join(RAW, "riyadh_qol_swimming_pools.csv"),
         }
         self._poi_trees: dict = {}
         self._poi_balls: dict = {}
@@ -657,6 +805,35 @@ class RiyadhSpatialLookup:
             .median()
             .reset_index()
         )
+        # ── Haraj override from riyadh_meta.json (fresher May 2026 snapshot) ──────
+        _rmeta_path = os.path.join(os.path.dirname(PROC), "models", "riyadh_meta.json")
+        _haraj_lu = {}
+        if os.path.exists(_rmeta_path):
+            try:
+                with open(_rmeta_path) as _rf:
+                    _rmeta = json.load(_rf)
+                _haraj_lu = _rmeta.get("haraj_district_lookup", {})
+            except Exception:
+                pass
+        if _haraj_lu:
+            _haraj_cols = ["haraj_listing_count","haraj_median_psqm","haraj_p25_psqm","haraj_p75_psqm","haraj_iqr_psqm"]
+            for _col in _haraj_cols:
+                if _col not in self._district_feat_df.columns:
+                    self._district_feat_df[_col] = float("nan")
+            for _idx, _drow in self._district_feat_df.iterrows():
+                _dname = _drow["district_ar"]
+                if _dname in _haraj_lu:
+                    _lu_row = _haraj_lu[_dname]
+                    for _col in _haraj_cols:
+                        _val = _lu_row.get(_col)
+                        if _val is not None:
+                            self._district_feat_df.at[_idx, _col] = float(_val)
+            # Recompute haraj_asking_premium from updated median
+            if "haraj_median_psqm" in self._district_feat_df.columns and "district_median_price_sqm" in self._district_feat_df.columns:
+                _dmed = self._district_feat_df["district_median_price_sqm"].replace(0, float("nan"))
+                self._district_feat_df["haraj_asking_premium"] = self._district_feat_df["haraj_median_psqm"] / _dmed
+            print(f"  Haraj override: {len(_haraj_lu)} districts from riyadh_meta.json")
+
         # Separate lookup for target-encoded district features (excluded from feat_cols
         # to avoid leakage during training, but valid and important at inference time).
         _enc_cols = [c for c in [

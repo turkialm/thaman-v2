@@ -26,6 +26,7 @@ import asyncio
 import datetime
 import hashlib
 
+import joblib
 import numpy as np
 import polars as pl
 import httpx as _httpx
@@ -59,6 +60,8 @@ _nta_geojson_cache: str | None     = None   # pre-built NTA choropleth GeoJSON
 _listings_geojson_cache: str | None = None  # pre-built Haraj listings GeoJSON
 _riyadh_spatial: RiyadhSpatialLookup | None = None
 _district_geojson_cache: str | None = None  # pre-built Riyadh district GeoJSON
+_riyadh_heatmap_cache: str | None   = None  # pre-built Suhail transaction heatmap JSON
+_nyc_heatmap_cache: str | None      = None  # pre-built NYC NTA sales heatmap JSON
 _mta_tree                          = None   # KDTree for MTA station nearest-neighbor
 _mta_feats: dict                   = {}     # arrays: is_cbd, route_count, is_ada
 
@@ -87,6 +90,7 @@ _NEARBY_COLS = [
     "bldgclass", "gross_square_feet", "building_age", "sale_date",
     "ntacode",   # needed for NTA lookup at inference
     "zip_code",  # needed for v11 HPD/DOB ZIP-level feature lookup
+    "bbl",       # needed for v21 building-level price history
 ]
 
 
@@ -117,6 +121,10 @@ def _build_nta_geojson() -> str:
           "dist_subway_m", "building_age", "airbnb_count_500m", "population_2020",
           "poi_restaurant_500m", "poi_cafe_500m", "poi_bar_500m",
           "poi_grocery_500m", "poi_gym_500m"]),
+        (os.path.join(BASE, "data", "processed", "features_v6.csv"),
+         ["poi_atm_500m", "poi_urgent_care_500m", "poi_cinema_500m",
+          "poi_library_500m", "poi_childcare_500m", "poi_beauty_500m", "poi_hotel_500m",
+          "citibike_500m", "dist_citibike_m"]),
     ]:
         if not os.path.exists(csv_path):
             continue
@@ -367,6 +375,177 @@ def _startup_district_geojson():
     except Exception as e:
         print(f"  Riyadh district: build failed — {e}")
 
+def _startup_riyadh_heatmap():
+    """Pre-build Suhail transaction heatmap JSON — district centroids + recent tx stats."""
+    global _riyadh_heatmap_cache
+    try:
+        import pandas as _pd, numpy as _np
+
+        tx_path  = os.path.join(BASE, "data", "raw", "suhail_riyadh_quarterly.csv")
+        feat_path = os.path.join(BASE, "data", "processed", "features_riyadh_v2.csv")
+        if not os.path.exists(tx_path) or not os.path.exists(feat_path):
+            print("  Riyadh heatmap: data files missing — skipping")
+            return
+
+        q = _pd.read_csv(tx_path)
+        feat = _pd.read_csv(feat_path, encoding="utf-8-sig",
+                            usecols=["district_ar", "district_lat", "district_lon"])
+        centroids = feat.drop_duplicates("district_ar")
+
+        # Last 4 quarters
+        recent = q[q["quarter_id"] >= 20253]
+        agg = recent.groupby("district_ar").agg(
+            deed_count      = ("deed_count", "sum"),
+            median_psqm     = ("sale_price_sar_sqm", "median"),
+            total_sar       = ("total_value_sar", "sum"),
+            quarters_active = ("quarter_id", "nunique"),
+        ).reset_index()
+
+        merged = agg.merge(centroids, on="district_ar", how="inner")
+        merged = merged[merged["deed_count"] >= 3].copy()
+
+        # Normalise deed_count for bubble radius [0-1]
+        max_deeds = float(merged["deed_count"].max()) or 1.0
+        merged["activity_norm"] = (merged["deed_count"] / max_deeds).round(4)
+
+        # Quarter labels
+        label_map = {20253:"Q3 2025", 20254:"Q4 2025", 20261:"Q1 2026", 20262:"Q2 2026"}
+        all_quarters = sorted(recent["quarter_id"].unique().tolist())
+        quarter_labels = [label_map.get(int(q), str(q)) for q in all_quarters]
+
+        records = []
+        for _, row in merged.iterrows():
+            records.append({
+                "district_ar":     row["district_ar"],
+                "lat":             round(float(row["district_lat"]), 6),
+                "lon":             round(float(row["district_lon"]), 6),
+                "deed_count":      int(row["deed_count"]),
+                "median_psqm":     round(float(row["median_psqm"]), 0) if _pd.notna(row["median_psqm"]) else None,
+                "total_sar_m":     round(float(row["total_sar"]) / 1e6, 1),
+                "activity_norm":   float(row["activity_norm"]),
+                "quarters_active": int(row["quarters_active"]),
+            })
+
+        payload = {
+            "quarters": quarter_labels,
+            "period":   f"{quarter_labels[0]}–{quarter_labels[-1]}" if quarter_labels else "",
+            "districts": records,
+        }
+        _riyadh_heatmap_cache = json.dumps(payload, ensure_ascii=False)
+        print(f"  Riyadh heatmap: {len(records)} districts | {quarter_labels}")
+    except Exception as e:
+        print(f"  Riyadh heatmap: build failed — {e}")
+
+
+def _startup_nyc_heatmap():
+    """Pre-build NYC NTA sales heatmap JSON — NTA centroids + recent transaction stats."""
+    global _nyc_heatmap_cache
+    try:
+        import pandas as _pd, numpy as _np, json as _json
+
+        sales_path = os.path.join(BASE, "data", "raw", "sales_geocoded.csv")
+        nta_path   = os.path.join(BASE, "data", "raw", "nta_boundaries.geojson")
+        if not os.path.exists(sales_path) or not os.path.exists(nta_path):
+            print("  NYC heatmap: data files missing — skipping")
+            return
+
+        # Load sales, filter valid transactions, compute $/sqft
+        df = _pd.read_csv(sales_path, low_memory=False,
+                          usecols=["nta", "sale_price", "gross_square_feet", "sale_date",
+                                   "building_class_category"])
+        df = df[(df["sale_price"] > 10_000) & (df["gross_square_feet"] > 100)].copy()
+        # NTA column only populated for 2022-2024 rows; drop rows without it
+        df = df.dropna(subset=["nta"])
+        df["psf"] = df["sale_price"] / df["gross_square_feet"]
+        df["psf"] = df["psf"].clip(10, 10_000)
+
+        # Parse quarters (2022 Q1 → 20221)
+        df["sale_date"] = _pd.to_datetime(df["sale_date"], errors="coerce")
+        df = df.dropna(subset=["sale_date"])
+        df["quarter_id"] = df["sale_date"].dt.year * 10 + ((df["sale_date"].dt.month - 1) // 3 + 1)
+
+        # Last 4 quarters among NTA-filled rows
+        all_qids = sorted(df["quarter_id"].unique())
+        recent_qids = all_qids[-4:] if len(all_qids) >= 4 else all_qids
+        recent = df[df["quarter_id"].isin(recent_qids)]
+
+        agg = recent.groupby("nta").agg(
+            sale_count      = ("sale_price", "count"),
+            median_psf      = ("psf", "median"),
+            median_price    = ("sale_price", "median"),
+            quarters_active = ("quarter_id", "nunique"),
+        ).reset_index()
+        agg = agg[agg["sale_count"] >= 3]
+
+        # Compute NTA polygon centroids from GeoJSON
+        with open(nta_path) as f:
+            gj = _json.load(f)
+
+        def _poly_centroid(coords_list):
+            """Flat mean of all ring vertices."""
+            lons, lats = [], []
+            for ring in coords_list:
+                for pt in ring:
+                    lons.append(pt[0])
+                    lats.append(pt[1])
+            return float(_np.mean(lats)), float(_np.mean(lons))
+
+        nta_centroids = {}
+        for feat in gj["features"]:
+            code = feat["properties"].get("nta2020", "")
+            if not code:
+                continue
+            geom = feat["geometry"]
+            if geom["type"] == "Polygon":
+                lat, lon = _poly_centroid(geom["coordinates"])
+            elif geom["type"] == "MultiPolygon":
+                all_lons, all_lats = [], []
+                for poly in geom["coordinates"]:
+                    lt, ln = _poly_centroid(poly)
+                    all_lats.append(lt)
+                    all_lons.append(ln)
+                lat, lon = float(_np.mean(all_lats)), float(_np.mean(all_lons))
+            else:
+                continue
+            name = feat["properties"].get("ntaname", code)
+            nta_centroids[code] = {"lat": lat, "lon": lon, "name": name}
+
+        merged = agg[agg["nta"].isin(nta_centroids)].copy()
+        max_sales = float(merged["sale_count"].max()) or 1.0
+        merged["activity_norm"] = (merged["sale_count"] / max_sales).round(4)
+
+        # Quarter labels
+        def _qid_label(qid):
+            yr, q = divmod(int(qid), 10)
+            return f"Q{q} {yr}"
+        quarter_labels = [_qid_label(q) for q in recent_qids]
+
+        records = []
+        for _, row in merged.iterrows():
+            ct = nta_centroids[row["nta"]]
+            records.append({
+                "nta":            row["nta"],
+                "name":           ct["name"],
+                "lat":            round(ct["lat"], 6),
+                "lon":            round(ct["lon"], 6),
+                "sale_count":     int(row["sale_count"]),
+                "median_psf":     round(float(row["median_psf"]), 0),
+                "median_price":   round(float(row["median_price"]) / 1e3, 1),  # $K
+                "activity_norm":  float(row["activity_norm"]),
+                "quarters_active": int(row["quarters_active"]),
+            })
+
+        payload = {
+            "quarters": quarter_labels,
+            "period":   f"{quarter_labels[0]}–{quarter_labels[-1]}" if quarter_labels else "",
+            "ntas": records,
+        }
+        _nyc_heatmap_cache = _json.dumps(payload)
+        print(f"  NYC heatmap: {len(records)} NTAs | {quarter_labels}")
+    except Exception as e:
+        print(f"  NYC heatmap: build failed — {e}")
+
+
 def _startup_spread_tables():
     global _riyadh_spreads, _nyc_spreads, _riyadh_spread_global, _nyc_spread_global
     try:
@@ -412,6 +591,8 @@ async def lifespan(app: FastAPI):
         asyncio.to_thread(_startup_riyadh_stats),
         asyncio.to_thread(_startup_listings_geojson),
         asyncio.to_thread(_startup_spread_tables),
+        asyncio.to_thread(_startup_riyadh_heatmap),
+        asyncio.to_thread(_startup_nyc_heatmap),
     )
 
     # Wave 2: tasks that depend on Wave 1 results
@@ -470,6 +651,8 @@ _DIST_COLS = [
     "dist_subway_m", "dist_school_m", "dist_park_m", "dist_hospital_m",
     "dist_bus_m", "dist_waterfront_m", "dist_bike_lane_m",
     "dist_elem_school_m", "dist_express_subway_m",
+    "dist_commuter_rail_m",   # v15: LIRR/Metro-North/SIR
+    "dist_citibike_m",        # v14: Citi Bike (also log-transformed)
 ]
 
 
@@ -749,6 +932,33 @@ def _lookup_v12_features(ntacode: str) -> dict:
     }
 
 
+def _lookup_v21_bbl_feature(lat: float, lon: float, nta_median_psf: float = 0.0) -> float:
+    """
+    Resolve BBL → historical median $/sqft for v21 building-level price signal.
+    Finds the nearest training record's BBL via KDTree, then looks up bbl_median_lookup.
+    Falls back to nta_median_psf, then global bbl_hist_psf_global.
+    """
+    if _scorer is None:
+        return 0.0
+    meta       = _scorer.meta
+    bbl_lookup = meta.get("bbl_median_lookup", {})
+    bbl_global = float(meta.get("bbl_hist_psf_global", nta_median_psf or 0.0))
+    if not bbl_lookup:
+        return float(nta_median_psf) if nta_median_psf > 0 else bbl_global
+    # Nearest training record → BBL
+    if _nearby_df is not None and _nearby_tree is not None and "bbl" in _nearby_df.columns:
+        try:
+            _, idx = _nearby_tree.query([lat, lon], k=1)
+            bbl_raw = _nearby_df.row(int(idx), named=True).get("bbl")
+            if bbl_raw is not None:
+                bbl_int = int(float(bbl_raw))
+                if bbl_int in bbl_lookup:
+                    return float(bbl_lookup[bbl_int])
+        except Exception:
+            pass
+    return float(nta_median_psf) if nta_median_psf > 0 else bbl_global
+
+
 def _count_comparables(lat: float, lon: float, radius_m: int = 800) -> int:
     """
     Count training-set sales within radius_m metres using the already-loaded
@@ -881,6 +1091,187 @@ def health():
     }
 
 
+@app.get("/metrics", tags=["Info"])
+def model_metrics():
+    """Live model performance metrics for both cities — fed into analytics dashboard."""
+    nyc, riy = {}, {}
+
+    if _scorer and _scorer.meta:
+        m   = _scorer.meta
+        stk = m.get("stack", {})
+        bor = m.get("segment_by_borough", {})
+        nyc = {
+            "version":      stk.get("version", "v19"),
+            "n_features":   int(m.get("n_features", len(m.get("feature_names", [])))),
+            "hold_r2":      round(float(stk.get("r2_holdout",     0.6514)), 4),
+            "hold_medape":  round(float(stk.get("medape_holdout", 20.33)),  2),
+            "hold_mae_usd": int(stk.get("mae_holdout", 1_058_335)),
+            "oof_r2":       round(float(m.get("oof_r2",    0.6473)), 4),
+            "oof_medape":   round(float(m.get("oof_medape", 22.25)), 2),
+            "n_train":      int(m.get("n_train",   157_329)),
+            "n_hold":       int(m.get("n_holdout",  27_763)),
+            "trained_at":   m.get("trained_at", ""),
+            "by_borough":   {k: round(float(v.get("medape", 0)), 2) for k, v in bor.items()},
+            "base_models": {
+                "XGB-A": round(float(stk.get("xgb_a",  {}).get("r2_holdout",  0.6459)), 4),
+                "XGB-B": round(float(stk.get("xgb_b",  {}).get("r2_holdout",  0.6437)), 4),
+                "LGB":   round(float(stk.get("lightgbm",{}).get("r2_holdout", 0.6464)), 4),
+                "CAT":   round(float(stk.get("catboost",{}).get("r2_holdout", 0.6495)), 4),
+                "Stack": round(float(stk.get("r2_holdout", 0.6514)), 4),
+            },
+            "base_medape": {
+                "XGB-A": round(float(stk.get("xgb_a",  {}).get("medape_holdout", 20.45)), 2),
+                "XGB-B": round(float(stk.get("xgb_b",  {}).get("medape_holdout", 20.22)), 2),
+                "LGB":   round(float(stk.get("lightgbm",{}).get("medape_holdout", 20.81)), 2),
+                "CAT":   round(float(stk.get("catboost",{}).get("medape_holdout", 20.60)), 2),
+                "Stack": round(float(stk.get("medape_holdout", 20.33)), 2),
+            },
+        }
+
+    if _scorer and hasattr(_scorer, "_riyadh_meta"):
+        rm  = _scorer._riyadh_meta
+        riy = {
+            "version":     rm.get("model_version", "riyadh_v11"),
+            "n_features":  int(rm.get("n_features", 140)),
+            "hold_r2":     round(float(rm.get("holdout_r2",       0.8003)), 4),
+            "hold_medape": round(float(rm.get("holdout_medape_pct", 15.56)), 2),
+            "hold_mae":    round(float(rm.get("holdout_mae_sar_sqm",   980)), 1),
+            "oof_r2":      round(float(rm.get("oof_r2",       0.9343)), 4),
+            "oof_medape":  round(float(rm.get("oof_medape_pct",  8.28)), 2),
+            "n_train":     int(rm.get("train_rows",   7258)),
+            "n_hold":      int(rm.get("holdout_rows", 1727)),
+            "trained_at":  rm.get("trained_at", ""),
+            "by_type":     rm.get("segment_by_type", {
+                "apartment":        15.65,
+                "villa":            13.37,
+                "residential_plot": 24.67,
+                "building":         23.35,
+            }),
+        }
+
+    return {"nyc": nyc, "riyadh": riy}
+
+
+# Feature category mapping for UI grouping
+_FEAT_CATEGORY = {
+    # Structural
+    "gross_sqft": "Structural", "lot_area_sqft": "Structural", "numfloors": "Structural",
+    "building_age": "Structural", "builtfar": "Structural", "log_land_sqft": "Structural",
+    "lot_coverage": "Structural", "bldg_vol_proxy": "Structural", "far_utilization": "Structural",
+    "units_res": "Structural", "units_total": "Structural",
+    # Price / Assessment
+    "prior_sale_price": "Valuation", "assessland": "Valuation", "assesstot": "Valuation",
+    "prior_price_psf": "Valuation", "log_exempt_amount": "Valuation",
+    # Location encoding
+    "borough": "Location", "latitude": "Location", "longitude": "Location",
+    "bldgclass_encoded": "Location", "borough_bldg_encoded": "Location",
+    "nta_encoded": "Location", "nta_bldg_encoded": "Location",
+    "dist_midtown_m": "Location", "dist_downtown_m": "Location",
+    # Transit
+    "dist_subway_m": "Transit", "nearest_station_is_express": "Transit",
+    "nearest_station_route_count": "Transit", "nearest_station_is_ada": "Transit",
+    "nearest_station_is_cbd": "Transit", "dist_bus_m": "Transit",
+    "dist_commuter_rail_m": "Transit", "commuter_rail_1km": "Transit",
+    "log_dist_citibike_m": "Transit", "citibike_500m": "Transit",
+    # Parks / Nature
+    "dist_park_m": "Parks/Nature", "tree_count_200m": "Parks/Nature",
+    "log_dist_large_park_m": "Parks/Nature", "log_dist_flagship_park_m": "Parks/Nature",
+    "log_dist_waterfront_m": "Parks/Nature", "waterfront_200m": "Parks/Nature",
+    "dist_bike_lane_m": "Parks/Nature",
+    # Safety / QoL complaints
+    "crime_rate_nta": "Safety/QoL", "noise_density_nta": "Safety/QoL",
+    "rat_density_nta": "Safety/QoL", "heat_density_nta": "Safety/QoL",
+    "hpd_class_b_viol_zip": "Safety/QoL", "hpd_class_c_viol_zip": "Safety/QoL",
+    "hpd_severity_score_zip": "Safety/QoL",
+    # POI / Amenities
+    "dist_hospital_m": "Amenities", "dist_school_m": "Amenities",
+    "dist_waterfront_m": "Amenities",
+    "dob_reno_permit_count": "Amenities", "dob_newbld_permit_count": "Amenities",
+    # Socioeconomic
+    "log_tract_median_income": "Socioeconomic", "median_income_nta": "Socioeconomic",
+    "is_historic_dist": "Socioeconomic", "in_flood_zone": "Socioeconomic",
+    "is_landmark": "Socioeconomic",
+    # Temporal / Market
+    "mortgage_rate_30yr": "Market", "sale_year": "Market",
+    "nta_logp_momentum": "Market", "nta_lag1q_mean_logp": "Market",
+    "nta_lag1q_median_psf": "Market", "nta_lag1q_count": "Market",
+    "nta_lag2q_mean_logp": "Market", "nta_price_trend_slope": "Market",
+    "nta_sale_count": "Market", "nta_median_psf": "Market",
+    "bbl_hist_psf": "Valuation",   # v21: building-level historical price signal
+}
+
+_feat_importance_cache: dict | None = None
+
+@app.get("/feature-importance", tags=["Info"])
+def feature_importance(city: str = "nyc", top_n: int = 25):
+    """Feature importance (LGB gain-based) with category grouping for charts dashboard."""
+    global _feat_importance_cache
+    if _feat_importance_cache and city in _feat_importance_cache:
+        return _feat_importance_cache[city]
+
+    if not _scorer:
+        raise HTTPException(status_code=503, detail="Model not loaded")
+
+    result = {}
+
+    if city == "nyc":
+        stk       = joblib.load(os.path.join(BASE, "models", "thaman_stack.pkl"))
+        feat_names = _scorer.meta.get("feature_names", [])
+        lgb_model  = stk.get("lgb")
+        if lgb_model is None:
+            raise HTTPException(status_code=404, detail="LGB model not found in pkl")
+        fi   = lgb_model.feature_importances_
+        fn   = [feat_names[i] if i < len(feat_names) else f"f{i}" for i in range(len(fi))]
+        # Normalize 0-100
+        fi_norm = fi / fi.max() * 100 if fi.max() > 0 else fi
+        pairs = sorted(zip(fn, fi_norm.tolist()), key=lambda x: -x[1])[:top_n]
+        result = [
+            {
+                "feature":  name,
+                "importance": round(score, 2),
+                "category": _FEAT_CATEGORY.get(name, "Other"),
+            }
+            for name, score in pairs
+        ]
+
+    elif city == "riyadh":
+        import pickle as _pkl
+        with open(os.path.join(BASE, "models", "riyadh_stack.pkl"), "rb") as _f:
+            rstk = _pkl.load(_f)
+        feat_names = _scorer._riyadh_meta.get("feature_names", [])
+        lgb_model  = rstk.get("lgb")
+        if lgb_model is None:
+            raise HTTPException(status_code=404, detail="Riyadh LGB not found")
+        fi   = lgb_model.feature_importances_
+        fn   = [feat_names[i] if i < len(feat_names) else f"f{i}" for i in range(len(fi))]
+        fi_norm = fi / fi.max() * 100 if fi.max() > 0 else fi
+        pairs = sorted(zip(fn, fi_norm.tolist()), key=lambda x: -x[1])[:top_n]
+        result = [
+            {"feature": name, "importance": round(score, 2), "category": "Other"}
+            for name, score in pairs
+        ]
+
+    if not _feat_importance_cache:
+        _feat_importance_cache = {}
+    _feat_importance_cache[city] = result
+    return result
+
+
+@app.get("/scatter", tags=["Info"])
+def scatter_data(city: str = "nyc"):
+    """Return predicted-vs-actual scatter plot data for thesis charts.
+    Generated by scripts/generate_scatter.py; cached as JSON files in data/processed/.
+    """
+    fname = "scatter_nyc.json" if city == "nyc" else "scatter_riyadh.json"
+    path  = os.path.join(BASE, "data", "processed", fname)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404,
+            detail=f"Scatter data for '{city}' not yet generated. "
+                   f"Run: python scripts/generate_scatter.py")
+    with open(path) as f:
+        return json.load(f)
+
+
 @app.get("/bldgclasses", tags=["Reference"])
 def get_bldgclasses():
     """Return all valid NYC building class codes that the model recognises."""
@@ -945,6 +1336,10 @@ def predict(req: PredictRequest):
     # 2d. v12 features: quarterly NTA temporal lookback
     feat_dict.update(_lookup_v12_features(_resolved_nta))
 
+    # 2e. v21 features: BBL building-level price history
+    _nta_psf = float(feat_dict.get("nta_median_psf", 0.0) or 0.0)
+    feat_dict["bbl_hist_psf"] = _lookup_v21_bbl_feature(req.latitude, req.longitude, _nta_psf)
+
     # 3. Run prediction
     try:
         result = _scorer.predict_single(**feat_dict)
@@ -1000,6 +1395,17 @@ def predict(req: PredictRequest):
         except (ValueError, TypeError):
             return default
 
+    # v16 NTA lookup (pre-compute before dict construction)
+    _v16_lu  = _scorer.meta.get("v16_nta_lookup", {}).get(_resolved_nta, {})
+    _v16_gh  = _scorer.meta.get("v16_global_hist_rate",  0.0838)
+    _v16_gf  = _scorer.meta.get("v16_global_flood_rate", 0.0834)
+    # v17 NTA lookup (tax exemption)
+    _v17_ex  = _scorer.meta.get("v17_nta_log_exempt", {}).get(_resolved_nta,
+               _scorer.meta.get("v17_global_log_exempt", 0.0))
+    # v18 NTA lookup (census tract median household income)
+    _v18_inc = _scorer.meta.get("v18_nta_log_income", {}).get(_resolved_nta,
+               _scorer.meta.get("v18_global_log_income", 10.8))
+
     # Spatial summary (human-readable subset)
     spatial_summary = {
         "dist_subway_m":              _safe_round(spatial_feats.get("dist_subway_m")),
@@ -1016,6 +1422,38 @@ def predict(req: PredictRequest):
         "school_district":            _safe_int(spatial_feats.get("school_district")),
         "district_avg_score":         _safe_round(spatial_feats.get("district_avg_score"), 1),
         "mortgage_rate_30yr":         spatial_feats.get("mortgage_rate_30yr", 0.0),
+        # New Overture QoL POI counts (v13)
+        "poi_gym_500m":               _safe_int(spatial_feats.get("poi_gym_500m")),
+        "poi_cafe_500m":              _safe_int(spatial_feats.get("poi_cafe_500m")),
+        "poi_pharmacy_500m":          _safe_int(spatial_feats.get("poi_pharmacy_500m")),
+        "poi_grocery_500m":           _safe_int(spatial_feats.get("poi_grocery_500m")),
+        "poi_atm_500m":               _safe_int(spatial_feats.get("poi_atm_500m")),
+        "poi_urgent_care_500m":       _safe_int(spatial_feats.get("poi_urgent_care_500m")),
+        "poi_library_500m":           _safe_int(spatial_feats.get("poi_library_500m")),
+        "poi_cinema_500m":            _safe_int(spatial_feats.get("poi_cinema_500m")),
+        "poi_childcare_500m":         _safe_int(spatial_feats.get("poi_childcare_500m")),
+        "poi_beauty_500m":            _safe_int(spatial_feats.get("poi_beauty_500m")),
+        "poi_hotel_500m":             _safe_int(spatial_feats.get("poi_hotel_500m")),
+        "poi_restaurant_500m":        _safe_int(spatial_feats.get("poi_restaurant_500m")),
+        "poi_bar_500m":               _safe_int(spatial_feats.get("poi_bar_500m")),
+        "citibike_500m":              _safe_int(spatial_feats.get("citibike_500m")),
+        "dist_citibike_m":            _safe_round(spatial_feats.get("dist_citibike_m")),
+        "dist_commuter_rail_m":       _safe_round(spatial_feats.get("dist_commuter_rail_m")),
+        "commuter_rail_1km":          _safe_int(spatial_feats.get("commuter_rail_1km")),
+        # v16: LPC historic district + FEMA flood zone (NTA-level rates via _resolved_nta)
+        "is_historic_dist": round(float(_v16_lu.get("is_historic_dist", _v16_gh)), 2),
+        "in_flood_zone":    round(float(_v16_lu.get("in_flood_zone",    _v16_gf)), 2),
+        "is_landmark":      round(float(_v16_lu.get("is_landmark",       0.0)),    3),
+        # v17: tax exemption NTA-level average
+        "log_exempt_amount": round(float(_v17_ex), 3),
+        # v18: census tract median household income (NTA-level average)
+        "log_tract_median_income": round(float(_v18_inc), 3),
+        # v19: park size-stratified distances
+        "dist_large_park_m":    _safe_round(spatial_feats.get("dist_large_park_m")),
+        "dist_flagship_park_m": _safe_round(spatial_feats.get("dist_flagship_park_m")),
+        # v20: waterfront proximity
+        "dist_waterfront_m":    _safe_round(spatial_feats.get("dist_waterfront_m")),
+        "waterfront_200m":      _safe_int(spatial_feats.get("waterfront_200m")),
     }
 
     # Per-unit rates (sqft = input; sqm via conversion 1 sqft = 0.0929 m²)
@@ -1090,6 +1528,9 @@ def predict_batch(requests: list[PredictRequest]):
                     pass
             feat_dict.update(_lookup_v11_features(_b_nta, req.latitude, req.longitude, _b_zip))
             feat_dict.update(_lookup_v12_features(_b_nta))
+            # v21 BBL building-level price history
+            _b_nta_psf = float(feat_dict.get("nta_median_psf", 0.0) or 0.0)
+            feat_dict["bbl_hist_psf"] = _lookup_v21_bbl_feature(req.latitude, req.longitude, _b_nta_psf)
             result        = _scorer.predict_single(**feat_dict)
             results.append({
                 "index":           i,
@@ -1253,6 +1694,76 @@ def predict_riyadh(req: RiyadhPredictRequest):
         feat_dict["district_enc_oof"]           = float(_enc_map.get(d, _enc_gm))      if d else _enc_gm
         feat_dict["district_apt_enc_oof"]       = float(_apt_enc_map.get(d, _apt_enc_gm)) if d else _apt_enc_gm
         feat_dict["bayut_asking_psqm"]          = float(_bayut_map.get(d, _bayut_gm))  if d else _bayut_gm
+        # v4 temporal lag features
+        _lag_map  = _rs.get("district_lag_map",   {})
+        _city_lg1 = float(_rs.get("city_lag1_median", 5000.0))
+        _city_lg2 = float(_rs.get("city_lag2_median", 4800.0))
+        _dlags    = _lag_map.get(d, {}) if d else {}
+        feat_dict["district_lag1q_median_psqm"] = float(_dlags.get("lag1", _city_lg1))
+        feat_dict["district_lag2q_median_psqm"] = float(_dlags.get("lag2", _city_lg2))
+        feat_dict["district_lag_momentum"]      = float(_dlags.get("momentum", _city_lg1 - _city_lg2))
+        # v8: type-matched REI (rei_type_idx)
+        _rei_lu   = _scorer._riyadh_meta.get("rei_type_idx_lookup", {})
+        _rei_lat  = _scorer._riyadh_meta.get("rei_type_idx_latest", {})
+        _ptype_key = (
+            "apartment"        if req.property_type in ("apartment", "شقة") else
+            "villa"            if req.property_type in ("villa", "فيلا") else
+            "residential_plot" if req.property_type in ("residential_plot", "قطعة أرض-سكنى") else
+            "building"         if req.property_type in ("building", "عمارة") else
+            "apartment"
+        )
+        _qid_str = str(year * 10 + quarter)
+        if _qid_str in _rei_lu and _ptype_key in _rei_lu[_qid_str]:
+            feat_dict["rei_type_idx"] = float(_rei_lu[_qid_str][_ptype_key])
+        elif _ptype_key in _rei_lat:
+            feat_dict["rei_type_idx"] = float(_rei_lat[_ptype_key])
+        else:
+            feat_dict["rei_type_idx"] = 100.0
+
+        # v9: hub distances from district centroid
+        import math as _math
+        _HUBS_V9 = {
+            "kafd":       (24.771, 46.637),
+            "old_city":   (24.690, 46.722),
+            "industrial": (24.620, 46.873),
+            "airport":    (24.957, 46.699),
+        }
+        _dlat = feat_dict.get("district_lat", 24.7136)
+        _dlon = feat_dict.get("district_lon", 46.6753)
+        for _hub, (_hlat, _hlon) in _HUBS_V9.items():
+            _d = _math.sqrt((_dlat - _hlat) ** 2 + (_dlon - _hlon) ** 2) * 111_000.0
+            feat_dict[f"dist_{_hub}_m"]     = _d
+            feat_dict[f"log_dist_{_hub}_m"] = _math.log1p(_d)
+
+        # v10: metro + bus transit features from district lookup
+        _metro_lu = _scorer._riyadh_meta.get("metro_district_lookup", {})
+        _district_ar = feat_dict.get("district_ar", "")
+        _metro_entry = _metro_lu.get(_district_ar, {})
+        _dm = _metro_entry.get("dist_metro_m", 5000.0)  # default 5km (outside metro reach)
+        feat_dict["dist_metro_m"]       = _dm
+        feat_dict["log_dist_metro_m"]   = _math.log1p(_dm)
+        feat_dict["metro_500m"]         = int(_dm < 500)
+        feat_dict["metro_1km"]          = int(_dm < 1000)
+        feat_dict["nearest_metro_line"] = int(_metro_entry.get("nearest_metro_line", 0))
+        feat_dict["bus_stops_500m"]     = int(_metro_entry.get("bus_stops_500m", 0))
+
+        # v11: type-stratified lag + price std + suhail density
+        _dtlag_map   = _scorer._riyadh_meta.get("district_type_lag_map", {})
+        _city_dt_fb  = _scorer._riyadh_meta.get("city_type_lag_fallback", {})
+        _global_std  = float(_scorer._riyadh_meta.get("district_lag1q_std_global", 2000.0))
+        _pt_short    = (
+            "apt"   if _ptype_key == "apartment"        else
+            "villa" if _ptype_key == "villa"             else
+            "plot"  if _ptype_key == "residential_plot"  else
+            "bldg"  if _ptype_key == "building"          else "apt"
+        )
+        _dt_key   = f"{_district_ar}|{_pt_short}"
+        _dt_entry = _dtlag_map.get(_dt_key, {})
+        _fb_city  = _city_dt_fb.get(_pt_short, {"lag1": float(_city_lg1), "std1": _global_std})
+        feat_dict["district_type_lag1q_psqm"] = float(_dt_entry.get("lag1", _fb_city["lag1"]))
+        feat_dict["district_type_lag2q_psqm"] = float(_dt_entry.get("lag2", _fb_city["lag1"]))
+        feat_dict["district_lag1q_std_psqm"]  = float(_dt_entry.get("std1", _fb_city.get("std1", _global_std)))
+        feat_dict["log_suhail_n_trans"]       = 0.0  # most recent inference → no lag count available
 
     # Predict (SAR/sqm, log-space)
     try:
@@ -1265,7 +1776,7 @@ def predict_riyadh(req: RiyadhPredictRequest):
     total = int(round(psqm * req.area_sqm))
 
     # District-adaptive confidence: look up per-district holdout MedAPE
-    # Falls back to global model MedAPE (22.24%) if district not in table
+    # Falls back to global model MedAPE (v11: 15.56%) if district not in table
     global_medape = result["medape_pct"]
     district_medape_tbl = {}
     if _scorer and hasattr(_scorer, '_riyadh_meta'):
@@ -1306,7 +1817,26 @@ def predict_riyadh(req: RiyadhPredictRequest):
                                           "dist_mall_m", "dist_school_m",
                                           "dist_hospital_m", "dist_park_m",
                                           "air_quality_score",
-                                          "riyadh_connectivity_score")},
+                                          "riyadh_connectivity_score",
+                                          # New QoL POIs (v3 model features)
+                                          "dist_pharmacy_m", "pharmacy_count_500m",
+                                          "dist_gym_m", "gym_count_500m",
+                                          "dist_coffee_m", "coffee_count_500m",
+                                          "dist_clinic_m", "clinic_count_500m",
+                                          "dist_university_m", "university_count_500m",
+                                          "dist_supermarket_m", "supermarket_count_500m",
+                                          "dist_cinema_m", "cinema_count_500m",
+                                          "dist_sports_m", "sports_count_500m",
+                                          # Batch-2 display-only POIs
+                                          "dist_restaurant_m", "restaurant_count_500m",
+                                          "dist_library_m", "library_count_500m",
+                                          "dist_atm_m", "atm_count_500m",
+                                          "dist_kindergarten_m", "kindergarten_count_500m",
+                                          "dist_swimming_pool_m", "swimming_pool_count_500m",
+                                          # v10 metro features
+                                          "dist_metro_m", "log_dist_metro_m",
+                                          "metro_500m", "metro_1km",
+                                          "nearest_metro_line", "bus_stops_500m")},
         top_drivers          = result.get("top_drivers", []),
         asking_price_psqm    = int(round(_asking_psqm)) if _asking_psqm is not None else None,
         asking_price_total   = _asking_total,
@@ -1663,4 +2193,44 @@ def get_listings_layer():
         content=_listings_geojson_cache,
         media_type="application/json",
         headers={"Cache-Control": "public, max-age=1800"},
+    )
+
+
+@app.get("/layers/riyadh-heatmap", tags=["Riyadh"])
+def get_riyadh_heatmap():
+    """
+    Return Suhail MOJ transaction heatmap data for Riyadh.
+    District-level aggregated deed counts + median price/sqm for the last 4 quarters.
+    Used for the transaction activity bubble overlay on the Riyadh map.
+    """
+    if not _riyadh_heatmap_cache:
+        return Response(
+            content='{"quarters":[],"period":"","districts":[]}',
+            media_type="application/json",
+            headers={"Cache-Control": "public, max-age=3600"},
+        )
+    return Response(
+        content=_riyadh_heatmap_cache,
+        media_type="application/json",
+        headers={"Cache-Control": "public, max-age=3600"},
+    )
+
+
+@app.get("/layers/nyc-heatmap", tags=["NYC"])
+def get_nyc_heatmap():
+    """
+    Return NYC NTA-level sales heatmap data.
+    NTA centroids + sale count + median $/sqft for last 4 quarters of sales_geocoded.csv.
+    Used for the transaction activity bubble overlay on the NYC map.
+    """
+    if not _nyc_heatmap_cache:
+        return Response(
+            content='{"quarters":[],"period":"","ntas":[]}',
+            media_type="application/json",
+            headers={"Cache-Control": "public, max-age=3600"},
+        )
+    return Response(
+        content=_nyc_heatmap_cache,
+        media_type="application/json",
+        headers={"Cache-Control": "public, max-age=3600"},
     )
