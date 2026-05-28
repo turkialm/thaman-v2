@@ -26,15 +26,15 @@
     </div>
     <div class="header-badges">
       <span id="nycBadgeGroup">
-        <span id="hdrStack" class="badge badge-green">Stack v11</span>
-        <span id="hdrR2" class="badge badge-blue">R² = 0.647</span>
-        <span id="hdrMedape" class="badge badge-purple">MedAPE 20.23%</span>
+        <span id="hdrStack" class="badge badge-green">Stack v22</span>
+        <span id="hdrR2" class="badge badge-blue">R² = 0.650</span>
+        <span id="hdrMedape" class="badge badge-purple">MedAPE 20.32%</span>
         <button class="badge badge-gray" onclick="openCompare()" style="cursor:pointer;border:none">⚖ Compare</button>
       </span>
       <span id="riyadhBadgeGroup" style="display:none">
-        <span class="badge badge-green">Riyadh Stack v2</span>
-        <span class="badge badge-blue">R² = 0.798</span>
-        <span class="badge badge-purple">MedAPE 18.16%</span>
+        <span class="badge badge-green">Riyadh Stack v11</span>
+        <span class="badge badge-blue">R² = 0.800</span>
+        <span class="badge badge-purple">MedAPE 15.56%</span>
       </span>
       <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
       <button class="badge badge-gray" onclick="openCityCompare()" style="cursor:pointer;border:none">🌍 Cities</button>
@@ -98,9 +98,17 @@
           <button class="layer-btn" data-layer="price_trend">📊 Price Trend</button>
           <button class="layer-btn" data-layer="connectivity">🔗 Connectivity</button>
         </div>
-        <!-- Market Listings overlay button (Riyadh only, outside layer groups so it doesn't reset) -->
+        <!-- Market Listings overlay button (Riyadh only) -->
         <button class="layer-btn" id="listingsLayerBtn" onclick="toggleListingsLayer(this)" style="display:none">
           🏠 Listings
+        </button>
+        <!-- MOJ Transaction Heatmap overlay button (Riyadh only) -->
+        <button class="layer-btn" id="heatmapLayerBtn" onclick="toggleHeatmapLayer(this)" style="display:none">
+          🔥 TX Heat
+        </button>
+        <!-- NYC Sales Heatmap overlay button (NYC only) -->
+        <button class="layer-btn" id="nycHeatmapLayerBtn" onclick="toggleNycHeatmapLayer(this)">
+          🔥 TX Heat
         </button>
       </div>
       <!-- Choropleth legend -->
@@ -351,7 +359,7 @@
 
           <p class="disclaimer" id="disclaimer">
             Predictions are based on NYC property sales 2022–2026.
-            Model accuracy: median error ±20.29% (MedAPE, spatial CV validated).
+            Model accuracy: median error ±20.32% (MedAPE, spatial CV validated).
           </p>
         </form>
 
@@ -414,8 +422,8 @@
           </div>
           <p class="disclaimer">
             Predictions based on Saudi open-data quarterly transactions 2018–2024.
-            Model accuracy: median error ±18.16% (MedAPE, 2025 holdout).
-            تنبؤات مبنية على بيانات صفقات البيع الفصلية المفتوحة 2018–2024.
+            Model accuracy: median error ±15.56% (MedAPE, 2025 Q1+ holdout).
+            تنبؤات مبنية على بيانات صفقات البيع الفصلية المفتوحة 2018–2026.
           </p>
         </form>
 
@@ -793,31 +801,31 @@
         <div class="cc-row cc-bar-row">
           <div class="cc-cell cc-label">R² Score (holdout)</div>
           <div class="cc-cell">
-            <span class="cc-num cc-num-nyc">0.645</span>
-            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-nyc" style="width:64.5%"></div></div>
+            <span class="cc-num cc-num-nyc">0.650</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-nyc" style="width:65.0%"></div></div>
           </div>
           <div class="cc-cell">
-            <span class="cc-num cc-num-riy">0.798</span>
-            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:79.8%"></div></div>
+            <span class="cc-num cc-num-riy">0.800</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:80.0%"></div></div>
           </div>
         </div>
 
         <div class="cc-row cc-bar-row">
           <div class="cc-cell cc-label">MedAPE (median error)</div>
           <div class="cc-cell">
-            <span class="cc-num cc-num-warn">20.2%</span>
-            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-warn" style="width:20.2%"></div></div>
+            <span class="cc-num cc-num-warn">20.3%</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-warn" style="width:20.3%"></div></div>
           </div>
           <div class="cc-cell">
-            <span class="cc-num cc-num-good">18.2%</span>
-            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:18.2%"></div></div>
+            <span class="cc-num cc-num-good">15.6%</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:15.6%"></div></div>
           </div>
         </div>
 
         <div class="cc-row">
           <div class="cc-cell cc-label">Features</div>
-          <div class="cc-cell"><span class="cc-strong">104</span> <span class="cc-chip">structural + QoL + market</span></div>
-          <div class="cc-cell"><span class="cc-strong">76</span> <span class="cc-chip">spatial + macro + POIs</span></div>
+          <div class="cc-cell"><span class="cc-strong">134</span> <span class="cc-chip">structural + QoL + market + temporal</span></div>
+          <div class="cc-cell"><span class="cc-strong">140</span> <span class="cc-chip">spatial + macro + POIs + temporal lags</span></div>
         </div>
 
         <div class="cc-row">
@@ -841,7 +849,7 @@
         <div class="cc-row">
           <div class="cc-cell cc-label">OOF R² (in-sample)</div>
           <div class="cc-cell">—</div>
-          <div class="cc-cell"><span class="cc-num cc-num-riy">0.925</span> <span class="cc-chip">OOF CV</span></div>
+          <div class="cc-cell"><span class="cc-num cc-num-riy">0.934</span> <span class="cc-chip">OOF CV</span></div>
         </div>
 
         <!-- ── Dataset ─────────────────────────────── -->
@@ -850,19 +858,19 @@
         <div class="cc-row">
           <div class="cc-cell cc-label">Training rows</div>
           <div class="cc-cell"><span class="cc-strong">185,092</span> sales records</div>
-          <div class="cc-cell"><span class="cc-strong">5,531</span> transactions</div>
+          <div class="cc-cell"><span class="cc-strong">7,258</span> transactions</div>
         </div>
 
         <div class="cc-row">
           <div class="cc-cell cc-label">Holdout rows</div>
           <div class="cc-cell">— (time-series split)</div>
-          <div class="cc-cell"><span class="cc-strong">1,379</span> (2025 Q1–Q3)</div>
+          <div class="cc-cell"><span class="cc-strong">1,727</span> (2025 Q1+)</div>
         </div>
 
         <div class="cc-row">
           <div class="cc-cell cc-label">Total rows</div>
           <div class="cc-cell"><span class="cc-strong">185,092</span></div>
-          <div class="cc-cell"><span class="cc-strong">6,910</span></div>
+          <div class="cc-cell"><span class="cc-strong">7,258</span></div>
         </div>
 
         <div class="cc-row">

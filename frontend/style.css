@@ -1822,6 +1822,39 @@ select optgroup { color: var(--gray-500); font-style: normal; }
   #riyadhAddrSearchWrap input { font-size: 13px; }
 }
 
+/* ── Global mobile layout fixes (≤480px) ────────────────────────── */
+@media (max-width: 480px) {
+  /* NYC form: 2-col fields → single column */
+  .field-row { grid-template-columns: 1fr; }
+
+  /* Spatial cards: 3-col → 2-col */
+  .spatial-grid { grid-template-columns: repeat(2, 1fr); }
+
+  /* Steps wizard: shrink text, keep 3-col but compact */
+  .steps { gap: 4px; }
+  .steps li { font-size: .70rem; }
+  .step-num { width: 22px; height: 22px; font-size: .65rem; }
+
+  /* Compare tool mini-form: 2-col → 1-col */
+  .compare-mini-form { grid-template-columns: 1fr; }
+
+  /* Share buttons: wrap gracefully */
+  .share-actions { flex-wrap: wrap; }
+  .share-btn { flex: 1 1 45%; }
+
+  /* Confidence bar labels: shrink font */
+  .conf-label { font-size: .72rem; }
+
+  /* AVM QC grade row: stack vertically */
+  .avm-qc-row { flex-direction: column; gap: 6px; }
+}
+
+/* ── Tablet range (481–768px) extra fixes ────────────────────────── */
+@media (min-width: 481px) and (max-width: 768px) {
+  /* Spatial grid: keep 3-col at tablet width */
+  .spatial-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
 /* ── Riyadh form & results ──────────────────────────────────────── */
 .riyadh-results {
   margin-top: 16px;

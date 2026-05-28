@@ -421,7 +421,141 @@ document.getElementById('layerBar').addEventListener('click', e => {
 });
 
 // ── Market Listings Layer ──────────────────────────────────────────────
-let _listingsLayer = null;
+let _listingsLayer  = null;
+let _heatmapLayer   = null;
+let _heatmapData    = null;
+
+function _psqmColor(psqm) {
+  // Green → yellow → red for 500 → 3500 → 8000+ SAR/m²
+  if (!psqm) return '#94a3b8';
+  if (psqm < 1500) return '#22c55e';
+  if (psqm < 3000) return '#84cc16';
+  if (psqm < 5000) return '#eab308';
+  if (psqm < 8000) return '#f97316';
+  return '#ef4444';
+}
+
+async function toggleHeatmapLayer(btn) {
+  if (_heatmapLayer && map.hasLayer(_heatmapLayer)) {
+    map.removeLayer(_heatmapLayer);
+    btn.classList.remove('active');
+    return;
+  }
+  if (_heatmapLayer) {
+    map.addLayer(_heatmapLayer);
+    btn.classList.add('active');
+    return;
+  }
+  btn.textContent = '⏳';
+  try {
+    _heatmapData = _heatmapData || await fetch(`${API_BASE}/layers/riyadh-heatmap`).then(r => r.json());
+    const districts = _heatmapData.districts || [];
+    const period    = _heatmapData.period    || '';
+
+    const markers = districts.map(d => {
+      const radius = 6 + Math.round(d.activity_norm * 28);  // 6–34 px
+      const color  = _psqmColor(d.median_psqm);
+      const marker = L.circleMarker([d.lat, d.lon], {
+        radius, fillColor: color, color: '#fff',
+        weight: 1.2, opacity: 0.9, fillOpacity: 0.72
+      });
+      const psqmStr  = d.median_psqm ? `﷼${d.median_psqm.toLocaleString()}/m²` : '—';
+      const totalStr = d.total_sar_m ? `﷼${d.total_sar_m.toFixed(0)}M` : '—';
+      marker.bindPopup(`
+        <div style="min-width:210px;font-family:inherit">
+          <div style="font-weight:700;font-size:1rem;margin-bottom:4px;direction:rtl">${d.district_ar}</div>
+          <div style="color:#64748b;font-size:0.75rem;margin-bottom:8px">MOJ Transactions · ${period}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.85rem">
+            <span style="color:#64748b">Deed count</span>
+            <span style="font-weight:700;color:#0f172a">${d.deed_count.toLocaleString()}</span>
+            <span style="color:#64748b">Median price</span>
+            <span style="font-weight:600">${psqmStr}</span>
+            <span style="color:#64748b">Total value</span>
+            <span style="font-weight:600">${totalStr}</span>
+            <span style="color:#64748b">Quarters</span>
+            <span>${d.quarters_active} of 4</span>
+          </div>
+        </div>
+      `);
+      return marker;
+    });
+
+    _heatmapLayer = L.layerGroup(markers).addTo(map);
+    btn.classList.add('active');
+  } catch(e) {
+    console.error('Heatmap layer failed:', e);
+  } finally {
+    btn.textContent = '🔥 TX Heat';
+  }
+}
+
+// ── NYC Sales Heatmap (NTA bubble map) ───────────────────────────────────
+let _nycHeatmapLayer = null;
+let _nycHeatmapData  = null;
+
+function _psfColor(psf) {
+  // Green → yellow → red for NYC $/sqft tiers
+  if (!psf) return '#94a3b8';
+  if (psf < 400)  return '#22c55e';
+  if (psf < 700)  return '#84cc16';
+  if (psf < 1000) return '#eab308';
+  if (psf < 1500) return '#f97316';
+  return '#ef4444';
+}
+
+async function toggleNycHeatmapLayer(btn) {
+  if (_nycHeatmapLayer && map.hasLayer(_nycHeatmapLayer)) {
+    map.removeLayer(_nycHeatmapLayer);
+    btn.classList.remove('active');
+    return;
+  }
+  if (_nycHeatmapLayer) {
+    map.addLayer(_nycHeatmapLayer);
+    btn.classList.add('active');
+    return;
+  }
+  btn.textContent = '⏳';
+  try {
+    _nycHeatmapData = _nycHeatmapData || await fetch(`${API_BASE}/layers/nyc-heatmap`).then(r => r.json());
+    const ntas   = _nycHeatmapData.ntas   || [];
+    const period = _nycHeatmapData.period || '';
+
+    const markers = ntas.map(d => {
+      const radius = 6 + Math.round(d.activity_norm * 28);  // 6–34 px
+      const color  = _psfColor(d.median_psf);
+      const marker = L.circleMarker([d.lat, d.lon], {
+        radius, fillColor: color, color: '#fff',
+        weight: 1.2, opacity: 0.9, fillOpacity: 0.72
+      });
+      const psfStr  = d.median_psf  ? `$${d.median_psf.toLocaleString()}/sqft` : '—';
+      const priceStr = d.median_price ? `$${d.median_price.toFixed(0)}K` : '—';
+      marker.bindPopup(`
+        <div style="min-width:210px;font-family:inherit">
+          <div style="font-weight:700;font-size:1rem;margin-bottom:4px">${d.name}</div>
+          <div style="color:#64748b;font-size:0.75rem;margin-bottom:8px">NYC Sales · ${period}</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:0.85rem">
+            <span style="color:#64748b">Sale count</span>
+            <span style="font-weight:700;color:#0f172a">${d.sale_count.toLocaleString()}</span>
+            <span style="color:#64748b">Median $/sqft</span>
+            <span style="font-weight:600">${psfStr}</span>
+            <span style="color:#64748b">Median price</span>
+            <span style="font-weight:600">${priceStr}</span>
+            <span style="color:#64748b">Quarters</span>
+            <span>${d.quarters_active} of 4</span>
+          </div>
+        </div>
+      `);
+      return marker;
+    });
+
+    _nycHeatmapLayer = L.layerGroup(markers).addTo(map);
+    btn.classList.add('active');
+  } catch(e) {
+    console.error('NYC heatmap layer failed:', e);
+  } finally {
+    btn.textContent = '🔥 TX Heat';
+  }
+}
 
 async function toggleListingsLayer(btn) {
   if (_listingsLayer && map.hasLayer(_listingsLayer)) {
@@ -533,12 +667,26 @@ function setCityMode(mode) {
     if (_riyadhOutOfBoundsMask && map.hasLayer(_riyadhOutOfBoundsMask)) map.removeLayer(_riyadhOutOfBoundsMask);
   }
 
-  // Show/hide the Listings overlay button (Riyadh only)
+  // Show/hide Riyadh-only overlay buttons
   const listingsBtn = document.getElementById('listingsLayerBtn');
   if (listingsBtn) listingsBtn.style.display = isRiyadh ? '' : 'none';
-  // Remove listings layer when switching away from Riyadh
+  const heatmapBtn = document.getElementById('heatmapLayerBtn');
+  if (heatmapBtn) heatmapBtn.style.display = isRiyadh ? '' : 'none';
+  // Show/hide NYC-only overlay buttons
+  const nycHeatmapBtn = document.getElementById('nycHeatmapLayerBtn');
+  if (nycHeatmapBtn) nycHeatmapBtn.style.display = isRiyadh ? 'none' : '';
+  // Remove Riyadh-only layers when switching away
   if (!isRiyadh && _listingsLayer && map.hasLayer(_listingsLayer)) {
     map.removeLayer(_listingsLayer);
+  }
+  if (!isRiyadh && _heatmapLayer && map.hasLayer(_heatmapLayer)) {
+    map.removeLayer(_heatmapLayer);
+    if (heatmapBtn) heatmapBtn.classList.remove('active');
+  }
+  // Remove NYC-only layers when switching away
+  if (isRiyadh && _nycHeatmapLayer && map.hasLayer(_nycHeatmapLayer)) {
+    map.removeLayer(_nycHeatmapLayer);
+    if (nycHeatmapBtn) nycHeatmapBtn.classList.remove('active');
   }
 
   // Update map hint text for correct city
@@ -1490,7 +1638,7 @@ predictForm.addEventListener('submit', async (e) => {
   } catch (err) {
     if (err.name === 'AbortError') return;
     console.error(err);
-    alert(`Prediction failed: ${err.message}\n\nMake sure the API server is running at http://localhost:8000`);
+    showToast(`⚠ Prediction failed: ${err.message}`, 5000);
   } finally {
     setLoading(false);
   }
@@ -1545,7 +1693,7 @@ document.getElementById('riyadhForm').addEventListener('submit', async (e) => {
   } catch (err) {
     if (err.name === 'AbortError') return;
     console.error(err);
-    alert(`Riyadh prediction failed: ${err.message}\n\nMake sure the API server is running at http://localhost:8000`);
+    showToast(`⚠ خطأ في التقدير: ${err.message}`, 5000);
   } finally {
     submitBtn2.disabled = false;
     if (btnText2) btnText2.textContent = '🔍  تقدير السعر / Estimate';
@@ -1560,7 +1708,7 @@ function renderRiyadhResults(data) {
   const low   = data.confidence_low_sar;
   const high  = data.confidence_high_sar;
   const sf    = data.spatial_features || {};
-  const medape = data.medape_pct || 23.6;
+  const medape = data.medape_pct || 15.56;
 
   // ── Price hero ────────────────────────────────────────────────────────
   const sqmEl = document.getElementById('riyadhPriceSqm');
@@ -1568,7 +1716,7 @@ function renderRiyadhResults(data) {
   const totalEl = document.getElementById('riyadhPriceTotal');
   if (totalEl) animateSAR(totalEl, total, fmtSAR);
   const confEl = document.getElementById('riyadhConfidence');
-  if (confEl) confEl.textContent = `Range: ${fmtSAR(low)} – ${fmtSAR(high)}`;
+  if (confEl) confEl.textContent = (currentLang === 'ar' ? `النطاق: ${fmtSAR(low)} – ${fmtSAR(high)}` : `Range: ${fmtSAR(low)} – ${fmtSAR(high)}`);
   const distEl = document.getElementById('riyadhDistrictLabel');
   if (distEl) {
     const district = data.district_ar || '';
@@ -1632,14 +1780,21 @@ function renderRiyadhResults(data) {
   const grid = document.getElementById('riyadhSpatialGrid');
   if (grid && sf) {
     const items = [
-      { icon: '🚇', label: 'Metro',       value: sf.dist_metro_m         != null ? fmtDist(sf.dist_metro_m)                                : '—' },
-      { icon: '🚌', label: 'Bus stop',    value: sf.dist_bus_m           != null ? fmtDist(sf.dist_bus_m)                                  : '—' },
-      { icon: '🏪', label: 'Commercial',  value: sf.commercial_count_1km != null ? `${Math.round(sf.commercial_count_1km)} /1km`           : '—' },
-      { icon: '🕌', label: 'Mosque',      value: sf.dist_mosque_m        != null ? fmtDist(sf.dist_mosque_m)                               : '—' },
-      { icon: '🛍️', label: 'Mall',        value: sf.dist_mall_m          != null ? fmtDist(sf.dist_mall_m)                                 : '—' },
-      { icon: '🌿', label: 'Air quality', value: sf.air_quality_score    != null ? `${Math.round(sf.air_quality_score)}/100`               : '—' },
-      { icon: '🏫', label: 'School',      value: sf.dist_school_m        != null ? fmtDist(sf.dist_school_m)                               : '—' },
-      { icon: '🏥', label: 'Hospital',    value: sf.dist_hospital_m      != null ? fmtDist(sf.dist_hospital_m)                             : '—' },
+      { icon: '🚇', label: 'Metro',       value: sf.dist_metro_m         != null ? fmtDist(sf.dist_metro_m)                   : '—' },
+      { icon: '☕', label: 'Coffee shop', value: sf.dist_coffee_m        != null ? fmtDist(sf.dist_coffee_m)                   : '—' },
+      { icon: '🩺', label: 'Clinic',      value: sf.dist_clinic_m        != null ? fmtDist(sf.dist_clinic_m)                   : '—' },
+      { icon: '🛒', label: 'Supermarket', value: sf.dist_supermarket_m   != null ? fmtDist(sf.dist_supermarket_m)              : '—' },
+      { icon: '💊', label: 'Pharmacy',    value: sf.dist_pharmacy_m      != null ? fmtDist(sf.dist_pharmacy_m)                 : '—' },
+      { icon: '💪', label: 'Gym',         value: sf.dist_gym_m           != null ? fmtDist(sf.dist_gym_m)                      : '—' },
+      { icon: '🕌', label: 'Mosque',      value: sf.dist_mosque_m        != null ? fmtDist(sf.dist_mosque_m)                   : '—' },
+      { icon: '🛍️', label: 'Mall',        value: sf.dist_mall_m          != null ? fmtDist(sf.dist_mall_m)                     : '—' },
+      { icon: '🏫', label: 'School',      value: sf.dist_school_m        != null ? fmtDist(sf.dist_school_m)                   : '—' },
+      { icon: '🏥', label: 'Hospital',     value: sf.dist_hospital_m      != null ? fmtDist(sf.dist_hospital_m)                 : '—' },
+      { icon: '🎬', label: 'Cinema',      value: sf.dist_cinema_m        != null ? fmtDist(sf.dist_cinema_m)                   : '—' },
+      { icon: '🌿', label: 'Air quality', value: sf.air_quality_score    != null ? `${Math.round(sf.air_quality_score)}/100`   : '—' },
+      { icon: '🍽️', label: 'Restaurant', value: sf.dist_restaurant_m    != null ? fmtDist(sf.dist_restaurant_m)               : '—' },
+      { icon: '📚', label: 'Library',    value: sf.dist_library_m        != null ? fmtDist(sf.dist_library_m)                 : '—' },
+      { icon: '🏊', label: 'Pool',       value: sf.dist_swimming_pool_m  != null ? fmtDist(sf.dist_swimming_pool_m)           : '—' },
     ];
     grid.innerHTML = items.map(item => `
       <div class="spatial-item">
@@ -1680,6 +1835,15 @@ function renderRiyadhResults(data) {
       driversBars.innerHTML = '';
     }
   }
+
+  // ── Apply i18n to Riyadh cards ───────────────────────────────────────
+  const isAr = currentLang === 'ar';
+  const riyadhShapTitle = document.querySelector('#riyadhShapCard .card-title span:first-child');
+  const riyadhShapSub   = document.querySelector('#riyadhShapCard .card-subtitle');
+  const riyadhSpatTitle = document.querySelector('#riyadhSpatialCard .card-title');
+  if (riyadhShapTitle) riyadhShapTitle.textContent = isAr ? 'محركات السعر' : 'Price Drivers';
+  if (riyadhShapSub)   riyadhShapSub.textContent   = isAr ? 'العوامل الأكثر تأثيراً في هذا التقدير' : 'What factors most influenced this estimate';
+  if (riyadhSpatTitle) riyadhSpatTitle.textContent  = isAr ? 'جودة الموقع' : 'Location Quality';
 
   // ── Show cards with stagger ───────────────────────────────────────────
   showCard(document.getElementById('riyadhResults'), 0);
@@ -1770,7 +1934,7 @@ function renderResults(data) {
   // Update model tag if available
   const modelTagEl = document.getElementById('modelTag');
   if (modelTagEl && data.model) {
-    modelTagEl.textContent = data.model.includes('v11') ? 'Stack v11 · 4-Model' : data.model.includes('v10') ? 'Stack v10 · 4-Model' : data.model.includes('v9') ? 'Stack v9 · 4-Model' : data.model.includes('v8') ? 'Stack v8 · 4-Model' : data.model.includes('v7') ? 'Stack v7 · 4-Model' : data.model.includes('v6') ? 'Stack v6 · 4-Model' : data.model.includes('v5') ? 'Stack v5 · 4-Model' : data.model.includes('Stack') ? 'Stack v4 · XGB+LGB+CAT' : data.model;
+    modelTagEl.textContent = data.model.includes('v22') ? 'Stack v22 · 4-Model' : data.model.includes('v21') ? 'Stack v21 · 4-Model' : data.model.includes('v11') ? 'Stack v11 · 4-Model' : data.model.includes('v10') ? 'Stack v10 · 4-Model' : data.model.includes('v9') ? 'Stack v9 · 4-Model' : data.model.includes('v8') ? 'Stack v8 · 4-Model' : data.model.includes('v7') ? 'Stack v7 · 4-Model' : data.model.includes('v6') ? 'Stack v6 · 4-Model' : data.model.includes('v5') ? 'Stack v5 · 4-Model' : data.model.includes('Stack') ? 'Stack v4 · XGB+LGB+CAT' : data.model;
   }
   // Price reveal + count-up animation
   priceMain.classList.remove('price-reveal');
@@ -1930,16 +2094,25 @@ function renderResults(data) {
   // ── Spatial features ──────────────────────────────────────────────
   const sf = data.spatial_features;
   const spatialItems = [
-    { icon: '🚇', label: 'Subway',      value: fmtDist(sf.dist_subway_m),    unit: sf.nearest_station_is_express ? '⚡ express nearby' : '' },
-    { icon: '🚌', label: 'Bus stop',    value: fmtDist(sf.dist_bus_m),        unit: '' },
-    { icon: '🌳', label: 'Park',        value: fmtDist(sf.dist_park_m),       unit: '' },
-    { icon: '🏥', label: 'Hospital',    value: fmtDist(sf.dist_hospital_m),   unit: '' },
-    { icon: '🏫', label: 'School dist.', value: `#${Math.round(sf.school_district)}`, unit: `score ${sf.district_avg_score}` },
-    { icon: '💰', label: 'Med. Income', value: `$${(sf.median_income_nta/1000).toFixed(0)}K`, unit: 'per household' },
-    { icon: '🏠', label: 'Airbnb 500m', value: sf.airbnb_count_500m,          unit: 'listings' },
-    { icon: '🔴', label: 'Crime rate',  value: sf.crime_rate_nta.toFixed(1),  unit: 'per 1k res.' },
-    { icon: '🔊', label: 'Noise',       value: sf.noise_density_nta.toFixed(1), unit: 'per 1k res.' },
-    { icon: '📈', label: 'Mortgage',    value: `${sf.mortgage_rate_30yr}%`,    unit: '30-yr rate' },
+    { icon: '🚇', label: 'Subway',        value: fmtDist(sf.dist_subway_m),    unit: sf.nearest_station_is_express ? '⚡ express' : '' },
+    { icon: '🌳', label: 'Park',          value: fmtDist(sf.dist_park_m),       unit: '' },
+    { icon: '🏥', label: 'Hospital',      value: fmtDist(sf.dist_hospital_m),   unit: '' },
+    { icon: '🏫', label: 'School dist.',  value: `#${Math.round(sf.school_district)}`, unit: `score ${sf.district_avg_score}` },
+    { icon: '💰', label: 'Med. Income',   value: `$${(sf.median_income_nta/1000).toFixed(0)}K`, unit: 'per household' },
+    { icon: '🍽️', label: 'Restaurants',  value: sf.poi_restaurant_500m != null ? sf.poi_restaurant_500m : '—', unit: sf.poi_restaurant_500m != null ? 'within 500m' : '' },
+    { icon: '🔴', label: 'Crime rate',    value: sf.crime_rate_nta.toFixed(1),   unit: 'per 1k res.' },
+    { icon: '🔊', label: 'Noise',         value: sf.noise_density_nta.toFixed(1), unit: 'per 1k res.' },
+    { icon: '💊', label: 'Pharmacy',      value: sf.poi_pharmacy_500m != null ? sf.poi_pharmacy_500m : '—', unit: sf.poi_pharmacy_500m != null ? 'within 500m' : '' },
+    { icon: '💪', label: 'Gym / Fitness', value: sf.poi_gym_500m != null ? sf.poi_gym_500m : '—',          unit: sf.poi_gym_500m != null ? 'within 500m' : '' },
+    { icon: '🏨', label: 'Urgent Care',   value: sf.poi_urgent_care_500m != null ? sf.poi_urgent_care_500m : '—', unit: sf.poi_urgent_care_500m != null ? 'within 500m' : '' },
+    { icon: '🚲', label: 'Citi Bike',     value: sf.citibike_500m != null ? sf.citibike_500m : '—',        unit: sf.citibike_500m != null ? 'stations 500m' : '' },
+    { icon: '🚆', label: 'Commuter Rail', value: sf.dist_commuter_rail_m != null ? fmtDist(sf.dist_commuter_rail_m) : '—', unit: sf.commuter_rail_1km ? '✅ within 1km' : '' },
+    { icon: '🏛️', label: 'Historic Dist', value: sf.is_historic_dist != null ? (sf.is_historic_dist >= 0.5 ? '✅ Yes' : (sf.is_historic_dist > 0.1 ? `~${Math.round(sf.is_historic_dist*100)}%` : 'No')) : '—', unit: '' },
+    { icon: '🌊', label: 'Flood Zone',    value: sf.in_flood_zone != null ? (sf.in_flood_zone >= 0.5 ? '⚠️ Yes' : (sf.in_flood_zone > 0.1 ? `~${Math.round(sf.in_flood_zone*100)}%` : 'No')) : '—', unit: '' },
+    { icon: '🏷️', label: 'Tax Exempt',   value: sf.log_exempt_amount != null ? (sf.log_exempt_amount > 8 ? '🟢 High' : sf.log_exempt_amount > 4 ? 'Moderate' : sf.log_exempt_amount > 0.5 ? 'Low' : 'None') : '—', unit: sf.log_exempt_amount > 0.5 ? '421-a/J-51' : '' },
+    { icon: '💰', label: 'Area Income',  value: sf.log_tract_median_income != null ? (() => { const inc = Math.round(Math.expm1(sf.log_tract_median_income)); return inc > 120000 ? '🟢 High' : inc > 80000 ? 'Upper-mid' : inc > 50000 ? 'Mid' : 'Lower-mid'; })() : '—', unit: sf.log_tract_median_income != null ? `$${Math.round(Math.expm1(sf.log_tract_median_income)/1000)}k/yr` : '' },
+    { icon: '🌳', label: 'Flagship Park', value: sf.dist_flagship_park_m != null ? fmtDist(sf.dist_flagship_park_m) : '—', unit: sf.dist_flagship_park_m < 500 ? '🟢 walk' : sf.dist_flagship_park_m < 1500 ? 'nearby' : '' },
+    { icon: '🌊', label: 'Waterfront',   value: sf.dist_waterfront_m   != null ? fmtDist(sf.dist_waterfront_m)   : '—', unit: sf.waterfront_200m ? '🟢 waterfront' : sf.dist_waterfront_m < 800 ? 'near water' : '' },
   ];
 
   const crimeMax = 80, noiseMax = 60;
@@ -2326,7 +2499,7 @@ function copyResults() {
     `🔗 ${shareURL}`,
     '',
     `Generated by THAMAN · AI-Powered Property Valuation`,
-    `R² 0.647 · MedAPE 20.23% · 185K NYC sales 2022–2026`,
+    `R² 0.650 · MedAPE 20.32% · 185K NYC sales 2022–2026`,
   ].filter(l => l !== null && l !== undefined).join('\n').replace(/\n{3,}/g, '\n\n');
 
   navigator.clipboard.writeText(text)
@@ -2387,7 +2560,7 @@ function copyRiyadhResults() {
     driverLines ? `Top Price Drivers:\n${driverLines}` : '',
     '',
     `Generated by THAMAN · AI-Powered Property Valuation`,
-    `R² 0.6841 · MedAPE 22.24% · Riyadh Transactions`,
+    `R² 0.800 · MedAPE 15.56% · Riyadh Stack v11 · 7,258 Transactions`,
   ].filter(l => l !== null && l !== undefined).join('\n').replace(/\n{3,}/g, '\n\n');
 
   navigator.clipboard.writeText(text)
@@ -2757,7 +2930,7 @@ const TR = {
     lblYear:        'Valuation Year',
     lblMonth:       'Sale Month',
     lblPrior:       'Prior Sale Price ($)',
-    disclaimer:     'Predictions are based on NYC property sales 2022–2026. Model accuracy: median error ±20.23%.',
+    disclaimer:     'Predictions are based on NYC property sales 2022–2026. Model accuracy: median error ±20.32%.',
     resultTitle:    'Estimated Value',
     confMid:        'Predicted',
     shapTitle:      'Price Drivers',
@@ -2822,7 +2995,7 @@ const TR = {
     lblYear:        'سنة التقييم',
     lblMonth:       'شهر البيع',
     lblPrior:       'سعر البيع السابق ($)',
-    disclaimer:     'التوقعات مبنية على مبيعات العقارات في مدينة نيويورك 2022–2026. دقة النموذج: متوسط الخطأ ±20.16٪.',
+    disclaimer:     'التوقعات مبنية على مبيعات العقارات في مدينة نيويورك 2022–2026. دقة النموذج: متوسط الخطأ ±20.32٪.',
     resultTitle:    'القيمة التقديرية',
     confMid:        'التقدير',
     shapTitle:      'محركات السعر',
@@ -2963,6 +3136,21 @@ function setLang(lang) {
     opt.textContent = (boroughNames[lang] || boroughNames.en)[i] ?? opt.textContent;
   });
 
+  // Riyadh result cards (update titles if already visible)
+  const riyadhShapT = document.querySelector('#riyadhShapCard .card-title span:first-child');
+  const riyadhShapS = document.querySelector('#riyadhShapCard .card-subtitle');
+  const riyadhSpatT = document.querySelector('#riyadhSpatialCard .card-title');
+  if (riyadhShapT) riyadhShapT.textContent = isAr ? 'محركات السعر' : 'Price Drivers';
+  if (riyadhShapS) riyadhShapS.textContent = isAr ? 'العوامل الأكثر تأثيراً في هذا التقدير' : 'What factors most influenced this estimate';
+  if (riyadhSpatT) riyadhSpatT.textContent  = isAr ? 'جودة الموقع' : 'Location Quality';
+
+  // Riyadh confidence Range label if visible
+  const riyadhConfEl = document.getElementById('riyadhConfidence');
+  if (riyadhConfEl && riyadhConfEl.textContent && !riyadhConfEl.textContent.startsWith('—')) {
+    riyadhConfEl.textContent = riyadhConfEl.textContent
+      .replace(/^Range:/, isAr ? 'النطاق:' : 'Range:')
+      .replace(/^النطاق:/, isAr ? 'النطاق:' : 'Range:');
+  }
 
 }
 

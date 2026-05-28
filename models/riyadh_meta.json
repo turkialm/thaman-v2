@@ -39,15 +39,12 @@
     "is_villa",
     "is_residential_plot",
     "is_building",
-    "dist_metro_m",
-    "log_dist_metro_m",
     "metro_stations_1km",
     "nearest_metro_line_num",
     "nearest_metro_type_cd",
     "dist_metro_line1_m",
     "dist_bus_m",
     "log_dist_bus_m",
-    "bus_stops_500m",
     "brt_stops_500m",
     "dist_major_intersection_m",
     "log_dist_intersection_m",
@@ -73,13 +70,37 @@
     "rei_apt_idx",
     "rei_yoy_change",
     "rei_qoq_change",
+    "rei_type_idx",
+    "dist_kafd_m",
+    "log_dist_kafd_m",
+    "dist_old_city_m",
+    "log_dist_old_city_m",
+    "dist_industrial_m",
+    "log_dist_industrial_m",
+    "dist_airport_m",
+    "log_dist_airport_m",
+    "dist_metro_m",
+    "log_dist_metro_m",
+    "metro_500m",
+    "metro_1km",
+    "nearest_metro_line",
+    "bus_stops_500m",
     "avg_saudi_salary_yr",
     "salary_yoy_change",
+    "district_median_price_sqm",
     "district_transaction_volume",
-    "log_deed_count",
+    "district_price_vs_city_avg",
+    "district_price_trend_slope",
+    "district_median_price_apt_sqm",
+    "district_encoded",
+    "district_type_encoded",
+    "district_apt_encoded",
+    "district_recent_encoded",
+    "district_apt_recent_encoded",
     "sale_year",
     "sale_quarter_sin",
     "sale_quarter_cos",
+    "log_deed_count",
     "dist_mosque_m",
     "log_dist_mosque_m",
     "mosque_count_500m",
@@ -99,29 +120,76 @@
     "log_dist_entertain_m",
     "entertain_count_500m",
     "riyadh_connectivity_score",
-    "district_lookback_mean",
-    "district_lookback_apt_mean",
-    "city_quarter_mean",
-    "bayut_asking_psqm",
-    "district_enc_oof",
-    "district_apt_enc_oof"
+    "aqar_median_size_sqm",
+    "aqar_median_bedrooms",
+    "aqar_median_property_age",
+    "aqar_rent_per_sqm",
+    "bayut_listing_count",
+    "bayut_median_psqm",
+    "bayut_p25_psqm",
+    "bayut_p75_psqm",
+    "bayut_iqr_psqm",
+    "bayut_asking_premium",
+    "bayut_apt_median_psqm",
+    "bayut_plot_median_psqm",
+    "bayut_apt_median_area_sqm",
+    "bayut_plot_median_area_sqm",
+    "bayut_apt_median_rooms",
+    "bayut_plot_median_rooms",
+    "dist_pharmacy_m",
+    "log_dist_pharmacy_m",
+    "pharmacy_count_500m",
+    "dist_gym_m",
+    "log_dist_gym_m",
+    "gym_count_500m",
+    "dist_coffee_m",
+    "log_dist_coffee_m",
+    "coffee_count_500m",
+    "dist_clinic_m",
+    "log_dist_clinic_m",
+    "clinic_count_500m",
+    "dist_university_m",
+    "log_dist_university_m",
+    "university_count_500m",
+    "dist_supermarket_m",
+    "log_dist_supermarket_m",
+    "supermarket_count_500m",
+    "dist_cinema_m",
+    "log_dist_cinema_m",
+    "cinema_count_500m",
+    "dist_sports_m",
+    "log_dist_sports_m",
+    "sports_count_500m",
+    "haraj_listing_count",
+    "haraj_median_psqm",
+    "haraj_p25_psqm",
+    "haraj_p75_psqm",
+    "haraj_iqr_psqm",
+    "haraj_asking_premium",
+    "district_lag1q_median_psqm",
+    "district_lag2q_median_psqm",
+    "district_lag_momentum",
+    "district_type_lag1q_psqm",
+    "district_type_lag2q_psqm",
+    "district_lag1q_std_psqm",
+    "log_suhail_n_trans"
   ],
-  "n_features": 72,
-  "holdout_r2": 0.6841,
-  "holdout_medape_pct": 22.24,
-  "holdout_mae_sar_sqm": 1207.75,
-  "oof_r2": 0.7453,
-  "oof_medape_pct": 19.75,
-  "model_version": "riyadh_v2",
+  "n_features": 140,
+  "holdout_r2": 0.8003,
+  "holdout_medape_pct": 15.56,
+  "holdout_mae_sar_sqm": 980.29,
+  "oof_r2": 0.9343,
+  "oof_medape_pct": 8.28,
+  "model_version": "riyadh_v11",
   "n_folds": 5,
-  "train_rows": 4664,
-  "holdout_rows": 2246,
+  "train_rows": 5531,
+  "holdout_rows": 1727,
   "meta_coefficients": [
-    2.7399130089834887,
-    -0.4474983967841456,
-    -1.1297291125901259
+    0.32542753089171056,
+    0.12673018066415898,
+    0.5536173137729992
   ],
-  "meta_intercept": -1.1932465062291273,
+  "meta_intercept": -0.04191870493152727,
   "target": "log1p(sale_price_sar_sqm)",
   "y_unit": "SAR/sqm",
   "v2_improvements": [
@@ -140,5 +208,3968 @@
     "SA_Aqar rental structure features (size, age, rent/sqm)",
     "Bayut per-type structural features (villa/apt/plot area + psqm)",
     "Haraj property age proxy (villa, apt)"
-  ]
+  ],
+  "district_medape": {
+    "\u0623\u062e\u0631\u0649": 42.09,
+    "\u0623\u0645 \u0627\u0644\u062d\u0645\u0627\u0645 \u0627\u0644\u063a\u0631\u0628\u064a": 30.12,
+    "\u0625\u0634\u0628\u064a\u0644\u064a\u0629": 33.34,
+    "\u0627\u0644\u0625\u0632\u062f\u0647\u0627\u0631": 23.02,
+    "\u0627\u0644\u0628\u064a\u0627\u0646": 8.45,
+    "\u0627\u0644\u062c\u0646\u0627\u062f\u0631\u064a\u0629": 12.78,
+    "\u0627\u0644\u062d\u0632\u0645": 17.81,
+    "\u0627\u0644\u062d\u0645\u0631\u0627\u0621": 25.8,
+    "\u0627\u0644\u062e\u0644\u064a\u062c": 14.93,
+    "\u0627\u0644\u062e\u064a\u0631": 42.84,
+    "\u0627\u0644\u062f\u0627\u0631 \u0627\u0644\u0628\u064a\u0636\u0627\u0621": 25.03,
+    "\u0627\u0644\u0631\u0627\u064a\u0629": 17.7,
+    "\u0627\u0644\u0631\u0628\u0648\u0629": 12.32,
+    "\u0627\u0644\u0631\u0645\u0627\u0644": 7.07,
+    "\u0627\u0644\u0631\u0648\u0636\u0629": 15.31,
+    "\u0627\u0644\u0631\u064a\u0627\u0646": 8.2,
+    "\u0627\u0644\u0632\u0627\u0647\u0631": 20.38,
+    "\u0627\u0644\u0632\u0647\u0631\u0629": 10.61,
+    "\u0627\u0644\u0633\u0639\u0627\u062f\u0629": 13.3,
+    "\u0627\u0644\u0633\u0644\u064a": 13.09,
+    "\u0627\u0644\u0633\u0644\u064a\u0645\u0627\u0646\u064a\u0629": 14.12,
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a": 25.57,
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a \u0627\u0644\u063a\u0631\u0628\u064a": 26.53,
+    "\u0627\u0644\u0634\u0639\u0644\u0629": 20.91,
+    "\u0627\u0644\u0634\u0641\u0627\u0621": 16.87,
+    "\u0627\u0644\u0635\u062d\u0627\u0641\u0629": 6.3,
+    "\u0627\u0644\u0635\u0641\u0627\u0621": 35.66,
+    "\u0627\u0644\u0639\u0627\u0631\u0636": 12.19,
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u0623\u0648\u0633\u0637": 24.66,
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u063a\u0631\u0628\u064a": 24.08,
+    "\u0627\u0644\u0639\u0632\u064a\u0632\u064a\u0629": 18.88,
+    "\u0627\u0644\u0639\u0642\u064a\u0642": 23.77,
+    "\u0627\u0644\u0639\u0644\u0627": 22.35,
+    "\u0627\u0644\u0639\u0644\u064a\u0627": 10.97,
+    "\u0627\u0644\u0639\u0648\u0627\u0644\u064a": 5.15,
+    "\u0627\u0644\u0639\u0648\u062f": 8.73,
+    "\u0627\u0644\u063a\u0646\u0627\u0645\u064a\u0629": 33.7,
+    "\u0627\u0644\u0641\u0627\u0631\u0648\u0642": 22.51,
+    "\u0627\u0644\u0641\u064a\u062d\u0627\u0621": 17.96,
+    "\u0627\u0644\u0642\u0627\u062f\u0633\u064a\u0629": 10.78,
+    "\u0627\u0644\u0642\u062f\u0633": 20.2,
+    "\u0627\u0644\u0642\u064a\u0631\u0648\u0627\u0646": 25.4,
+    "\u0627\u0644\u0645\u0631\u062c\u0627\u0646": 16.8,
+    "\u0627\u0644\u0645\u0634\u0631\u0642": 21.46,
+    "\u0627\u0644\u0645\u0635\u0641\u0627\u0629": 48.11,
+    "\u0627\u0644\u0645\u0635\u064a\u0641": 12.58,
+    "\u0627\u0644\u0645\u0639\u064a\u0632\u064a\u0644\u0629": 29.15,
+    "\u0627\u0644\u0645\u0644\u0632": 31.68,
+    "\u0627\u0644\u0645\u0644\u0642\u0627": 8.19,
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u0647\u062f": 34.12,
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u064a\u0635\u0644": 27.92,
+    "\u0627\u0644\u0645\u0646\u0635\u0648\u0631\u0629": 21.73,
+    "\u0627\u0644\u0645\u0647\u062f\u064a\u0629": 17.81,
+    "\u0627\u0644\u0645\u0648\u0646\u0633\u064a\u0629": 19.19,
+    "\u0627\u0644\u0646\u062e\u0628\u0629": 10.42,
+    "\u0627\u0644\u0646\u062f\u0648\u0629": 16.01,
+    "\u0627\u0644\u0646\u062f\u0649": 11.87,
+    "\u0627\u0644\u0646\u0631\u062c\u0633": 18.66,
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u063a\u0631\u0628\u064a": 18.69,
+    "\u0627\u0644\u0646\u0638\u064a\u0645": 29.54,
+    "\u0627\u0644\u0646\u0641\u0644": 24.19,
+    "\u0627\u0644\u0646\u0647\u0636\u0629": 20.18,
+    "\u0627\u0644\u0648\u0627\u062f\u064a": 11.95,
+    "\u0627\u0644\u0648\u0633\u0627\u0645": 8.97,
+    "\u0627\u0644\u064a\u0627\u0633\u0645\u064a\u0646": 10.88,
+    "\u0627\u0644\u064a\u0631\u0645\u0648\u0643": 16.9,
+    "\u0627\u0644\u064a\u0645\u0627\u0645\u0629": 20.56,
+    "\u0628\u062f\u0631": 19.32,
+    "\u062d\u0637\u064a\u0646": 17.53,
+    "\u062f\u064a\u0631\u0627\u0628": 23.97,
+    "\u0633\u062f\u0631\u0629": 27.17,
+    "\u0634\u0628\u0631\u0627": 27.65,
+    "\u0636\u0627\u062d\u064a\u0629 \u0646\u0645\u0627\u0631": 15.63,
+    "\u0637\u0648\u064a\u0642": 9.73,
+    "\u0637\u064a\u0628\u0629": 27.47,
+    "\u0638\u0647\u0631\u0629 \u0627\u0644\u0628\u062f\u064a\u0639\u0629": 13.69,
+    "\u0638\u0647\u0631\u0629 \u0644\u0628\u0646": 24.01,
+    "\u0639\u0631\u0642\u0629": 11.82,
+    "\u0639\u0631\u064a\u0636": 26.01,
+    "\u0639\u0643\u0627\u0638": 14.67,
+    "\u063a\u0628\u064a\u0631\u0627": 38.55,
+    "\u0642\u0631\u0637\u0628\u0629": 12.88,
+    "\u0644\u0628\u0646": 19.92,
+    "\u0645\u0637\u0627\u0631 \u0627\u0644\u0645\u0644\u0643 \u062e\u0627\u0644\u062f \u0627\u0644\u062f\u0648\u0644\u064a": 7.63,
+    "\u0645\u0646\u0641\u0648\u062d\u0629": 21.53,
+    "\u0645\u0646\u0641\u0648\u062d\u0629 \u0627\u0644\u062c\u062f\u064a\u062f\u0629": 31.19,
+    "\u0648\u0627\u062f\u064a \u0644\u0628\u0646": 46.94
+  },
+  "haraj_district_lookup": {
+    "\u0627\u0645 \u0627\u0644\u062d\u0645\u0627\u0645 \u0627\u0644\u063a\u0631\u0628\u064a": {
+      "haraj_listing_count": 2,
+      "haraj_median_psqm": 18667.85,
+      "haraj_p25_psqm": 11111.11,
+      "haraj_p75_psqm": 26224.59,
+      "haraj_iqr_psqm": 15113.48
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u062c": {
+      "haraj_listing_count": 3,
+      "haraj_median_psqm": 9500.0,
+      "haraj_p25_psqm": 9500.0,
+      "haraj_p75_psqm": 10100.0,
+      "haraj_iqr_psqm": 600.0
+    },
+    "\u0633\u0643\u064a\u0631\u064a\u0646\u0629": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 2760.74,
+      "haraj_p25_psqm": 2760.74,
+      "haraj_p75_psqm": 2760.74,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0645\u0647\u062f\u064a\u0629.": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 11250.0,
+      "haraj_p25_psqm": 11250.0,
+      "haraj_p75_psqm": 11250.0,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u063a\u0631\u0628\u064a": {
+      "haraj_listing_count": 15,
+      "haraj_median_psqm": 3520.0,
+      "haraj_p25_psqm": 2666.67,
+      "haraj_p75_psqm": 4800.0,
+      "haraj_iqr_psqm": 2133.33
+    },
+    "\u0627\u0644\u0645\u0635\u064a\u0641": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 11560.0,
+      "haraj_p25_psqm": 11520.0,
+      "haraj_p75_psqm": 11600.0,
+      "haraj_iqr_psqm": 80.0
+    },
+    "\u0627\u0644\u0631\u0628\u0648\u0629": {
+      "haraj_listing_count": 8,
+      "haraj_median_psqm": 7867.9,
+      "haraj_p25_psqm": 7534.25,
+      "haraj_p75_psqm": 8974.36,
+      "haraj_iqr_psqm": 1440.11
+    },
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a": {
+      "haraj_listing_count": 10,
+      "haraj_median_psqm": 4385.92,
+      "haraj_p25_psqm": 3000.0,
+      "haraj_p75_psqm": 4798.39,
+      "haraj_iqr_psqm": 1798.39
+    },
+    "\u0627\u0644\u0628\u064a\u0627\u0646": {
+      "haraj_listing_count": 37,
+      "haraj_median_psqm": 5927.18,
+      "haraj_p25_psqm": 4761.9,
+      "haraj_p75_psqm": 6903.77,
+      "haraj_iqr_psqm": 2141.87
+    },
+    "\u0627\u0644\u0645\u0639\u064a\u0632\u064a\u0644\u0629": {
+      "haraj_listing_count": 2,
+      "haraj_median_psqm": 4150.0,
+      "haraj_p25_psqm": 4000.0,
+      "haraj_p75_psqm": 4300.0,
+      "haraj_iqr_psqm": 300.0
+    },
+    "\u0627\u0644\u0645\u0646\u0635\u0648\u0631\u0629 (\u062e\u0646\u0634\u0644\u064a\u0644\u0629)": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 8952.38,
+      "haraj_p25_psqm": 8952.38,
+      "haraj_p75_psqm": 8952.38,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0646\u0631\u062c\u0633": {
+      "haraj_listing_count": 55,
+      "haraj_median_psqm": 11111.11,
+      "haraj_p25_psqm": 8809.52,
+      "haraj_p75_psqm": 13750.0,
+      "haraj_iqr_psqm": 4940.48
+    },
+    "\u0627\u0644\u062c\u0632\u064a\u0631\u0629": {
+      "haraj_listing_count": 8,
+      "haraj_median_psqm": 6222.45,
+      "haraj_p25_psqm": 4132.23,
+      "haraj_p75_psqm": 7842.4,
+      "haraj_iqr_psqm": 3710.17
+    },
+    "\u0627\u0644\u062d\u0632\u0645": {
+      "haraj_listing_count": 29,
+      "haraj_median_psqm": 4266.67,
+      "haraj_p25_psqm": 3715.31,
+      "haraj_p75_psqm": 5347.59,
+      "haraj_iqr_psqm": 1632.28
+    },
+    "\u0627\u0644\u064a\u0631\u0645\u0648\u0643": {
+      "haraj_listing_count": 33,
+      "haraj_median_psqm": 6000.0,
+      "haraj_p25_psqm": 4858.88,
+      "haraj_p75_psqm": 7790.18,
+      "haraj_iqr_psqm": 2931.3
+    },
+    "\u0627\u0644\u0633\u0644\u0627\u0645": {
+      "haraj_listing_count": 3,
+      "haraj_median_psqm": 7200.0,
+      "haraj_p25_psqm": 7200.0,
+      "haraj_p75_psqm": 9913.26,
+      "haraj_iqr_psqm": 2713.26
+    },
+    "\u0627\u0644\u062e\u0632\u0627\u0645\u0649": {
+      "haraj_listing_count": 5,
+      "haraj_median_psqm": 16298.4,
+      "haraj_p25_psqm": 16058.39,
+      "haraj_p75_psqm": 18181.82,
+      "haraj_iqr_psqm": 2123.43
+    },
+    "\u0627\u0644\u0646\u062f\u0648\u0629": {
+      "haraj_listing_count": 20,
+      "haraj_median_psqm": 4286.6,
+      "haraj_p25_psqm": 3796.77,
+      "haraj_p75_psqm": 5958.98,
+      "haraj_iqr_psqm": 2162.21
+    },
+    "\u0627\u0644\u0639\u0627\u0631\u0636": {
+      "haraj_listing_count": 47,
+      "haraj_median_psqm": 9182.86,
+      "haraj_p25_psqm": 8176.67,
+      "haraj_p75_psqm": 11029.41,
+      "haraj_iqr_psqm": 2852.74
+    },
+    "\u0627\u0644\u0646\u0632\u0647\u0629": {
+      "haraj_listing_count": 6,
+      "haraj_median_psqm": 11714.28,
+      "haraj_p25_psqm": 8104.35,
+      "haraj_p75_psqm": 14685.04,
+      "haraj_iqr_psqm": 6580.69
+    },
+    "\u0627\u0644\u0647\u062f\u0627": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 20000.0,
+      "haraj_p25_psqm": 20000.0,
+      "haraj_p75_psqm": 20000.0,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0634\u0647\u062f\u0627\u0621": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 10285.71,
+      "haraj_p25_psqm": 10285.71,
+      "haraj_p75_psqm": 10285.71,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u062f\u0631\u064a\u0647\u0645\u064a\u0629": {
+      "haraj_listing_count": 3,
+      "haraj_median_psqm": 5118.11,
+      "haraj_p25_psqm": 5118.11,
+      "haraj_p75_psqm": 5373.83,
+      "haraj_iqr_psqm": 255.72
+    },
+    "\u0627\u0644\u0633\u062d\u0627\u0628": {
+      "haraj_listing_count": 10,
+      "haraj_median_psqm": 6666.67,
+      "haraj_p25_psqm": 2600.0,
+      "haraj_p75_psqm": 7333.33,
+      "haraj_iqr_psqm": 4733.33
+    },
+    "\u0627\u0644\u0632\u0647\u0631\u0629": {
+      "haraj_listing_count": 14,
+      "haraj_median_psqm": 4337.18,
+      "haraj_p25_psqm": 4127.44,
+      "haraj_p75_psqm": 4454.66,
+      "haraj_iqr_psqm": 327.22
+    },
+    "\u0639\u0643\u0627\u0638": {
+      "haraj_listing_count": 41,
+      "haraj_median_psqm": 3724.95,
+      "haraj_p25_psqm": 3117.41,
+      "haraj_p75_psqm": 4848.48,
+      "haraj_iqr_psqm": 1731.07
+    },
+    "\u0642\u0631\u0637\u0628\u0647": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 14784.95,
+      "haraj_p25_psqm": 14784.95,
+      "haraj_p75_psqm": 14784.95,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u062d\u0627\u0626\u0631": {
+      "haraj_listing_count": 12,
+      "haraj_median_psqm": 2092.85,
+      "haraj_p25_psqm": 1071.43,
+      "haraj_p75_psqm": 3300.21,
+      "haraj_iqr_psqm": 2228.78
+    },
+    "\u0627\u0644\u0628\u062d\u064a\u0631\u0627\u062a": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 5022.32,
+      "haraj_p25_psqm": 5022.32,
+      "haraj_p75_psqm": 5022.32,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0644\u0628\u0646": {
+      "haraj_listing_count": 5,
+      "haraj_median_psqm": 5555.56,
+      "haraj_p25_psqm": 4146.34,
+      "haraj_p75_psqm": 5987.43,
+      "haraj_iqr_psqm": 1841.09
+    },
+    "\u0627\u0644\u0635\u0641\u0627": {
+      "haraj_listing_count": 10,
+      "haraj_median_psqm": 10416.67,
+      "haraj_p25_psqm": 9666.67,
+      "haraj_p75_psqm": 17412.94,
+      "haraj_iqr_psqm": 7746.27
+    },
+    "\u0633\u0644\u0637\u0627\u0646\u0629": {
+      "haraj_listing_count": 2,
+      "haraj_median_psqm": 3070.64,
+      "haraj_p25_psqm": 2707.58,
+      "haraj_p75_psqm": 3433.7,
+      "haraj_iqr_psqm": 726.12
+    },
+    "\u0627\u0644\u0641\u0627\u0631\u0648\u0642": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 7689.41,
+      "haraj_p25_psqm": 7058.82,
+      "haraj_p75_psqm": 8320.0,
+      "haraj_iqr_psqm": 1261.18
+    },
+    "\u0627\u0644\u062c\u0628\u064a\u0644\u0629": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 4800.0,
+      "haraj_p25_psqm": 4800.0,
+      "haraj_p75_psqm": 4800.0,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u063a\u0631\u0628\u064a\u0629": {
+      "haraj_listing_count": 14,
+      "haraj_median_psqm": 4914.9,
+      "haraj_p25_psqm": 2750.0,
+      "haraj_p75_psqm": 6400.0,
+      "haraj_iqr_psqm": 3650.0
+    },
+    "\u0627\u0644\u0642\u064a\u0631\u0648\u0627\u0646": {
+      "haraj_listing_count": 12,
+      "haraj_median_psqm": 11328.14,
+      "haraj_p25_psqm": 8870.97,
+      "haraj_p75_psqm": 14814.81,
+      "haraj_iqr_psqm": 5943.84
+    },
+    "\u0627\u0644\u0631\u0628\u064a\u0639": {
+      "haraj_listing_count": 6,
+      "haraj_median_psqm": 11474.29,
+      "haraj_p25_psqm": 10000.0,
+      "haraj_p75_psqm": 12966.1,
+      "haraj_iqr_psqm": 2966.1
+    },
+    "\u0627\u0644\u0645\u0644\u0632": {
+      "haraj_listing_count": 15,
+      "haraj_median_psqm": 4444.44,
+      "haraj_p25_psqm": 4185.69,
+      "haraj_p75_psqm": 5765.45,
+      "haraj_iqr_psqm": 1579.76
+    },
+    "\u062f\u064a\u0631\u0627\u0628": {
+      "haraj_listing_count": 24,
+      "haraj_median_psqm": 3673.47,
+      "haraj_p25_psqm": 3261.25,
+      "haraj_p75_psqm": 5040.05,
+      "haraj_iqr_psqm": 1778.8
+    },
+    "\u0625\u0634\u0628\u064a\u0644\u064a\u0629": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 6343.7,
+      "haraj_p25_psqm": 6343.7,
+      "haraj_p75_psqm": 6343.7,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0627\u0646\u062f\u0644\u0633": {
+      "haraj_listing_count": 6,
+      "haraj_median_psqm": 6610.69,
+      "haraj_p25_psqm": 6000.0,
+      "haraj_p75_psqm": 10423.05,
+      "haraj_iqr_psqm": 4423.05
+    },
+    "\u0627\u0644\u062e\u0627\u0644\u062f\u064a\u0629": {
+      "haraj_listing_count": 5,
+      "haraj_median_psqm": 3500.0,
+      "haraj_p25_psqm": 2681.62,
+      "haraj_p75_psqm": 4966.89,
+      "haraj_iqr_psqm": 2285.27
+    },
+    "\u0627\u0644\u0627\u0632\u062f\u0647\u0627\u0631": {
+      "haraj_listing_count": 2,
+      "haraj_median_psqm": 1363.2,
+      "haraj_p25_psqm": 1037.5,
+      "haraj_p75_psqm": 1688.89,
+      "haraj_iqr_psqm": 651.39
+    },
+    "\u0627\u0644\u0639\u0632\u064a\u0632\u064a\u0629": {
+      "haraj_listing_count": 12,
+      "haraj_median_psqm": 4623.29,
+      "haraj_p25_psqm": 3876.57,
+      "haraj_p75_psqm": 4833.33,
+      "haraj_iqr_psqm": 956.76
+    },
+    "\u0627\u0644\u0645\u0644\u0642\u0627": {
+      "haraj_listing_count": 39,
+      "haraj_median_psqm": 11054.35,
+      "haraj_p25_psqm": 9629.63,
+      "haraj_p75_psqm": 17355.09,
+      "haraj_iqr_psqm": 7725.46
+    },
+    "\u0627\u0644\u0633\u0644\u064a\u0645\u0627\u0646\u064a\u0629": {
+      "haraj_listing_count": 3,
+      "haraj_median_psqm": 10400.0,
+      "haraj_p25_psqm": 10400.0,
+      "haraj_p75_psqm": 15000.0,
+      "haraj_iqr_psqm": 4600.0
+    },
+    "\u0627\u0644\u0631\u0648\u0627\u0628\u064a": {
+      "haraj_listing_count": 10,
+      "haraj_median_psqm": 6301.26,
+      "haraj_p25_psqm": 5162.62,
+      "haraj_p75_psqm": 7760.0,
+      "haraj_iqr_psqm": 2597.38
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u064a\u0635\u0644": {
+      "haraj_listing_count": 6,
+      "haraj_median_psqm": 7949.73,
+      "haraj_p25_psqm": 5781.35,
+      "haraj_p75_psqm": 11111.11,
+      "haraj_iqr_psqm": 5329.76
+    },
+    "\u0627\u0644\u0648\u0632\u0627\u0631\u0627\u062a": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 20000.0,
+      "haraj_p25_psqm": 20000.0,
+      "haraj_p75_psqm": 20000.0,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0641\u0631\u0633\u0627\u0646": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 12254.9,
+      "haraj_p25_psqm": 12254.9,
+      "haraj_p75_psqm": 12254.9,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0636\u0627\u062d\u064a\u0629 \u0646\u0645\u0627\u0631": {
+      "haraj_listing_count": 49,
+      "haraj_median_psqm": 2853.63,
+      "haraj_p25_psqm": 2218.59,
+      "haraj_p75_psqm": 4224.56,
+      "haraj_iqr_psqm": 2005.97
+    },
+    "\u0627\u0644\u0645\u0648\u0646\u0633\u064a\u0629 \u0627\u0644\u0645\u0648\u0638\u0641 \u0627\u0644\u0645\u0633\u0624\u0648\u0644 \u0639\u0646 \u0627\u0644\u0625\u0639\u0644\u0627\u0646: \u0645\u0627\u062c\u062f": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 8166.67,
+      "haraj_p25_psqm": 8166.67,
+      "haraj_p75_psqm": 8166.67,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u0647\u062f": {
+      "haraj_listing_count": 6,
+      "haraj_median_psqm": 8316.67,
+      "haraj_p25_psqm": 7291.67,
+      "haraj_p75_psqm": 11578.95,
+      "haraj_iqr_psqm": 4287.28
+    },
+    "\u0627\u0644\u0648\u0633\u0627\u0645": {
+      "haraj_listing_count": 10,
+      "haraj_median_psqm": 2500.0,
+      "haraj_p25_psqm": 2500.0,
+      "haraj_p75_psqm": 5600.0,
+      "haraj_iqr_psqm": 3100.0
+    },
+    "\u0627\u0644\u062d\u0645\u0631\u0627\u0621": {
+      "haraj_listing_count": 6,
+      "haraj_median_psqm": 6855.52,
+      "haraj_p25_psqm": 5389.98,
+      "haraj_p75_psqm": 9149.34,
+      "haraj_iqr_psqm": 3759.36
+    },
+    "\u0627\u0644\u0642\u0627\u062f\u0633\u064a\u0629": {
+      "haraj_listing_count": 28,
+      "haraj_median_psqm": 6598.09,
+      "haraj_p25_psqm": 5316.65,
+      "haraj_p75_psqm": 7255.0,
+      "haraj_iqr_psqm": 1938.35
+    },
+    "\u0627\u0644\u062a\u0639\u0627\u0648\u0646": {
+      "haraj_listing_count": 8,
+      "haraj_median_psqm": 9196.86,
+      "haraj_p25_psqm": 8700.0,
+      "haraj_p75_psqm": 10013.03,
+      "haraj_iqr_psqm": 1313.03
+    },
+    "\u0627\u0644\u0645\u0647\u062f\u064a\u0629": {
+      "haraj_listing_count": 53,
+      "haraj_median_psqm": 7028.28,
+      "haraj_p25_psqm": 5606.28,
+      "haraj_p75_psqm": 8888.89,
+      "haraj_iqr_psqm": 3282.61
+    },
+    "\u0627\u0644\u0639\u0642\u064a\u0642": {
+      "haraj_listing_count": 10,
+      "haraj_median_psqm": 14960.88,
+      "haraj_p25_psqm": 1784.62,
+      "haraj_p75_psqm": 17781.35,
+      "haraj_iqr_psqm": 15996.73
+    },
+    "\u0635\u0644\u0627\u062d \u0627\u0644\u062f\u064a\u0646": {
+      "haraj_listing_count": 2,
+      "haraj_median_psqm": 4687.5,
+      "haraj_p25_psqm": 1875.0,
+      "haraj_p75_psqm": 7500.0,
+      "haraj_iqr_psqm": 5625.0
+    },
+    "\u0645\u0631\u0627\u0643\u0632 \u0635\u062d\u064a\u0629 \u0639\u0644\u0649 \u0642\u0631\u064a\u0628\u0629": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 6000.0,
+      "haraj_p25_psqm": 6000.0,
+      "haraj_p75_psqm": 6000.0,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0641\u0644\u0627\u062d": {
+      "haraj_listing_count": 3,
+      "haraj_median_psqm": 16386.89,
+      "haraj_p25_psqm": 16386.89,
+      "haraj_p75_psqm": 27777.78,
+      "haraj_iqr_psqm": 11390.89
+    },
+    "\u0627\u0644\u0646\u0638\u064a\u0645": {
+      "haraj_listing_count": 51,
+      "haraj_median_psqm": 5000.0,
+      "haraj_p25_psqm": 3120.0,
+      "haraj_p75_psqm": 5666.67,
+      "haraj_iqr_psqm": 2546.67
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u0629": {
+      "haraj_listing_count": 12,
+      "haraj_median_psqm": 3385.02,
+      "haraj_p25_psqm": 2569.83,
+      "haraj_p75_psqm": 4007.57,
+      "haraj_iqr_psqm": 1437.74
+    },
+    "\u0627\u0644\u0645\u0634\u0631\u0642": {
+      "haraj_listing_count": 8,
+      "haraj_median_psqm": 1472.5,
+      "haraj_p25_psqm": 1382.5,
+      "haraj_p75_psqm": 1507.27,
+      "haraj_iqr_psqm": 124.77
+    },
+    "\u062d\u064a \u0627\u0644\u0633\u062d\u0627\u0628 (\u0634\u0631\u0642)": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 8000.0,
+      "haraj_p25_psqm": 8000.0,
+      "haraj_p75_psqm": 8000.0,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u062f\u0627\u0631 \u0627\u0644\u0628\u064a\u0636\u0627\u0621": {
+      "haraj_listing_count": 30,
+      "haraj_median_psqm": 3549.78,
+      "haraj_p25_psqm": 2463.77,
+      "haraj_p75_psqm": 4000.0,
+      "haraj_iqr_psqm": 1536.23
+    },
+    "\u0627\u0644\u0641\u064a\u0635\u0644\u064a\u0629": {
+      "haraj_listing_count": 3,
+      "haraj_median_psqm": 4096.56,
+      "haraj_p25_psqm": 4096.56,
+      "haraj_p75_psqm": 10000.0,
+      "haraj_iqr_psqm": 5903.44
+    },
+    "\u0627\u0644\u0648\u0627\u062f\u064a": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 9523.81,
+      "haraj_p25_psqm": 9523.81,
+      "haraj_p75_psqm": 9523.81,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0631\u0645\u0627\u0644 - \u0627\u0644\u062a\u0639\u0645\u064a\u0631": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 5489.53,
+      "haraj_p25_psqm": 5489.53,
+      "haraj_p75_psqm": 5489.53,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0635\u062d\u0627\u0641\u0629": {
+      "haraj_listing_count": 19,
+      "haraj_median_psqm": 10000.0,
+      "haraj_p25_psqm": 8800.0,
+      "haraj_p75_psqm": 12899.21,
+      "haraj_iqr_psqm": 4099.21
+    },
+    "\u0627\u062d\u062f": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 3978.17,
+      "haraj_p25_psqm": 3978.17,
+      "haraj_p75_psqm": 3978.17,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0646\u062e\u0628\u0629": {
+      "haraj_listing_count": 5,
+      "haraj_median_psqm": 803.76,
+      "haraj_p25_psqm": 653.27,
+      "haraj_p75_psqm": 2600.0,
+      "haraj_iqr_psqm": 1946.73
+    },
+    "\u0627\u0644\u064a\u0627\u0633\u0645\u064a\u0646": {
+      "haraj_listing_count": 26,
+      "haraj_median_psqm": 11222.22,
+      "haraj_p25_psqm": 8333.33,
+      "haraj_p75_psqm": 12000.0,
+      "haraj_iqr_psqm": 3666.67
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0639\u0628\u062f\u0627\u0644\u0644\u0647": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 873.02,
+      "haraj_p25_psqm": 873.02,
+      "haraj_p75_psqm": 873.02,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u062c\u0646\u0627\u062f\u0631\u064a\u0629": {
+      "haraj_listing_count": 49,
+      "haraj_median_psqm": 5000.0,
+      "haraj_p25_psqm": 4256.64,
+      "haraj_p75_psqm": 6750.73,
+      "haraj_iqr_psqm": 2494.09
+    },
+    "\u0627\u0644\u0631\u064a\u0627\u0646": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 9860.32,
+      "haraj_p25_psqm": 8974.36,
+      "haraj_p75_psqm": 10746.27,
+      "haraj_iqr_psqm": 1771.91
+    },
+    "\u0627\u0644\u0645\u0648\u0646\u0633\u064a\u0629": {
+      "haraj_listing_count": 25,
+      "haraj_median_psqm": 7392.47,
+      "haraj_p25_psqm": 5916.03,
+      "haraj_p75_psqm": 8969.7,
+      "haraj_iqr_psqm": 3053.67
+    },
+    "\u0627\u0644\u0631\u0633\u0627\u0644\u0629": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 500.0,
+      "haraj_p25_psqm": 500.0,
+      "haraj_p75_psqm": 500.0,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0631\u0645\u0627\u0644": {
+      "haraj_listing_count": 64,
+      "haraj_median_psqm": 6344.63,
+      "haraj_p25_psqm": 5111.11,
+      "haraj_p75_psqm": 7478.26,
+      "haraj_iqr_psqm": 2367.15
+    },
+    "\u0646\u0645\u0627\u0631": {
+      "haraj_listing_count": 6,
+      "haraj_median_psqm": 3772.91,
+      "haraj_p25_psqm": 3168.95,
+      "haraj_p75_psqm": 5175.57,
+      "haraj_iqr_psqm": 2006.62
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u0634\u0631\u0642\u064a": {
+      "haraj_listing_count": 12,
+      "haraj_median_psqm": 4088.35,
+      "haraj_p25_psqm": 3409.1,
+      "haraj_p75_psqm": 4444.44,
+      "haraj_iqr_psqm": 1035.34
+    },
+    "\u0634\u0628\u0631\u0627": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 3750.0,
+      "haraj_p25_psqm": 3500.0,
+      "haraj_p75_psqm": 4000.0,
+      "haraj_iqr_psqm": 500.0
+    },
+    "\u0627\u0644\u0639\u0644\u064a\u0627": {
+      "haraj_listing_count": 12,
+      "haraj_median_psqm": 12359.16,
+      "haraj_p25_psqm": 9615.38,
+      "haraj_p75_psqm": 18348.62,
+      "haraj_iqr_psqm": 8733.24
+    },
+    "\u0627\u0644\u0633\u0644\u064a": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 2600.08,
+      "haraj_p25_psqm": 2500.16,
+      "haraj_p75_psqm": 2700.0,
+      "haraj_iqr_psqm": 199.84
+    },
+    "\u0627\u0644\u0631\u0627\u064a\u0629": {
+      "haraj_listing_count": 7,
+      "haraj_median_psqm": 964.61,
+      "haraj_p25_psqm": 766.67,
+      "haraj_p75_psqm": 1000.0,
+      "haraj_iqr_psqm": 233.33
+    },
+    "\u0627\u0644\u0632\u0627\u0647\u0631": {
+      "haraj_listing_count": 15,
+      "haraj_median_psqm": 708.33,
+      "haraj_p25_psqm": 586.67,
+      "haraj_p75_psqm": 851.19,
+      "haraj_iqr_psqm": 264.52
+    },
+    "\u0645\u0646\u0641\u0648\u062d\u0629": {
+      "haraj_listing_count": 2,
+      "haraj_median_psqm": 4500.0,
+      "haraj_p25_psqm": 3500.0,
+      "haraj_p75_psqm": 5500.0,
+      "haraj_iqr_psqm": 2000.0
+    },
+    "\u0627\u0644\u0646\u062f\u0649": {
+      "haraj_listing_count": 5,
+      "haraj_median_psqm": 9196.0,
+      "haraj_p25_psqm": 8800.0,
+      "haraj_p75_psqm": 10666.67,
+      "haraj_iqr_psqm": 1866.67
+    },
+    "\u0627\u0644\u0636\u0628\u0627\u0637": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 8975.2,
+      "haraj_p25_psqm": 7000.0,
+      "haraj_p75_psqm": 10950.41,
+      "haraj_iqr_psqm": 3950.41
+    },
+    "\u0633\u0645\u0627 \u0627\u0644\u0631\u0648\u0633\u0627\u0646.": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 6666.67,
+      "haraj_p25_psqm": 6666.67,
+      "haraj_p75_psqm": 6666.67,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u063a\u0631\u0646\u0627\u0637\u0629": {
+      "haraj_listing_count": 5,
+      "haraj_median_psqm": 8311.05,
+      "haraj_p25_psqm": 8088.24,
+      "haraj_p75_psqm": 8414.63,
+      "haraj_iqr_psqm": 326.39
+    },
+    "\u0627\u0644\u0642\u062f\u0633": {
+      "haraj_listing_count": 7,
+      "haraj_median_psqm": 8957.78,
+      "haraj_p25_psqm": 8904.11,
+      "haraj_p75_psqm": 11449.41,
+      "haraj_iqr_psqm": 2545.3
+    },
+    "\u0627\u0644\u0628\u062f\u064a\u0639\u0629": {
+      "haraj_listing_count": 2,
+      "haraj_median_psqm": 3272.22,
+      "haraj_p25_psqm": 3100.0,
+      "haraj_p75_psqm": 3444.44,
+      "haraj_iqr_psqm": 344.44
+    },
+    "\u0627\u0644\u0631\u062d\u0645\u0627\u0646\u064a\u0629": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 16000.0,
+      "haraj_p25_psqm": 16000.0,
+      "haraj_p75_psqm": 16000.0,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0633\u0641\u0627\u0631\u0627\u062a": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 4443.51,
+      "haraj_p25_psqm": 4443.51,
+      "haraj_p75_psqm": 4443.51,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0645\u0631\u062c\u0627\u0646": {
+      "haraj_listing_count": 47,
+      "haraj_median_psqm": 4623.07,
+      "haraj_p25_psqm": 3155.2,
+      "haraj_p75_psqm": 5925.93,
+      "haraj_iqr_psqm": 2770.73
+    },
+    "\u0637\u064a\u0628\u0629": {
+      "haraj_listing_count": 13,
+      "haraj_median_psqm": 3773.58,
+      "haraj_p25_psqm": 2965.51,
+      "haraj_p75_psqm": 4364.81,
+      "haraj_iqr_psqm": 1399.3
+    },
+    "\u0627\u0644\u0639\u0644\u0627": {
+      "haraj_listing_count": 15,
+      "haraj_median_psqm": 622.67,
+      "haraj_p25_psqm": 556.0,
+      "haraj_p75_psqm": 854.38,
+      "haraj_iqr_psqm": 298.38
+    },
+    "\u0627\u0644\u0645\u0646\u0635\u0648\u0631\u0629": {
+      "haraj_listing_count": 2,
+      "haraj_median_psqm": 4106.88,
+      "haraj_p25_psqm": 3749.47,
+      "haraj_p75_psqm": 4464.29,
+      "haraj_iqr_psqm": 714.82
+    },
+    "\u0627\u0644\u0634\u0639\u0644\u0629": {
+      "haraj_listing_count": 7,
+      "haraj_median_psqm": 617.94,
+      "haraj_p25_psqm": 500.53,
+      "haraj_p75_psqm": 706.0,
+      "haraj_iqr_psqm": 205.47
+    },
+    "\u0638\u0647\u0631\u0629 \u0644\u0628\u0646": {
+      "haraj_listing_count": 45,
+      "haraj_median_psqm": 5888.89,
+      "haraj_p25_psqm": 4494.38,
+      "haraj_p75_psqm": 7333.33,
+      "haraj_iqr_psqm": 2838.95
+    },
+    "\u0627\u0644\u0639\u0648\u0627\u0644\u064a": {
+      "haraj_listing_count": 27,
+      "haraj_median_psqm": 4390.46,
+      "haraj_p25_psqm": 4100.0,
+      "haraj_p75_psqm": 6164.79,
+      "haraj_iqr_psqm": 2064.79
+    },
+    "\u0627\u0644\u0634\u0641\u0627": {
+      "haraj_listing_count": 14,
+      "haraj_median_psqm": 2722.23,
+      "haraj_p25_psqm": 2266.67,
+      "haraj_p75_psqm": 3811.66,
+      "haraj_iqr_psqm": 1544.99
+    },
+    "\u062d\u064a \u0627\u0644\u062e\u0644\u064a\u062c": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 13333.33,
+      "haraj_p25_psqm": 13333.33,
+      "haraj_p75_psqm": 13333.33,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0639\u0628\u062f\u0627\u0644\u0639\u0632\u064a\u0632": {
+      "haraj_listing_count": 3,
+      "haraj_median_psqm": 8960.0,
+      "haraj_p25_psqm": 8960.0,
+      "haraj_p75_psqm": 12501.74,
+      "haraj_iqr_psqm": 3541.74
+    },
+    "\u0627\u0644\u063a\u0646\u0627\u0645\u064a\u0629": {
+      "haraj_listing_count": 12,
+      "haraj_median_psqm": 2812.43,
+      "haraj_p25_psqm": 2072.74,
+      "haraj_p75_psqm": 4614.58,
+      "haraj_iqr_psqm": 2541.84
+    },
+    "\u062c\u0631\u064a\u0631": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 3621.06,
+      "haraj_p25_psqm": 3283.79,
+      "haraj_p75_psqm": 3958.33,
+      "haraj_iqr_psqm": 674.54
+    },
+    "\u0627\u0644\u0646\u0641\u0644": {
+      "haraj_listing_count": 2,
+      "haraj_median_psqm": 13109.92,
+      "haraj_p25_psqm": 8875.74,
+      "haraj_p75_psqm": 17344.09,
+      "haraj_iqr_psqm": 8468.35
+    },
+    "\u0627\u0644\u0645\u0635\u0641\u0627\u0629": {
+      "haraj_listing_count": 10,
+      "haraj_median_psqm": 2137.5,
+      "haraj_p25_psqm": 1875.26,
+      "haraj_p75_psqm": 2250.0,
+      "haraj_iqr_psqm": 374.74
+    },
+    "\u0627\u0644\u0645\u0634\u0627\u0639\u0644": {
+      "haraj_listing_count": 2,
+      "haraj_median_psqm": 3062.5,
+      "haraj_p25_psqm": 3000.0,
+      "haraj_p75_psqm": 3125.0,
+      "haraj_iqr_psqm": 125.0
+    },
+    "\u0627\u0634\u0628\u064a\u0644\u064a\u0629": {
+      "haraj_listing_count": 12,
+      "haraj_median_psqm": 6500.0,
+      "haraj_p25_psqm": 5435.9,
+      "haraj_p75_psqm": 7600.0,
+      "haraj_iqr_psqm": 2164.1
+    },
+    "\u0627\u0644\u0632\u0647\u0631\u0627\u0621": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 8263.72,
+      "haraj_p25_psqm": 8263.72,
+      "haraj_p75_psqm": 8263.72,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u062d\u0637\u064a\u0646": {
+      "haraj_listing_count": 13,
+      "haraj_median_psqm": 11428.57,
+      "haraj_p25_psqm": 8527.13,
+      "haraj_p75_psqm": 14383.56,
+      "haraj_iqr_psqm": 5856.43
+    },
+    "\u0627\u0644\u0646\u062e\u064a\u0644": {
+      "haraj_listing_count": 3,
+      "haraj_median_psqm": 26000.0,
+      "haraj_p25_psqm": 26000.0,
+      "haraj_p75_psqm": 28235.29,
+      "haraj_iqr_psqm": 2235.29
+    },
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a \u0627\u0644\u063a\u0631\u0628\u064a": {
+      "haraj_listing_count": 10,
+      "haraj_median_psqm": 4013.88,
+      "haraj_p25_psqm": 3300.0,
+      "haraj_p75_psqm": 5000.0,
+      "haraj_iqr_psqm": 1700.0
+    },
+    "\u0628\u062f\u0631": {
+      "haraj_listing_count": 61,
+      "haraj_median_psqm": 3500.0,
+      "haraj_p25_psqm": 2526.29,
+      "haraj_p75_psqm": 4265.43,
+      "haraj_iqr_psqm": 1739.14
+    },
+    "\u0627\u0644\u062e\u064a\u0631": {
+      "haraj_listing_count": 24,
+      "haraj_median_psqm": 3547.2,
+      "haraj_p25_psqm": 2221.33,
+      "haraj_p75_psqm": 4197.33,
+      "haraj_iqr_psqm": 1976.0
+    },
+    "\u0627\u0644\u062e\u0644\u064a\u062c": {
+      "haraj_listing_count": 22,
+      "haraj_median_psqm": 5503.26,
+      "haraj_p25_psqm": 4861.11,
+      "haraj_p75_psqm": 8051.53,
+      "haraj_iqr_psqm": 3190.42
+    },
+    "\u0627\u0644\u0645\u0639\u064a\u0632\u0644\u0629": {
+      "haraj_listing_count": 23,
+      "haraj_median_psqm": 6192.66,
+      "haraj_p25_psqm": 4817.5,
+      "haraj_p75_psqm": 7500.0,
+      "haraj_iqr_psqm": 2682.5
+    },
+    "\u0627\u0644\u0646\u0632\u0647\u0629 (\u0634\u0627\u0631\u0639 \u0645\u062d\u0645\u062f \u0627\u0644\u0645\u0634\u0627\u0631\u064a).": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 12571.43,
+      "haraj_p25_psqm": 12571.43,
+      "haraj_p75_psqm": 12571.43,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0633\u0639\u0627\u062f\u0629": {
+      "haraj_listing_count": 25,
+      "haraj_median_psqm": 6318.68,
+      "haraj_p25_psqm": 5040.0,
+      "haraj_p75_psqm": 8189.66,
+      "haraj_iqr_psqm": 3149.66
+    },
+    "\u0627\u0644\u0631\u0627\u0626\u062f": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 11073.83,
+      "haraj_p25_psqm": 11073.83,
+      "haraj_p75_psqm": 11073.83,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u0648\u0633\u0637\u0649": {
+      "haraj_listing_count": 10,
+      "haraj_median_psqm": 4823.21,
+      "haraj_p25_psqm": 3625.0,
+      "haraj_p75_psqm": 6250.0,
+      "haraj_iqr_psqm": 2625.0
+    },
+    "\u0642\u0631\u0637\u0628\u0629": {
+      "haraj_listing_count": 15,
+      "haraj_median_psqm": 7459.81,
+      "haraj_p25_psqm": 6800.0,
+      "haraj_p75_psqm": 8809.38,
+      "haraj_iqr_psqm": 2009.38
+    },
+    "\u0627\u0644\u064a\u0645\u0627\u0645\u0629": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 2000.0,
+      "haraj_p25_psqm": 2000.0,
+      "haraj_p75_psqm": 2000.0,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0631\u0641\u064a\u0639\u0629": {
+      "haraj_listing_count": 3,
+      "haraj_median_psqm": 12002.7,
+      "haraj_p25_psqm": 12002.7,
+      "haraj_p75_psqm": 23287.67,
+      "haraj_iqr_psqm": 11284.97
+    },
+    "\u0627\u0644\u0631\u0648\u0636\u0629": {
+      "haraj_listing_count": 9,
+      "haraj_median_psqm": 8412.98,
+      "haraj_p25_psqm": 5928.85,
+      "haraj_p75_psqm": 9086.01,
+      "haraj_iqr_psqm": 3157.16
+    },
+    "\u0638\u0647\u0631\u0629 \u0627\u0644\u0628\u062f\u064a\u0639\u0629": {
+      "haraj_listing_count": 9,
+      "haraj_median_psqm": 3348.21,
+      "haraj_p25_psqm": 3000.0,
+      "haraj_p75_psqm": 4329.69,
+      "haraj_iqr_psqm": 1329.69
+    },
+    "\u0627\u0644\u0641\u064a\u062d\u0627\u0621": {
+      "haraj_listing_count": 7,
+      "haraj_median_psqm": 6000.0,
+      "haraj_p25_psqm": 5500.0,
+      "haraj_p75_psqm": 8157.89,
+      "haraj_iqr_psqm": 2657.89
+    },
+    "\u0627\u0644\u0631\u0645\u0627\u0644- \u0627\u0644\u062a\u0639\u0645\u064a\u0631": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 6423.61,
+      "haraj_p25_psqm": 6423.61,
+      "haraj_p75_psqm": 6423.61,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0646\u0647\u0636\u0629": {
+      "haraj_listing_count": 31,
+      "haraj_median_psqm": 6102.71,
+      "haraj_p25_psqm": 5081.6,
+      "haraj_p75_psqm": 8206.59,
+      "haraj_iqr_psqm": 3124.99
+    },
+    "\u0627\u0644\u0645\u0631\u0633\u0644\u0627\u062a": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 8814.1,
+      "haraj_p25_psqm": 8814.1,
+      "haraj_p75_psqm": 8814.1,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0627\u0644\u0639\u0648\u062f": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 5700.0,
+      "haraj_p25_psqm": 3000.0,
+      "haraj_p75_psqm": 8400.0,
+      "haraj_iqr_psqm": 5400.0
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 (\u0641\u0626\u0629 \u062f) - \u0645\u062e\u0637\u0637 \u0631\u0642\u0645 1270.": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 9142.86,
+      "haraj_p25_psqm": 9142.86,
+      "haraj_p75_psqm": 9142.86,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0637\u0648\u064a\u0642": {
+      "haraj_listing_count": 33,
+      "haraj_median_psqm": 4367.32,
+      "haraj_p25_psqm": 3903.9,
+      "haraj_p75_psqm": 5000.0,
+      "haraj_iqr_psqm": 1096.1
+    },
+    "\u0637\u0648\u064a\u0642 (\u0645\u062e\u0637\u0637 2509).": {
+      "haraj_listing_count": 1,
+      "haraj_median_psqm": 6241.28,
+      "haraj_p25_psqm": 6241.28,
+      "haraj_p75_psqm": 6241.28,
+      "haraj_iqr_psqm": 0.0
+    },
+    "\u0639\u0631\u064a\u0636": {
+      "haraj_listing_count": 34,
+      "haraj_median_psqm": 2200.0,
+      "haraj_p25_psqm": 1582.22,
+      "haraj_p75_psqm": 3076.92,
+      "haraj_iqr_psqm": 1494.7
+    },
+    "\u0627\u0644\u0648\u0631\u0648\u062f": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 10838.31,
+      "haraj_p25_psqm": 7160.49,
+      "haraj_p75_psqm": 14516.13,
+      "haraj_iqr_psqm": 7355.64
+    },
+    "\u0627\u0644\u0645\u0646\u0627\u0631": {
+      "haraj_listing_count": 4,
+      "haraj_median_psqm": 7400.0,
+      "haraj_p25_psqm": 6000.0,
+      "haraj_p75_psqm": 8800.0,
+      "haraj_iqr_psqm": 2800.0
+    }
+  },
+  "rei_type_idx_latest": {
+    "apartment": 99.25,
+    "building": 98.68,
+    "residential_plot": 100.44,
+    "villa": 102.4
+  },
+  "rei_type_idx_lookup": {
+    "20211": {
+      "apartment": 82.74,
+      "building": 94.27,
+      "residential_plot": 80.6,
+      "villa": 77.25
+    },
+    "20212": {
+      "apartment": 82.92,
+      "building": 90.17,
+      "residential_plot": 83.61,
+      "villa": 75.42
+    },
+    "20213": {
+      "apartment": 84.76,
+      "building": 89.35,
+      "residential_plot": 87.86,
+      "villa": 81.17
+    },
+    "20214": {
+      "apartment": 88.61,
+      "building": 91.74,
+      "residential_plot": 91.02,
+      "villa": 84.14
+    },
+    "20221": {
+      "apartment": 91.45,
+      "building": 94.07,
+      "residential_plot": 92.58,
+      "villa": 85.62
+    },
+    "20222": {
+      "apartment": 95.73,
+      "building": 96.95,
+      "residential_plot": 96.42,
+      "villa": 92.1
+    },
+    "20223": {
+      "apartment": 98.76,
+      "building": 100.21,
+      "residential_plot": 99.88,
+      "villa": 92.63
+    },
+    "20224": {
+      "apartment": 99.59,
+      "building": 100.23,
+      "residential_plot": 98.6,
+      "villa": 94.16
+    },
+    "20231": {
+      "apartment": 101.1,
+      "building": 100.08,
+      "residential_plot": 100.19,
+      "villa": 99.27
+    },
+    "20232": {
+      "apartment": 101.31,
+      "building": 100.3,
+      "residential_plot": 100.28,
+      "villa": 101.79
+    },
+    "20233": {
+      "apartment": 99.05,
+      "building": 100.22,
+      "residential_plot": 99.79,
+      "villa": 100.67
+    },
+    "20234": {
+      "apartment": 98.57,
+      "building": 99.39,
+      "residential_plot": 99.74,
+      "villa": 98.31
+    },
+    "20241": {
+      "apartment": 100.34,
+      "building": 96.28,
+      "residential_plot": 100.21,
+      "villa": 93.61
+    },
+    "20242": {
+      "apartment": 101.07,
+      "building": 96.63,
+      "residential_plot": 101.13,
+      "villa": 101.82
+    },
+    "20243": {
+      "apartment": 100.93,
+      "building": 98.41,
+      "residential_plot": 101.38,
+      "villa": 102.22
+    },
+    "20244": {
+      "apartment": 101.4,
+      "building": 98.73,
+      "residential_plot": 102.25,
+      "villa": 104.66
+    },
+    "20251": {
+      "apartment": 101.58,
+      "building": 98.94,
+      "residential_plot": 105.56,
+      "villa": 103.21
+    },
+    "20252": {
+      "apartment": 100.32,
+      "building": 98.05,
+      "residential_plot": 101.3,
+      "villa": 105.03
+    },
+    "20253": {
+      "apartment": 99.25,
+      "building": 98.68,
+      "residential_plot": 100.44,
+      "villa": 102.4
+    }
+  },
+  "metro_district_lookup": {
+    "\u0627\u0644\u0635\u062d\u0627\u0641\u0629": {
+      "dist_metro_m": 1730.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 1
+    },
+    "\u0627\u0644\u0623\u0646\u062f\u0644\u0633": {
+      "dist_metro_m": 1440.8,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 6
+    },
+    "\u0627\u0644\u0646\u0638\u064a\u0645": {
+      "dist_metro_m": 6088.2,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 4
+    },
+    "\u062d\u0637\u064a\u0646": {
+      "dist_metro_m": 5030.0,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 2
+    },
+    "\u0638\u0647\u0631\u0629 \u0644\u0628\u0646": {
+      "dist_metro_m": 4596.0,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 6
+    },
+    "\u0639\u0631\u0642\u0629": {
+      "dist_metro_m": 4523.9,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 3
+    },
+    "\u0627\u0644\u0639\u0644\u064a\u0627": {
+      "dist_metro_m": 387.7,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0645\u0635\u0627\u0646\u0639": {
+      "dist_metro_m": 2510.8,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u063a\u0628\u064a\u0631\u0627": {
+      "dist_metro_m": 828.6,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 3
+    },
+    "\u0627\u0644\u0631\u0648\u0636\u0629": {
+      "dist_metro_m": 3740.8,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0633\u0644\u064a": {
+      "dist_metro_m": 4327.7,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 1
+    },
+    "\u0627\u0644\u0645\u0635\u064a\u0641": {
+      "dist_metro_m": 3235.8,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0645\u0646\u0627\u0631": {
+      "dist_metro_m": 1414.6,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0631\u062d\u0645\u0627\u0646\u064a\u0629": {
+      "dist_metro_m": 798.4,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u062a\u0639\u0627\u0648\u0646": {
+      "dist_metro_m": 3067.1,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 5
+    },
+    "\u0627\u0644\u0641\u0644\u0627\u062d": {
+      "dist_metro_m": 1082.8,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0639\u0648\u0627\u0644\u064a": {
+      "dist_metro_m": 2841.1,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0642\u064a\u0631\u0648\u0627\u0646": {
+      "dist_metro_m": 2746.8,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0637\u0648\u064a\u0642": {
+      "dist_metro_m": 2493.1,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u062c\u0646\u0627\u062f\u0631\u064a\u0629": {
+      "dist_metro_m": 5812.1,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u062d\u0632\u0645": {
+      "dist_metro_m": 6234.6,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 2
+    },
+    "\u062f\u064a\u0631\u0627\u0628": {
+      "dist_metro_m": 9841.4,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u062f\u0627\u0631 \u0627\u0644\u0628\u064a\u0636\u0627\u0621": {
+      "dist_metro_m": 1165.0,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0645\u0648\u0646\u0633\u064a\u0629": {
+      "dist_metro_m": 3947.6,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 3
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u064a\u0635\u0644": {
+      "dist_metro_m": 1381.7,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0639\u0627\u0631\u0636": {
+      "dist_metro_m": 4946.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u0634\u0631\u0642\u064a": {
+      "dist_metro_m": 2651.8,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 5
+    },
+    "\u0627\u0644\u062e\u0644\u064a\u062c": {
+      "dist_metro_m": 1113.0,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 1
+    },
+    "\u0623\u062d\u062f": {
+      "dist_metro_m": 10423.4,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 1
+    },
+    "\u0628\u062f\u0631": {
+      "dist_metro_m": 7038.4,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0645\u0635\u0641\u0627\u0629": {
+      "dist_metro_m": 19349.7,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0631\u0628\u064a\u0639": {
+      "dist_metro_m": 1060.6,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0631\u0641\u064a\u0639\u0629": {
+      "dist_metro_m": 2627.1,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0631\u0627\u0626\u062f": {
+      "dist_metro_m": 1030.8,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0639\u0642\u064a\u0642": {
+      "dist_metro_m": 1996.4,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 7
+    },
+    "\u0627\u0644\u0645\u0644\u0642\u0627": {
+      "dist_metro_m": 1872.9,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 2
+    },
+    "\u0627\u0644\u0633\u0639\u0627\u062f\u0629": {
+      "dist_metro_m": 1618.2,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0646\u0631\u062c\u0633": {
+      "dist_metro_m": 3798.6,
+      "nearest_metro_line": 4,
+      "bus_stops_500m": 0
+    },
+    "\u0625\u0634\u0628\u064a\u0644\u064a\u0629": {
+      "dist_metro_m": 1380.4,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 5
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u063a\u0631\u0628\u064a": {
+      "dist_metro_m": 1665.9,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 2
+    },
+    "\u0627\u0644\u0645\u0644\u0632": {
+      "dist_metro_m": 1500.0,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 11
+    },
+    "\u0627\u0644\u0646\u0632\u0647\u0629": {
+      "dist_metro_m": 1250.5,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 6
+    },
+    "\u0627\u0644\u0631\u0628\u0648\u0629": {
+      "dist_metro_m": 2034.7,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0625\u0632\u062f\u0647\u0627\u0631": {
+      "dist_metro_m": 1718.1,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 3
+    },
+    "\u0627\u0644\u0628\u064a\u0627\u0646": {
+      "dist_metro_m": 9756.0,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u063a\u062f\u064a\u0631": {
+      "dist_metro_m": 1659.2,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0641\u064a\u062d\u0627\u0621": {
+      "dist_metro_m": 1846.2,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 6
+    },
+    "\u0627\u0644\u0631\u0645\u0627\u0644": {
+      "dist_metro_m": 8395.4,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a": {
+      "dist_metro_m": 2494.0,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0631\u064a\u0627\u0646": {
+      "dist_metro_m": 2949.9,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 2
+    },
+    "\u0627\u0644\u0645\u062d\u0645\u062f\u064a\u0629": {
+      "dist_metro_m": 869.2,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 3
+    },
+    "\u0627\u0644\u0642\u062f\u0633": {
+      "dist_metro_m": 1655.9,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 5
+    },
+    "\u0627\u0644\u0648\u0631\u0648\u062f": {
+      "dist_metro_m": 876.7,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u062c": {
+      "dist_metro_m": 1070.7,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 1
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u0647\u062f": {
+      "dist_metro_m": 946.8,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 6
+    },
+    "\u0627\u0644\u0645\u0646\u0627\u062e": {
+      "dist_metro_m": 6112.6,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u062f\u064a\u0631\u0629": {
+      "dist_metro_m": 491.5,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 11
+    },
+    "\u0627\u0644\u0632\u0647\u0631\u0629": {
+      "dist_metro_m": 2506.2,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 7
+    },
+    "\u0627\u0644\u0633\u0644\u064a\u0645\u0627\u0646\u064a\u0629": {
+      "dist_metro_m": 1466.3,
+      "nearest_metro_line": 5,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u064a\u0631\u0645\u0648\u0643": {
+      "dist_metro_m": 2627.6,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0639\u0632\u064a\u0632\u064a\u0629": {
+      "dist_metro_m": 472.1,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 7
+    },
+    "\u0627\u0644\u0646\u062f\u0649": {
+      "dist_metro_m": 1333.4,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0646\u0647\u0636\u0629": {
+      "dist_metro_m": 2523.4,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 4
+    },
+    "\u0644\u0628\u0646": {
+      "dist_metro_m": 4810.1,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 6
+    },
+    "\u0627\u0644\u064a\u0627\u0633\u0645\u064a\u0646": {
+      "dist_metro_m": 2373.4,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 4
+    },
+    "\u0645\u063a\u0631\u0632\u0627\u062a": {
+      "dist_metro_m": 9324.6,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 0
+    },
+    "\u0628\u0646\u0628\u0627\u0646": {
+      "dist_metro_m": 22769.9,
+      "nearest_metro_line": 4,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0631\u0648\u0627\u0628\u064a": {
+      "dist_metro_m": 1270.2,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 5
+    },
+    "\u0627\u0644\u0646\u0641\u0644": {
+      "dist_metro_m": 1304.4,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0645\u0639\u0630\u0631": {
+      "dist_metro_m": 2522.4,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a \u0627\u0644\u063a\u0631\u0628\u064a": {
+      "dist_metro_m": 904.5,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 4
+    },
+    "\u062c\u0631\u064a\u0631": {
+      "dist_metro_m": 1434.7,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 12
+    },
+    "\u0646\u0645\u0627\u0631": {
+      "dist_metro_m": 4275.5,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0646\u062f\u0648\u0629": {
+      "dist_metro_m": 4507.2,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0645\u0631\u0628\u0639": {
+      "dist_metro_m": 345.9,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 8
+    },
+    "\u0627\u0644\u062d\u0645\u0631\u0627\u0621": {
+      "dist_metro_m": 1234.3,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u062f\u0631\u064a\u0647\u0645\u064a\u0629": {
+      "dist_metro_m": 3147.8,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0646\u062e\u064a\u0644": {
+      "dist_metro_m": 3419.9,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 2
+    },
+    "\u0627\u0644\u0642\u0627\u062f\u0633\u064a\u0629": {
+      "dist_metro_m": 3111.8,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0645\u0647\u062f\u064a\u0629": {
+      "dist_metro_m": 7990.1,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0639\u0643\u0627\u0638": {
+      "dist_metro_m": 8062.6,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u064a\u0645\u0627\u0645\u0629": {
+      "dist_metro_m": 1725.9,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u062e\u0632\u0627\u0645\u0649": {
+      "dist_metro_m": 2480.2,
+      "nearest_metro_line": 4,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0639\u0628\u062f\u0627\u0644\u0644\u0647": {
+      "dist_metro_m": 1614.7,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u063a\u0631\u0646\u0627\u0637\u0629": {
+      "dist_metro_m": 1900.0,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 0
+    },
+    "\u0636\u0627\u062d\u064a\u0629 \u0646\u0645\u0627\u0631": {
+      "dist_metro_m": 11702.3,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0648\u0627\u062f\u064a": {
+      "dist_metro_m": 1352.2,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0645\u0634\u0627\u0639\u0644": {
+      "dist_metro_m": 9513.0,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0628\u062f\u064a\u0639\u0629": {
+      "dist_metro_m": 686.4,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 8
+    },
+    "\u0627\u0644\u062c\u0632\u064a\u0631\u0629": {
+      "dist_metro_m": 1849.0,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 2
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u063a\u0631\u0628\u064a": {
+      "dist_metro_m": 1471.1,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 6
+    },
+    "\u0627\u0644\u062d\u0627\u0626\u0631": {
+      "dist_metro_m": 18440.4,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621": {
+      "dist_metro_m": 2425.0,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 6
+    },
+    "\u0634\u0628\u0631\u0627": {
+      "dist_metro_m": 3860.1,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 6
+    },
+    "\u0627\u0644\u063a\u0646\u0627\u0645\u064a\u0629": {
+      "dist_metro_m": 9408.1,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0642\u0631\u0637\u0628\u0629": {
+      "dist_metro_m": 3444.0,
+      "nearest_metro_line": 4,
+      "bus_stops_500m": 2
+    },
+    "\u0623\u0645 \u0627\u0644\u062d\u0645\u0627\u0645 \u0627\u0644\u0634\u0631\u0642\u064a": {
+      "dist_metro_m": 2966.4,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0634\u0645\u064a\u0633\u064a": {
+      "dist_metro_m": 599.9,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0645\u0631\u0633\u0644\u0627\u062a": {
+      "dist_metro_m": 1296.5,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0634\u0647\u062f\u0627\u0621": {
+      "dist_metro_m": 672.0,
+      "nearest_metro_line": 6,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u0629": {
+      "dist_metro_m": 7120.4,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0633\u0644\u0627\u0645": {
+      "dist_metro_m": 1707.7,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u062e\u0627\u0644\u062f\u064a\u0629": {
+      "dist_metro_m": 2624.3,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 2
+    },
+    "\u0633\u0644\u0637\u0627\u0646\u0629": {
+      "dist_metro_m": 1243.0,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 8
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u0623\u0648\u0633\u0637": {
+      "dist_metro_m": 1408.5,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 5
+    },
+    "\u0637\u064a\u0628\u0629": {
+      "dist_metro_m": 6856.8,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 2
+    },
+    "\u0645\u0646\u0641\u0648\u062d\u0629": {
+      "dist_metro_m": 938.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0639\u0628\u062f\u0627\u0644\u0639\u0632\u064a\u0632": {
+      "dist_metro_m": 588.9,
+      "nearest_metro_line": 5,
+      "bus_stops_500m": 3
+    },
+    "\u0627\u0644\u062c\u0631\u0627\u062f\u064a\u0629": {
+      "dist_metro_m": 116.0,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 3
+    },
+    "\u0627\u0644\u0636\u0628\u0627\u0637": {
+      "dist_metro_m": 574.9,
+      "nearest_metro_line": 5,
+      "bus_stops_500m": 2
+    },
+    "\u0627\u0644\u0639\u0648\u062f": {
+      "dist_metro_m": 764.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 3
+    },
+    "\u0627\u0644\u0645\u062f\u064a\u0646\u0629 \u0627\u0644\u0635\u0646\u0627\u0639\u064a\u0629 \u0627\u0644\u062c\u062f\u064a\u062f\u0629": {
+      "dist_metro_m": 11301.1,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 2
+    },
+    "\u0638\u0647\u0631\u0629 \u0627\u0644\u0628\u062f\u064a\u0639\u0629": {
+      "dist_metro_m": 522.5,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 9
+    },
+    "\u0627\u0644\u0645\u0639\u064a\u0632\u064a\u0644\u0629": {
+      "dist_metro_m": 1304.6,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0641\u0627\u0631\u0648\u0642": {
+      "dist_metro_m": 2354.4,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0632\u0647\u0631\u0627\u0621": {
+      "dist_metro_m": 1158.6,
+      "nearest_metro_line": 5,
+      "bus_stops_500m": 1
+    },
+    "\u0645\u0646\u0641\u0648\u062d\u0629 \u0627\u0644\u062c\u062f\u064a\u062f\u0629": {
+      "dist_metro_m": 627.0,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 8
+    },
+    "\u0645\u0637\u0627\u0631 \u0627\u0644\u0645\u0644\u0643 \u062e\u0627\u0644\u062f \u0627\u0644\u062f\u0648\u0644\u064a": {
+      "dist_metro_m": 2932.4,
+      "nearest_metro_line": 4,
+      "bus_stops_500m": 0
+    },
+    "\u0639\u0631\u064a\u0636": {
+      "dist_metro_m": 9800.5,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0641\u0631\u0633\u0627\u0646": {
+      "dist_metro_m": 47074.5,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0628\u0631\u064a\u0629": {
+      "dist_metro_m": 12724.4,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0631\u0633\u0627\u0644\u0629": {
+      "dist_metro_m": 4337.3,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0639\u062a\u064a\u0642\u0629": {
+      "dist_metro_m": 2022.9,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 14
+    },
+    "\u0627\u0644\u0647\u062f\u0627": {
+      "dist_metro_m": 5327.7,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u062b\u0644\u064a\u0645": {
+      "dist_metro_m": 350.1,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 1
+    },
+    "\u0627\u0644\u0632\u0647\u0648\u0631": {
+      "dist_metro_m": 1178.3,
+      "nearest_metro_line": 4,
+      "bus_stops_500m": 2
+    },
+    "\u0627\u0644\u0635\u0627\u0644\u062d\u064a\u0629": {
+      "dist_metro_m": 560.1,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 4
+    },
+    "\u0623\u0645 \u0627\u0644\u062d\u0645\u0627\u0645 \u0627\u0644\u063a\u0631\u0628\u064a": {
+      "dist_metro_m": 2928.9,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 1
+    },
+    "\u0627\u0644\u0648\u0632\u0627\u0631\u0627\u062a": {
+      "dist_metro_m": 649.7,
+      "nearest_metro_line": 5,
+      "bus_stops_500m": 8
+    },
+    "\u0627\u0644\u062e\u064a\u0631": {
+      "dist_metro_m": 7357.4,
+      "nearest_metro_line": 4,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0631\u0627\u064a\u0629": {
+      "dist_metro_m": 2423.0,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0645\u0634\u0631\u0642": {
+      "dist_metro_m": 31686.6,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0632\u0627\u0647\u0631": {
+      "dist_metro_m": 2066.1,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0639\u0644\u0627": {
+      "dist_metro_m": 45598.2,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0635\u0646\u0627\u0639\u064a\u0629": {
+      "dist_metro_m": 563.8,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 3
+    },
+    "\u0627\u0644\u0645\u0631\u0642\u0628": {
+      "dist_metro_m": 223.5,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 5
+    },
+    "\u0627\u0644\u0641\u064a\u0635\u0644\u064a\u0629": {
+      "dist_metro_m": 4163.9,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0641\u0627\u062e\u0631\u064a\u0629": {
+      "dist_metro_m": 2739.2,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0634\u0639\u0644\u0629": {
+      "dist_metro_m": 3955.0,
+      "nearest_metro_line": 2,
+      "bus_stops_500m": 2
+    },
+    "\u0627\u0644\u0646\u062e\u0628\u0629": {
+      "dist_metro_m": 2767.3,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 2
+    },
+    "\u0627\u0644\u0639\u0645\u0644": {
+      "dist_metro_m": 431.0,
+      "nearest_metro_line": 5,
+      "bus_stops_500m": 6
+    },
+    "\u0627\u0644\u0634\u0641\u0627": {
+      "dist_metro_m": 6046.5,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 5
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0633\u0644\u0645\u0627\u0646": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0627\u0644\u0635\u0641\u0627": {
+      "dist_metro_m": 1059.4,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0639\u0644\u064a\u0634\u0629": {
+      "dist_metro_m": 1671.7,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0645\u0646\u0635\u0648\u0631\u0629 (\u062e\u0646\u0634\u0644\u064a\u0644\u0629)": {
+      "dist_metro_m": 1237.5,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 8
+    },
+    "\u0627\u0644\u0634\u0631\u0641\u064a\u0629": {
+      "dist_metro_m": 3412.8,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 10
+    },
+    "\u0627\u0644\u0646\u0648\u0631": {
+      "dist_metro_m": 6072.9,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 0
+    },
+    "\u0627\u0644\u0633\u062d\u0627\u0628": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0627\u0644\u0646\u0627\u0635\u0631\u064a\u0629": {
+      "dist_metro_m": 3301.9,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 7
+    },
+    "\u0627\u0644\u0648\u0633\u0627\u0645": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0627\u0644\u0645\u0631\u062c\u0627\u0646": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0627\u0644\u0648\u0634\u0627\u0645": {
+      "dist_metro_m": 2294.4,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 6
+    },
+    "\u0623\u062e\u0631\u0649": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0627\u0644\u0635\u0641\u0627\u0621": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0627\u0644\u0634\u0641\u0627\u0621": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0648\u0627\u062f\u064a \u0644\u0628\u0646": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0633\u062f\u0631\u0629": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0638\u0647\u0631\u0629 \u0627\u0644\u0639\u0648\u062f\u0629 \u0634\u0631\u0642": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0627\u0644\u0631\u0627\u0628\u064a\u0629": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0638\u0647\u0631\u0647 \u0627\u0644\u0639\u0648\u062f\u0629 \u063a\u0631\u0628": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    },
+    "\u0623\u0645 \u0633\u0644\u064a\u0645": {
+      "dist_metro_m": 1670.0,
+      "nearest_metro_line": 3,
+      "bus_stops_500m": 4
+    },
+    "\u0627\u0644\u0645\u0646\u0635\u0648\u0631\u0629": {
+      "dist_metro_m": 43.2,
+      "nearest_metro_line": 1,
+      "bus_stops_500m": 9
+    }
+  },
+  "segment_by_type": {
+    "apartment": {
+      "r2": 0.6324,
+      "medape": 12.7,
+      "n": 617
+    },
+    "villa": {
+      "r2": 0.7455,
+      "medape": 12.83,
+      "n": 422
+    },
+    "residential_plot": {
+      "r2": 0.7761,
+      "medape": 21.2,
+      "n": 551
+    },
+    "building": {
+      "r2": 0.5395,
+      "medape": 21.45,
+      "n": 137
+    }
+  },
+  "district_type_lag_map": {
+    "\u0623\u062d\u062f|apt": {
+      "lag1": 2907.9,
+      "lag2": 3395.7,
+      "std1": 2128.5
+    },
+    "\u0623\u062d\u062f|plot": {
+      "lag1": 1338.5,
+      "lag2": 1192.0,
+      "std1": 1356.4
+    },
+    "\u0623\u062d\u062f|villa": {
+      "lag1": 3010.7,
+      "lag2": 2880.4,
+      "std1": 2305.9
+    },
+    "\u0623\u0645 \u0627\u0644\u062d\u0645\u0627\u0645 \u0627\u0644\u0634\u0631\u0642\u064a|plot": {
+      "lag1": 5831.7,
+      "lag2": 5500.7,
+      "std1": 1356.4
+    },
+    "\u0623\u0645 \u0627\u0644\u062d\u0645\u0627\u0645 \u0627\u0644\u0634\u0631\u0642\u064a|villa": {
+      "lag1": 9097.2,
+      "lag2": 11689.9,
+      "std1": 2305.9
+    },
+    "\u0623\u0645 \u0627\u0644\u062d\u0645\u0627\u0645 \u0627\u0644\u063a\u0631\u0628\u064a|plot": {
+      "lag1": 4723.6,
+      "lag2": 3998.2,
+      "std1": 1356.4
+    },
+    "\u0625\u0634\u0628\u064a\u0644\u064a\u0629|apt": {
+      "lag1": 3517.2,
+      "lag2": 5155.9,
+      "std1": 2128.5
+    },
+    "\u0625\u0634\u0628\u064a\u0644\u064a\u0629|plot": {
+      "lag1": 1840.9,
+      "lag2": 2570.9,
+      "std1": 1356.4
+    },
+    "\u0625\u0634\u0628\u064a\u0644\u064a\u0629|villa": {
+      "lag1": 5535.0,
+      "lag2": 5087.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0623\u0646\u062f\u0644\u0633|apt": {
+      "lag1": 5862.6,
+      "lag2": 5895.1,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0623\u0646\u062f\u0644\u0633|plot": {
+      "lag1": 4414.8,
+      "lag2": 3513.6,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0623\u0646\u062f\u0644\u0633|villa": {
+      "lag1": 4871.1,
+      "lag2": 5517.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0625\u0632\u062f\u0647\u0627\u0631|apt": {
+      "lag1": 8500.5,
+      "lag2": 9449.2,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0625\u0632\u062f\u0647\u0627\u0631|plot": {
+      "lag1": 4284.7,
+      "lag2": 4687.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0625\u0632\u062f\u0647\u0627\u0631|villa": {
+      "lag1": 8377.3,
+      "lag2": 11080.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0628\u062f\u064a\u0639\u0629|apt": {
+      "lag1": 7616.0,
+      "lag2": 7616.0,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0628\u062f\u064a\u0639\u0629|plot": {
+      "lag1": 1887.4,
+      "lag2": 1691.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0628\u062f\u064a\u0639\u0629|villa": {
+      "lag1": 3381.8,
+      "lag2": 3264.8,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0628\u0631\u064a\u0629|plot": {
+      "lag1": 1539.1,
+      "lag2": 1069.6,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0628\u064a\u0627\u0646|apt": {
+      "lag1": 5450.5,
+      "lag2": 5055.2,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0628\u064a\u0627\u0646|plot": {
+      "lag1": 3060.9,
+      "lag2": 2618.6,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0628\u064a\u0627\u0646|villa": {
+      "lag1": 4845.7,
+      "lag2": 4670.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062a\u0639\u0627\u0648\u0646|apt": {
+      "lag1": 8405.2,
+      "lag2": 7964.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u062a\u0639\u0627\u0648\u0646|plot": {
+      "lag1": 10649.3,
+      "lag2": 5399.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062a\u0639\u0627\u0648\u0646|villa": {
+      "lag1": 8422.8,
+      "lag2": 8997.9,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062c\u0631\u0627\u062f\u064a\u0629|plot": {
+      "lag1": 1155.2,
+      "lag2": 832.1,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062c\u0631\u0627\u062f\u064a\u0629|villa": {
+      "lag1": 3769.8,
+      "lag2": 3160.7,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062c\u0632\u064a\u0631\u0629|apt": {
+      "lag1": 6651.8,
+      "lag2": 6651.8,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u062c\u0632\u064a\u0631\u0629|plot": {
+      "lag1": 3065.6,
+      "lag2": 4350.6,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062c\u0632\u064a\u0631\u0629|villa": {
+      "lag1": 3133.6,
+      "lag2": 2396.7,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062c\u0646\u0627\u062f\u0631\u064a\u0629|apt": {
+      "lag1": 4648.9,
+      "lag2": 4160.6,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u062c\u0646\u0627\u062f\u0631\u064a\u0629|plot": {
+      "lag1": 1601.5,
+      "lag2": 1738.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062c\u0646\u0627\u062f\u0631\u064a\u0629|villa": {
+      "lag1": 2755.6,
+      "lag2": 2437.4,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062d\u0627\u0626\u0631|plot": {
+      "lag1": 480.0,
+      "lag2": 476.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062d\u0627\u0626\u0631|villa": {
+      "lag1": 1174.2,
+      "lag2": 1082.4,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062d\u0632\u0645|apt": {
+      "lag1": 3619.1,
+      "lag2": 3462.4,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u062d\u0632\u0645|plot": {
+      "lag1": 1919.5,
+      "lag2": 1782.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062d\u0632\u0645|villa": {
+      "lag1": 3816.7,
+      "lag2": 3948.9,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062d\u0645\u0631\u0627\u0621|apt": {
+      "lag1": 6940.9,
+      "lag2": 6858.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u062d\u0645\u0631\u0627\u0621|plot": {
+      "lag1": 5167.7,
+      "lag2": 5180.6,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062d\u0645\u0631\u0627\u0621|villa": {
+      "lag1": 7036.8,
+      "lag2": 6915.3,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062e\u0627\u0644\u062f\u064a\u0629|plot": {
+      "lag1": 2192.5,
+      "lag2": 2026.1,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062e\u0627\u0644\u062f\u064a\u0629|villa": {
+      "lag1": 3540.0,
+      "lag2": 3388.7,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062e\u0632\u0627\u0645\u0649|apt": {
+      "lag1": 10759.9,
+      "lag2": 9977.9,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u062e\u0632\u0627\u0645\u0649|plot": {
+      "lag1": 10291.3,
+      "lag2": 1070.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062e\u0632\u0627\u0645\u0649|villa": {
+      "lag1": 9694.9,
+      "lag2": 7694.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062e\u0644\u064a\u062c|apt": {
+      "lag1": 6014.1,
+      "lag2": 5057.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u062e\u0644\u064a\u062c|plot": {
+      "lag1": 3629.8,
+      "lag2": 3084.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062e\u0644\u064a\u062c|villa": {
+      "lag1": 4845.2,
+      "lag2": 4312.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062e\u064a\u0631|plot": {
+      "lag1": 2150.7,
+      "lag2": 1894.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062f\u0627\u0631 \u0627\u0644\u0628\u064a\u0636\u0627\u0621|apt": {
+      "lag1": 3024.0,
+      "lag2": 3057.1,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u062f\u0627\u0631 \u0627\u0644\u0628\u064a\u0636\u0627\u0621|plot": {
+      "lag1": 1438.0,
+      "lag2": 1515.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062f\u0627\u0631 \u0627\u0644\u0628\u064a\u0636\u0627\u0621|villa": {
+      "lag1": 3129.9,
+      "lag2": 3259.2,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062f\u0631\u064a\u0647\u0645\u064a\u0629|apt": {
+      "lag1": 3295.4,
+      "lag2": 3584.6,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u062f\u0631\u064a\u0647\u0645\u064a\u0629|plot": {
+      "lag1": 2417.4,
+      "lag2": 2247.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u062f\u0631\u064a\u0647\u0645\u064a\u0629|villa": {
+      "lag1": 3730.4,
+      "lag2": 4276.8,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u062f\u064a\u0631\u0629|apt": {
+      "lag1": 733.9,
+      "lag2": 1795.7,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u062f\u064a\u0631\u0629|plot": {
+      "lag1": 1147.4,
+      "lag2": 4245.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u0627\u0626\u062f|apt": {
+      "lag1": 11273.1,
+      "lag2": 10654.2,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0631\u0627\u0626\u062f|plot": {
+      "lag1": 3481.6,
+      "lag2": 2254.6,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u0627\u0626\u062f|villa": {
+      "lag1": 8778.7,
+      "lag2": 8778.7,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0631\u0627\u064a\u0629|plot": {
+      "lag1": 564.2,
+      "lag2": 529.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u0628\u0648\u0629|apt": {
+      "lag1": 7923.2,
+      "lag2": 7880.6,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0631\u0628\u0648\u0629|plot": {
+      "lag1": 3691.4,
+      "lag2": 3470.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u0628\u0648\u0629|villa": {
+      "lag1": 5062.0,
+      "lag2": 5153.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0631\u0628\u064a\u0639|apt": {
+      "lag1": 6235.2,
+      "lag2": 10117.9,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0631\u0628\u064a\u0639|plot": {
+      "lag1": 4155.9,
+      "lag2": 4958.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u0628\u064a\u0639|villa": {
+      "lag1": 11515.9,
+      "lag2": 11705.4,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0631\u062d\u0645\u0627\u0646\u064a\u0629|apt": {
+      "lag1": 7902.2,
+      "lag2": 7745.0,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0631\u062d\u0645\u0627\u0646\u064a\u0629|plot": {
+      "lag1": 5847.7,
+      "lag2": 5595.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u062d\u0645\u0627\u0646\u064a\u0629|villa": {
+      "lag1": 11337.3,
+      "lag2": 10500.7,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0631\u0633\u0627\u0644\u0629|plot": {
+      "lag1": 402.3,
+      "lag2": 414.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u0641\u064a\u0639\u0629|apt": {
+      "lag1": 9271.1,
+      "lag2": 3792.4,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0631\u0641\u064a\u0639\u0629|plot": {
+      "lag1": 3394.5,
+      "lag2": 4486.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u0641\u064a\u0639\u0629|villa": {
+      "lag1": 6728.6,
+      "lag2": 7671.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0631\u0645\u0627\u0644|apt": {
+      "lag1": 5571.0,
+      "lag2": 5482.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0631\u0645\u0627\u0644|bldg": {
+      "lag1": 6933.2,
+      "lag2": 6933.2,
+      "std1": 3125.4
+    },
+    "\u0627\u0644\u0631\u0645\u0627\u0644|plot": {
+      "lag1": 2608.9,
+      "lag2": 2809.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u0645\u0627\u0644|villa": {
+      "lag1": 3858.8,
+      "lag2": 4828.4,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0631\u0648\u0627\u0628\u064a|apt": {
+      "lag1": 6388.1,
+      "lag2": 5874.7,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0631\u0648\u0627\u0628\u064a|plot": {
+      "lag1": 4025.8,
+      "lag2": 4156.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u0648\u0627\u0628\u064a|villa": {
+      "lag1": 6448.6,
+      "lag2": 4319.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0631\u0648\u0636\u0629|apt": {
+      "lag1": 6698.3,
+      "lag2": 6425.1,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0631\u0648\u0636\u0629|plot": {
+      "lag1": 3032.0,
+      "lag2": 3600.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u0648\u0636\u0629|villa": {
+      "lag1": 5612.2,
+      "lag2": 5924.0,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0631\u064a\u0627\u0646|apt": {
+      "lag1": 7410.4,
+      "lag2": 7572.8,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0631\u064a\u0627\u0646|plot": {
+      "lag1": 5826.5,
+      "lag2": 5135.1,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0631\u064a\u0627\u0646|villa": {
+      "lag1": 6938.7,
+      "lag2": 11459.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0632\u0627\u0647\u0631|plot": {
+      "lag1": 745.7,
+      "lag2": 674.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0632\u0647\u0631\u0627\u0621|plot": {
+      "lag1": 4769.6,
+      "lag2": 4940.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0632\u0647\u0631\u0629|apt": {
+      "lag1": 3980.2,
+      "lag2": 3997.8,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0632\u0647\u0631\u0629|plot": {
+      "lag1": 2243.1,
+      "lag2": 1875.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0632\u0647\u0631\u0629|villa": {
+      "lag1": 3536.9,
+      "lag2": 2940.3,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0632\u0647\u0648\u0631|plot": {
+      "lag1": 779.1,
+      "lag2": 620.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0633\u062d\u0627\u0628|plot": {
+      "lag1": 1587.6,
+      "lag2": 1127.4,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0633\u0639\u0627\u062f\u0629|apt": {
+      "lag1": 4702.5,
+      "lag2": 4746.2,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0633\u0639\u0627\u062f\u0629|plot": {
+      "lag1": 3572.5,
+      "lag2": 2916.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0633\u0639\u0627\u062f\u0629|villa": {
+      "lag1": 4850.1,
+      "lag2": 4837.8,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0633\u0644\u0627\u0645|apt": {
+      "lag1": 5141.8,
+      "lag2": 5700.0,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0633\u0644\u0627\u0645|plot": {
+      "lag1": 2972.4,
+      "lag2": 3213.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0633\u0644\u0627\u0645|villa": {
+      "lag1": 4355.3,
+      "lag2": 5033.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0633\u0644\u064a|apt": {
+      "lag1": 4938.3,
+      "lag2": 4983.3,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0633\u0644\u064a|plot": {
+      "lag1": 1550.8,
+      "lag2": 2188.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0633\u0644\u064a|villa": {
+      "lag1": 5799.0,
+      "lag2": 2548.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0633\u0644\u064a\u0645\u0627\u0646\u064a\u0629|apt": {
+      "lag1": 11030.4,
+      "lag2": 9941.3,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0633\u0644\u064a\u0645\u0627\u0646\u064a\u0629|plot": {
+      "lag1": 4582.5,
+      "lag2": 4157.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0633\u0644\u064a\u0645\u0627\u0646\u064a\u0629|villa": {
+      "lag1": 7717.7,
+      "lag2": 7959.4,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a|apt": {
+      "lag1": 3941.5,
+      "lag2": 3799.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a|plot": {
+      "lag1": 1135.2,
+      "lag2": 1128.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a|villa": {
+      "lag1": 2560.1,
+      "lag2": 2357.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a \u0627\u0644\u063a\u0631\u0628\u064a|apt": {
+      "lag1": 6232.1,
+      "lag2": 5343.9,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a \u0627\u0644\u063a\u0631\u0628\u064a|plot": {
+      "lag1": 2603.1,
+      "lag2": 2562.4,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0633\u0648\u064a\u062f\u064a \u0627\u0644\u063a\u0631\u0628\u064a|villa": {
+      "lag1": 4711.4,
+      "lag2": 3380.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0634\u0631\u0641\u064a\u0629|plot": {
+      "lag1": 3799.3,
+      "lag2": 4628.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0634\u0639\u0644\u0629|plot": {
+      "lag1": 518.6,
+      "lag2": 461.4,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0634\u0641\u0627|apt": {
+      "lag1": 2888.6,
+      "lag2": 3483.0,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0634\u0641\u0627|plot": {
+      "lag1": 1701.6,
+      "lag2": 1743.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0634\u0641\u0627|villa": {
+      "lag1": 3545.5,
+      "lag2": 3764.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0634\u0645\u064a\u0633\u064a|plot": {
+      "lag1": 1671.6,
+      "lag2": 1326.6,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0634\u0645\u064a\u0633\u064a|villa": {
+      "lag1": 4824.7,
+      "lag2": 4939.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0634\u0647\u062f\u0627\u0621|apt": {
+      "lag1": 8587.9,
+      "lag2": 7832.2,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0634\u0647\u062f\u0627\u0621|plot": {
+      "lag1": 5672.1,
+      "lag2": 5475.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0634\u0647\u062f\u0627\u0621|villa": {
+      "lag1": 9048.1,
+      "lag2": 7648.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0635\u0627\u0644\u062d\u064a\u0629|plot": {
+      "lag1": 1469.9,
+      "lag2": 2228.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0635\u062d\u0627\u0641\u0629|apt": {
+      "lag1": 11499.4,
+      "lag2": 9774.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0635\u062d\u0627\u0641\u0629|plot": {
+      "lag1": 3124.8,
+      "lag2": 3444.6,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0635\u062d\u0627\u0641\u0629|villa": {
+      "lag1": 9632.7,
+      "lag2": 8956.7,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0635\u0641\u0627|apt": {
+      "lag1": 7808.7,
+      "lag2": 7808.7,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0635\u0641\u0627|plot": {
+      "lag1": 3484.5,
+      "lag2": 3535.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0635\u0641\u0627|villa": {
+      "lag1": 6320.5,
+      "lag2": 5412.0,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0635\u0646\u0627\u0639\u064a\u0629|plot": {
+      "lag1": 3916.6,
+      "lag2": 3539.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0636\u0628\u0627\u0637|plot": {
+      "lag1": 3070.8,
+      "lag2": 3466.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0636\u0628\u0627\u0637|villa": {
+      "lag1": 5816.6,
+      "lag2": 4816.0,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0639\u0627\u0631\u0636|apt": {
+      "lag1": 8144.5,
+      "lag2": 7419.3,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0639\u0627\u0631\u0636|bldg": {
+      "lag1": 7264.8,
+      "lag2": 7264.8,
+      "std1": 3125.4
+    },
+    "\u0627\u0644\u0639\u0627\u0631\u0636|plot": {
+      "lag1": 4291.0,
+      "lag2": 5393.1,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0627\u0631\u0636|villa": {
+      "lag1": 7366.4,
+      "lag2": 7477.9,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621|plot": {
+      "lag1": 2557.6,
+      "lag2": 1969.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621|villa": {
+      "lag1": 4117.3,
+      "lag2": 4069.2,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u0623\u0648\u0633\u0637|plot": {
+      "lag1": 2623.3,
+      "lag2": 4947.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u0623\u0648\u0633\u0637|villa": {
+      "lag1": 2378.3,
+      "lag2": 3003.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u063a\u0631\u0628\u064a|apt": {
+      "lag1": 4384.5,
+      "lag2": 4014.2,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u063a\u0631\u0628\u064a|plot": {
+      "lag1": 1947.0,
+      "lag2": 2269.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0631\u064a\u062c\u0627\u0621 \u0627\u0644\u063a\u0631\u0628\u064a|villa": {
+      "lag1": 2864.8,
+      "lag2": 2939.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0639\u0632\u064a\u0632\u064a\u0629|apt": {
+      "lag1": 3237.4,
+      "lag2": 3581.3,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0639\u0632\u064a\u0632\u064a\u0629|plot": {
+      "lag1": 1970.0,
+      "lag2": 2192.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0632\u064a\u0632\u064a\u0629|villa": {
+      "lag1": 3425.8,
+      "lag2": 3401.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0639\u0642\u064a\u0642|apt": {
+      "lag1": 8993.8,
+      "lag2": 8651.8,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0639\u0642\u064a\u0642|plot": {
+      "lag1": 5004.7,
+      "lag2": 4767.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0642\u064a\u0642|villa": {
+      "lag1": 8514.5,
+      "lag2": 9042.4,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0639\u0644\u0627|plot": {
+      "lag1": 640.2,
+      "lag2": 569.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0644\u064a\u0627|apt": {
+      "lag1": 11461.6,
+      "lag2": 11461.6,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0639\u0644\u064a\u0627|plot": {
+      "lag1": 3558.6,
+      "lag2": 3071.4,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0644\u064a\u0627|villa": {
+      "lag1": 9018.5,
+      "lag2": 8545.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0639\u0645\u0644|bldg": {
+      "lag1": 2053.9,
+      "lag2": 2053.9,
+      "std1": 3125.4
+    },
+    "\u0627\u0644\u0639\u0645\u0644|plot": {
+      "lag1": 1100.0,
+      "lag2": 1100.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0648\u0627\u0644\u064a|apt": {
+      "lag1": 3590.5,
+      "lag2": 3807.4,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0639\u0648\u0627\u0644\u064a|plot": {
+      "lag1": 2820.4,
+      "lag2": 1571.6,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0648\u0627\u0644\u064a|villa": {
+      "lag1": 4377.7,
+      "lag2": 4587.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0639\u0648\u062f|plot": {
+      "lag1": 2734.3,
+      "lag2": 3228.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0639\u0648\u062f|villa": {
+      "lag1": 3749.4,
+      "lag2": 3263.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u063a\u062f\u064a\u0631|apt": {
+      "lag1": 8746.5,
+      "lag2": 8421.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u063a\u062f\u064a\u0631|plot": {
+      "lag1": 6080.6,
+      "lag2": 5143.1,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u063a\u0646\u0627\u0645\u064a\u0629|plot": {
+      "lag1": 546.1,
+      "lag2": 508.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u063a\u0646\u0627\u0645\u064a\u0629|villa": {
+      "lag1": 1051.2,
+      "lag2": 1196.9,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0641\u0627\u062e\u0631\u064a\u0629|plot": {
+      "lag1": 2194.2,
+      "lag2": 1214.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0641\u0627\u0631\u0648\u0642|plot": {
+      "lag1": 2410.6,
+      "lag2": 2862.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0641\u0627\u0631\u0648\u0642|villa": {
+      "lag1": 4874.3,
+      "lag2": 4839.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0641\u0631\u0633\u0627\u0646|plot": {
+      "lag1": 595.4,
+      "lag2": 546.1,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0641\u0644\u0627\u062d|apt": {
+      "lag1": 7648.5,
+      "lag2": 8646.9,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0641\u0644\u0627\u062d|plot": {
+      "lag1": 5127.9,
+      "lag2": 4766.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0641\u0644\u0627\u062d|villa": {
+      "lag1": 11587.0,
+      "lag2": 5674.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0641\u064a\u062d\u0627\u0621|apt": {
+      "lag1": 4758.0,
+      "lag2": 3930.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0641\u064a\u062d\u0627\u0621|plot": {
+      "lag1": 2632.5,
+      "lag2": 2081.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0641\u064a\u062d\u0627\u0621|villa": {
+      "lag1": 5880.7,
+      "lag2": 4629.0,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0641\u064a\u0635\u0644\u064a\u0629|plot": {
+      "lag1": 1789.3,
+      "lag2": 2755.4,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0642\u0627\u062f\u0633\u064a\u0629|apt": {
+      "lag1": 5636.7,
+      "lag2": 5169.7,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0642\u0627\u062f\u0633\u064a\u0629|plot": {
+      "lag1": 3448.4,
+      "lag2": 2698.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0642\u0627\u062f\u0633\u064a\u0629|villa": {
+      "lag1": 5231.3,
+      "lag2": 5558.9,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0642\u062f\u0633|apt": {
+      "lag1": 7209.2,
+      "lag2": 7098.2,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0642\u062f\u0633|plot": {
+      "lag1": 4306.7,
+      "lag2": 4121.4,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0642\u062f\u0633|villa": {
+      "lag1": 6454.4,
+      "lag2": 6409.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0642\u064a\u0631\u0648\u0627\u0646|apt": {
+      "lag1": 8337.6,
+      "lag2": 7940.6,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0642\u064a\u0631\u0648\u0627\u0646|plot": {
+      "lag1": 8101.5,
+      "lag2": 6786.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0642\u064a\u0631\u0648\u0627\u0646|villa": {
+      "lag1": 10376.7,
+      "lag2": 10010.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u062d\u0645\u062f\u064a\u0629|apt": {
+      "lag1": 9497.4,
+      "lag2": 10163.7,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u062d\u0645\u062f\u064a\u0629|plot": {
+      "lag1": 5492.3,
+      "lag2": 3930.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u062d\u0645\u062f\u064a\u0629|villa": {
+      "lag1": 10371.3,
+      "lag2": 9532.4,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u062f\u064a\u0646\u0629 \u0627\u0644\u0635\u0646\u0627\u0639\u064a\u0629 \u0627\u0644\u062c\u062f\u064a\u062f\u0629|villa": {
+      "lag1": 1348.0,
+      "lag2": 1149.3,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0631\u0628\u0639|apt": {
+      "lag1": 4090.3,
+      "lag2": 4183.2,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0631\u0628\u0639|plot": {
+      "lag1": 6318.2,
+      "lag2": 4054.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0631\u0628\u0639|villa": {
+      "lag1": 3377.3,
+      "lag2": 6198.2,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0631\u062c\u0627\u0646|plot": {
+      "lag1": 2474.0,
+      "lag2": 2285.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0631\u062c\u0627\u0646|villa": {
+      "lag1": 4760.8,
+      "lag2": 4760.8,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0631\u0633\u0644\u0627\u062a|apt": {
+      "lag1": 7727.4,
+      "lag2": 7772.8,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0631\u0633\u0644\u0627\u062a|plot": {
+      "lag1": 5117.1,
+      "lag2": 4463.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0631\u0633\u0644\u0627\u062a|villa": {
+      "lag1": 7843.7,
+      "lag2": 7296.0,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0631\u0642\u0628|plot": {
+      "lag1": 2955.3,
+      "lag2": 3414.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u0629|apt": {
+      "lag1": 3671.3,
+      "lag2": 2524.3,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u0629|bldg": {
+      "lag1": 2325.3,
+      "lag2": 2325.3,
+      "std1": 3125.4
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u0629|plot": {
+      "lag1": 1821.1,
+      "lag2": 2465.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u0629|villa": {
+      "lag1": 3317.3,
+      "lag2": 3550.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u062c|apt": {
+      "lag1": 9317.6,
+      "lag2": 8200.7,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u062c|plot": {
+      "lag1": 7844.3,
+      "lag2": 5152.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0631\u0648\u062c|villa": {
+      "lag1": 11622.0,
+      "lag2": 9451.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0634\u0627\u0639\u0644|plot": {
+      "lag1": 1672.9,
+      "lag2": 1468.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0634\u0627\u0639\u0644|villa": {
+      "lag1": 1582.2,
+      "lag2": 1513.8,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0634\u0631\u0642|plot": {
+      "lag1": 774.0,
+      "lag2": 678.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0635\u0627\u0646\u0639|plot": {
+      "lag1": 1939.8,
+      "lag2": 2319.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0635\u0627\u0646\u0639|villa": {
+      "lag1": 2193.8,
+      "lag2": 1000.0,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0635\u0641\u0627\u0629|plot": {
+      "lag1": 1023.0,
+      "lag2": 822.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0635\u0641\u0627\u0629|villa": {
+      "lag1": 1019.3,
+      "lag2": 804.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0635\u064a\u0641|apt": {
+      "lag1": 8376.8,
+      "lag2": 8326.8,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0635\u064a\u0641|plot": {
+      "lag1": 4677.9,
+      "lag2": 4323.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0635\u064a\u0641|villa": {
+      "lag1": 10234.6,
+      "lag2": 6646.9,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0639\u0630\u0631|apt": {
+      "lag1": 9787.0,
+      "lag2": 10096.9,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0639\u0630\u0631|plot": {
+      "lag1": 8463.7,
+      "lag2": 7572.6,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0639\u0630\u0631|villa": {
+      "lag1": 8929.2,
+      "lag2": 7367.0,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0639\u064a\u0632\u064a\u0644\u0629|apt": {
+      "lag1": 4207.1,
+      "lag2": 4785.6,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0639\u064a\u0632\u064a\u0644\u0629|plot": {
+      "lag1": 3356.6,
+      "lag2": 2949.1,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0639\u064a\u0632\u064a\u0644\u0629|villa": {
+      "lag1": 5067.5,
+      "lag2": 4340.2,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0644\u0632|apt": {
+      "lag1": 5925.9,
+      "lag2": 1808.3,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0644\u0632|plot": {
+      "lag1": 2528.1,
+      "lag2": 2586.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0644\u0632|villa": {
+      "lag1": 4638.8,
+      "lag2": 5585.3,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0644\u0642\u0627|apt": {
+      "lag1": 9110.8,
+      "lag2": 9828.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0644\u0642\u0627|plot": {
+      "lag1": 6938.3,
+      "lag2": 6961.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0644\u0642\u0627|villa": {
+      "lag1": 12259.4,
+      "lag2": 11882.9,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0633\u0644\u0645\u0627\u0646|apt": {
+      "lag1": 9246.1,
+      "lag2": 9246.1,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0633\u0644\u0645\u0627\u0646|plot": {
+      "lag1": 6732.5,
+      "lag2": 5287.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0639\u0628\u062f\u0627\u0644\u0639\u0632\u064a\u0632|plot": {
+      "lag1": 3651.5,
+      "lag2": 6368.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0639\u0628\u062f\u0627\u0644\u0639\u0632\u064a\u0632|villa": {
+      "lag1": 4167.6,
+      "lag2": 4843.7,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0639\u0628\u062f\u0627\u0644\u0644\u0647|apt": {
+      "lag1": 3779.1,
+      "lag2": 3779.1,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0639\u0628\u062f\u0627\u0644\u0644\u0647|plot": {
+      "lag1": 6836.0,
+      "lag2": 7576.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0639\u0628\u062f\u0627\u0644\u0644\u0647|villa": {
+      "lag1": 9904.5,
+      "lag2": 5745.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u0647\u062f|apt": {
+      "lag1": 9053.9,
+      "lag2": 9053.9,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u0647\u062f|plot": {
+      "lag1": 4354.4,
+      "lag2": 4155.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u0647\u062f|villa": {
+      "lag1": 6738.3,
+      "lag2": 6120.0,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u064a\u0635\u0644|apt": {
+      "lag1": 5577.6,
+      "lag2": 5708.3,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u064a\u0635\u0644|plot": {
+      "lag1": 4569.2,
+      "lag2": 3859.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0644\u0643 \u0641\u064a\u0635\u0644|villa": {
+      "lag1": 4908.3,
+      "lag2": 6154.9,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0646\u0627\u062e|plot": {
+      "lag1": 1107.7,
+      "lag2": 1147.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0646\u0627\u062e|villa": {
+      "lag1": 1409.7,
+      "lag2": 1443.2,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0646\u0627\u0631|apt": {
+      "lag1": 6016.0,
+      "lag2": 6118.1,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0646\u0627\u0631|plot": {
+      "lag1": 2604.2,
+      "lag2": 2970.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0646\u0627\u0631|villa": {
+      "lag1": 4448.6,
+      "lag2": 4726.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0646\u0635\u0648\u0631\u0629 (\u062e\u0646\u0634\u0644\u064a\u0644\u0629)|plot": {
+      "lag1": 2176.6,
+      "lag2": 2662.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0646\u0635\u0648\u0631\u0629 (\u062e\u0646\u0634\u0644\u064a\u0644\u0629)|villa": {
+      "lag1": 2730.4,
+      "lag2": 2730.4,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0647\u062f\u064a\u0629|apt": {
+      "lag1": 5489.8,
+      "lag2": 5283.1,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0647\u062f\u064a\u0629|bldg": {
+      "lag1": 12002.4,
+      "lag2": 12002.4,
+      "std1": 3125.4
+    },
+    "\u0627\u0644\u0645\u0647\u062f\u064a\u0629|plot": {
+      "lag1": 4161.3,
+      "lag2": 3328.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0647\u062f\u064a\u0629|villa": {
+      "lag1": 5006.7,
+      "lag2": 4767.7,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0645\u0648\u0646\u0633\u064a\u0629|apt": {
+      "lag1": 6623.2,
+      "lag2": 5691.7,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0645\u0648\u0646\u0633\u064a\u0629|plot": {
+      "lag1": 2431.5,
+      "lag2": 4178.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0645\u0648\u0646\u0633\u064a\u0629|villa": {
+      "lag1": 6994.9,
+      "lag2": 7289.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0646\u0627\u0635\u0631\u064a\u0629|plot": {
+      "lag1": 3397.2,
+      "lag2": 3397.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u062e\u0628\u0629|plot": {
+      "lag1": 526.1,
+      "lag2": 487.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u062e\u064a\u0644|apt": {
+      "lag1": 9272.2,
+      "lag2": 8464.3,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0646\u062e\u064a\u0644|plot": {
+      "lag1": 9374.5,
+      "lag2": 10065.8,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u062e\u064a\u0644|villa": {
+      "lag1": 12414.8,
+      "lag2": 8903.3,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0646\u062f\u0648\u0629|apt": {
+      "lag1": 3853.7,
+      "lag2": 1745.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0646\u062f\u0648\u0629|plot": {
+      "lag1": 2211.8,
+      "lag2": 2197.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u062f\u0649|apt": {
+      "lag1": 8787.9,
+      "lag2": 8760.7,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0646\u062f\u0649|plot": {
+      "lag1": 5206.6,
+      "lag2": 3431.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u062f\u0649|villa": {
+      "lag1": 7512.9,
+      "lag2": 10596.6,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0646\u0631\u062c\u0633|apt": {
+      "lag1": 8127.7,
+      "lag2": 7461.3,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0646\u0631\u062c\u0633|plot": {
+      "lag1": 5534.3,
+      "lag2": 5231.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u0631\u062c\u0633|villa": {
+      "lag1": 9264.4,
+      "lag2": 10071.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0646\u0632\u0647\u0629|apt": {
+      "lag1": 9637.3,
+      "lag2": 8979.1,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0646\u0632\u0647\u0629|plot": {
+      "lag1": 5782.4,
+      "lag2": 5550.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u0632\u0647\u0629|villa": {
+      "lag1": 8131.6,
+      "lag2": 8595.0,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u0634\u0631\u0642\u064a|apt": {
+      "lag1": 4399.6,
+      "lag2": 4397.4,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u0634\u0631\u0642\u064a|plot": {
+      "lag1": 2405.7,
+      "lag2": 2264.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u0634\u0631\u0642\u064a|villa": {
+      "lag1": 5305.6,
+      "lag2": 3263.2,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u063a\u0631\u0628\u064a|apt": {
+      "lag1": 5892.8,
+      "lag2": 2928.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u063a\u0631\u0628\u064a|plot": {
+      "lag1": 2294.4,
+      "lag2": 2100.7,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u0633\u064a\u0645 \u0627\u0644\u063a\u0631\u0628\u064a|villa": {
+      "lag1": 3848.3,
+      "lag2": 4513.3,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0646\u0638\u064a\u0645|apt": {
+      "lag1": 4843.5,
+      "lag2": 3159.4,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0646\u0638\u064a\u0645|bldg": {
+      "lag1": 2301.0,
+      "lag2": 2301.0,
+      "std1": 3125.4
+    },
+    "\u0627\u0644\u0646\u0638\u064a\u0645|plot": {
+      "lag1": 1393.0,
+      "lag2": 1114.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u0638\u064a\u0645|villa": {
+      "lag1": 3820.6,
+      "lag2": 3829.2,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0646\u0641\u0644|apt": {
+      "lag1": 7540.2,
+      "lag2": 8483.9,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0646\u0641\u0644|plot": {
+      "lag1": 2472.7,
+      "lag2": 5225.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u0641\u0644|villa": {
+      "lag1": 8363.6,
+      "lag2": 7832.9,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0646\u0647\u0636\u0629|apt": {
+      "lag1": 5506.3,
+      "lag2": 5258.8,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0646\u0647\u0636\u0629|plot": {
+      "lag1": 2650.8,
+      "lag2": 2923.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0646\u0647\u0636\u0629|villa": {
+      "lag1": 5184.5,
+      "lag2": 4731.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0646\u0648\u0631|plot": {
+      "lag1": 1184.4,
+      "lag2": 1789.4,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0647\u062f\u0627|plot": {
+      "lag1": 4922.9,
+      "lag2": 4714.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0647\u062f\u0627|villa": {
+      "lag1": 9865.9,
+      "lag2": 11373.7,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0648\u0627\u062f\u064a|apt": {
+      "lag1": 6824.4,
+      "lag2": 7205.8,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0648\u0627\u062f\u064a|plot": {
+      "lag1": 7133.5,
+      "lag2": 5082.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0648\u0627\u062f\u064a|villa": {
+      "lag1": 8329.3,
+      "lag2": 9096.5,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0648\u0631\u0648\u062f|apt": {
+      "lag1": 7183.4,
+      "lag2": 4945.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u0648\u0631\u0648\u062f|plot": {
+      "lag1": 8538.5,
+      "lag2": 5552.0,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0648\u0631\u0648\u062f|villa": {
+      "lag1": 10005.4,
+      "lag2": 8668.8,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u0648\u0632\u0627\u0631\u0627\u062a|plot": {
+      "lag1": 6433.0,
+      "lag2": 4967.2,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0648\u0633\u0627\u0645|plot": {
+      "lag1": 1788.3,
+      "lag2": 1318.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u0648\u0634\u0627\u0645|plot": {
+      "lag1": 3093.4,
+      "lag2": 3093.4,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u064a\u0627\u0633\u0645\u064a\u0646|apt": {
+      "lag1": 8413.9,
+      "lag2": 8287.5,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u064a\u0627\u0633\u0645\u064a\u0646|plot": {
+      "lag1": 4482.4,
+      "lag2": 5611.5,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u064a\u0627\u0633\u0645\u064a\u0646|villa": {
+      "lag1": 8679.9,
+      "lag2": 9227.7,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u064a\u0631\u0645\u0648\u0643|apt": {
+      "lag1": 6185.8,
+      "lag2": 5830.1,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u064a\u0631\u0645\u0648\u0643|plot": {
+      "lag1": 3083.4,
+      "lag2": 4174.3,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u064a\u0631\u0645\u0648\u0643|villa": {
+      "lag1": 5557.9,
+      "lag2": 5621.1,
+      "std1": 2305.9
+    },
+    "\u0627\u0644\u064a\u0645\u0627\u0645\u0629|apt": {
+      "lag1": 2714.7,
+      "lag2": 2714.7,
+      "std1": 2128.5
+    },
+    "\u0627\u0644\u064a\u0645\u0627\u0645\u0629|plot": {
+      "lag1": 2286.2,
+      "lag2": 2230.9,
+      "std1": 1356.4
+    },
+    "\u0627\u0644\u064a\u0645\u0627\u0645\u0629|villa": {
+      "lag1": 1553.9,
+      "lag2": 1777.3,
+      "std1": 2305.9
+    },
+    "\u0628\u062f\u0631|apt": {
+      "lag1": 3155.4,
+      "lag2": 3194.6,
+      "std1": 2128.5
+    },
+    "\u0628\u062f\u0631|plot": {
+      "lag1": 1886.9,
+      "lag2": 1329.0,
+      "std1": 1356.4
+    },
+    "\u0628\u062f\u0631|villa": {
+      "lag1": 3364.0,
+      "lag2": 3375.2,
+      "std1": 2305.9
+    },
+    "\u0628\u0646\u0628\u0627\u0646|apt": {
+      "lag1": 4267.4,
+      "lag2": 4267.4,
+      "std1": 2128.5
+    },
+    "\u0628\u0646\u0628\u0627\u0646|plot": {
+      "lag1": 1030.0,
+      "lag2": 1410.3,
+      "std1": 1356.4
+    },
+    "\u0628\u0646\u0628\u0627\u0646|villa": {
+      "lag1": 3005.1,
+      "lag2": 1900.1,
+      "std1": 2305.9
+    },
+    "\u062b\u0644\u064a\u0645|plot": {
+      "lag1": 4345.5,
+      "lag2": 3403.8,
+      "std1": 1356.4
+    },
+    "\u062b\u0644\u064a\u0645|villa": {
+      "lag1": 2705.5,
+      "lag2": 2705.5,
+      "std1": 2305.9
+    },
+    "\u062c\u0631\u064a\u0631|apt": {
+      "lag1": 7578.9,
+      "lag2": 5656.9,
+      "std1": 2128.5
+    },
+    "\u062c\u0631\u064a\u0631|plot": {
+      "lag1": 3355.4,
+      "lag2": 4392.8,
+      "std1": 1356.4
+    },
+    "\u062c\u0631\u064a\u0631|villa": {
+      "lag1": 4499.5,
+      "lag2": 3149.5,
+      "std1": 2305.9
+    },
+    "\u062d\u0637\u064a\u0646|apt": {
+      "lag1": 9120.2,
+      "lag2": 8824.7,
+      "std1": 2128.5
+    },
+    "\u062d\u0637\u064a\u0646|bldg": {
+      "lag1": 6000.0,
+      "lag2": 6000.0,
+      "std1": 3125.4
+    },
+    "\u062d\u0637\u064a\u0646|plot": {
+      "lag1": 6807.7,
+      "lag2": 7002.0,
+      "std1": 1356.4
+    },
+    "\u062d\u0637\u064a\u0646|villa": {
+      "lag1": 10320.9,
+      "lag2": 11956.4,
+      "std1": 2305.9
+    },
+    "\u062f\u064a\u0631\u0627\u0628|apt": {
+      "lag1": 3515.3,
+      "lag2": 3562.4,
+      "std1": 2128.5
+    },
+    "\u062f\u064a\u0631\u0627\u0628|plot": {
+      "lag1": 1466.2,
+      "lag2": 1740.3,
+      "std1": 1356.4
+    },
+    "\u062f\u064a\u0631\u0627\u0628|villa": {
+      "lag1": 4064.5,
+      "lag2": 2828.6,
+      "std1": 2305.9
+    },
+    "\u0633\u0644\u0637\u0627\u0646\u0629|plot": {
+      "lag1": 1899.1,
+      "lag2": 1280.2,
+      "std1": 1356.4
+    },
+    "\u0633\u0644\u0637\u0627\u0646\u0629|villa": {
+      "lag1": 4499.1,
+      "lag2": 4086.6,
+      "std1": 2305.9
+    },
+    "\u0634\u0628\u0631\u0627|apt": {
+      "lag1": 2649.6,
+      "lag2": 3393.5,
+      "std1": 2128.5
+    },
+    "\u0634\u0628\u0631\u0627|bldg": {
+      "lag1": 4610.5,
+      "lag2": 4610.5,
+      "std1": 3125.4
+    },
+    "\u0634\u0628\u0631\u0627|plot": {
+      "lag1": 2884.5,
+      "lag2": 2517.8,
+      "std1": 1356.4
+    },
+    "\u0634\u0628\u0631\u0627|villa": {
+      "lag1": 3446.9,
+      "lag2": 2704.3,
+      "std1": 2305.9
+    },
+    "\u0636\u0627\u062d\u064a\u0629 \u0646\u0645\u0627\u0631|apt": {
+      "lag1": 3723.6,
+      "lag2": 3836.0,
+      "std1": 2128.5
+    },
+    "\u0636\u0627\u062d\u064a\u0629 \u0646\u0645\u0627\u0631|bldg": {
+      "lag1": 3701.7,
+      "lag2": 1264.3,
+      "std1": 3125.4
+    },
+    "\u0636\u0627\u062d\u064a\u0629 \u0646\u0645\u0627\u0631|plot": {
+      "lag1": 1079.5,
+      "lag2": 1053.2,
+      "std1": 1356.4
+    },
+    "\u0636\u0627\u062d\u064a\u0629 \u0646\u0645\u0627\u0631|villa": {
+      "lag1": 1692.7,
+      "lag2": 1636.9,
+      "std1": 2305.9
+    },
+    "\u0637\u0648\u064a\u0642|apt": {
+      "lag1": 3830.6,
+      "lag2": 3704.2,
+      "std1": 2128.5
+    },
+    "\u0637\u0648\u064a\u0642|plot": {
+      "lag1": 1983.3,
+      "lag2": 1907.9,
+      "std1": 1356.4
+    },
+    "\u0637\u0648\u064a\u0642|villa": {
+      "lag1": 4150.6,
+      "lag2": 4111.3,
+      "std1": 2305.9
+    },
+    "\u0637\u064a\u0628\u0629|apt": {
+      "lag1": 3447.2,
+      "lag2": 3447.2,
+      "std1": 2128.5
+    },
+    "\u0637\u064a\u0628\u0629|plot": {
+      "lag1": 1199.9,
+      "lag2": 1044.3,
+      "std1": 1356.4
+    },
+    "\u0637\u064a\u0628\u0629|villa": {
+      "lag1": 2846.5,
+      "lag2": 2283.0,
+      "std1": 2305.9
+    },
+    "\u0638\u0647\u0631\u0629 \u0627\u0644\u0628\u062f\u064a\u0639\u0629|apt": {
+      "lag1": 4721.8,
+      "lag2": 4650.0,
+      "std1": 2128.5
+    },
+    "\u0638\u0647\u0631\u0629 \u0627\u0644\u0628\u062f\u064a\u0639\u0629|plot": {
+      "lag1": 2319.1,
+      "lag2": 2233.0,
+      "std1": 1356.4
+    },
+    "\u0638\u0647\u0631\u0629 \u0627\u0644\u0628\u062f\u064a\u0639\u0629|villa": {
+      "lag1": 3016.0,
+      "lag2": 3100.0,
+      "std1": 2305.9
+    },
+    "\u0638\u0647\u0631\u0629 \u0644\u0628\u0646|apt": {
+      "lag1": 4467.8,
+      "lag2": 4627.0,
+      "std1": 2128.5
+    },
+    "\u0638\u0647\u0631\u0629 \u0644\u0628\u0646|plot": {
+      "lag1": 2210.5,
+      "lag2": 2084.1,
+      "std1": 1356.4
+    },
+    "\u0638\u0647\u0631\u0629 \u0644\u0628\u0646|villa": {
+      "lag1": 3855.0,
+      "lag2": 3925.7,
+      "std1": 2305.9
+    },
+    "\u0639\u062a\u064a\u0642\u0629|plot": {
+      "lag1": 1814.2,
+      "lag2": 1864.8,
+      "std1": 1356.4
+    },
+    "\u0639\u062a\u064a\u0642\u0629|villa": {
+      "lag1": 4061.4,
+      "lag2": 3200.2,
+      "std1": 2305.9
+    },
+    "\u0639\u0631\u0642\u0629|apt": {
+      "lag1": 9042.8,
+      "lag2": 8281.0,
+      "std1": 2128.5
+    },
+    "\u0639\u0631\u0642\u0629|plot": {
+      "lag1": 3852.4,
+      "lag2": 4941.3,
+      "std1": 1356.4
+    },
+    "\u0639\u0631\u0642\u0629|villa": {
+      "lag1": 9226.3,
+      "lag2": 11174.3,
+      "std1": 2305.9
+    },
+    "\u0639\u0631\u064a\u0636|plot": {
+      "lag1": 916.7,
+      "lag2": 836.0,
+      "std1": 1356.4
+    },
+    "\u0639\u0631\u064a\u0636|villa": {
+      "lag1": 1202.3,
+      "lag2": 1173.8,
+      "std1": 2305.9
+    },
+    "\u0639\u0643\u0627\u0638|apt": {
+      "lag1": 3255.2,
+      "lag2": 3242.8,
+      "std1": 2128.5
+    },
+    "\u0639\u0643\u0627\u0638|plot": {
+      "lag1": 1334.8,
+      "lag2": 1337.0,
+      "std1": 1356.4
+    },
+    "\u0639\u0643\u0627\u0638|villa": {
+      "lag1": 3433.7,
+      "lag2": 3315.8,
+      "std1": 2305.9
+    },
+    "\u0639\u0644\u064a\u0634\u0629|villa": {
+      "lag1": 2237.4,
+      "lag2": 2237.4,
+      "std1": 2305.9
+    },
+    "\u063a\u0628\u064a\u0631\u0627|plot": {
+      "lag1": 2825.5,
+      "lag2": 2542.0,
+      "std1": 1356.4
+    },
+    "\u063a\u0628\u064a\u0631\u0627|villa": {
+      "lag1": 1984.1,
+      "lag2": 2365.3,
+      "std1": 2305.9
+    },
+    "\u063a\u0631\u0646\u0627\u0637\u0629|apt": {
+      "lag1": 7061.0,
+      "lag2": 5900.5,
+      "std1": 2128.5
+    },
+    "\u063a\u0631\u0646\u0627\u0637\u0629|plot": {
+      "lag1": 3170.3,
+      "lag2": 3602.2,
+      "std1": 1356.4
+    },
+    "\u063a\u0631\u0646\u0627\u0637\u0629|villa": {
+      "lag1": 6081.2,
+      "lag2": 9108.0,
+      "std1": 2305.9
+    },
+    "\u0642\u0631\u0637\u0628\u0629|apt": {
+      "lag1": 7072.9,
+      "lag2": 7559.8,
+      "std1": 2128.5
+    },
+    "\u0642\u0631\u0637\u0628\u0629|plot": {
+      "lag1": 4483.5,
+      "lag2": 4465.8,
+      "std1": 1356.4
+    },
+    "\u0642\u0631\u0637\u0628\u0629|villa": {
+      "lag1": 7819.3,
+      "lag2": 6864.7,
+      "std1": 2305.9
+    },
+    "\u0644\u0628\u0646|apt": {
+      "lag1": 4135.5,
+      "lag2": 3794.3,
+      "std1": 2128.5
+    },
+    "\u0644\u0628\u0646|plot": {
+      "lag1": 2743.2,
+      "lag2": 2668.3,
+      "std1": 1356.4
+    },
+    "\u0644\u0628\u0646|villa": {
+      "lag1": 5274.6,
+      "lag2": 5718.2,
+      "std1": 2305.9
+    },
+    "\u0645\u0637\u0627\u0631 \u0627\u0644\u0645\u0644\u0643 \u062e\u0627\u0644\u062f \u0627\u0644\u062f\u0648\u0644\u064a|plot": {
+      "lag1": 2898.4,
+      "lag2": 2920.8,
+      "std1": 1356.4
+    },
+    "\u0645\u0637\u0627\u0631 \u0627\u0644\u0645\u0644\u0643 \u062e\u0627\u0644\u062f \u0627\u0644\u062f\u0648\u0644\u064a|villa": {
+      "lag1": 2400.6,
+      "lag2": 3253.6,
+      "std1": 2305.9
+    },
+    "\u0645\u063a\u0631\u0632\u0627\u062a|apt": {
+      "lag1": 7280.9,
+      "lag2": 8671.1,
+      "std1": 2128.5
+    },
+    "\u0645\u063a\u0631\u0632\u0627\u062a|plot": {
+      "lag1": 5615.4,
+      "lag2": 5062.2,
+      "std1": 1356.4
+    },
+    "\u0645\u063a\u0631\u0632\u0627\u062a|villa": {
+      "lag1": 9802.1,
+      "lag2": 1900.0,
+      "std1": 2305.9
+    },
+    "\u0645\u0646\u0641\u0648\u062d\u0629|plot": {
+      "lag1": 3425.1,
+      "lag2": 2860.5,
+      "std1": 1356.4
+    },
+    "\u0645\u0646\u0641\u0648\u062d\u0629|villa": {
+      "lag1": 3144.0,
+      "lag2": 3328.2,
+      "std1": 2305.9
+    },
+    "\u0645\u0646\u0641\u0648\u062d\u0629 \u0627\u0644\u062c\u062f\u064a\u062f\u0629|plot": {
+      "lag1": 3937.2,
+      "lag2": 3094.5,
+      "std1": 1356.4
+    },
+    "\u0645\u0646\u0641\u0648\u062d\u0629 \u0627\u0644\u062c\u062f\u064a\u062f\u0629|villa": {
+      "lag1": 2826.9,
+      "lag2": 2473.7,
+      "std1": 2305.9
+    },
+    "\u0646\u0645\u0627\u0631|apt": {
+      "lag1": 3457.9,
+      "lag2": 4143.4,
+      "std1": 2128.5
+    },
+    "\u0646\u0645\u0627\u0631|bldg": {
+      "lag1": 5190.2,
+      "lag2": 5190.2,
+      "std1": 3125.4
+    },
+    "\u0646\u0645\u0627\u0631|plot": {
+      "lag1": 3975.8,
+      "lag2": 2910.4,
+      "std1": 1356.4
+    },
+    "\u0646\u0645\u0627\u0631|villa": {
+      "lag1": 3939.1,
+      "lag2": 3944.0,
+      "std1": 2305.9
+    }
+  },
+  "city_type_lag_fallback": {
+    "apt": {
+      "lag1": 4216.9,
+      "std1": 2128.5
+    },
+    "villa": {
+      "lag1": 4149.7,
+      "std1": 2305.9
+    },
+    "plot": {
+      "lag1": 1940.0,
+      "std1": 1356.4
+    },
+    "bldg": {
+      "lag1": 4610.5,
+      "std1": 3125.4
+    }
+  },
+  "district_lag1q_std_global": 2262.7
 }

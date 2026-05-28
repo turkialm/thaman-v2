@@ -1,0 +1,3 @@
+City,Version,R2_Holdout,MedAPE_pct,MAE,N_Train,N_Holdout,N_Features
+NYC,v21,0.6516,20.1,1045078,157329,27763,131
+Riyadh,v10,0.7634,18.45,1095,5531,1727,136

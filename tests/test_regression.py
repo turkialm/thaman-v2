@@ -14,7 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 from api.main import app
 
-# ── Pinned baselines (captured 2026-05-25, model v12) ─────────────────
+# ── Pinned baselines (captured 2026-05-28, NYC v22 / Riyadh v11) ──────
 # NYC — raw scorer via API /predict endpoint
 _NYC_PINS = [
     {
@@ -25,7 +25,7 @@ _NYC_PINS = [
             "bldgclass": "A1", "borough": 3,
             "numfloors": 2, "residential_units": 1,
         },
-        "expected_price":  1_388_710,  # v12 via API (includes NTA/v11/v12 features)
+        "expected_price":  1_397_193,  # v22 via API (134 features)
         "tolerance_pct":   5.0,
     },
     {
@@ -36,7 +36,7 @@ _NYC_PINS = [
             "bldgclass": "D4", "borough": 1,
             "numfloors": 12, "residential_units": 1,
         },
-        "expected_price":  1_462_058,
+        "expected_price":  1_829_702,
         "tolerance_pct":   5.0,
     },
     {
@@ -47,7 +47,7 @@ _NYC_PINS = [
             "bldgclass": "B2", "borough": 4,
             "numfloors": 2, "residential_units": 2,
         },
-        "expected_price":  1_086_598,
+        "expected_price":  1_173_523,
         "tolerance_pct":   5.0,
     },
 ]
@@ -57,22 +57,22 @@ _RYD_PINS = [
     {
         "desc": "Al-Wurud villa 300m²",
         "req":  {"latitude": 24.7136, "longitude": 46.6753, "property_type": "villa",     "area_sqm": 300},
-        "expected_psqm":  6038,
-        "expected_total": 1_811_400,
+        "expected_psqm":  3987,
+        "expected_total": 1_196_100,
         "tolerance_pct":  5.0,
     },
     {
         "desc": "Al-Dubbat apartment 150m²",
         "req":  {"latitude": 24.6877, "longitude": 46.7219, "property_type": "apartment", "area_sqm": 150},
-        "expected_psqm":  2726,
-        "expected_total": 408_900,
+        "expected_psqm":  2909,
+        "expected_total": 436_350,
         "tolerance_pct":  5.0,
     },
     {
         "desc": "Northern Riyadh plot 600m²",
         "req":  {"latitude": 24.7743, "longitude": 46.7382, "property_type": "plot",      "area_sqm": 600},
-        "expected_psqm":  4480,
-        "expected_total": 2_688_000,
+        "expected_psqm":  3527,
+        "expected_total": 2_116_200,
         "tolerance_pct":  5.0,
     },
 ]

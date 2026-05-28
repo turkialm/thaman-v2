@@ -31,9 +31,9 @@ _RYD_COORDS  = {"lat": 24.7136, "lon": 46.6753}    # Riyadh Al-Wurud
 
 # ── NYC feature count ─────────────────────────────────────────────────
 
-def test_nyc_feature_count_v12(scorer):
-    """v12 model must have exactly 109 features."""
-    assert len(scorer.feature_names) == 109
+def test_nyc_feature_count_v22(scorer):
+    """v22 model must have exactly 134 features."""
+    assert len(scorer.feature_names) == 134
 
 
 def test_nyc_feature_names_no_duplicates(scorer):
@@ -131,7 +131,7 @@ def test_riyadh_feature_count(scorer):
     """Riyadh v2 model must have the features stored in riyadh_meta.json."""
     assert scorer._riyadh_meta.get("n_features", 0) > 0
     n = scorer._riyadh_meta["n_features"]
-    assert 60 <= n <= 120, f"Riyadh n_features={n} outside expected range"
+    assert 130 <= n <= 160, f"Riyadh n_features={n} outside expected range"
 
 
 def test_riyadh_feature_names_no_duplicates(scorer):
