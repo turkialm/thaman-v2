@@ -19,7 +19,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code and runtime data
 COPY api/             api/
 COPY models/scorer.py models/scorer.py
-COPY models/spatial.py models/spatial.py 2>/dev/null || true
 COPY frontend/        frontend/
 COPY download_models.py download_models.py
 COPY app.py           app.py
