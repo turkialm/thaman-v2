@@ -30,18 +30,18 @@ Toggle between cities with the NYC / Riyadh button on the map. Full bilingual (E
 
 ## Model Performance
 
-### NYC — Stack v21 (131 features, 185K sales, 2022–2026)
+### NYC — Stack v22 (134 features, 157K sales, 2022–2026)
 
 | Metric | Value |
 |---|---|
-| R² (holdout) | 0.6516 |
-| MedAPE | 20.10% |
+| R² (holdout) | 0.6495 |
+| MedAPE | 20.32% |
 | CV Strategy | 10-fold Spatial GroupKFold (by NTA) |
 | Stack | XGB-A + XGB-B + LightGBM + CatBoost + Ridge meta |
 
-**By borough:** Manhattan 34.90% · Bronx 21.22% · Brooklyn 20.64% · Queens 17.19% · Staten Island 13.91%
+**By borough:** Manhattan 35.16% · Bronx 21.08% · Brooklyn 20.64% · Queens 17.43% · Staten Island 14.41%
 
-Key v21 feature: BBL building-level LOO $/sqft history (12,946 buildings with 2+ sales).
+Key v22 features: NTA × building-type temporal lag (2 lags + momentum), BBL building-level LOO $/sqft history.
 
 ### Riyadh — Stack v11 (140 features, 7,258 transactions, 2018–2025)
 
@@ -135,7 +135,7 @@ new_try/
 │   └── models.py        # Pydantic request/response schemas
 ├── models/
 │   ├── scorer.py            # ThamanScorer — stacked ensemble inference
-│   ├── thaman_stack.pkl     # NYC Stack v21 (131 features, 52.9 MB)
+│   ├── thaman_stack.pkl     # NYC Stack v22 (134 features, 52 MB)
 │   ├── xgboost_model.json   # NYC XGBoost base learner (JSON)
 │   ├── meta.json            # NYC feature names + NTA lookups + BBL history
 │   ├── riyadh_stack.pkl     # Riyadh Stack v11 (140 features)
@@ -146,7 +146,7 @@ new_try/
 │   ├── style.css        # Responsive CSS (dark header, RTL-aware)
 │   └── charts.html      # Analytics dashboard (NYC + Riyadh)
 ├── training/
-│   ├── train_stack_v12.py        # NYC Stack training (current, v21+)
+│   ├── train_stack_v12.py        # NYC Stack training (current, v22+)
 │   └── train_stack_riyadh_v2.py  # Riyadh Stack training (current, v11+)
 ├── scripts/
 │   ├── generate_scatter.py       # Holdout scatter plot data
