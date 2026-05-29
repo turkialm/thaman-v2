@@ -16,6 +16,7 @@ FILES = [
     "models/riyadh_meta.json",
     "data/raw/nyc_coastline_pts.npy",
     "data/raw/nyc_bike_lanes.geojson",
+    "data/processed/features.csv",   # NYC sales index for nearby lookup (84MB)
 ]
 
 
