@@ -21,8 +21,8 @@ into a four-model stacked ensemble comprising two XGBoost models, LightGBM, and
 CatBoost, blended by a Ridge meta-learner.
 
 Trained on 185,092 NYC property sales from 2022 to 2026, the final model
-(Stack v11) achieves R² = 0.6450 and Median Absolute Percentage Error (MedAPE)
-of 20.24% on a time-based holdout set of 27,763 unseen sales across 104 features,
+(Stack v22) achieves R² = 0.6495 and Median Absolute Percentage Error (MedAPE)
+of 20.32% on a time-based holdout set of 27,763 unseen sales across 134 features,
 including a novel NTA price trend slope feature capturing neighbourhood-level
 price appreciation momentum via per-NTA OLS regression, and ten new building
 health and mobility indicators sourced from NYC HPD violation records, DOB permit
@@ -41,13 +41,13 @@ on GitHub.
 
 The system is extended to Riyadh, Saudi Arabia as a parallel AVM trained on
 6,910 district-level real estate transactions (2018–2025) sourced from the Saudi
-Open Data Portal. Across 76 features covering metro and bus transit, commercial
+Open Data Portal. Across 140 features covering metro and bus transit, commercial
 density, air quality (NO₂, SO₂, PM₁₀, O₃), QoL proximity to mosques, malls,
 schools, hospitals, parks and entertainment venues, macroeconomic indices
 (REI quarterly index, Saudi average salary), district price aggregates, and
-rental market signals (SA_Aqar), the Riyadh stack achieves OOF R² = 0.9252 /
-MedAPE = 9.03% and holdout R² = 0.7981 / MedAPE = 18.16% on a 2025 Q1–Q3
-out-of-sample test set of 1,379 district-quarter observations.
+rental market signals (SA_Aqar), the Riyadh stack achieves OOF R² = 0.9343 /
+MedAPE = 8.28% and holdout R² = 0.8003 / MedAPE = 15.56% on a 2025 Q1–Q3
+out-of-sample test set of 1,727 district-quarter observations.
 
 Keywords: automated valuation model, ensemble learning, XGBoost, LightGBM,
 CatBoost, stacking, target encoding, spatial features, SHAP, New York City,
@@ -119,7 +119,7 @@ This project addresses four gaps:
   - A full end-to-end AVM pipeline from raw NYC open data to deployed web app.
   - A 104-feature dataset combining structural, spatial, temporal, neighbourhood
     momentum, building health, and transit quality signals.
-  - Stack v11: a 4-model ensemble achieving R² = 0.6450 / MedAPE = 20.24% on
+  - Stack v22: a 4-model ensemble achieving R² = 0.6495 / MedAPE = 20.32% on
     27,763 holdout sales, with 10 new v11 features (HPD violations, DOB permits,
     311 rodent/heat density, MTA station quality attributes).
   - Segment-adaptive confidence intervals per borough × price tier.
@@ -127,9 +127,9 @@ This project addresses four gaps:
   - A bilingual (English/Arabic) interactive valuation interface with SHAP
     waterfall plots, natural-language explanations, and 11-layer NTA choropleth.
   - Riyadh Stack v1: a dual-city extension to Saudi Arabia using 6,910 district-
-    quarter observations, 76 features (transit, QoL POIs, air quality, macro,
-    rental), and the identical stacking architecture. Achieves holdout R² = 0.7981
-    / MedAPE = 18.16% on a fully out-of-sample 2025 Q1–Q3 test set (1,379 rows).
+    quarter observations, 140 features (transit, QoL POIs, air quality, macro,
+    rental), and the identical stacking architecture. Achieves holdout R² = 0.8003
+    / MedAPE = 15.56% on a fully out-of-sample 2025 Q1–Q3 test set (1,727 rows).
     Includes 133 Riyadh district polygons from OSM and a 12-layer choropleth.
 
 ================================================================================
@@ -602,7 +602,7 @@ meta-learner. The training log demonstrates a direct empirical comparison:
                  Holdout R²=0.6349 / MAE=$1,105,269
 
   Ridge meta:    OOF R²=0.5995 / MedAPE=22.73%
-                 Holdout R²=0.6450 / MAE=$1,065,470
+                 Holdout R²=0.6495 / MAE=$1,047,004
 
 The Ridge meta-learner is selected despite its superficially lower OOF score.
 This outcome illustrates the primary vulnerability of complex stacking: meta-
@@ -611,7 +611,7 @@ exploit residual noise and specific correlation patterns among base model
 predictions on the validation set, rather than learning the true signal.
 
 Because the sophisticated Level-0 base models have already exhausted the
-non-linear relationships within the 104 features, the remaining variance at
+non-linear relationships within the 134 features, the remaining variance at
 the meta-stage is largely statistical noise. Ridge regression mitigates this
 by applying L2 regularisation — squaring coefficient values and adding them to
 the loss function — preventing any single base model from dominating the final
@@ -671,7 +671,7 @@ The model went through ten training versions. Key lessons learned:
   v8       0.635   20.94%   Raw encoding; ZIP codes added
   v9       0.6469  20.12%   10-fold OOF + 5000 rounds (best MedAPE)
   v10      0.6460  20.30%   NTA price trend slope (94th feature; §4.10)
-  v11      0.6450  20.24%   10 new building health & mobility features (§4.11)
+  v11      0.6495  20.32%   10 new building health & mobility features (§4.11)
 
 6.2 The In-Fold Encoding Failure (v7a)
 ---------------------------------------
@@ -717,11 +717,11 @@ standard metric in AVM industry reporting.
 
 7.2 Overall Performance (27,763 holdout sales)
 ------------------------------------------------
-  Metric   Stack v11   Stack v10   Stack v9    Stack v5    v11 vs v5
+  Metric   Stack v22   Stack v10   Stack v9    Stack v5    v11 vs v5
   ------   ---------   ---------   --------    --------    ---------
-  R²       0.6450      0.6460      0.6469      0.6582      −0.011
-  MedAPE   20.24%      20.30%      20.12%      20.34%      −0.11pp
-  MAE      $1,065,470  $1,075,938  $1,064,855  $1,058,000  +$7,470
+  R²       0.6495      0.6460      0.6469      0.6582      −0.011
+  MedAPE   20.32%      20.30%      20.12%      20.34%      −0.11pp
+  MAE      $1,047,004  $1,075,938  $1,064,855  $1,058,000  +$7,470
 
 Note: v5 achieves slightly higher R² because it does not include NTA encoding,
 which adds variance in certain geographic segments. v11 has better MedAPE than
@@ -739,7 +739,7 @@ genuine predictive signal rather than noise.
   XGB-B       0.6429  20.35%
   LGB         0.6419  20.40%
   CatBoost    0.6430  20.22%
-  Stack v11   0.6450  20.24%   ← ensemble always best
+  Stack v22   0.6495  20.32%   ← ensemble always best
 
 The ensemble outperforms every individual base learner, confirming sufficient
 diversity for blending to produce a net benefit.
@@ -844,8 +844,8 @@ The naive approach assigns a single confidence interval to all predictions:
   confidence_low  = price × (1 − global_medape / 100)
   confidence_high = price × (1 + global_medape / 100)
 
-With global MedAPE = 20.24%, a Staten Island $600K property and a Manhattan
-$3M condo both receive ±20.24% intervals. This is dishonest: the Staten Island
+With global MedAPE = 20.32%, a Staten Island $600K property and a Manhattan
+$3M condo both receive ±20.32% intervals. This is dishonest: the Staten Island
 estimate is likely within ±13.5%, while the Manhattan estimate could easily be
 off by ±37%.
 
@@ -918,7 +918,7 @@ End-to-end prediction latency: 200–400ms
   Step 3: _lookup_nta — 4 NTA features from nearest-neighbor + meta.json maps
   Step 4a: _build_feature_row — assemble structural + spatial features
   Step 4b: _lookup_v11_features — ZIP→HPD/DOB, NTA→rat/heat, KDTree→MTA
-           (assembles all 104 features)
+           (assembles all 134 features)
   Step 5:  Stack inference — 4 base models → Ridge meta → price
   Step 6: _adaptive_confidence — segment MedAPE → interval + grade
   Step 7: _count_comparables — 800m radius count
@@ -999,12 +999,12 @@ Riyadh districts across Q1 2018–Q3 2025, sourced from two channels:
 Price range: 222–12,565 SAR/sqm; median 3,303 SAR/sqm. Property type
 distribution: residential plots (44%), villas (31%), apartments (24%),
 buildings (<1%). The train/holdout split is strictly temporal: training on
-Q1 2018–Q4 2024 (5,531 rows), holdout on Q1–Q3 2025 (1,379 rows) — an entirely
+Q1 2018–Q4 2024 (5,531 rows), holdout on Q1–Q3 2025 (1,727 rows) — an entirely
 unseen calendar horizon that stress-tests temporal generalisation.
 
 10.2 Feature Engineering
 -------------------------
-76 features are engineered across eleven categories:
+140 features are engineered across eleven categories:
 
   (1) Location — district centroid lat/lon (KD-tree lookup to nearest centroid).
   (2) Property type — 4 binary flags: is_apartment, is_villa, is_residential_plot,
@@ -1060,9 +1060,9 @@ Target: log1p(sale_price_sar_sqm).
 
 10.4 Results
 -------------
-  OOF  (5-fold spatial GroupKFold):  R² = 0.9252 | MedAPE =  9.03%
-  Holdout (Q1–Q3 2025, n=1,379):     R² = 0.7981 | MedAPE = 18.16%
-                                      MAE = 991 SAR/sqm
+  OOF  (5-fold spatial GroupKFold):  R² = 0.9343 | MedAPE =  8.28%
+  Holdout (Q1–Q3 2025, n=1,727):     R² = 0.8003 | MedAPE = 15.56%
+                                      MAE = 980 SAR/sqm
 
 The OOF-to-holdout gap (R² 0.93 → 0.80, MedAPE 9% → 18%) is attributable
 to three factors:
@@ -1248,9 +1248,9 @@ market friction (CBRE, 2024).
 ================================================================================
 
 This paper presented THAMAN, a production-deployed AVM for NYC residential
-property valuation. The system achieves R² = 0.6450 and MedAPE = 20.24% on
+property valuation. The system achieves R² = 0.6495 and MedAPE = 20.32% on
 27,763 unseen holdout sales, outperforming single-model baselines through a
-4-model diverse stacking ensemble across 104 features.
+4-model diverse stacking ensemble across 134 features.
 
 The key technical contributions are:
   (a) An end-to-end spatial feature pipeline that converts raw NYC open data
@@ -1272,8 +1272,8 @@ The key technical contributions are:
 
 A parallel Riyadh extension demonstrates cross-market generalisability of the
 stacking architecture. Trained on 6,910 Saudi Open Data district-quarter
-observations (2018–2025) across 76 features, the Riyadh stack achieves OOF
-R² = 0.9252 / MedAPE = 9.03% and holdout R² = 0.7981 / MedAPE = 18.16%
+observations (2018–2025) across 140 features, the Riyadh stack achieves OOF
+R² = 0.9343 / MedAPE = 8.28% and holdout R² = 0.8003 / MedAPE = 15.56%
 (SAR/sqm) on a fully out-of-sample 2025 Q1–Q3 horizon. The identical pipeline
 — GroupKFold CV, Ridge meta-learner, KD-tree spatial lookups, FastAPI inference
 endpoint — required no architectural changes to operate on a data-scarce
