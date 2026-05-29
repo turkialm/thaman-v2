@@ -1,6 +1,6 @@
 Learner,R2_Holdout,MedAPE_pct
-xgb_a,0.6469,20.22
-xgb_b,0.6426,20.4
-lightgbm,0.6453,20.81
-catboost,0.6497,20.5
-Stack_Ridge_meta,0.6516,20.1
+xgb_a,0.6445,20.56
+xgb_b,0.6387,20.67
+lightgbm,0.6432,20.84
+catboost,0.6482,20.60
+Stack_Ridge_meta,0.6495,20.32
