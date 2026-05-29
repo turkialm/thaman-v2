@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>THAMAN — Model Analytics v2.1</title>
+  <title>THAMAN — Model Analytics v22</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -212,8 +212,8 @@
       </div>
     </div>
     <div class="header-badges">
-      <span class="badge badge-green" id="hdrStack">Stack v12</span>
-      <span class="badge badge-blue"  id="hdrR2">R² = 0.645</span>
+      <span class="badge badge-green" id="hdrStack">Stack v22</span>
+      <span class="badge badge-blue"  id="hdrR2">R² = 0.6495</span>
       <span class="badge badge-purple" id="chartsFeaturesBadge">134 Features</span>
       <span class="badge badge-gray">Spatial CV</span>
       <div class="lang-toggle">
@@ -1854,7 +1854,7 @@ async function loadMetrics() {
           `XGB-A: ${(bm['XGB-A']||0).toFixed(4)} · LGB: ${(bm['LGB']||0).toFixed(4)} · CAT: ${(bm['CAT']||0).toFixed(4)}`;
       }
       if (kpiSubs[1]) kpiSubs[1].textContent = `±${nyc.hold_medape.toFixed(1)}% median error`;
-      if (kpiSubs[5]) kpiSubs[5].textContent = `v20: ${nyc.n_features - 1} features (+BBL history v21)`;
+      if (kpiSubs[5]) kpiSubs[5].textContent = `v22: ${nyc.n_features} features (NTA×bldgtype lags added)`;
 
       // Chart 0: update stack compare chart with live base model data
       const bm  = nyc.base_models  || {};

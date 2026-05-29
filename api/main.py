@@ -1,5 +1,5 @@
 """
-THAMAN Property Valuation API  (v2 — 71 features)
+THAMAN Property Valuation API  (v22 — 134 features)
 ==============================
 FastAPI backend for the THAMAN AI-powered PropTech system.
 
@@ -617,8 +617,8 @@ app = FastAPI(
     description=(
         "AI-powered NYC property price estimator. "
         "Combines structural attributes + Quality-of-Life indicators "
-        "using GIS spatial lookups + XGBoost+LightGBM+CatBoost Stack (R²=0.646, MedAPE=20.16%, "
-        "94 features, spatial CV validated, luxury sub-model for Manhattan $3M+)."
+        "using GIS spatial lookups + XGBoost+LightGBM+CatBoost Stack (R²=0.6495, MedAPE=20.32%, "
+        "134 features, spatial CV validated, luxury sub-model for Manhattan $3M+)."
     ),
     version="4.0.0",
     lifespan=lifespan,
@@ -661,7 +661,7 @@ _DIST_COLS = [
 def _build_feature_row(req: PredictRequest, spatial_feats: dict) -> dict:
     """
     Merge spatial auto-features with user-provided property attributes.
-    Returns a flat dict matching feature_names from meta.json (v2 — 71 features).
+    Returns a flat dict matching feature_names from meta.json (v22 — 134 features).
     """
     feat = dict(spatial_feats)          # start with spatial features
     bc   = req.bldgclass.upper().strip()
@@ -1052,10 +1052,10 @@ def api_info():
         "name":        "THAMAN Property Valuation API",
         "version":     "2.2.0",
         "description": "AI-powered NYC property price estimator",
-        "model":       "XGBoost + LightGBM + CatBoost Stack v12 (109 features, spatial CV validated)",
+        "model":       "XGBoost + LightGBM + CatBoost Stack v22 (134 features, spatial CV validated)",
         "performance": {
-            "R2_holdout":   0.6446,
-            "MedAPE_pct":   20.31,
+            "R2_holdout":   0.6495,
+            "MedAPE_pct":   20.32,
             "MAE_usd":      1065028,
             "base_xgb_r2":  0.6409,
             "base_lgb_r2":  0.6386,
