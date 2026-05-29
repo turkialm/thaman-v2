@@ -1559,7 +1559,7 @@ function showCity(city) {
   const rm = window._riyadhMetrics;
   document.getElementById('hdrStack').textContent            = isRiyadh ? (rm ? rm.version : 'riyadh_v11') : 'Stack v22';
   document.getElementById('hdrR2').textContent               = isRiyadh ? (rm ? `R² = ${rm.hold_r2.toFixed(4)}` : 'R² = 0.8003') : 'R² = 0.6495';
-  document.getElementById('chartsFeaturesBadge').textContent = isRiyadh ? (rm ? `${rm.n_features} Features` : '140 Features') : '131 Features';
+  document.getElementById('chartsFeaturesBadge').textContent = isRiyadh ? (rm ? `${rm.n_features} Features` : '140 Features') : '134 Features';
   if (isRiyadh) loadRiyadhCharts();
 }
 
