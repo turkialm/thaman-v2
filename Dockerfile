@@ -17,20 +17,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code and runtime data
-COPY api/        api/
-COPY models/scorer.py           models/scorer.py
-COPY models/meta.json           models/meta.json
-COPY models/xgboost_model.json  models/xgboost_model.json
-COPY models/thaman_stack.pkl    models/thaman_stack.pkl
-COPY models/luxury_model.json   models/luxury_model.json
-COPY models/riyadh_stack.pkl    models/riyadh_stack.pkl
-COPY models/riyadh_meta.json    models/riyadh_meta.json
-COPY frontend/   frontend/
+COPY api/             api/
+COPY models/scorer.py models/scorer.py
+COPY models/spatial.py models/spatial.py 2>/dev/null || true
+COPY frontend/        frontend/
+COPY download_models.py download_models.py
+COPY app.py           app.py
 
-# Runtime data files only (training data excluded via .gitignore)
-# features_v4.csv preferred (v4 NTA stats); spatial.py falls back to features.csv
-COPY data/processed/features_v4.csv              data/processed/features_v4.csv
-COPY data/processed/features.csv                 data/processed/features.csv
+# Static data files (small — not on HF Hub)
 COPY data/raw/nta_boundaries.geojson             data/raw/nta_boundaries.geojson
 COPY data/raw/airbnb_listings.csv                data/raw/airbnb_listings.csv
 COPY data/raw/MTA_Subway_Stations_20260308.csv   data/raw/MTA_Subway_Stations_20260308.csv
@@ -39,14 +33,6 @@ COPY data/raw/parks_with_coords.csv              data/raw/parks_with_coords.csv
 COPY data/raw/schools.csv                        data/raw/schools.csv
 COPY data/raw/elementary_schools.csv             data/raw/elementary_schools.csv
 COPY data/raw/mortgage_rates.csv                 data/raw/mortgage_rates.csv
-# v4 additions: waterfront & bike-lane distance features
-COPY data/raw/nyc_coastline_pts.npy              data/raw/nyc_coastline_pts.npy
-COPY data/raw/nyc_bike_lanes.geojson             data/raw/nyc_bike_lanes.geojson
-# Riyadh spatial + district layer
-COPY data/processed/features_riyadh.csv          data/processed/features_riyadh.csv
-COPY data/processed/riyadh_district_polygons.geojson  data/processed/riyadh_district_polygons.geojson
-COPY data/processed/nta_simplified.geojson        data/processed/nta_simplified.geojson
-COPY data/processed/district_centroids.csv        data/processed/district_centroids.csv
 COPY data/raw/metro-stations-in-riyadh-by-metro-line-and-station-type-2024.geojson  data/raw/metro-stations-in-riyadh-by-metro-line-and-station-type-2024.geojson
 COPY data/raw/bus-stops-in-riyadh-by-bus-route-direction-and-shelter-type-2024.geojson  data/raw/bus-stops-in-riyadh-by-bus-route-direction-and-shelter-type-2024.geojson
 COPY data/raw/traffic-intersections-by-main-street-and-cross-street-2024.geojson  data/raw/traffic-intersections-by-main-street-and-cross-street-2024.geojson
@@ -59,9 +45,17 @@ COPY data/raw/riyadh_hospitals.csv               data/raw/riyadh_hospitals.csv
 COPY data/raw/riyadh_parks.csv                   data/raw/riyadh_parks.csv
 COPY data/raw/rcrc_entertainment.csv             data/raw/rcrc_entertainment.csv
 COPY data/raw/saudi_listings_haraj_20260518.csv  data/raw/saudi_listings_haraj_20260518.csv
-# Note: overture_places.geojson (590MB) is gitignored; POI counts degrade to 0 on HF
+COPY data/processed/features_riyadh.csv          data/processed/features_riyadh.csv
+COPY data/processed/features_riyadh_v2.csv       data/processed/features_riyadh_v2.csv
+COPY data/processed/riyadh_district_polygons.geojson  data/processed/riyadh_district_polygons.geojson
+COPY data/processed/nta_simplified.geojson        data/processed/nta_simplified.geojson
+COPY data/processed/district_centroids.csv        data/processed/district_centroids.csv
+
+# Create model dirs so download_models.py can write into them
+RUN mkdir -p models data/raw
 
 # Hugging Face Spaces requires port 7860
 EXPOSE 7860
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "7860"]
+# app.py downloads models from HF Hub at startup, then launches uvicorn
+CMD ["python", "app.py"]
