@@ -214,7 +214,7 @@
     <div class="header-badges">
       <span class="badge badge-green" id="hdrStack">Stack v12</span>
       <span class="badge badge-blue"  id="hdrR2">R² = 0.645</span>
-      <span class="badge badge-purple" id="chartsFeaturesBadge">109 Features</span>
+      <span class="badge badge-purple" id="chartsFeaturesBadge">134 Features</span>
       <span class="badge badge-gray">Spatial CV</span>
       <div class="lang-toggle">
         <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
@@ -474,8 +474,8 @@
 
     <!-- ── Chart: Predicted vs Actual Scatter ───────────────── -->
     <div class="chart-card span-2" id="scatterCard">
-      <h2>🎯 Predicted vs Actual — NYC Holdout (v21)</h2>
-      <div class="chart-sub">2,000 randomly sampled holdout transactions · coloured by borough · diagonal = perfect prediction · full-stack R²=0.6516 · MedAPE=20.10%</div>
+      <h2>🎯 Predicted vs Actual — NYC Holdout (v22)</h2>
+      <div class="chart-sub">2,000 randomly sampled holdout transactions · coloured by borough · diagonal = perfect prediction · full-stack R²=0.6495 · MedAPE=20.32%</div>
       <div id="scatterLoading" style="text-align:center;padding:40px;color:#9ca3af;font-size:.85rem">Loading scatter data…</div>
       <div id="scatterWrap" style="display:none">
         <canvas id="scatterChart" style="max-height:420px"></canvas>
@@ -629,7 +629,7 @@
       datasets: [
         {
           label: 'R² Holdout',
-          data: [0.6470, 0.6416, 0.6466, 0.6482, 0.6507],
+          data: [0.6445, 0.6387, 0.6432, 0.6482, 0.6495],
           backgroundColor: [C.blueLt, C.tealLt, C.purpleLt, C.greenLt, C.orangeLt || '#fde68a'],
           borderColor:     [C.blue,   C.teal,   C.purple,   C.green,   C.orange],
           borderWidth: 2.5,
@@ -638,7 +638,7 @@
         },
         {
           label: 'MedAPE (%)',
-          data: [20.35, 20.48, 20.66, 20.44, 20.10],
+          data: [20.56, 20.67, 20.84, 20.60, 20.32],
           type: 'line',
           borderColor: C.orange,
           backgroundColor: 'transparent',
@@ -773,7 +773,7 @@
       const sub = document.getElementById('c1Sub');
       if (sub && data[0]) sub.textContent =
         `Top feature: ${FEAT_LABELS[data[0].feature] || data[0].feature} (${data[0].category}) — `
-        + `LGB gain-based importance across ${data.length} of ${130} features`;
+        + `LGB gain-based importance across ${data.length} of ${134} features`;
     } catch(e) {
       console.warn('Feature importance load failed:', e.message);
       // Fallback: render placeholder text in chart area
@@ -856,7 +856,7 @@
       labels: ['Train R²', 'Val R²', 'Holdout R²', 'Spatial CV R²'],
       datasets: [
         {
-          label: 'v2.1 Stack',
+          label: 'v22 Stack',
           data: [0.829, 0.703, 0.6509, 0.5585],
           backgroundColor: [C.blueLt, C.tealLt, C.greenLt, C.orangeLt],
           borderColor:     [C.blue,   C.teal,   C.green,   C.orange],
@@ -1225,7 +1225,7 @@
           borderRadius: 5,
         },
         {
-          label: 'v2.1 Stack',
+          label: 'v22 Stack',
           data: [1.056, 61.51, 20.29],
           backgroundColor: [C.greenLt, C.redLt, C.tealLt],
           borderColor:     [C.green,   C.red,   C.teal],
@@ -1409,9 +1409,9 @@
 
   const CHARTS_TR = {
     en: {
-      tagline:    'Model Analytics Dashboard v2.1',
+      tagline:    'Model Analytics Dashboard v22',
       backLink:   '← Back to Map',
-      features:   '109 Features',
+      features:   '134 Features',
       pageTitle:  'THAMAN v22 — NYC Property Valuation Stack',
       pageSub:    'XGBoost + LightGBM + CatBoost + Ridge meta · 134 features · HPD/DOB/QoL/transit signals · Spatial GroupKFold CV · 157,329 NYC sales',
       kpi1: 'R² Stack Holdout',
@@ -1451,7 +1451,7 @@
       cmH:  'Actual ↓ / Predicted →',
     },
     ar: {
-      tagline:    'لوحة تحليلات النموذج v2.1',
+      tagline:    'لوحة تحليلات النموذج v22',
       backLink:   'الخريطة →',
       features:   '134 ميزة',
       pageTitle:  'ثمن v22 — نظام تقييم عقارات نيويورك',
@@ -1462,12 +1462,12 @@
       kpi4: 'دقة فئة السعر',       kpi4s: 'ضمن فئة واحدة: 96.7%',
       kpi5: 'جولات التدريب',       kpi5s: 'النموذج القديم: 917 جولة',
       kpi6: 'الميزات',             kpi6s: 'النموذج القديم: 50 ميزة (+20 جديدة)',
-      c0t: '⚖️ مقارنة نماذج التكديس v2.1 (XGB + LGB + CatBoost)',
+      c0t: '⚖️ مقارنة نماذج التكديس v22 (XGB + LGB + CatBoost)',
       c0s: 'R² ومتوسط الخطأ لكل نموذج أساسي مقارنة بنموذج Ridge المُجمَّع — CatBoost يضيف تنوعاً ويقلل الخطأ بـ 0.19%',
       c1t: '🔍 أهمية المتغيرات (SHAP) — أعلى 20 ميزة',
       c1s: 'متوسط |SHAP| على بيانات الاختبار — الترميز المستهدف لفئة المبنى أصبح أقوى متنبئ',
-      c2t: '⚡ التطور: النموذج الأساسي → v1 → v2 → التكديس v2.1',
-      c2s: 'التكديس v2.1 على 185 ألف صف يحقق R²=0.651 مقابل النموذج الأساسي 0.238 — 5× بيانات رفعت R² من 0.591 إلى 0.651',
+      c2t: '⚡ التطور: النموذج الأساسي → v1 → v2 → التكديس v22',
+      c2s: 'التكديس v22 على 185 ألف صف يحقق R²=0.6495 مقابل النموذج الأساسي 0.238 — 5× بيانات رفعت R² من 0.591 إلى 0.6495',
       c3t: '📈 التدريب · التحقق · الاختبار · التحقق المكاني',
       c3s: 'التحقق المكاني (0.559±0.06) هو المقياس الحقيقي للتعميم — تباين الطيات يكشف صعوبة كل منطقة',
       c4t: '🗂️ توزيع فئات الميزات (71 ميزة)',
@@ -1480,9 +1480,9 @@
       c7s: 'الدقة والاستدعاء وF1 لكل فئة — $3M-10M هي الأصعب (استدعاء منخفض: 41.4%)',
       c8t: '🗺️ متوسط الخطأ حسب المنطقة الإدارية',
       c8s: 'منهاتن أصعب ضعفين من ستاتن آيلاند — تنوع الأسعار الكبير داخل المناطق يزيد الخطأ',
-      c9t: '🎛️ ملف المعاملات الفائقة (v2)',
-      c9s: 'v2 أكثر انتظاماً: معدل التعلم أقل، عقوبات أعلى، الحد الأدنى للعينات أعلى',
-      c10t: '📉 مقارنة مقاييس الخطأ (v2 مقابل v1)',
+      c9t: '🎛️ ملف المعاملات الفائقة (v22)',
+      c9s: 'v22 أكثر انتظاماً: معدل التعلم أقل، عقوبات أعلى، الحد الأدنى للعينات أعلى',
+      c10t: '📉 مقارنة مقاييس الخطأ (v22 مقابل النموذج الأساسي)',
       c10s: 'متوسط الخطأ المطلق انخفض 46% بفضل سقف $10M — متوسط الخطأ المئوي ارتفع قليلاً لأمانة التقييم المكاني',
       c11t: '🗺️ حدود ضبط مؤشرات جودة الحياة (p99)',
       c11s: 'ثلاثة مؤشرات لجودة الحياة تُقيَّد عند النسيل المئوي 99 — المناطق الشاذة (جريمة عالية/ضجيج) تُقلَّص لمنع هيمنتها',
@@ -1829,9 +1829,9 @@ async function loadMetrics() {
 
     if (nyc && nyc.hold_r2 != null) {
       // Header badges
-      document.getElementById('hdrStack').textContent         = `Stack ${nyc.version || 'v21'}`;
+      document.getElementById('hdrStack').textContent         = `Stack ${nyc.version || 'v22'}`;
       document.getElementById('hdrR2').textContent            = `R² = ${nyc.hold_r2.toFixed(4)}`;
-      document.getElementById('chartsFeaturesBadge').textContent = `${nyc.n_features || 130} Features`;
+      document.getElementById('chartsFeaturesBadge').textContent = `${nyc.n_features || 134} Features`;
 
       // Page title subtitle
       const sub = document.getElementById('pageSubtitle');
@@ -1844,7 +1844,7 @@ async function loadMetrics() {
       if (kpiCards[1]) kpiCards[1].textContent = nyc.hold_medape.toFixed(2) + '%';
       if (kpiCards[2]) kpiCards[2].textContent = nyc.hold_mae_usd
         ? '$' + Math.round(nyc.hold_mae_usd / 1000) + 'K' : '—';
-      if (kpiCards[5]) kpiCards[5].textContent = nyc.n_features || 130;
+      if (kpiCards[5]) kpiCards[5].textContent = nyc.n_features || 134;
 
       // KPI subs
       const kpiSubs = document.querySelectorAll('.metric-card .metric-sub');
