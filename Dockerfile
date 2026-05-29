@@ -55,14 +55,11 @@ COPY data/processed/asking_price_spreads_nyc.json data/processed/asking_price_sp
 COPY data/processed/asking_price_spreads_riyadh.json data/processed/asking_price_spreads_riyadh.json
 COPY data/processed/bayut_listings_riyadh.json    data/processed/bayut_listings_riyadh.json
 
-# Create model dirs so download_models.py can write into them
-RUN mkdir -p models data/raw
-
-# Download models at BUILD TIME — baked into image, no cold-start delay
-RUN python download_models.py
+# Create model dirs so download_models.py can write into them at runtime
+RUN mkdir -p models data/raw data/processed
 
 # Hugging Face Spaces requires port 7860
 EXPOSE 7860
 
-# Launch directly — models already present in image
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "7860"]
+# app.py downloads models from HF Hub at startup, then launches uvicorn
+CMD ["python", "app.py"]
