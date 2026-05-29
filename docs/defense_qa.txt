@@ -25,7 +25,7 @@ DETAIL:
 - The holdout period is 2025 Q1–Q3 — entirely new market conditions
   including post-2024 macro shifts (REI index, salary data).
 - A gap of ~14 R² points (0.93 → 0.79) is expected and honest. The holdout
-  metric is the number to cite: R²=0.79, MedAPE=18.16%.
+  metric is the number to cite: R²=0.79, MedAPE=15.56%.
 
 ─────────────────────────────────────────────────────────────────────
 
@@ -46,18 +46,18 @@ DETAIL:
 
 ─────────────────────────────────────────────────────────────────────
 
-Q: MedAPE of 18.16% seems high. Is that good enough?
+Q: MedAPE of 15.56% seems high. Is that good enough?
 
 SHORT: Industry benchmark for AVM in emerging markets is 15–25%.
-18.16% is within standard range, especially for district aggregates without
+15.56% is within standard range, especially for district aggregates without
 parcel-level data.
 
 DETAIL:
 - Zillow Zestimate (US, individual parcels, 30+ years of data): ~7% MedAPE.
 - Saudi Arabia has no open parcel-level register. We use Ministry of Justice
   quarterly summaries — district medians, not individual deeds.
-- Given the data constraint, 18.16% on 2025 holdout (new macro period) is
-  competitive. OOF MedAPE=9.03% shows the model fits well within-sample.
+- Given the data constraint, 15.56% on 2025 holdout (new macro period) is
+  competitive. OOF MedAPE=8.28% shows the model fits well within-sample.
 - For context: apartment MedAPE=16.42%, villa=14.46%. Residential plot has
   highest error (25.84%) because land prices are most location-sensitive and
   plot-level features (exact shape, road frontage) are unavailable.
@@ -239,7 +239,7 @@ DETAIL:
 - Districts with fewer than 10 training rows exist (rural outskirts).
   The model uses those districts' features but the confidence interval
   widens because the district MedAPE is not well-estimated.
-- Model returns medape_pct from global holdout (18.16%) as fallback
+- Model returns medape_pct from global holdout (15.56%) as fallback
   for confidence interval computation — no district-specific table.
 
 ─────────────────────────────────────────────────────────────────────
@@ -302,26 +302,26 @@ SECTION 6 — COMPARISON NYC vs RIYADH
 Q: What are the main differences between the NYC and Riyadh models?
 
 NYC MODEL:
-- 104 features (vs 76 Riyadh)
+- 134 features (vs 76 Riyadh)
 - Parcel-level individual transactions (185K rows)
 - 10-fold GroupKFold by NTA code
 - 4 base learners: XGB-A, XGB-B (structure-only), LGB, CatBoost
 - Ridge meta with positive=True (non-negative constraint)
 - Target: log1p(sale_price_usd)  → USD total price
 - Trained 2022–2026; holdout = newest 15% by date
-- R²=0.6509, MedAPE=20.24% on holdout
+- R²=0.6509, MedAPE=20.32% on holdout
 - Features: structural (sqft, floors, age, units), spatial (subway, parks,
   311 complaints, crime, air quality, NTA income, Airbnb density, FAR)
 
 RIYADH MODEL:
-- 76 features (vs 104 NYC)
+- 140 features (vs 104 NYC)
 - District-quarter aggregate rows (6,910 rows)
 - 5-fold GroupKFold by district_ar
 - 3 base learners: XGBoost, LightGBM, CatBoost
 - Ridge meta unconstrained; CatBoost dominates (coef=0.721)
 - Target: log1p(sale_price_sar_sqm) → SAR per sqm
 - Trained 2018–2024; holdout = 2025 Q1–Q3
-- R²=0.7981, MedAPE=18.16% on holdout
+- R²=0.8003, MedAPE=15.56% on holdout
 - Features: transit (metro lines, bus BRT), commercial density, air quality
   (NO2/SO2/PM10/O3), mosques, malls, schools, hospitals, parks,
   entertainment, REI price index, SAMA salary data, district aggregates
@@ -367,7 +367,7 @@ SECTION 7 — DEMO FLOW SCRIPT (2-minute version)
 [1:35] "Let me show the analytics dashboard."
        → Click Analytics button
        → Charts load: price distribution, borough/district breakdown,
-         model performance KPIs (OOF 9.03%, Holdout 18.16%, R²=0.798).
+         model performance KPIs (OOF 8.28%, Holdout 15.56%, R²=0.798).
 
 [1:50] "The system covers both cities with independent models —
         NYC for individual parcels, Riyadh for district-level estimation."

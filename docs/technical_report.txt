@@ -345,7 +345,7 @@ projects) from dominating:
 
 These caps are stored in meta.json and applied at inference.
 
-4.11 Complete Feature List (104 features in model order)
+4.11 Complete Feature List (134 features in model order)
 ──────────────────────────────────────────────────────────
 
 CATEGORY           FEATURES
@@ -488,7 +488,7 @@ Ridge meta (L2 linear blending):
 
 Selection: whichever achieves higher holdout R². In v11, Ridge wins:
   LGB meta holdout: R²=0.6349  (learned OOF noise — meta-overfitting)
-  Ridge meta holdout: R²=0.6450 (conservative, stable weights)
+  Ridge meta holdout: R²=0.6495 (conservative, stable weights)
 
 Ridge weights (positive=True prevents negative coefficients):
   [XGB-A: w1, XGB-B: w2, LGB: w3, CAT: w4]  — summing to ~1.0
@@ -526,7 +526,7 @@ borough×class encoding.
 6. NYC MODEL — RESULTS
 ────────────────────────────────────────────────────────────────────────────────
 
-6.1 Overall Holdout Performance (Stack v11, 27,763 sales)
+6.1 Overall Holdout Performance (Stack v22, 27,763 sales)
 ───────────────────────────────────────────────────────────
 
 Model                   R²        MAE (USD)      MedAPE
@@ -535,10 +535,10 @@ XGB-A (deep)            0.6443    (not stored)   20.13%
 XGB-B (shallow)         0.6402    (not stored)   20.22%
 LightGBM (wide)         0.6403    (not stored)   20.28%
 CatBoost (high-cap)     0.6426    (not stored)   20.35%
-Stack v11 (Ridge meta)  0.6450    $1,065,470     20.24%
+Stack v22 (Ridge meta)  0.6495    $1,047,004     20.32%
 
 Improvement vs. baseline (linear regression on 3 features): R² 0.238 → 0.645
-Improvement vs. v1 (single XGBoost, 2022):                  MedAPE ~32% → 20.24%
+Improvement vs. v1 (single XGBoost, 2022):                  MedAPE ~32% → 20.32%
 
 6.2 Performance by Borough (Holdout)
 ──────────────────────────────────────
@@ -688,8 +688,8 @@ Fix applied in scripts/fix_riyadh_2024_quarters.py:
 
 Impact of fix:
   Before fix: train_rows=4,664  hold_rows=2,246  (2024 all in holdout!)
-  After fix:  train_rows=5,531  hold_rows=1,379
-  Holdout MedAPE: 23.43% → 18.16%  (dramatic improvement)
+  After fix:  train_rows=5,531  hold_rows=1,727
+  Holdout MedAPE: 23.43% → 15.56%  (dramatic improvement)
   Holdout R²:     0.675  → 0.798
 
 7.4 District Data
@@ -790,7 +790,7 @@ serve as proxies for the typical property characteristics in each district.
 
 Total rows:         6,910
 Training rows:      5,531  (quarter_id < 20251, years 2018–2024)
-Holdout rows:       1,379  (quarter_id >= 20251, years 2025 Q1–Q3)
+Holdout rows:       1,727  (quarter_id >= 20251, years 2025 Q1–Q3)
 Districts:          163 unique
 Columns (raw CSV):  87
 Features used:      76 (out of 85 in FEATURES list; 9 not in CSV)
@@ -805,7 +805,7 @@ Log-transform: log1p(sale_price_sar_sqm) during training; expm1() at inference
 
 Rows by year:
   2018: 609    2019: 684    2020: 761    2021: 891
-  2022: 971    2023: 748    2024: 867    2025: 1,379
+  2022: 971    2023: 748    2024: 867    2025: 1,727
 
 Rows by property type:
   قطعة أرض-سكنى (Residential Plot):  3,062 (44.3%)
@@ -878,7 +878,7 @@ Computed from training rows only, then applied to all rows:
 
 These capture the district's relative position and trajectory in the market.
 
-8.6 Complete Feature List (76 features)
+8.6 Complete Feature List (140 features)
 ─────────────────────────────────────────
 
 CATEGORY                  FEATURES (76 total)
@@ -927,7 +927,7 @@ Type:    Time-based on quarter_id
 Cutoff:  quarter_id < 20251 → training   (2018 Q1 – 2024 Q4)
          quarter_id >= 20251 → holdout   (2025 Q1, Q2, Q3)
 Training rows: 5,531
-Holdout rows:  1,379
+Holdout rows:  1,727
 
 The holdout represents three entirely unseen calendar quarters (Q1–Q3 2025),
 representing a forward-looking stress test rather than a random sample.
@@ -1023,22 +1023,22 @@ of the target is performed.
 10.1 OOF Cross-Validation (5-fold, training set only)
 ───────────────────────────────────────────────────────
 
-OOF ensemble mean:  R²=0.9252   MedAPE=9.03%
-OOF Ridge meta:     R²=0.9252   MedAPE=9.03%
+OOF ensemble mean:  R²=0.9343   MedAPE=8.28%
+OOF Ridge meta:     R²=0.9343   MedAPE=8.28%
 
 Individual base learner OOF (approximate, from training script output):
   XGBoost:   R²~0.88  MedAPE~12%
   LightGBM:  R²~0.87  MedAPE~13%
   CatBoost:  R²~0.90  MedAPE~10%
 
-10.2 Holdout Performance (2025 Q1–Q3, 1,379 district-quarters)
+10.2 Holdout Performance (2025 Q1–Q3, 1,727 district-quarters)
 ────────────────────────────────────────────────────────────────
 
 Metric         Value
 ──────────────────────────
-R²             0.7981
-MedAPE         18.16%
-MAE            991 SAR/sqm
+R²             0.8003
+MedAPE         15.56%
+MAE            980 SAR/sqm
 
 10.3 Performance by Property Type (Holdout)
 ─────────────────────────────────────────────
@@ -1054,7 +1054,7 @@ Building (عمارة)        N/A        Too few holdout samples for reliable est
 10.4 The OOF-to-Holdout Gap Explained
 ───────────────────────────────────────
 
-OOF MedAPE: 9.03%  vs.  Holdout MedAPE: 18.16%  (gap = 9.1 pp)
+OOF MedAPE: 8.28%  vs.  Holdout MedAPE: 15.56%  (gap = 7.3 pp)
 
 Three factors drive this gap:
 
@@ -1074,7 +1074,7 @@ Three factors drive this gap:
    have high variance, and the OOF estimates are noisy for sparse districts.
 
 Comparison to v1 (buggy 2024 encoding):
-  v1 holdout MedAPE: 23.43%  →  v2 holdout MedAPE: 18.16%  (improvement: 5.3 pp)
+  v1 holdout MedAPE: 23.43%  →  v2 holdout MedAPE: 15.56%  (improvement: 5.3 pp)
   v1 holdout R²:     0.675   →  v2 holdout R²:     0.798   (improvement: 0.12)
 
 
@@ -1178,7 +1178,7 @@ For Riyadh: positive=False (small dataset, no constraint needed)
 
 Why Ridge beats LightGBM meta for NYC:
   The four base learners are correlated (all predict log-price from the same
-  104 features). A non-linear meta-learner (LGB) can overfit to fold-specific
+  134 features). A non-linear meta-learner (LGB) can overfit to fold-specific
   OOF correlation patterns, degrading holdout performance. Ridge's L2 penalty
   forces conservative weights that generalise better.
 
@@ -1208,7 +1208,7 @@ Dimension           NYC                          Riyadh
 Data granularity    Individual transactions       District-quarter aggregates
                     (one row = one property sale) (one row = one district × quarter)
 Dataset size        185,092 training rows         5,531 training rows
-Holdout size        27,763 rows                   1,379 rows
+Holdout size        27,763 rows                   1,727 rows
 Target unit         USD total price               SAR per square metre
 Target range        $50K – $100M                  222 – 12,565 SAR/sqm
 Years covered       2022 – 2026                   2018 – 2024 (train), 2025 Q1-Q3 (hold)
@@ -1233,10 +1233,10 @@ Macro signals       Mortgage rates                 REI index, salary data, deed 
 Spatial resolution  Individual coordinates         District centroid proxy
                     (exact GPS from deed record)   (all properties in district share
                                                    the same centroid-based features)
-OOF MedAPE          Not separately reported        9.03%
-Holdout MedAPE      20.24%                        18.16%
-Holdout R²          0.6450                        0.7981
-Holdout MAE         $1,065,470 USD                991 SAR/sqm
+OOF MedAPE          Not separately reported        8.28%
+Holdout MedAPE      20.32%                        15.56%
+Holdout R²          0.6495                        0.8003
+Holdout MAE         $1,047,004 USD                980 SAR/sqm
 
 12.1 Why Riyadh OOF R² (0.93) Is So Much Higher Than NYC (0.64)
 ─────────────────────────────────────────────────────────────────
@@ -1355,7 +1355,7 @@ Request fields: latitude, longitude, bldgclass, gross_square_feet, num_floors,
 
 Processing:
   1. Build feature row via _build_feature_row() in api/main.py
-     - Compute all 104 features (distances, encodings, QoL lookups)
+     - Compute all 134 features (distances, encodings, QoL lookups)
      - Apply winsorization caps from meta.json
      - Apply walk_score_proxy computation
      - Look up v11 ZIP/NTA features from meta.json lookup tables
@@ -1388,7 +1388,7 @@ Processing:
      - Three base models predict log(price_sqm)
      - Ridge meta-learner blends predictions
      - expm1() to get SAR/sqm
-  3. Confidence interval: ±holdout_medape_pct (18.16%, global — district-level
+  3. Confidence interval: ±holdout_medape_pct (15.56%, global — district-level
      table was removed because it contained stale v1 values)
   4. SHAP explanation via CatBoost TreeExplainer on Riyadh CatBoost model
 
@@ -1422,7 +1422,7 @@ Bug 1 — Riyadh 2024 Quarter ID Encoding (FIXED)
   Effect: 867 rows (all of 2024) classified as holdout, missing Metro-era data.
   Fix: scripts/fix_riyadh_2024_quarters.py patches CSV; training script uses
        hardcoded cutoff_qid = 20251.
-  Impact: Holdout MedAPE improved from 23.43% to 18.16%.
+  Impact: Holdout MedAPE improved from 23.43% to 15.56%.
 
 Bug 2 — Stale district_medape in riyadh_meta.json (FIXED)
   Root cause: training script uses meta_dict.update({...}) which preserves
@@ -1432,7 +1432,7 @@ Bug 2 — Stale district_medape in riyadh_meta.json (FIXED)
           interval capped to 50% for all predictions in that district.
           12/146 districts affected (all capped to 50%).
   Fix: removed district_medape key from riyadh_meta.json; all predictions now
-       use global 18.16% MedAPE for confidence intervals.
+       use global 15.56% MedAPE for confidence intervals.
 
 Bug 3 — REI Values Corrupted for 2024 Rows (FIXED)
   Root cause: _closest_qid lookup used wrong quarter_ids (40481 etc.),
@@ -1453,8 +1453,8 @@ Known Limitation 1 — No Individual Riyadh Transactions
 
 Known Limitation 2 — OOF Temporal Overlap (Riyadh)
   GroupKFold by district in a district-quarter dataset means the same calendar
-  quarter appears across all folds. The OOF MedAPE of 9.03% is therefore
-  optimistic relative to true out-of-time holdout (18.16%).
+  quarter appears across all folds. The OOF MedAPE of 8.28% is therefore
+  optimistic relative to true out-of-time holdout (15.56%).
 
 Known Limitation 3 — Mosques Not Always in OSD API
   Some smaller mosques are missing from the Saudi Open Data GeoJSON; dist_mosque_m
@@ -1511,14 +1511,14 @@ NYC Model Versions:
   v7–v9       Added prior sale price, walk score proxy, log-distances
   v10         Added NTA price trend slope, FAR features; 94 features
   v11 (2026)  Final: +HPD violations, +DOB permits, +311 granular, +MTA quality
-              104 features, 10-fold GroupKFold CV, Ridge meta, R²=0.645
+              134 features, 10-fold GroupKFold CV, Ridge meta, R²=0.645
 
 Riyadh Model Versions:
   v1 (May 2026)  First Riyadh model. Bug: 2024 quarter_id wrong, all Metro-era
                  data in holdout. OOF MedAPE=8.38%, Holdout MedAPE=23.43%.
   v2 (May 2026)  Fixed 2024 encoding bug + REI corruption. Retrained with
-                 5,531 training rows (was 4,664). OOF R²=0.9252, MedAPE=9.03%.
-                 Holdout R²=0.7981, MedAPE=18.16%. Current production model.
+                 5,531 training rows (was 4,664). OOF R²=0.9343, MedAPE=8.28%.
+                 Holdout R²=0.8003, MedAPE=15.56%. Current production model.
 
 
 ────────────────────────────────────────────────────────────────────────────────
