@@ -229,8 +229,8 @@
 
     <!-- Title -->
     <div class="page-title">
-      <h1 id="pageTitle">THAMAN v12 — NYC Property Valuation Stack</h1>
-      <p id="pageSubtitle">XGBoost + LightGBM + CatBoost + Ridge meta · 109 features · HPD/DOB/QoL/transit signals · Spatial GroupKFold CV · 185K NYC sales</p>
+      <h1 id="pageTitle">THAMAN v22 — NYC Property Valuation Stack</h1>
+      <p id="pageSubtitle">XGBoost + LightGBM + CatBoost + Ridge meta · 134 features · HPD/DOB/QoL/transit signals · Spatial GroupKFold CV · 157,329 NYC sales</p>
     </div>
 
     <!-- ── KPI Metric Cards ───────────────────────────────── -->
@@ -243,9 +243,9 @@
       </div>
       <div class="metric-card">
         <div class="metric-icon">📊</div>
-        <div class="metric-value green-val">20.31%</div>
+        <div class="metric-value green-val">20.32%</div>
         <div class="metric-label" id="kpi2Label">Median APE</div>
-        <div class="metric-sub" id="kpi2Sub">±20.31% confidence interval</div>
+        <div class="metric-sub" id="kpi2Sub">±20.32% confidence interval</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">💵</div>
@@ -275,8 +275,8 @@
 
     <!-- ── Chart 0: Model Comparison — Full width ──────── -->
     <div class="chart-card span-2">
-      <h2 id="c0Title">⚖️ Stack v12 — Base Learner Comparison (XGB + LGB + CatBoost)</h2>
-      <div class="chart-sub" id="c0Sub">Holdout R² and MedAPE for each of the 4 diverse base models vs the v12 stack — 10-fold OOF + 5000 rounds + 109 features (HPD/DOB/QoL/transit); Ridge meta-learner, MedAPE 20.31%</div>
+      <h2 id="c0Title">⚖️ Stack v22 — Base Learner Comparison (XGB + LGB + CatBoost)</h2>
+      <div class="chart-sub" id="c0Sub">Holdout R² and MedAPE for each of the 4 diverse base models vs the v22 stack — 10-fold OOF + 5000 rounds + 134 features; Ridge meta-learner, MedAPE 20.32%</div>
       <div class="chart-wrap" style="height:200px">
         <canvas id="stackCompareChart"></canvas>
       </div>
@@ -284,7 +284,7 @@
 
     <!-- ── Chart 1: SHAP Top 20 — Full width ────────────── -->
     <div class="chart-card span-2">
-      <h2 id="c1Title">🔍 SHAP Feature Importance — Top 20 (v2)</h2>
+      <h2 id="c1Title">🔍 SHAP Feature Importance — Top 20 (v22)</h2>
       <div class="chart-sub" id="c1Sub">Mean |SHAP| on holdout set — target-encoded bldgclass is now the strongest predictor, replacing raw building size</div>
       <div class="chart-wrap" style="height:460px">
         <canvas id="shapChart"></canvas>
@@ -293,8 +293,8 @@
 
     <!-- ── Chart 2: v1 vs v2 vs v2.1 vs Baseline ─────────── -->
     <div class="chart-card">
-      <h2 id="c2Title">⚡ Baseline → v1 → v2 → Stack v12</h2>
-      <div class="chart-sub" id="c2Sub">v12 stack on 185K rows achieves R²=0.645 vs baseline R²=0.238 — 109 features including HPD violations, DOB permits, rodent/heat complaints, MTA transit quality</div>
+      <h2 id="c2Title">⚡ Baseline → v1 → v2 → Stack v22</h2>
+      <div class="chart-sub" id="c2Sub">v22 stack on 157K rows achieves R²=0.6495 vs baseline R²=0.238 — 134 features including HPD violations, DOB permits, rodent/heat complaints, MTA transit quality</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="baselineChart"></canvas>
       </div>
@@ -311,8 +311,8 @@
 
     <!-- ── Chart 4: Feature Categories Donut ────────────── -->
     <div class="chart-card">
-      <h2 id="c4Title">🗂️ Feature Categories Breakdown (109 Features)</h2>
-      <div class="chart-sub" id="c4Sub">v12 stack: 109 features — transit, QoL, HPD violations, DOB permits, prior sale price, NTA demographics, target-encoded building class</div>
+      <h2 id="c4Title">🗂️ Feature Categories Breakdown (134 Features)</h2>
+      <div class="chart-sub" id="c4Sub">v22 stack: 134 features — transit, QoL, HPD violations, DOB permits, prior sale price, NTA demographics, target-encoded building class</div>
       <div class="chart-wrap" style="height:290px">
         <canvas id="categoryDonut"></canvas>
       </div>
@@ -429,8 +429,8 @@
 
     <!-- ── Chart 8: Hyperparameter Radar ────────────────── -->
     <div class="chart-card">
-      <h2 id="c9Title">🎛️ Hyperparameter Profile (v2)</h2>
-      <div class="chart-sub" id="c9Sub">v2 is more regularised: LR ↓(0.05→0.03), λ ↑(1→2), α ↑(0.1→0.5), MinChild ↑(5→10), Subsample/Col ↓(0.8→0.7)</div>
+      <h2 id="c9Title">🎛️ Hyperparameter Profile (v22)</h2>
+      <div class="chart-sub" id="c9Sub">v22 stack uses regularised XGB+LGB+CAT+Ridge — LR=0.03, max_depth=8, subsample=0.7</div>
       <div class="chart-wrap" style="height:280px">
         <canvas id="radarChart"></canvas>
       </div>
@@ -438,8 +438,8 @@
 
     <!-- ── Chart 9: Error Metrics ────────────────────────── -->
     <div class="chart-card">
-      <h2 id="c10Title">📉 Error Metric Comparison (v2 vs v1)</h2>
-      <div class="chart-sub" id="c10Sub">v2 MAE drops 46% ($727K→$395K) thanks to $10M luxury cap — MedAPE slightly increases due to honest spatial evaluation</div>
+      <h2 id="c10Title">📉 Error Metric Comparison (v22 vs baseline)</h2>
+      <div class="chart-sub" id="c10Sub">v22 stack MAE vs baseline — $1,047K vs $727K baseline</div>
       <div class="chart-wrap" style="height:280px">
         <canvas id="errorChart"></canvas>
       </div>
@@ -457,7 +457,7 @@
     <!-- ── Chart 11: ACRIS Medians ───────────────────────── -->
     <div class="chart-card">
       <h2 id="c12Title">💰 ACRIS Missing-Value Imputation</h2>
-      <div class="chart-sub" id="c12Sub">When prior-sale data is absent, v2 training-set medians are used — applied to ~30% of properties with no prior-sale record</div>
+      <div class="chart-sub" id="c12Sub">When prior-sale data is absent, v22 training-set medians are used — applied to ~30% of properties with no prior-sale record</div>
       <div class="chart-wrap" style="height:230px">
         <canvas id="acrisChart"></canvas>
       </div>
@@ -1412,24 +1412,24 @@
       tagline:    'Model Analytics Dashboard v2.1',
       backLink:   '← Back to Map',
       features:   '109 Features',
-      pageTitle:  'THAMAN v12 — NYC Property Valuation Stack',
-      pageSub:    'XGBoost + LightGBM + CatBoost + Ridge meta · 109 features · HPD/DOB/QoL/transit signals · Spatial GroupKFold CV · 185K NYC sales',
+      pageTitle:  'THAMAN v22 — NYC Property Valuation Stack',
+      pageSub:    'XGBoost + LightGBM + CatBoost + Ridge meta · 134 features · HPD/DOB/QoL/transit signals · Spatial GroupKFold CV · 157,329 NYC sales',
       kpi1: 'R² Stack Holdout',
-      kpi2: 'Median APE',       kpi2s: '±20.31% on 27,763 holdout sales',
+      kpi2: 'Median APE',       kpi2s: '±20.32% on 27,763 holdout sales',
       kpi3: 'Mean Abs Error',   kpi3s: 'holdout set (27,763 rows)',
       kpi4: 'Tier Accuracy',    kpi4s: 'Within-1-tier: 96.7%',
-      kpi5: 'Boosting Rounds',  kpi5s: 'v12: 5,000 rounds · early stopping 50',
-      kpi6: 'Features',         kpi6s: 'v12: 109 features (+10 HPD/DOB/MTA v11, +5 NTA temporal v12)',
-      c0t: '⚖️ Stack v12 — Base Learner Comparison (XGB + LGB + CatBoost)',
-      c0s: 'Holdout R² and MedAPE for each base model vs the v12 Ridge stack — 10-fold OOF + 5000 rounds + 109 features; MedAPE 20.31%',
-      c1t: '🔍 SHAP Feature Importance — Top 20 (v2)',
+      kpi5: 'Boosting Rounds',  kpi5s: 'v22: 5,000 rounds · early stopping 50',
+      kpi6: 'Features',         kpi6s: 'v22: 134 features (NTA×bldgtype temporal lag added v22)',
+      c0t: '⚖️ Stack v22 — Base Learner Comparison (XGB + LGB + CatBoost)',
+      c0s: 'Holdout R² and MedAPE for each base model vs the v22 Ridge stack — 10-fold OOF + 5000 rounds + 134 features; MedAPE 20.32%',
+      c1t: '🔍 SHAP Feature Importance — Top 20 (v22)',
       c1s: 'Mean |SHAP| on holdout set — target-encoded bldgclass is now the strongest predictor, replacing raw building size',
-      c2t: '⚡ Baseline → v1 → v2 → Stack v12',
-      c2s: 'v12 stack on 185K rows achieves R²=0.645 vs baseline R²=0.238 — 109 features including HPD violations, DOB permits, MTA transit quality',
+      c2t: '⚡ Baseline → v1 → v2 → Stack v22',
+      c2s: 'v22 stack on 157K rows achieves R²=0.6495 vs baseline R²=0.238 — 134 features including HPD violations, DOB permits, MTA transit quality',
       c3t: '📈 Train · Val · Holdout · Spatial CV',
       c3s: 'Spatial CV (0.559±0.06) is the true generalisation estimate — fold variance reveals borough-level difficulty',
-      c4t: '🗂️ Feature Categories Breakdown (109 Features)',
-      c4s: 'v12 stack: 109 features — transit, QoL, HPD violations, DOB permits, prior sale price, NTA demographics, target-encoded building class',
+      c4t: '🗂️ Feature Categories Breakdown (134 Features)',
+      c4s: 'v22 stack: 134 features — transit, QoL, HPD violations, DOB permits, prior sale price, NTA demographics, target-encoded building class',
       c5t: '📦 SHAP Importance by Feature Group',
       c5s: 'Target encoding + urban gravity now dominate — together accounting for >50% of total model explanation',
       c6t: '🔲 Price Tier Confusion Matrix (Holdout: 5,256 properties)',
@@ -1438,14 +1438,14 @@
       c7s: 'Precision, Recall and F1-score for each price tier — $3M–10M is hardest (low recall: 41.4%)',
       c8t: '🗺️ MedAPE by Borough (Holdout)',
       c8s: 'Manhattan is 2× harder to predict than Staten Island — high price heterogeneity within NTAs drives the gap',
-      c9t: '🎛️ Hyperparameter Profile (v2)',
-      c9s: 'v2 is more regularised: LR ↓(0.05→0.03), λ ↑(1→2), α ↑(0.1→0.5), MinChild ↑(5→10), Subsample/Col ↓(0.8→0.7)',
-      c10t: '📉 Error Metric Comparison (v2 vs v1)',
-      c10s: 'v2 MAE drops 46% ($727K→$395K) thanks to $10M luxury cap — MedAPE slightly increases due to honest spatial evaluation',
+      c9t: '🎛️ Hyperparameter Profile (v22)',
+      c9s: 'v22 uses regularised XGB+LGB+CAT+Ridge — LR=0.03, max_depth=8, subsample=0.7',
+      c10t: '📉 Error Metric Comparison (v22 vs baseline)',
+      c10s: 'v22 stack MAE $1,047K vs baseline — stacking reduces MedAPE from 20.56% (XGB-A alone) to 20.32%',
       c11t: '🗺️ QoL Winsorization Thresholds (p99)',
       c11s: 'Three Quality-of-Life features are capped at their 99th percentile — outlier NTAs (high crime/noise) are clipped to prevent dominating predictions',
       c12t: '💰 ACRIS Missing-Value Imputation',
-      c12s: 'When prior-sale data is absent, v2 training-set medians are used — applied to ~30% of properties with no prior-sale record',
+      c12s: 'When prior-sale data is absent, v22 training-set medians are used — applied to ~30% of properties with no prior-sale record',
       c13t: '🚀 Luxury Cap Experiment (Spatial CV)',
       c13s: 'Capping sales at $10M reduces MedAPE from 22.4%→20.8% and improves R² — luxury outliers hurt generalisation',
       cmH:  'Actual ↓ / Predicted →',
@@ -1453,9 +1453,9 @@
     ar: {
       tagline:    'لوحة تحليلات النموذج v2.1',
       backLink:   'الخريطة →',
-      features:   '131 ميزة',
-      pageTitle:  'ثمن v21 — نظام تقييم عقارات نيويورك',
-      pageSub:    'XGBoost + LightGBM + CatBoost + Ridge · 131 ميزة · تحقق مكاني · 185 ألف صفقة عقارية',
+      features:   '134 ميزة',
+      pageTitle:  'ثمن v22 — نظام تقييم عقارات نيويورك',
+      pageSub:    'XGBoost + LightGBM + CatBoost + Ridge · 134 ميزة · تحقق مكاني · 157,329 صفقة عقارية',
       kpi1: 'دقة النموذج R²',
       kpi2: 'متوسط الخطأ المئوي',  kpi2s: 'فاصل ثقة ±20.32%',
       kpi3: 'متوسط الخطأ المطلق',  kpi3s: 'مجموعة الاختبار (185 ألف صف)',
