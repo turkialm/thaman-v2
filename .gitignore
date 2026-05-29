@@ -1,6 +1,4 @@
-# ── Documentation output files (local only — not pushed to repo) ─────────
-docs/*.tex
-docs/*.docx
+# ── Documentation output files (PDF kept local — source tracked) ─────────
 docs/*.pdf
 
 # ── Large training-only data files ──────────────────────────────────────
