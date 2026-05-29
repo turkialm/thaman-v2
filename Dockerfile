@@ -49,6 +49,11 @@ COPY data/processed/features_riyadh_v2.csv       data/processed/features_riyadh_
 COPY data/processed/riyadh_district_polygons.geojson  data/processed/riyadh_district_polygons.geojson
 COPY data/processed/nta_simplified.geojson        data/processed/nta_simplified.geojson
 COPY data/processed/district_centroids.csv        data/processed/district_centroids.csv
+COPY data/processed/scatter_nyc.json              data/processed/scatter_nyc.json
+COPY data/processed/scatter_riyadh.json           data/processed/scatter_riyadh.json
+COPY data/processed/asking_price_spreads_nyc.json data/processed/asking_price_spreads_nyc.json
+COPY data/processed/asking_price_spreads_riyadh.json data/processed/asking_price_spreads_riyadh.json
+COPY data/processed/bayut_listings_riyadh.json    data/processed/bayut_listings_riyadh.json
 
 # Create model dirs so download_models.py can write into them
 RUN mkdir -p models data/raw
