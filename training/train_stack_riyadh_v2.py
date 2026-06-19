@@ -104,13 +104,23 @@ FEATURES = [
     "bayut_p75_psqm",
     "bayut_iqr_psqm",
     "bayut_asking_premium",
-    # Bayut structural (apt/plot medians — villa has near-zero importance)
+    # Bayut structural (apt/plot/villa medians)
     "bayut_apt_median_psqm",
     "bayut_plot_median_psqm",
+    "bayut_villa_median_psqm",
     "bayut_apt_median_area_sqm",
     "bayut_plot_median_area_sqm",
+    "bayut_villa_median_area_sqm",
     "bayut_apt_median_rooms",
     "bayut_plot_median_rooms",
+    "bayut_villa_median_rooms",
+    # Haraj structural (type-stratified area + age — v12)
+    "haraj_apt_area_sqm",
+    "haraj_plot_area_sqm",
+    "haraj_villa_area_sqm",
+    "haraj_apt_age_yr",
+    "haraj_plot_age_yr",
+    "haraj_villa_age_yr",
     # New QoL POIs (OSM, May 2026)
     "dist_pharmacy_m", "log_dist_pharmacy_m", "pharmacy_count_500m",
     "dist_gym_m", "log_dist_gym_m", "gym_count_500m",
@@ -771,7 +781,7 @@ meta_dict.update({
     "holdout_mae_sar_sqm": round(hold_mae, 2),
     "oof_r2": round(oof_meta_r2, 4),
     "oof_medape_pct": round(oof_meta_medape, 2),
-    "model_version": "riyadh_v11",
+    "model_version": "riyadh_v12",
     "n_folds": N_FOLDS,
     "train_rows": len(work),
     "holdout_rows": len(hold),
@@ -822,7 +832,7 @@ with open(meta_path, "w") as f:
 print(f"  Updated: {meta_path}")
 
 print("\n" + "=" * 60)
-print(f"THAMAN Riyadh v11 — Training complete")
+print(f"THAMAN Riyadh v12 — Training complete")
 print(f"  OOF  R²={oof_meta_r2:.4f}  MedAPE={oof_meta_medape:.2f}%")
 print(f"  Hold R²={hold_r2:.4f}  MedAPE={hold_medape:.2f}%  MAE={hold_mae:,.0f} SAR/sqm")
 print(f"  vs v10: ΔR²={hold_r2-0.7634:+.4f}  ΔMedAPE={18.45-hold_medape:+.2f}pp")

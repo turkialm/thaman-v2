@@ -1,7 +1,7 @@
 """
 generate_scatter.py
 ===================
-Generates predicted-vs-actual scatter plot data from the NYC v21 model.
+Generates predicted-vs-actual scatter plot data from the NYC v22 model.
 
 Approach:
   1. Load features_v6.csv + apply same time-based 15% holdout split
@@ -26,7 +26,7 @@ PROC      = os.path.join(BASE, "data", "processed")
 MODEL_DIR = os.path.join(BASE, "models")
 
 print("=" * 60)
-print("  THAMAN — Scatter Plot Data Generator (NYC v21)")
+print("  THAMAN — Scatter Plot Data Generator (NYC v22)")
 print("=" * 60)
 
 # ── 1. Load data ─────────────────────────────────────────────────
@@ -315,7 +315,7 @@ print(f"  Sample: {len(out_rows)} points ({sum(1 for r in out_rows if r['borough
 # ── 9. Save ───────────────────────────────────────────────────────
 out = {
     "meta": {
-        "model":   "NYC v21",
+        "model":   "NYC v22",
         "r2":      round(r2_val, 4),
         "medape":  round(medape_val, 2),
         "n_total": len(df_hold),

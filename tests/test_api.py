@@ -227,3 +227,90 @@ def test_luxury_flag_for_high_price(client):
         assert "LUXURY_SEGMENT" in qc["qc_flags"]
     # qc_flags is always a list (may be empty)
     assert isinstance(qc["qc_flags"], list)
+
+
+# ── Riyadh batch ──────────────────────────────────────────────────────
+
+RIYADH_APT = {
+    "latitude": 24.75, "longitude": 46.68,
+    "property_type": "شقة", "area_sqm": 150.0,
+}
+RIYADH_VILLA = {
+    "latitude": 24.80, "longitude": 46.72,
+    "property_type": "فيلا", "area_sqm": 400.0,
+}
+
+
+def test_riyadh_batch_two_properties(client):
+    """/batch/riyadh returns SAR estimates for each property."""
+    response = client.post("/batch/riyadh", json=[RIYADH_APT, RIYADH_VILLA])
+    assert response.status_code == 200
+    data = response.json()
+    assert data["count"] == 2
+    for r in data["results"]:
+        assert "predicted_total_sar" in r
+        assert "predicted_price_sqm" in r
+        assert r["predicted_total_sar"] > 0
+
+
+def test_riyadh_batch_confidence_intervals(client):
+    """Confidence bounds must bracket the point estimate."""
+    data = client.post("/batch/riyadh", json=[RIYADH_APT]).json()
+    r = data["results"][0]
+    assert r["confidence_low_sar"]  < r["predicted_total_sar"]
+    assert r["confidence_high_sar"] > r["predicted_total_sar"]
+    assert r["confidence_low_sqm"]  < r["predicted_price_sqm"]
+    assert r["confidence_high_sqm"] > r["predicted_price_sqm"]
+
+
+def test_riyadh_batch_district_returned(client):
+    """district_ar should be a non-empty Arabic string."""
+    data = client.post("/batch/riyadh", json=[RIYADH_APT]).json()
+    r = data["results"][0]
+    assert r.get("district_ar"), "district_ar should be non-empty"
+
+
+def test_riyadh_batch_too_many(client):
+    """/batch/riyadh rejects > 50 properties."""
+    response = client.post("/batch/riyadh", json=[RIYADH_APT] * 51)
+    assert response.status_code == 400
+
+
+def test_riyadh_batch_area_in_response(client):
+    """area_sqm in response must match the input."""
+    data = client.post("/batch/riyadh", json=[RIYADH_APT]).json()
+    assert data["results"][0]["area_sqm"] == RIYADH_APT["area_sqm"]
+
+
+# ── SEO / utility endpoints ───────────────────────────────────────────
+
+def test_robots_txt(client):
+    """GET /robots.txt returns plain text with sitemap reference."""
+    r = client.get("/robots.txt")
+    assert r.status_code == 200
+    assert "User-agent" in r.text
+    assert "sitemap.xml" in r.text
+    assert r.headers["content-type"].startswith("text/plain")
+
+
+def test_sitemap_xml(client):
+    """GET /sitemap.xml returns valid XML with key URLs."""
+    r = client.get("/sitemap.xml")
+    assert r.status_code == 200
+    assert "<urlset" in r.text
+    assert "/ui" in r.text
+    assert "/ui/batch.html" in r.text
+
+
+def test_404_json_for_api_client(client):
+    """Unknown route returns 404 JSON for non-browser clients."""
+    r = client.get("/nonexistent-route-xyz")
+    assert r.status_code == 404
+    assert r.json().get("detail") is not None
+
+
+def test_404_html_for_browser(client):
+    """Unknown route returns 404 HTML when Accept: text/html."""
+    r = client.get("/nonexistent-route-xyz", headers={"accept": "text/html"})
+    assert r.status_code == 404
+    assert "THAMAN" in r.text or "404" in r.text

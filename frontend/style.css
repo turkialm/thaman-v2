@@ -1463,19 +1463,104 @@ select optgroup { color: var(--gray-500); font-style: normal; }
 .map-ctrl-btn:hover { background: #eff6ff; border-color: var(--blue); color: var(--blue-dark); box-shadow: var(--shadow-md); }
 
 /* ── Responsive tweaks ───────────────────────────────────────────────── */
+/* ── Mobile: bottom-drawer layout (≤768px) ──────────────────────── */
 @media (max-width: 768px) {
-  .layout { flex-direction: column; }
-  .map-section { height: 45vh; }
-  .sidebar { width: 100%; height: 55vh; overflow-y: auto; overscroll-behavior: contain; }
+  :root { --drawer-peek: 72px; }
+
+  /* Map fills full viewport behind drawer */
+  .layout { display: block; position: relative; }
+  .map-section {
+    position: fixed;
+    inset: var(--header-h) 0 0 0;
+    height: calc(100dvh - var(--header-h));
+  }
+  #map { height: 100%; }
+
+  /* Drawer: slides up from bottom */
+  .sidebar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    width: 100%;
+    height: 88dvh;
+    border-radius: 18px 18px 0 0;
+    border-top: none;
+    box-shadow: 0 -6px 40px rgba(0,0,0,.18);
+    transform: translateY(calc(100% - var(--drawer-peek)));
+    transition: transform .32s cubic-bezier(.32,.72,0,1);
+    will-change: transform;
+    z-index: 500;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .sidebar.drawer-open { transform: translateY(0); }
+
+  /* Drag handle — always visible at peek */
+  .drawer-handle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0 6px;
+    cursor: pointer;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--white);
+    border-radius: 18px 18px 0 0;
+  }
+  .drawer-pill {
+    width: 40px; height: 4px;
+    background: var(--gray-300);
+    border-radius: 2px;
+  }
+
+  /* Dismiss overlay when drawer open */
+  .drawer-backdrop {
+    display: none;
+    position: fixed; inset: 0; z-index: 499;
+    background: rgba(0,0,0,.15);
+  }
+  .drawer-backdrop.visible { display: block; }
+
+  /* Nav/header compress */
   .tagline { display: none; }
-  .header-badges .badge:not(.badge-blue) { display: none; }
-  :root { --sidebar-w: 100%; }
-  .btn-predict { padding: 13px; }
+  .header-badges .badge:not(.badge-blue):not(.lang-toggle) { display: none; }
+  .header-badges .lang-toggle { display: flex; }
+
+  /* Layer bar: scrollable, no scrollbar */
   .layer-bar { -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .layer-bar::-webkit-scrollbar { display: none; }
+
+  /* Touch targets */
+  .btn-predict { padding: 14px; font-size: 1rem; min-height: 52px; }
+  .addr-btn    { min-height: 42px; min-width: 42px; }
+
+  /* Building type grid: horizontal scroll on mobile */
+  .bldgtype-grid {
+    display: flex; overflow-x: auto; gap: 6px;
+    padding-bottom: 4px; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .bldgtype-grid::-webkit-scrollbar { display: none; }
+  .bldgtype-card { flex: 0 0 72px; min-width: 72px; }
+
+  /* Sticky predict button */
+  .predict-sticky {
+    position: sticky; bottom: 0;
+    background: var(--bg);
+    padding: 10px 0 6px;
+    border-top: 1px solid var(--gray-200);
+    z-index: 10;
+  }
+
+  /* Map hint: show above drawer peek */
+  .map-hint { bottom: calc(var(--drawer-peek) + 12px); }
+  #geolocBtn { bottom: calc(var(--drawer-peek) + 52px); }
 }
+
 @media (max-width: 480px) {
-  .bldgtype-grid { grid-template-columns: repeat(3, 1fr); }
   .bldgtype-card { padding: 8px 2px; }
+  .field-row { grid-template-columns: 1fr; }
 }
 
 /* ── Address Search ──────────────────────────────────────────────────── */
@@ -1783,37 +1868,7 @@ select optgroup { color: var(--gray-500); font-style: normal; }
 /* ══════════════════════════════════════════════════════════════════
    MOBILE — THUMB ZONE OPTIMISATION
    ══════════════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
-  /* Sticky predict button pinned to bottom of sidebar — thumb-reachable */
-  .predict-sticky {
-    position: sticky;
-    bottom: 0;
-    background: var(--bg);
-    padding: 10px 0 6px;
-    border-top: 1px solid var(--gray-200);
-    z-index: 10;
-  }
-  /* Building type grid scrolls horizontally — swipeable on mobile */
-  .bldgtype-grid {
-    display: flex;
-    overflow-x: auto;
-    gap: 6px;
-    padding-bottom: 4px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .bldgtype-grid::-webkit-scrollbar { display: none; }
-  .bldgtype-card {
-    flex: 0 0 72px;
-    min-width: 72px;
-  }
-  /* Map takes less space; sidebar expands */
-  .map-section  { height: 38vh; }
-  .sidebar      { height: 62vh; }
-  /* Increase touch target sizes */
-  .btn-predict  { font-size: 1rem; padding: 15px; min-height: 52px; }
-  .addr-btn     { min-height: 40px; min-width: 40px; }
-}
+/* (mobile rules consolidated above) */
 
 /* ── Riyadh mobile fixes ────────────────────────────────────────── */
 @media (max-width: 480px) {
@@ -1937,6 +1992,24 @@ select optgroup { color: var(--gray-500); font-style: normal; }
 }
 .asking-spread-badge.spread-up   { color: #b45309; }
 .asking-spread-badge.spread-down { color: #065f46; }
+
+/* !! weerate Jun 2026 multi-source benchmark row */
+.riyadh-benchmark-row {
+  font-size: 11px;
+  color: var(--gray-500);
+  padding: 8px 12px;
+  background: var(--gray-50);
+  border-radius: 6px;
+  margin: 8px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.bench-title { font-weight: 600; color: var(--gray-700); margin-right: 4px; }
+.bench-src   { background: var(--white); border: 1px solid var(--gray-200); border-radius: 4px; padding: 2px 7px; }
+.bench-above { color: var(--orange); font-weight: 700; }
+.bench-below { color: var(--green);  font-weight: 700; }
 
 .riyadh-spatial-grid {
   display: grid;

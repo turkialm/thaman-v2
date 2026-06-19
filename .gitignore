@@ -77,3 +77,9 @@ data/processed/features_v5.csv
 logs/
 data/raw/commercial-services-by-category-sub-municipality-and-district-2024*
 .claude/
+
+# Dev tool config
+CLAUDE.md
+data/processed/features_v6.csv
+data/processed/features_v7.csv
+data/processed/features_riyadh_v2.csv

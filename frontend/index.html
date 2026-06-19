@@ -4,6 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>THAMAN — NYC Property Valuation</title>
+  <meta name="description" content="Instant AI property valuations for NYC and Riyadh. Stacked ensemble ML, SHAP explainability, 20+ map layers. Free, no signup." />
+  <link rel="manifest" href="/ui/manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="THAMAN" />
+  <meta property="og:title" content="THAMAN — AI Property Valuation · NYC & Riyadh" />
+  <meta property="og:description" content="Instant AI valuations for NYC and Riyadh. Free, no signup." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="THAMAN — AI Property Valuation" />
+  <meta name="twitter:description" content="Instant AI valuations for NYC and Riyadh. Free, no signup." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://unpkg.com" crossorigin />
@@ -37,6 +49,7 @@
         <span class="badge badge-purple">MedAPE 15.56%</span>
       </span>
       <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
+      <a href="/ui/batch.html" class="badge badge-gray">📋 Batch</a>
       <button class="badge badge-gray" onclick="openCityCompare()" style="cursor:pointer;border:none">🌍 Cities</button>
       <a href="/docs" target="_blank" class="badge badge-gray">API Docs ↗</a>
       <!-- Language Toggle -->
@@ -123,8 +136,15 @@
       <div class="map-hint" id="mapHint">📍 <span id="mapHintText">Click anywhere in New York City to place a pin</span></div>
     </section>
 
+    <!-- mobile drawer backdrop -->
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
     <!-- ── Right: Sidebar ─────────────────────────────────────────── -->
     <aside class="sidebar">
+      <!-- mobile drag handle -->
+      <div class="drawer-handle" id="drawerHandle" aria-label="Toggle panel" role="button" tabindex="0">
+        <div class="drawer-pill"></div>
+      </div>
 
       <!-- How to use -->
       <div class="card card-howto">
@@ -421,9 +441,9 @@
             </button>
           </div>
           <p class="disclaimer">
-            Predictions based on Saudi open-data quarterly transactions 2018–2024.
-            Model accuracy: median error ±15.56% (MedAPE, 2025 Q1+ holdout).
-            تنبؤات مبنية على بيانات صفقات البيع الفصلية المفتوحة 2018–2026.
+            Predictions based on Suhail/MOJ transactions 2018–2026 · Holdout MedAPE ±15.56%.
+            Market benchmarks: weerate · Bayut · Knight Frank · Cavendish Maxwell · GASTAT (Jun 2026).
+            تنبؤات مبنية على بيانات سهيل/وزارة العدل 2018–2026.
           </p>
         </form>
 
@@ -471,6 +491,9 @@
             </div>
             <div class="asking-spread-badge" id="riyadhSpreadBadge"></div>
           </div>
+
+          <!-- !! weerate Jun 2026 multi-source benchmark row -->
+          <div class="riyadh-benchmark-row" id="riyadhBenchmarkRow" style="display:none"></div>
 
           <!-- Share / Copy actions -->
           <div class="share-actions" id="riyadhShareActions">
@@ -858,7 +881,7 @@
         <div class="cc-row">
           <div class="cc-cell cc-label">Training rows</div>
           <div class="cc-cell"><span class="cc-strong">185,092</span> sales records</div>
-          <div class="cc-cell"><span class="cc-strong">7,258</span> transactions</div>
+          <div class="cc-cell"><span class="cc-strong">7,258</span> district-quarter records</div>
         </div>
 
         <div class="cc-row">

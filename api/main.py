@@ -632,6 +632,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc):
+    # API paths return JSON; browser paths return 404.html
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept:
+        p = os.path.join(os.path.join(os.path.dirname(__file__), "..", "frontend"), "404.html")
+        if os.path.exists(p):
+            return FileResponse(p, status_code=404, media_type="text/html")
+    return JSONResponse({"detail": "Not found"}, status_code=404)
+
+
 # Serve the frontend at /ui  (index.html auto-served)
 _FRONTEND_DIR = os.path.join(BASE, "frontend")
 if os.path.isdir(_FRONTEND_DIR):
@@ -1035,10 +1047,41 @@ def _get_shap_drivers(feat_dict: dict) -> list[FeatureDriver]:
 
 # ── Routes ────────────────────────────────────────────────────────────
 
+@app.get("/robots.txt", include_in_schema=False)
+def robots_txt():
+    return Response(
+        content="User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n",
+        media_type="text/plain",
+    )
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+def sitemap_xml(request: Request):
+    base = str(request.base_url).rstrip("/")
+    urls = ["/", "/ui", "/ui/charts.html", "/ui/batch.html", "/ui/embed.html", "/docs"]
+    body = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    body += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for u in urls:
+        body += f"  <url><loc>{base}{u}</loc></url>\n"
+    body += "</urlset>"
+    return Response(content=body, media_type="application/xml")
+
+
 @app.get("/", tags=["Info"], include_in_schema=False)
-@app.get("/ui", tags=["Info"], include_in_schema=False)
 def root():
-    """Serve the map UI directly (no redirect chain that breaks HF Spaces iframe)."""
+    """Serve the landing page at root."""
+    landing_path = os.path.join(_FRONTEND_DIR, "landing.html")
+    if os.path.exists(landing_path):
+        return FileResponse(landing_path, media_type="text/html")
+    index_path = os.path.join(_FRONTEND_DIR, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path, media_type="text/html")
+    return RedirectResponse(url="/docs")
+
+
+@app.get("/ui", tags=["Info"], include_in_schema=False)
+def app_ui():
+    """Serve the map application UI."""
     index_path = os.path.join(_FRONTEND_DIR, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path, media_type="text/html")
@@ -1046,12 +1089,13 @@ def root():
 
 
 @app.get("/api", tags=["Info"])
-def api_info():
+def api_info(request: Request):
     """API info and available endpoints."""
+    base = str(request.base_url).rstrip("/")
     return {
         "name":        "THAMAN Property Valuation API",
         "version":     "2.2.0",
-        "description": "AI-powered NYC property price estimator",
+        "description": "AI-powered property valuation for NYC and Riyadh",
         "model":       "XGBoost + LightGBM + CatBoost Stack v22 (134 features, spatial CV validated)",
         "performance": {
             "R2_holdout":   0.6495,
@@ -1061,15 +1105,18 @@ def api_info():
             "base_lgb_r2":  0.6386,
         },
         "endpoints": {
-            "GET  /api":         "API info (this response)",
-            "GET  /health":      "Health check",
-            "GET  /bldgclasses": "List valid NYC building class codes",
-            "POST /predict":     "Predict price for one property",
-            "POST /batch":       "Predict prices for multiple properties",
-            "GET  /ui":          "Interactive map (browser)",
+            "GET  /api":           "API info (this response)",
+            "GET  /health":        "Health check",
+            "GET  /bldgclasses":   "List valid NYC building class codes",
+            "POST /predict":       "NYC price estimate (USD)",
+            "POST /predict/riyadh":"Riyadh price estimate (SAR/m²)",
+            "POST /batch":         "NYC batch predictions (up to 50)",
+            "POST /batch/riyadh":  "Riyadh batch predictions (up to 50)",
+            "GET  /ui":            "Interactive map (browser)",
+            "GET  /riyadh/stats":  "Riyadh market analytics + weerate benchmarks",
         },
-        "docs": "http://localhost:8000/docs",
-        "ui":   "http://localhost:8000/ui",
+        "docs": f"{base}/docs",
+        "ui":   f"{base}/ui",
     }
 
 
@@ -1546,6 +1593,39 @@ def predict_batch(requests: list[PredictRequest]):
     return {"count": len(results), "results": results}
 
 
+@app.post("/batch/riyadh", tags=["Prediction"])
+def predict_batch_riyadh(requests: list[RiyadhPredictRequest]):
+    """
+    Predict prices for multiple Riyadh properties at once (max 50).
+    Calls predict_riyadh() internally — same feature pipeline, no duplication.
+    """
+    if not _riyadh_spatial or not _scorer or not hasattr(_scorer, "predict_riyadh"):
+        raise HTTPException(status_code=503, detail="Riyadh model not loaded.")
+    if len(requests) > 50:
+        raise HTTPException(status_code=400, detail="Batch size limit is 50 properties.")
+
+    results = []
+    for i, req in enumerate(requests):
+        try:
+            resp = predict_riyadh(req)
+            results.append({
+                "index":               i,
+                "predicted_price_sqm": resp.predicted_price_sqm,
+                "predicted_total_sar": resp.predicted_total_sar,
+                "confidence_low_sqm":  resp.confidence_low_sqm,
+                "confidence_high_sqm": resp.confidence_high_sqm,
+                "confidence_low_sar":  resp.confidence_low_sar,
+                "confidence_high_sar": resp.confidence_high_sar,
+                "district_ar":         resp.district_ar,
+                "property_type":       resp.property_type,
+                "area_sqm":            resp.area_sqm,
+            })
+        except Exception as e:
+            results.append({"index": i, "error": str(e)})
+
+    return {"count": len(results), "results": results}
+
+
 # ── Riyadh analytics stats cache ─────────────────────────────────────
 _riyadh_stats_cache: dict | None = None
 _riyadh_stats_building: bool = False
@@ -1616,8 +1696,30 @@ def _build_riyadh_stats() -> dict:
         for r in dg.iter_rows(named=True)
     ]
 
+    # !! weerate June 2026 market benchmarks — multi-source validation
+    weerate_path = os.path.join(BASE, "data", "raw", "weerate_riyadh_jun2026.json")
+    market_benchmarks: dict = {}
+    if os.path.exists(weerate_path):
+        try:
+            with open(weerate_path, encoding="utf-8") as _wf:
+                _wr = json.load(_wf)
+            market_benchmarks = {
+                "as_of":               _wr.get("period"),
+                "multi_source_psqm":   _wr.get("multi_source_psqm", {}),
+                "growth_trends":       _wr.get("growth_trends_by_quarter", {}),
+                "price_by_bedrooms":   _wr.get("price_by_bedrooms_sar_m", {}),
+                "district_prices":     _wr.get("apartment_prices_by_district", {}),
+                "market_phase":        _wr.get("market_overview", {}).get("market_phase"),
+                "transaction_vol_chg": _wr.get("market_overview", {}).get("transaction_volume_change_pct"),
+                "rental_demand_apt":   _wr.get("market_overview", {}).get("rental_demand_apt_change_pct"),
+                "source": "weerate · Bayut · Knight Frank · Cavendish Maxwell · GASTAT · JLL",
+            }
+        except Exception:
+            pass
+
     return {"overview": overview, "price_by_year": price_by_year,
-            "price_by_type": price_by_type, "top_districts": top_districts}
+            "price_by_type": price_by_type, "top_districts": top_districts,
+            "market_benchmarks": market_benchmarks}
 
 
 @app.get("/riyadh/stats", tags=["Riyadh"])

@@ -1,0 +1,99 @@
+{
+  "source": "weerate Riyadh Residential Intelligence Report",
+  "period": "June 2026",
+  "compiled_by": "weerate (aggregated from Bayut, Knight Frank, Cavendish Maxwell, GASTAT, JLL)",
+
+  "market_overview": {
+    "total_units_tracked": 31340,
+    "companies_monitored": 59,
+    "composite_avg_psqm_sar": 5470,
+    "villa_avg_psqm_sar": 5500,
+    "apartment_avg_psqm_sar": 5470,
+    "transaction_volume_change_pct": -31,
+    "rental_demand_apt_change_pct": 19.6,
+    "rental_demand_villa_change_pct": 17.0,
+    "rei_change_pct": -0.7,
+    "market_phase": "correction_stabilizing",
+    "notes": "Strong H1 2025 growth (+15.1% villas, +13.3% apts), price correction Q4 2025 (-2.2%), stabilizing Q1 2026 (~-1.6%)"
+  },
+
+  "multi_source_psqm": {
+    "as_of": "June 2026",
+    "villas": {
+      "bayut": 5100,
+      "knight_frank": 5470,
+      "cavendish_maxwell": 5500
+    },
+    "apartments": {
+      "cavendish_maxwell": 5000,
+      "knight_frank": 5470,
+      "gastat": 6160
+    },
+    "composite_median": 5470
+  },
+
+  "supply_distribution": {
+    "by_type": {
+      "villa_pct": 57.6,
+      "apartment_pct": 42.4,
+      "villa_units": 18046,
+      "apartment_units": 13294
+    },
+    "by_region": {
+      "west_riyadh_pct": 55,
+      "east_riyadh_pct": 23,
+      "north_riyadh_pct": 15,
+      "south_riyadh_pct": 4,
+      "central_riyadh_pct": 3
+    }
+  },
+
+  "apartment_prices_by_district": {
+    "الصحافة":    { "avg_total_sar_m": 1.72, "tier": "premium" },
+    "العليا":     { "avg_total_sar_m": 1.62, "tier": "premium" },
+    "الملك فهد": { "avg_total_sar_m": 1.49, "tier": "premium" },
+    "حطين":      { "avg_total_sar_m": 1.37, "tier": "mid-high" },
+    "السليمانية": { "avg_total_sar_m": 1.34, "tier": "mid-high" },
+    "الأصالة":   { "avg_total_sar_m": 0.234, "tier": "subsidized" }
+  },
+
+  "villa_prices_by_region": {
+    "شمال الرياض": { "avg_total_sar_m": 3.98, "notes": "highest" },
+    "النرجس":      { "avg_total_sar_m": 3.50 },
+    "سدرة":        { "avg_total_sar_m": 3.00 },
+    "العارض":      { "avg_total_sar_m": 2.90 },
+    "متوسط المدينة": { "avg_total_sar_m": 2.37 },
+    "غرب الرياض": { "avg_total_sar_m": 2.10, "notes": "11% below city average, competitive" }
+  },
+
+  "price_by_bedrooms_sar_m": {
+    "studio": { "min": 0.27, "max": 0.84 },
+    "1br":    { "min": 0.60, "max": 0.91 },
+    "2br":    { "min": 0.85, "max": 1.50 },
+    "3br":    { "min": 0.89, "max": 1.84 },
+    "4br":    { "min": 2.25, "max": 3.50 },
+    "5br":    { "min": 2.29, "max": 6.61 }
+  },
+
+  "growth_trends_by_quarter": {
+    "Q1_2025": { "villa_yoy_pct": 11.0,  "apt_yoy_pct": 1.0  },
+    "Q2_2025": { "villa_yoy_pct": 15.1,  "apt_yoy_pct": 13.3 },
+    "Q4_2025": { "villa_yoy_pct": -2.0,  "apt_yoy_pct": -2.0 },
+    "Q1_2026": { "villa_yoy_pct": -1.6,  "apt_yoy_pct": -1.6 }
+  },
+
+  "mega_projects_roshn": {
+    "sedra_riyadh":  { "units": 30000, "area_m2": 20000000 },
+    "al_arous_jeddah": { "units": 18000, "area_m2": 4000000 },
+    "warfa_riyadh":  { "units": 12000, "area_m2": 8000000 }
+  },
+
+  "featured_listings_sar_m": {
+    "جيزل - الماجدية": 3.37,
+    "فيلا C10 - سدرة (روشن)": 3.00,
+    "برج إيفوري II - مدى": 1.93,
+    "في تاور - مدى": 1.31,
+    "رويا سدرة - زال": 1.17,
+    "أدوار قوس - ريسر": 1.09
+  }
+}

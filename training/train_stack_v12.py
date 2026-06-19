@@ -1,7 +1,7 @@
 """
-THAMAN Stack v12 — train_stack_v12.py
+THAMAN Stack v22 — train_stack_v12.py
 ======================================
-Key improvements over v11 (104 features → 109 features):
+Current NYC production training pipeline (134 features):
 
   Quarterly lagged NTA market features (zero leakage):
     • nta_lag1q_mean_logp   — NTA mean log-price from previous quarter
@@ -13,9 +13,7 @@ Key improvements over v11 (104 features → 109 features):
   All temporal stats computed from df_work only, joined on Q-1/Q-2 offset.
   Holdout rows see only training-window stats — no future leakage.
 
-Data source: data/processed/features_v5.csv
-
-Expected gain vs v11: MedAPE 20.24% → ~18.5–19.5%
+Data source: data/processed/features_v6.csv (fallback: v5/v4)
 
 Run:
   cd /Users/totam/Desktop/new_try
@@ -40,7 +38,7 @@ PROC      = os.path.join(BASE, "data", "processed")
 MODEL_DIR = os.path.join(BASE, "models")
 
 print("=" * 70)
-print("  THAMAN Stack v12 — Quarterly NTA Temporal Lookback (109 features)")
+print("  THAMAN Stack v22 — Quarterly NTA Temporal Lookback + BBL/NTA×BT (134 features)")
 print("=" * 70)
 
 def safe_clip_min(arr, minval=1.0):
@@ -57,18 +55,22 @@ _FLOAT_OVERRIDES = {
     "prior_sale_price": pl.Float64,  "years_since_prior_sale": pl.Float64,
     "price_appreciation": pl.Float64, "is_flip": pl.Float64,
 }
-print("\n[1/9] Loading features_v6.csv (v13 enriched — Overture QoL) …")
+print("\n[1/9] Loading features_v7.csv (v22 enriched + 2026 Q1/Q2 appended) …")
+_V7_PATH = os.path.join(PROC, "features_v7.csv")
 _V6_PATH = os.path.join(PROC, "features_v6.csv")
 _V5_PATH = os.path.join(PROC, "features_v5.csv")
 _V4_PATH = os.path.join(PROC, "features_v4.csv")
-if os.path.exists(_V6_PATH):
+if os.path.exists(_V7_PATH):
+    _csv_path = _V7_PATH
+elif os.path.exists(_V6_PATH):
     _csv_path = _V6_PATH
+    print("  ⚠ features_v7.csv not found — falling back to v6")
 elif os.path.exists(_V5_PATH):
     _csv_path = _V5_PATH
-    print("  ⚠ features_v6.csv not found — falling back to v5")
+    print("  ⚠ features_v7.csv not found — falling back to v5")
 else:
     _csv_path = _V4_PATH
-    print("  ⚠ features_v6.csv not found — falling back to v4")
+    print("  ⚠ features_v7.csv not found — falling back to v4")
 df = (
     pl.read_csv(_csv_path, schema_overrides=_FLOAT_OVERRIDES)
     .with_columns(pl.col("sale_date").str.to_datetime(format=None, strict=False))
@@ -1028,7 +1030,7 @@ meta.update({
         "lightgbm": {"r2_holdout":round(r2_lg,4),"medape_holdout":round(mp_lg,2),"best_round":int(final_lg.best_iteration_)},
         "catboost": {"r2_holdout":round(r2_ct,4),"medape_holdout":round(mp_ct,2),"best_round":int(final_ct.best_iteration_+1)},
         "r2_improvement":     round(r2_stk - 0.645, 4),
-        "medape_improvement": round(20.24 - mp_stk, 2),
+        "medape_improvement": round(20.32 - mp_stk, 2),
     },
     # v12 quarterly NTA lookback — for inference
     "nta_lag_q_map":     _nta_q_lag1_save,

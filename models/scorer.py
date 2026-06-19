@@ -629,7 +629,7 @@ class ThamanScorer:
             "predicted_price_sqm": price_sqm,
             "top_drivers":         top_drivers,
             "medape_pct":  self._riyadh_meta.get("holdout_medape_pct", 23.43),
-            "r2_test":     self._riyadh_meta.get("holdout_r2", 0.675),
+            "r2_test":     self._riyadh_meta.get("holdout_r2", 0.8003),
             "model":       self._riyadh_meta.get("model_version", "riyadh_stack_v1"),
         }
 
