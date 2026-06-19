@@ -44,8 +44,7 @@ COPY data/raw/riyadh_hospitals.csv               data/raw/riyadh_hospitals.csv
 COPY data/raw/riyadh_parks.csv                   data/raw/riyadh_parks.csv
 COPY data/raw/rcrc_entertainment.csv             data/raw/rcrc_entertainment.csv
 COPY data/raw/saudi_listings_haraj_20260518.csv  data/raw/saudi_listings_haraj_20260518.csv
-COPY data/processed/features_riyadh.csv          data/processed/features_riyadh.csv
-COPY data/processed/features_riyadh_v2.csv       data/processed/features_riyadh_v2.csv
+
 COPY data/processed/riyadh_district_polygons.geojson  data/processed/riyadh_district_polygons.geojson
 COPY data/processed/nta_simplified.geojson        data/processed/nta_simplified.geojson
 COPY data/processed/district_centroids.csv        data/processed/district_centroids.csv
