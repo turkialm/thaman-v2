@@ -1,0 +1,99 @@
+# ── Documentation output files (PDF kept local — source tracked) ─────────
+docs/*.pdf
+
+# ── Large training-only data files ──────────────────────────────────────
+data/raw/overture_places.geojson
+data/raw/road_network/
+data/raw/nyc_pluto_25v4_csv/
+data/raw/sales_geocoded.csv
+data/raw/noise_complaints.parquet
+data/raw/census_tracts/
+data/raw/nypd_crimes.parquet
+data/raw/export-2.geojson
+data/raw/Parks_Properties_20260308.csv
+data/raw/livability_complaints.parquet
+data/raw/rollingsales_*.xlsx
+data/raw/dob_permits.csv
+data/raw/census_tract_income.csv
+data/raw/census_tract_population.csv
+data/splits/
+
+# ── Training artifacts (moved to training/) ──────────────────────────────
+training/X_train.npy
+training/X_test.npy
+training/y_train.npy
+training/y_test.npy
+training/catboost_info/
+
+# ── Legacy paths (pre-reorganization) ───────────────────────────────────
+models/X_train.npy
+models/X_test.npy
+models/y_train.npy
+models/y_test.npy
+# models/*.png — tracked (SHAP figures)
+catboost_info/
+
+# ── Cache / build dirs ───────────────────────────────────────────────────
+cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# ── Python env ───────────────────────────────────────────────────────────
+.env
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# ── OS ───────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.pptx
+data/raw/hpd_violations.csv
+data/raw/street_trees_2015.csv
+data/processed/features_v3.csv
+config.env
+data/raw/nyc_waterfront.geojson
+data/processed/features_v5.csv
+data/raw/quarter_report SI.xlsx
+
+# ── Untracked raw data (large, not needed in repo) ───────────────────────
+data/raw/SAMA_StatisticalReport_*.xls
+data/raw/bus-roads-*.geojson
+data/raw/by-type-of-housing-unit-*.parquet
+data/raw/housing-units-*.parquet
+data/raw/number-of-vehicles-*.geojson
+data/raw/residential-in-land-use-*.csv
+data/raw/riyadh_district_polygons.geojson
+data/raw/saudi-arabia-traffic-accidents-*.geojson
+data/raw/saudi-hourly-weather-data_Historical.zip
+data/processed/features_v3.csv
+data/processed/features_v5.csv
+logs/
+data/raw/commercial-services-by-category-sub-municipality-and-district-2024*
+.claude/
+
+# Dev tool config
+CLAUDE.md
+data/processed/features_v6.csv
+data/processed/features_v7.csv
+data/processed/features_riyadh_v2.csv
+data/processed/features_riyadh.csv
+data/processed/features_v4.csv
+models/thaman_stack.pkl
+models/xgboost_model.json
+models/luxury_model.json
+models/riyadh_stack.pkl
+models/meta.json
+models/riyadh_meta.json
+data/processed/features.csv
+data/raw/nyc_bike_lanes.geojson
+data/raw/nyc_coastline_pts.npy
+models/*.png
+docs/figures/
+docs/*.png

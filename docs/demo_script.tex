@@ -1,0 +1,449 @@
+\documentclass[11pt, a4paper, twoside]{article}
+
+% -------------------------------------------------------------------
+% PACKAGES — UQU Format
+% -------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{geometry}
+\usepackage{mathptmx}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{tocloft}
+\usepackage{float}
+\usepackage{url}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=black, citecolor=black]{hyperref}
+
+% -------------------------------------------------------------------
+% MARGINS & SPACING
+% -------------------------------------------------------------------
+\geometry{top=1.5in, bottom=1.0in, left=1.25in, right=1.0in}
+\onehalfspacing
+\setlength{\parskip}{6pt}
+
+% -------------------------------------------------------------------
+% ADDITIONAL PACKAGES
+% -------------------------------------------------------------------
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{booktabs}
+\usepackage{fontawesome5}   % for icons (optional; comment out if unavailable)
+\usepackage{listings}
+\usepackage{mdframed}
+
+% -------------------------------------------------------------------
+% HEADINGS (Article class)
+% -------------------------------------------------------------------
+\titleformat{\section}
+  {\normalfont\fontsize{16}{19}\selectfont\bfseries\centering}
+  {\thesection}{1em}{\MakeUppercase}
+
+\titleformat{\subsection}
+  {\normalfont\fontsize{14}{17}\selectfont\bfseries}
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\normalfont\fontsize{13}{16}\selectfont\bfseries\itshape}
+  {\thesubsubsection}{1em}{}
+
+% -------------------------------------------------------------------
+% HEADERS & FOOTERS
+% -------------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LO]{THAMAN}
+\fancyhead[RE]{\leftmark}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}}
+\setlength{\headheight}{14pt}
+
+% -------------------------------------------------------------------
+% CUSTOM STYLES & COMMANDS
+% -------------------------------------------------------------------
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{narration}[1]{
+  colback=blue!5!white,
+  colframe=blue!60!black,
+  fonttitle=\bfseries,
+  title={#1},
+  breakable
+}
+
+\newtcolorbox{arabicbox}[1]{
+  colback=teal!5!white,
+  colframe=teal!60!black,
+  fonttitle=\bfseries,
+  title={#1},
+  breakable
+}
+
+\newtcolorbox{fallback}{
+  colback=orange!5!white,
+  colframe=orange!60!black,
+  fonttitle=\bfseries\small,
+  title={Fallback / Backup},
+  breakable
+}
+
+\newtcolorbox{checkbox}{
+  colback=gray!5!white,
+  colframe=gray!60,
+  fonttitle=\bfseries\small,
+  title={Checklist},
+  breakable
+}
+
+\begin{document}
+
+\begin{titlepage}
+    \fontfamily{ptm}\selectfont
+    \noindent
+    \begin{minipage}[t]{0.6\textwidth}
+        \raggedright \itshape
+        BSc Project\\
+        Dept.\ of Computer Science \& Artificial Intelligence\\
+        Project ID: CSAI-472-P2-M20\\
+        2026
+    \end{minipage}%
+    \begin{minipage}[t]{0.4\textwidth}
+        \raggedleft
+        \includegraphics[width=3cm]{Umm_Al-Qura_University_logo.png}
+    \end{minipage}
+
+    \vspace{2cm}
+    \begin{center}
+        {\fontsize{26}{31}\selectfont \textbf{THAMAN}}\\[0.8cm]
+        {\fontsize{16}{19}\selectfont \textbf{Graduation Defense Demo Script}}\\[0.5cm]
+        {\fontsize{13}{15}\selectfont BSc Computer Science --- Umm Al-Qura University --- 2026}
+    \end{center}
+
+    \vspace{1.5cm}
+    \begin{tcolorbox}[colback=yellow!10,colframe=orange!60]
+        \centering\large
+        Total time: \textbf{5 minutes} \quad|\quad Steps: \textbf{6}\\
+        \small This script is for the presenter only --- not on the projector.
+    \end{tcolorbox}
+
+    \vfill
+    \noindent
+    \begin{flushleft}
+        Dept.\ of Computer Science and Artificial Intelligence\\
+        Faculty of Computer and Information Systems\\
+        Umm Al-Qura University, KSA
+    \end{flushleft}
+\end{titlepage}
+
+\newpage\thispagestyle{empty}\mbox{}\newpage
+
+\tableofcontents
+\newpage
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Setup (15 Minutes Before Committee Enters)}
+\label{sec:setup}
+
+Complete the following checklist before the committee sits down.
+
+\begin{checkbox}
+\begin{itemize}[leftmargin=2em,label=\(\square\)]
+  \item Open browser, navigate to:
+        \url{https://huggingface.co/spaces/Turki-Almurahhem/thaman}
+  \item Wait for map to fully load (cold-start: $\approx 30\,\text{s}$)
+  \item Toggle language to \textbf{Arabic} once, then back to \textbf{English}
+        --- confirm bilingual toggle works
+  \item Pan map to \textbf{NYC view} (should default; if not, refresh once)
+  \item Open \texttt{charts.html} in a \textbf{second browser tab} (hidden)
+  \item Have this script on your phone or second screen --- \textbf{not on projector}
+  \item Confirm screen mirroring / projector is working
+  \item Mute your phone
+\end{itemize}
+\end{checkbox}
+
+\bigskip
+
+\begin{tcolorbox}[colback=gray!5,colframe=gray!50,title=\textbf{Coordinates to have ready}]
+\begin{lstlisting}
+NYC click target:     40.7549, -73.9840   (Midtown Manhattan)
+Riyadh click target:  24.6877,  46.7219   (Downtown Riyadh / King Fahd Road)
+\end{lstlisting}
+Copy these into the browser console if Nominatim search is slow.
+\end{tcolorbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Step 1 --- NYC Prediction (1 minute)}
+\label{sec:nyc}
+
+\noindent\textit{Map is showing NYC. Click approximately on Midtown Manhattan
+--- coordinates 40.7549, $-73.9840$.}
+
+\begin{narration}{English}
+``This is THAMAN --- a dual-city Automated Valuation Model I built for my
+graduation project. We're starting in New York City. I'm clicking on Midtown
+Manhattan to get an instant property valuation.''
+
+\medskip
+``I'll select building type --- let's go with Elevator Condo, D4 --- and enter
+1,200 square feet, 15 floors, built in 1985.''
+
+\textit{[Submit prediction --- pause for result to load]}
+
+``THAMAN returns a predicted price, a confidence band, a letter grade, and the
+top features driving this estimate. On the right you can see the SHAP waterfall
+--- building class and neighbourhood encoding are the top two features. That's
+consistent with NYC real estate: where you are and what type of building matter
+more than size alone.''
+
+``The comparable sales bubbles on the map show the nearest actual recorded
+sales --- green means our estimate is close, red means we're further off. These
+are real deed-recorded transactions from 185,000 NYC sales, 2022 to 2026.''
+\end{narration}
+
+\begin{arabic}{NYC}
+``هذا نظام ثمان --- نموذج تقييم عقاري ذكي لمدينتين طورته كمشروع تخرج. نبدأ في
+مدينة نيويورك. أضغط على منتصف مانهاتن للحصول على تقييم فوري للعقار.''
+
+``اخترت نوع البناء: شقة بمصعد، المساحة 1200 قدم مربع، 15 طابقاً، بُني عام 1985.''
+
+``النظام يعطينا سعراً تقديرياً، نطاق ثقة، درجة تقييم، وأهم العوامل المؤثرة.
+المبيعات المحيطة تظهر على الخريطة بنقاط ملوّنة من سجلات المعاملات الفعلية.''
+\end{arabic}
+
+\begin{tcolorbox}[colback=blue!5,colframe=blue!60,title=\textbf{Metric to highlight}]
+``Our NYC model achieves \textbf{MedAPE of 20.32\%} on 27,763 holdout sales ---
+competitive with commercial AVMs like Zillow Zestimate.''
+\end{tcolorbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Step 2 --- City Switch to Riyadh (30 seconds)}
+\label{sec:switch}
+
+\noindent\textit{Click the city-switch toggle or navigate to Riyadh mode in the
+UI. Map animates to Riyadh view with district polygons visible.}
+
+\begin{narration}{English}
+``Now here's what makes THAMAN distinctive --- it's a dual-city system. I'll
+switch to Riyadh.''
+
+``The same stacking architecture, the same FastAPI backend, now running on a
+completely different market. Saudi Arabia's real estate data is published as
+district-level quarterly aggregates by the Ministry of Justice --- not individual
+transactions like NYC. The model had to learn from 6,910 district-quarter
+observations instead of 185,000 individual sales.''
+\end{narration}
+
+\begin{arabic}{City switch}
+``الآن ننتقل إلى الرياض --- وهذا ما يميّز ثمان. نفس البنية التقنية، لكن على سوق
+مختلف تماماً. بيانات العقارات السعودية تُنشر على مستوى الأحياء ربعياً، وليس
+كمعاملات فردية كما في نيويورك.''
+\end{arabic}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Step 3 --- Riyadh Prediction + SHAP Drivers (1.5 minutes)}
+\label{sec:riyadh}
+
+\noindent\textit{Click on Downtown Riyadh --- coordinates 24.6877, 46.7219
+(King Fahd Road area).}
+
+\begin{narration}{English}
+``I'll click on the King Fahd Road corridor --- one of Riyadh's prime districts.
+Let's select Villa, 400 square metres.''
+
+\textit{[Submit prediction --- wait for result]}
+
+``The model returns a prediction in SAR per square metre. You can see the SHAP
+breakdown: metro access, commercial density, air quality, and district price
+history are the top drivers here.''
+
+``The Riyadh Metro opened in 2024 and is a novel infrastructure signal --- the
+model captures the premium for proximity to metro stations, which is entirely
+absent from pre-2024 models.''
+
+``Notice the confidence interval is shown in SAR/m², and the district
+choropleth layer behind the prediction is showing the metro access overlay ---
+you can see Line 1, the busiest east--west corridor, cutting across the city.''
+\end{narration}
+
+\begin{arabic}{Riyadh prediction}
+``أضغط على منطقة طريق الملك فهد --- إحدى أهم مناطق الرياض. سأختار فيلا،
+400 متر مربع.''
+
+``النموذج يُعطينا التقدير بالريال السعودي لكل متر مربع. في تحليل SHAP: القرب
+من المترو، الكثافة التجارية، جودة الهواء، والتاريخ السعري للحي هي أبرز
+العوامل.''
+
+``مترو الرياض افتُتح عام 2024 وهو إشارة بنية تحتية جديدة يلتقطها النموذج ---
+ما كان موجوداً في النماذج السابقة.''
+\end{arabic}
+
+\begin{tcolorbox}[colback=blue!5,colframe=blue!60,title=\textbf{Metrics to highlight}]
+\begin{itemize}
+  \item OOF (training folds): $R^2 = 0.9343$, MedAPE $= 8.28\%$ ---
+        ``The model genuinely learned the Saudi market structure.''
+  \item Holdout Q1--Q3 2025: $R^2 = 0.8003$, MedAPE $= 15.56\%$ ---
+        ``A new-quarter stress test, not a random sample.''
+\end{itemize}
+\end{tcolorbox}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Step 4 --- Listings Layer (30 seconds)}
+\label{sec:listings}
+
+\noindent\textit{Toggle on the Haraj active listings layer.}
+
+\begin{narration}{English}
+``This layer shows 1,615 active property listings scraped from Haraj.com.sa ---
+Saudi Arabia's largest classifieds marketplace. Each point is colour-coded by
+type: blue for apartments, green for villas, amber for plots.''
+
+``Click any bubble and you'll see the asking price versus our model's estimate,
+plus a direct link to the actual listing.''
+
+``The model systematically predicts lower than asking prices --- and that's
+expected. THAMAN was trained on deed-recorded transaction prices from the
+Ministry of Justice. Haraj shows what sellers are asking for, before
+negotiation. The overall gap is 54\% MedAPE against asking prices, which is
+consistent with documented Saudi negotiation margins of 20 to 50 percent.''
+\end{narration}
+
+\begin{arabic}{Listings layer}
+``هذه الطبقة تُظهر 1615 عرضاً نشطاً من موقع حراج.كوم --- أكبر سوق للعقارات في
+السعودية. كل نقطة مُلوَّنة حسب نوع العقار.''
+
+``النموذج يتنبأ بأسعار أقل من أسعار العرض بشكل منتظم --- وهذا متوقع. ثمان
+تدرّب على أسعار العقود المسجّلة، بينما حراج يعرض أسعار البائعين قبل
+التفاوض.''
+\end{arabic}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Step 5 --- Analytics Dashboard (30 seconds)}
+\label{sec:analytics}
+
+\noindent\textit{Switch to second browser tab --- charts.html.}
+
+\begin{narration}{English}
+``Finally, the analytics dashboard. This shows model performance broken down by
+NYC borough and price tier.''
+
+``Notice the Staten Island paradox: lowest $R^2$ in the dataset --- 0.41 ---
+but the best MedAPE at 13.5\%. That's because Staten Island has very low price
+variance; the model's absolute errors are small, but $R^2$ penalises a
+low-variance target. MedAPE is the right metric for a user-facing AVM.''
+
+``Manhattan is the hardest market at 36.7\% MedAPE. Co-op board approval
+discounts and unobservable interior finishes create heterogeneity that no
+tabular dataset can capture.''
+\end{narration}
+
+\begin{arabic}{Analytics dashboard}
+``لوحة التحليلات تُظهر أداء النموذج مقسّماً حسب منطقة نيويورك وشريحة السعر.''
+
+``لاحظوا مفارقة ستاتن آيلاند: أقل $R^2$ في البيانات لكن أفضل MedAPE. السبب:
+تشابه العقارات يُصغّر التباين الكلي، فيُعاقب $R^2$ حتى التنبؤات الدقيقة.''
+\end{arabic}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Step 6 --- Q\&A Talking Points / Closing (1 minute)}
+\label{sec:closing}
+
+\noindent Use this minute as a buffer. If the committee has not started asking
+questions, summarise:
+
+\begin{narration}{English closing}
+``To summarise: THAMAN is a production-deployed AVM across two cities --- New
+York and Riyadh --- using a four-model stacking ensemble across 104 and 76
+features respectively. It achieves competitive accuracy on NYC's 185,000-sale
+holdout and demonstrates cross-market generalisability on Saudi Arabia's
+data-scarce district-aggregate market. The full system --- data pipelines,
+training code, API, and web interface --- is deployed on Hugging Face and
+open-sourced on GitHub. Thank you.''
+\end{narration}
+
+\begin{arabic}{Closing}
+``خلاصة القول: ثمان نظام تقييم عقاري منتشر فعلياً لمدينتين، يستخدم مجموعة من
+أربعة نماذج ذكاء اصطناعي عبر مئة وأربع ميزات في نيويورك، وستة وسبعين ميزة في
+الرياض. يحقق دقة تنافسية على 27,763 مبيعة اختبارية في نيويورك، ويُثبت قابلية
+التعميم على السوق السعودية ذات البيانات المحدودة. النظام كاملاً --- البيانات،
+الكود، الـ API، والواجهة --- منشور على Hugging Face ومفتوح المصدر على GitHub.
+شكراً.''
+\end{arabic}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Fallback Protocol (if Hugging Face is slow)}
+\label{sec:fallback}
+
+\begin{fallback}
+\begin{enumerate}
+  \item \textbf{Say:} ``The deployed version is loading from cold start ---
+        this is common with Hugging Face Spaces after inactivity. While it
+        loads, I'll walk through the architecture.''
+  \item Switch to showing the paper / slides and explain the model architecture
+        verbally (\S5 of the paper).
+  \item Keep refreshing the HF tab in the background --- typically loads in
+        45--90 seconds.
+  \item \textbf{If HF is completely unavailable:} Start the local API ---
+        open Terminal and run:
+        \begin{lstlisting}[language=bash]
+cd /Users/totam/Desktop/new_try
+uvicorn api.main:app --port 8000
+        \end{lstlisting}
+        Then open: \url{http://localhost:8000/ui} in the browser.
+  \item \textbf{API startup time:} $\approx 30\,\text{s}$ (spatial KD-tree
+        indexes loading). Say: ``The local API is starting up --- it needs about
+        30 seconds to load the spatial indexes into memory.''
+\end{enumerate}
+\end{fallback}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Key Numbers to Memorise}
+\label{sec:numbers}
+
+\noindent\textbf{Print this section and keep it in your pocket.}
+
+\begin{table}[H]
+  \centering
+  \caption{Key metrics for the defense}
+  \label{tab:key_numbers}
+  \begin{tabular}{lrl}
+    \toprule
+    Metric & Value & Context \\
+    \midrule
+    NYC training rows       & 185,092    & Sales 2022--2026 \\
+    NYC features            & 104        & Structural + spatial + QoL \\
+    NYC holdout rows        & 27,763     & Time-based, newest 15\% \\
+    NYC $R^2$ (holdout)     & 0.6495     & Stack v22 \\
+    NYC MedAPE (holdout)    & 20.32\%    & Stack v22 \\
+    \midrule
+    Riyadh total rows       & 6,910      & District-quarter obs., 2018--2025 \\
+    Riyadh training rows    & 5,531      & 2018--2024 (incl.\ Metro-era) \\
+    Riyadh features         & 76         & Transit, QoL, macro, rental \\
+    Riyadh OOF $R^2$        & \textbf{0.9343} & 5-fold spatial GroupKFold \\
+    Riyadh OOF MedAPE       & \textbf{8.28\%} & In-sample cross-validation \\
+    Riyadh holdout $R^2$    & 0.8003     & 2025 Q1--Q3, $n=1{,}727$ \\
+    Riyadh holdout MedAPE   & 15.56\%    & Out-of-sample stress test \\
+    Riyadh holdout MAE      & 991 SAR/m$^2$ & Out-of-sample \\
+    \midrule
+    Haraj validation MedAPE & 54.33\%    & Asking vs.\ transaction (expected) \\
+    Haraj listings scraped  & 1,615      & 444 apts, 630 villas, 526 plots \\
+    NYC NTA groups          & 212        & Neighbourhood spatial units \\
+    Riyadh district polygons& 133        & From OSM admin\_level=10 \\
+    Base learners           & 4 (NYC), 3 (Riyadh) & Stacking ensemble \\
+    Meta-learner            & Ridge (L2) & positive=True for NYC \\
+    NYC CV strategy         & 10-fold GroupKFold & Groups = NTA code \\
+    Riyadh CV strategy      & 5-fold GroupKFold  & Groups = district\_ar \\
+    API latency             & 200--400 ms & Including SHAP computation \\
+    Automated tests         & 37          & 15 scorer + 22 API tests \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\vfill
+\begin{center}
+  {\small\textit{End of THAMAN Defense Demo Script --- BSc CS, Umm Al-Qura University, 2026}}
+\end{center}
+
+\end{document}

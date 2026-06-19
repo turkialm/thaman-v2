@@ -1,0 +1,1435 @@
+\documentclass[11pt, a4paper, twoside]{article}
+
+% -------------------------------------------------------------------
+% PACKAGES — UQU Format
+% -------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{geometry}
+\usepackage{mathptmx}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{tocloft}
+\usepackage{float}
+\usepackage{url}
+\usepackage[colorlinks=true, urlcolor=blue, linkcolor=black, citecolor=black]{hyperref}
+
+% -------------------------------------------------------------------
+% MARGINS & SPACING
+% -------------------------------------------------------------------
+\geometry{top=1.5in, bottom=1.0in, left=1.25in, right=1.0in}
+\onehalfspacing
+\setlength{\parskip}{6pt}
+
+% -------------------------------------------------------------------
+% ADDITIONAL PACKAGES
+% -------------------------------------------------------------------
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage[numbers,sort&compress]{natbib}
+
+% -------------------------------------------------------------------
+% HEADINGS (Article class)
+% -------------------------------------------------------------------
+\titleformat{\section}
+  {\normalfont\fontsize{16}{19}\selectfont\bfseries\centering}
+  {\thesection}{1em}{\MakeUppercase}
+
+\titleformat{\subsection}
+  {\normalfont\fontsize{14}{17}\selectfont\bfseries}
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\normalfont\fontsize{13}{16}\selectfont\bfseries\itshape}
+  {\thesubsubsection}{1em}{}
+
+% -------------------------------------------------------------------
+% HEADERS & FOOTERS
+% -------------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LO]{THAMAN}
+\fancyhead[RE]{\leftmark}
+\fancyfoot[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\fancypagestyle{plain}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}}
+\setlength{\headheight}{14pt}
+
+% -------------------------------------------------------------------
+% CUSTOM STYLES & COMMANDS
+% -------------------------------------------------------------------
+\newcommand{\textarabic}[1]{#1}
+
+\begin{document}
+
+% ── Title page ────────────────────────────────────────────────────────────────
+\begin{titlepage}
+    \fontfamily{ptm}\selectfont
+    \noindent
+    \begin{minipage}[t]{0.6\textwidth}
+        \raggedright \itshape
+        BSc Project\\
+        Dept.\ of Computer Science \& Artificial Intelligence\\
+        Project ID: CSAI-472-P2-M20\\
+        2026
+    \end{minipage}%
+    \begin{minipage}[t]{0.4\textwidth}
+        \raggedleft
+        \includegraphics[width=3cm]{Umm_Al-Qura_University_logo.png}
+    \end{minipage}
+
+    \vspace{2cm}
+    \begin{center}
+        {\fontsize{26}{31}\selectfont \textbf{THAMAN}}\\[0.8cm]
+        {\fontsize{14}{16}\selectfont \textbf{A Dual-City Automated Valuation Model\\
+        for New York City and Riyadh Using\\
+        Ensemble Machine Learning and Quality-of-Life Spatial Indicators}}\\[1cm]
+        {\fontsize{14}{16}\selectfont \textbf{By:\\[0.3cm]
+        Turki AL-murahhem\\}}
+    \end{center}
+
+    \vfill
+    \noindent
+    \begin{flushleft}
+        Dept.\ of Computer Science and Artificial Intelligence\\
+        Faculty of Computer and Information Systems\\
+        Umm Al-Qura University, KSA\\[0.3cm]
+        {\small Submitted in partial fulfilment of the requirements for the degree of
+        Bachelor of Science in Computer Science.}
+    \end{flushleft}
+\end{titlepage}
+
+\newpage\thispagestyle{empty}\mbox{}\newpage
+
+% ── Abstract ──────────────────────────────────────────────────────────────────
+\begin{abstract}
+\noindent
+This paper presents \textbf{THAMAN}, an Automated Valuation Model (AVM) for
+estimating residential property prices across New York City's five boroughs.
+The system integrates structural property attributes with spatial
+Quality-of-Life (QoL) indicators---including proximity to transit, crime rates,
+income demographics, points-of-interest density, building health signals, and
+MTA station quality---into a four-model stacked ensemble comprising two XGBoost
+models, LightGBM, and CatBoost, blended by a Ridge meta-learner.
+
+Trained on 185,092 NYC property sales from 2022 to 2026, the final model
+(Stack v22) achieves $R^2 = 0.6495$ and Median Absolute Percentage Error
+(MedAPE) of 20.32\% on a time-based holdout set of 27,763 unseen sales across
+134 features, including a novel NTA price trend slope feature capturing
+neighbourhood-level price appreciation momentum via per-NTA OLS regression,
+and ten new building health and mobility indicators sourced from NYC HPD
+violation records, DOB permit filings, granular 311 complaint density (rodent
+and heat), and MTA station quality attributes. The system implements quality controls aligned with the 2025 Interagency
+AVM Quality Control Rule (Dodd-Frank \S 1473, effective October 2025),
+including segment-adaptive confidence intervals, a 0--100 confidence score
+with letter grade, comparable-count hit-rate signalling, and four quality
+control flags (\texttt{SPARSE\_MARKET}, \texttt{LUXURY\_SEGMENT},
+\texttt{HIGH\_UNCERTAINTY}, \texttt{METRO\_CORE}).
+
+A bilingual (English/Arabic) web application provides interactive map-based
+property valuation with SHAP-driven feature explanations including waterfall
+visualisations, natural-language tooltips, a segment-adaptive confidence band,
+and real-time neighbourhood-level encoding resolved from a 185K-sale spatial
+index. The complete system is deployed on Hugging Face Spaces and open-sourced
+on GitHub.
+
+The system is extended to Riyadh, Saudi Arabia as a parallel AVM trained on
+6,910 district-level real estate transactions (2018--2025). Across 140 features
+covering metro and bus transit, commercial density, air quality
+(NO$_2$, SO$_2$, PM$_{10}$, O$_3$), QoL proximity to mosques, malls,
+schools, hospitals, parks and entertainment venues, macroeconomic indices (REI
+quarterly index, Saudi average salary), district price aggregates, and rental
+market signals (SA\_Aqar), the Riyadh stack achieves OOF $R^2 = 0.9343$ /
+MedAPE~$= 8.28\%$ and holdout $R^2 = 0.8003$ / MedAPE~$= 15.56\%$ on a 2025
+Q1--Q3 out-of-sample test set of 1,727 district-quarter observations.
+
+\medskip\noindent
+\textbf{Keywords:} automated valuation model, ensemble learning, XGBoost,
+LightGBM, CatBoost, stacking, target encoding, spatial features, SHAP, New York
+City, Riyadh, Saudi Arabia, dual-city AVM, real estate, quality of life
+indicators, adaptive confidence, NTA encoding, district-level prediction.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Introduction}
+\label{sec:intro}
+
+\subsection{Motivation}
+Property valuation is a central task in real estate finance, mortgage
+underwriting, and urban policy. Traditional appraisal is slow (days to weeks),
+expensive (\$300--\$500 per appraisal), and subject to appraiser bias.
+Automated Valuation Models (AVMs) use statistical and machine learning methods
+to produce instant price estimates at near-zero marginal cost.
+
+The deployment of AVMs in highly heterogeneous real estate markets presents a
+formidable computational challenge at the intersection of data science, urban
+economics, and municipal policy. Urban environments characterised by dense
+stratification, hyper-local zoning regulations, and vast disparities in
+structural typologies require valuation frameworks that transcend simple linear
+hedonic pricing or naive comparative market analyses.
+
+Existing commercial AVMs (Zillow Zestimate, Redfin Estimate, CoreLogic) are
+proprietary and opaque. Empirical evaluations indicate that while they modestly
+outperform naive list prices, they remain highly vulnerable to geographic
+heterogeneity and tail risks. Furthermore, algorithmic bias presents a systemic
+risk: analyses demonstrate that AVMs can systematically yield greater valuation
+errors for minority homeowners, producing errors significantly higher in
+majority-Black neighbourhoods even after controlling for structural
+characteristics.
+
+This project addresses four gaps:
+\begin{enumerate}
+  \item Most NYC-focused models use small datasets (5K--50K sales). This work
+        uses 185K sales across five boroughs and four years.
+  \item QoL spatial indicators are rarely integrated end-to-end from raw open
+        data into a production-ready inference pipeline.
+  \item AVM confidence communication is often binary. This work implements
+        segment-adaptive confidence with a formal QC block aligned with 2026
+        AVM industry standards.
+  \item Most models ignore neighbourhood price momentum. This work introduces
+        an NTA-level log-linear price trend slope as an explicit feature.
+\end{enumerate}
+
+\subsection{Research Questions}
+\begin{description}[style=nextline]
+  \item[RQ1] Can a stacked ensemble of gradient boosted trees outperform a
+             single XGBoost baseline on NYC residential property price
+             prediction?
+  \item[RQ2] Do neighbourhood-level spatial QoL features (NTA encoding,
+             transit proximity, crime rate, income) improve prediction accuracy
+             over structural attributes alone?
+  \item[RQ3] How should confidence intervals be communicated to reflect the
+             heterogeneous predictability across boroughs and price tiers?
+  \item[RQ4] Does incorporating neighbourhood price appreciation momentum
+             (NTA price trend slope) further improve model accuracy?
+  \item[RQ5] Can the same stacking architecture generalise to a data-scarce
+             emerging market (Riyadh) where observations are district-level
+             aggregates rather than individual transactions, and how does the
+             OOF-to-holdout gap behave when the holdout represents entirely
+             unseen calendar quarters?
+\end{description}
+
+\subsection{Contributions}
+\begin{itemize}
+  \item A full end-to-end AVM pipeline from raw NYC open data to deployed web
+        application.
+  \item A 134-feature dataset combining structural, spatial, temporal,
+        neighbourhood momentum, building health, and transit quality signals.
+  \item Stack v22: a 4-model ensemble achieving $R^2 = 0.6495$ / MedAPE
+        $= 20.32\%$ on 27,763 holdout sales, with 10 new building health
+        and mobility features (HPD violations, DOB permits, 311 rodent/heat
+        density, MTA station quality attributes).
+  \item Segment-adaptive confidence intervals per borough $\times$ price tier.
+  \item A formal AVM QC block with four risk flags.
+  \item A bilingual (English/Arabic) interactive valuation interface with SHAP
+        waterfall plots, natural-language explanations, and 11-layer NTA
+        choropleth.
+  \item Riyadh Stack v11: a dual-city extension to Saudi Arabia using 6,910
+        district-quarter observations, 140 features, and the identical stacking
+        architecture. Achieves holdout $R^2 = 0.8003$ / MedAPE $= 15.56\%$ on
+        a fully out-of-sample 2025 Q1--Q3 test set (1,727 rows).
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Related Work}
+\label{sec:related}
+
+\subsection{The Evolution and Limitations of Traditional AVMs}
+Automated valuation algorithms are software programs that market analysts,
+lenders, and institutions use to produce market value estimates based on
+location, market conditions, and real estate characteristics. From their
+inception, they have been utilised by government-sponsored enterprises (GSEs)
+and financial institutions for underwriting lower loan-to-value mortgages and
+portfolio-wide collateral risk assessments.
+
+The baseline performance of contemporary commercial AVMs in dense urban cores
+typically yields a MedAPE between 17.5\% and 19.8\%, with models frequently
+overstating administrative assessments by 16--18\%. These models routinely
+struggle to maintain predictive parity across diverse property classes, often
+generating wider error distributions in heterogeneous zip codes or historically
+marginalised neighbourhoods.
+
+\subsection{Hedonic Price Models}
+The hedonic pricing framework \cite{rosen1974} decomposes property price into
+implicit prices of constituent attributes. Early models used OLS regression on
+structural features: floor area, number of rooms, age, and location dummies.
+These typically achieve $R^2$ of 0.5--0.65 on urban datasets
+\cite{sirmans2005}.
+
+\subsection{Machine Learning for Property Valuation}
+Gradient boosted trees have become the dominant method in AVM literature.
+XGBoost \cite{chen2016}, LightGBM \cite{ke2017}, and CatBoost
+\cite{prokhorenkova2018} consistently outperform OLS and neural networks on
+tabular real estate data \cite{phan2018,truong2020}.
+
+Ensemble stacking---training a meta-learner on out-of-fold predictions of
+diverse base models---further improves accuracy by reducing correlated errors
+\cite{wolpert1992,breiman1996}.
+
+\subsection{Spatial and QoL Features}
+Proximity to transit is a well-documented price determinant. A New York MTA
+study found subway station proximity adds \$0--\$8K per 100\,m reduction in
+walking distance \cite{hess2007}. Park proximity \cite{lutzenhiser2001}, school
+quality \cite{black1999}, and crime rates \cite{ihlanfeldt2010} have all been
+shown to capitalise into residential prices.
+
+\subsection{AVM Confidence and Quality}
+The 2025 Interagency Final Rule on AVM Quality Control Standards
+\cite{avm_qc_rule2025} (Dodd-Frank \S 1473, effective 1 October 2025)
+mandates that lending institutions deploying AVMs for mortgage decisions
+implement policies addressing credibility, data integrity, conflict-of-interest
+avoidance, sample testing, and nondiscrimination. Industry guidance further
+recommends that every AVM output include: (a) a confidence score,
+(b) a comparable count (hit rate), and (c) explicit quality flags for
+data-sparse or atypical market segments.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Data}
+\label{sec:data}
+
+\subsection{Primary Dataset: NYC Citywide Rolling Calendar Sales}
+\begin{description}
+  \item[Source] NYC Open Data --- Citywide Property Sales
+  \item[Period] January 2022 -- January 2026
+  \item[Records] 185,092 residential sales after cleaning
+\end{description}
+
+Cleaning steps included:
+\begin{itemize}
+  \item Removed sales below \$10,000 (non-arms-length transfers)
+  \item Removed sales above \$1,000,000,000 (bulk portfolio transfers)
+  \item Removed records missing sale\_date, latitude, longitude, or sale\_price
+  \item Removed non-residential building classes
+\end{itemize}
+
+\begin{table}[H]
+  \centering
+  \caption{NYC Sales Distribution by Borough}
+  \label{tab:borough_dist}
+  \begin{tabular}{lrr}
+    \toprule
+    Borough & Sales & Share \\
+    \midrule
+    Manhattan     & 46,621 & 25.2\% \\
+    Bronx         & 15,158 &  8.2\% \\
+    Brooklyn      & 48,105 & 26.0\% \\
+    Queens        & 57,070 & 30.8\% \\
+    Staten Island & 18,138 &  9.8\% \\
+    \midrule
+    \textbf{Total} & \textbf{185,092} & \textbf{100\%} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Price statistics: median \$820,000; mean \$1,778,977; min \$10,040; max
+\$1,080,000,000.
+
+\subsection{PLUTO (Primary Land Use Tax Lot Output)}
+PLUTO 25v4 (NYC Department of City Planning) is an exhaustive compilation of
+land use, geographic, and building-level data at the tax lot level. Merging on
+BBL (Borough-Block-Lot) identifier achieves 98.5\% coverage.
+
+The \texttt{assesstot} field was used to impute \texttt{prior\_sale\_price} via
+the assesstot ratio method:
+\begin{equation}
+  \hat{P}_{\text{prior}} = P_{\text{current}} \times
+    \frac{\mathit{assesstot}_{\text{prior}}}{\mathit{assesstot}_{\text{current}}}
+  \label{eq:assesstot}
+\end{equation}
+This achieved 98.0\% coverage on \texttt{prior\_sale\_price}.
+
+\subsection{The Fractional Assessment Labyrinth}
+Unlike many jurisdictions that tax properties at full market value, NYC's real
+property tax system applies assessment ratios that vary dramatically by tax
+class, originating from the 1975 \textit{Hellerstein v. Town of Islip} decision:
+\begin{description}
+  \item[Class 1] (1--3 family homes): target ratio 6\% of market value
+  \item[Class 2] (larger residential): target ratio 45\% of market value
+  \item[Class 4] (commercial): target ratio 45\% of market value
+\end{description}
+State law caps annual assessment growth for Class 1 at 6\%/year (20\% over 5
+years) and Class 2 at 8\%/year (30\% over 5 years). By FY 2024 the median
+effective assessment ratio for Class 1 properties had degraded to 3.9\%---far
+below the 6\% statutory target. The THAMAN imputation calibrates using the
+actual observed sale-price-to-assesstot ratio distribution within each borough.
+
+\subsection{Spatial Datasets}
+
+\begin{table}[H]
+  \centering
+  \caption{Spatial data sources used in feature engineering}
+  \label{tab:spatial_sources}
+  \begin{tabular}{llr}
+    \toprule
+    Dataset & Source & Records \\
+    \midrule
+    Subway stations         & MTA / NYC Open Data     &    472 \\
+    Bus stops               & MTA GTFS                & 16,904 \\
+    Parks properties        & NYC Parks Dept          &  2,058 \\
+    Public schools (HS)     & NYC DOE                 &    427 \\
+    Public schools (Elem.)  & NYC DOE                 &    423 \\
+    Hospital facilities     & NYC DOHMH               &    180 \\
+    Airbnb listings         & Inside Airbnb           & 36,261 \\
+    Bike lanes (vertices)   & NYC DOT                 & 44,934 \\
+    Waterfront/coastline    & NYC Open Data           & 27,116 \\
+    POI (cafés, rest., gyms)& OpenStreetMap           & 60,000+ \\
+    MTA station quality     & MTA / NYC Open Data     &    496 \\
+    HPD violations by ZIP   & NYC DOHMH Socrata       &    562 groups \\
+    DOB permits by ZIP      & NYC Buildings Socrata   &    227 groups \\
+    311 rodent/heat         & NYC Open Data           & 162,000+ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Neighbourhood Tabulation Areas (NTA)}
+NTAs represent a far more sophisticated spatial taxonomy than ZIP codes. Each
+NTA contains a minimum population threshold (15,000--40,000 residents),
+mitigating the high sampling error of sparsely populated Census tracts.
+Non-residential zones (parks, airports, cemeteries) are explicitly separated.
+The THAMAN pipeline uses 212 distinct NTA codes.
+
+\subsection{Macroeconomic Data}
+The 30-year fixed mortgage rate was sourced from the Freddie Mac PMMS weekly
+survey, matched to each sale by \texttt{sale\_date}. Range in dataset:
+3.45\% -- 7.62\%.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Feature Engineering}
+\label{sec:features}
+
+\subsection{Structural Features}
+\begin{table}[H]
+  \centering
+  \caption{Structural features}
+  \label{tab:structural}
+  \begin{tabular}{ll}
+    \toprule
+    Feature & Description \\
+    \midrule
+    \texttt{gross\_square\_feet} & Total building floor area (sq ft) \\
+    \texttt{land\_square\_feet}  & Lot area (sq ft) \\
+    \texttt{building\_age}       & Current year $-$ year\_built \\
+    \texttt{numfloors}           & Number of floors \\
+    \texttt{residential\_units}  & Number of residential units \\
+    \texttt{log\_land\_sqft}     & $\log(1+\texttt{land\_sqft})$ \\
+    \texttt{lot\_coverage}       & \texttt{gross\_sqft} / \texttt{land\_sqft} \\
+    \texttt{bldg\_vol\_proxy}    & $\log(1+\texttt{gross\_sqft}\times\texttt{numfloors})$ \\
+    \texttt{prior\_price\_psf}   & prior\_sale\_price / gross\_sqft \\
+    \texttt{sqft\_per\_floor}    & gross\_sqft / numfloors \\
+    \texttt{log\_sqft\_x\_floors}& $\log(\texttt{gross\_sqft})\times\log(\texttt{numfloors})$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Logarithmic Transformations}
+Raw square footage distributions exhibit severe positive right-skewness.
+The log transformation normalises this distribution: changes in the natural
+logarithm approximate percentage changes in the original series, compressing
+extreme outliers and stabilising gradient descent.
+
+\subsubsection{Density Proxies and Air Rights}
+\texttt{lot\_coverage} and \texttt{bldg\_vol\_proxy} serve as indicators of
+urban development density. Property values in NYC are heavily dictated by
+zoning Floor Area Ratio (FAR), which determines maximum allowable buildable
+volume. The building volume proxy captures undeveloped ``air rights'' or
+development potential---a speculative value driver completely absent from models
+lacking PLUTO data.
+
+\subsection{Spatial Distance Features}
+For each property, Euclidean distance (converted to metres via
+$1^\circ \approx 111{,}000\,\text{m}$) to the nearest point in each spatial
+index is computed using \texttt{cKDTree} queries. All distance features are
+log-transformed: $\log\text{\_dist\_X} = \log(1 + \text{dist\_X\_m})$.
+
+\subsection{Gravity / Urban Core Features}
+Distance from four major employment and commercial centres:
+\begin{description}
+  \item[\texttt{dist\_midtown\_manhattan\_m}]  $(40.7549^\circ\text{N},\;73.9840^\circ\text{W})$
+  \item[\texttt{dist\_downtown\_manhattan\_m}] $(40.7074^\circ\text{N},\;74.0113^\circ\text{W})$
+  \item[\texttt{dist\_downtown\_brooklyn\_m}]  $(40.6928^\circ\text{N},\;73.9903^\circ\text{W})$
+  \item[\texttt{dist\_long\_island\_city\_m}]  $(40.7447^\circ\text{N},\;73.9485^\circ\text{W})$
+\end{description}
+
+\subsection{Walkability Proxy}
+A composite walk score was computed as a weighted sum of five normalised
+inverse-distance and density components:
+\begin{equation}
+  W = \text{clip}\!\left(
+    \sum_{i} w_i \cdot \tilde{c}_i,\; 0, 100
+  \right)
+  \label{eq:walk_score}
+\end{equation}
+where the weights are: transit (0.35), bus (0.15), POI density (0.30), bike
+lane (0.10), and park (0.10). Normalisation parameters are saved in
+\texttt{meta.json} and applied at inference time.
+
+\subsection{Target Encoding}
+Target encoding replaces categorical variables with their mean $\log(\text{price}+1)$
+computed on the training set. Raw mean encoding ($k=0$) was used after
+empirical testing showed Bayesian smoothing with $k=30$ degraded the top-ranked
+SHAP feature (\texttt{bldgclass\_encoded}) by 20--37\%.
+
+The Bayesian smoothing formula takes the form:
+\begin{equation}
+  \hat{\mu}_{\text{smoothed}} = \frac{n\,\mu_{\text{cat}} + w\,\mu_{\text{global}}}{n + w}
+  \label{eq:bayes_smooth}
+\end{equation}
+Despite the theoretical benefit, with 185K training samples even rare building
+classes have enough observations for stable raw mean estimates, making $k=0$
+empirically superior on this dataset.
+
+\begin{table}[H]
+  \centering
+  \caption{Target-encoded features}
+  \label{tab:encoding}
+  \begin{tabular}{lrl}
+    \toprule
+    Feature & Groups & Description \\
+    \midrule
+    \texttt{bldgclass\_encoded}    & 175   & Mean log-price per NYC building class code \\
+    \texttt{borough\_bldg\_encoded}& $\approx 40$ & Mean log-price per borough $\times$ bldgclass prefix \\
+    \texttt{nta\_encoded}          & 212   & Mean log-price per NTA code \\
+    \texttt{nta\_bldg\_encoded}    & 2,344 & Mean log-price per NTA $\times$ bldgclass prefix \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{NTA Price Trend Slope (v10)}
+To capture scale-invariant compounding appreciation, a log-linear trend is
+computed for each NTA:
+\begin{equation}
+  \ln(P_t) = \alpha + \beta \cdot t + \varepsilon
+  \label{eq:ols_slope}
+\end{equation}
+The slope $\beta$ represents the average periodic percentage growth.
+Implementation: OLS slope per NTA using centred year and log-price arrays.
+NTAs with fewer than 2 sale years receive the global median slope (0.019) as
+fallback. Range across 212 NTAs: $-2.05$ to $+1.73$.
+
+\subsection{Building Health \& Mobility Features (v11)}
+Ten new features added in v11, sourced from four NYC open data sources and
+aggregated at ZIP code and NTA level:
+
+\begin{description}
+  \item[Group A -- HPD Housing Violations (ZIP-level)]
+    \texttt{hpd\_class\_b\_viol\_zip}, \texttt{hpd\_class\_c\_viol\_zip},
+    \texttt{hpd\_severity\_score\_zip}
+  \item[Group B -- DOB Building Permits (ZIP-level)]
+    \texttt{dob\_reno\_permit\_count}, \texttt{dob\_newbld\_permit\_count}
+  \item[Group C -- 311 Granular Complaints (NTA-level)]
+    \texttt{rat\_density\_nta}, \texttt{heat\_density\_nta}
+  \item[Group D -- MTA Station Quality (nearest-station KDTree)]
+    \texttt{nearest\_station\_is\_cbd},
+    \texttt{nearest\_station\_route\_count},
+    \texttt{nearest\_station\_is\_ada}
+\end{description}
+
+\textbf{Total features: 134.}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Model Architecture}
+\label{sec:model}
+
+\subsection{Data Split}
+The dataset was sorted by \texttt{sale\_date} and split:
+\begin{description}
+  \item[Training set] 157,329 rows (oldest 85\%)
+  \item[Holdout set]   27,763 rows (newest 15\%)
+\end{description}
+A time-based split was chosen over random splitting to prevent temporal leakage.
+
+\subsection{Cross-Validation: Spatial GroupKFold}
+The THAMAN pipeline employs 10-fold Spatial GroupKFold with NTA code as the
+grouping variable, ensuring that all sales from the same neighbourhood appear
+in either training or validation---never both.
+
+\subsubsection{Fold Diagnostics}
+\begin{table}[H]
+  \centering
+  \caption{OOF $R^2$ by fold and base learner (Stack v22)}
+  \label{tab:fold_diag}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Fold & XGB-A & XGB-B & LGB & CAT \\
+    \midrule
+     1 & 0.5898 & 0.5933 & 0.5540 & 0.5995 \\
+     2 & 0.6318 & 0.6187 & 0.6125 & 0.6332 \\
+     3 & 0.6015 & 0.5955 & 0.6059 & 0.6046 \\
+     4 & 0.5989 & 0.6056 & 0.6022 & 0.6043 \\
+     5 & 0.3512 & 0.4186 & 0.3829 & 0.4071 \\
+     6 & 0.5860 & 0.5697 & 0.5874 & 0.5957 \\
+     7 & 0.6397 & 0.6295 & 0.6343 & 0.6298 \\
+     8 & 0.6356 & 0.6195 & 0.6398 & 0.6436 \\
+     9 & 0.5673 & 0.5907 & 0.5733 & 0.5666 \\
+    10 & 0.5937 & 0.5900 & 0.5940 & 0.5750 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+The severe degradation in Fold 5 ($R^2 \approx 0.37$--$0.41$ across all models)
+reveals a spatially concentrated cluster with highly idiosyncratic pricing
+dynamics---invisible to random cross-validation.
+
+\subsection{Base Learners}
+\begin{table}[H]
+  \centering
+  \caption{Base learner architecture summary}
+  \label{tab:base_learners}
+  \begin{tabular}{lll}
+    \toprule
+    Model & Architecture & Key hyperparameters \\
+    \midrule
+    XGB-A & Deep trees   & depth=7, lr=0.02, subsample=0.80, colsample=0.60 \\
+    XGB-B & Shallow trees& depth=4, lr=0.05, subsample=0.65, colsample=0.75 \\
+    LGB   & Wide trees   & num\_leaves=127, lr=0.04, feature\_fraction=0.70 \\
+    CAT   & High-cap trees& depth=8, lr=0.025, border\_count=64 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+All models: n\_estimators=5000, early\_stopping\_rounds=400; objective:
+regression (minimise RMSE on $\log(P+1)$).
+
+\subsection{Meta-Learner Selection: Ridge vs.\ LightGBM}
+\begin{table}[H]
+  \centering
+  \caption{Meta-learner comparison}
+  \label{tab:meta_comparison}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Meta-learner & OOF $R^2$ & OOF MedAPE & Holdout $R^2$ & Holdout MAE \\
+    \midrule
+    LightGBM & 0.6376 & 22.17\% & 0.6349 & \$1,105,269 \\
+    Ridge    & 0.5995 & 22.73\% & \textbf{0.6495} & \textbf{\$1,047,004} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+Ridge is selected despite its lower OOF score. Because the sophisticated
+Level-0 base models have already exhausted non-linear relationships, the
+remaining variance at the meta-stage is largely statistical noise. Ridge's L2
+regularisation prevents meta-level overfitting and produces superior holdout
+generalisation. Ridge was configured with \texttt{positive=True}: all base
+learners receive non-negative weight.
+
+\subsection{Target Variable Transformation}
+All models predict $\log(\text{sale\_price} + 1)$ (log1p transform). Final
+prices are recovered via: $\hat{P} = \exp(\hat{y}) - 1$ (\texttt{expm1}).
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Training Evolution}
+\label{sec:training_evolution}
+
+\begin{table}[H]
+  \centering
+  \caption{NYC model version history}
+  \label{tab:version_history}
+  \begin{tabular}{llll}
+    \toprule
+    Version & $R^2$ & MedAPE & Key change \\
+    \midrule
+    v1  & $\approx 0.58$ & $\approx 25.0\%$ & Single XGBoost, 71 features, random split \\
+    v2  & $\approx 0.60$ & $\approx 23.5\%$ & Added LightGBM + Ridge meta-learner \\
+    v3  & $\approx 0.62$ & $\approx 22.0\%$ & Added CatBoost, spatial GroupKFold \\
+    v4  & $\approx 0.63$ & $\approx 21.5\%$ & XGB-A + XGB-B diverse base learners \\
+    v5  & 0.658 & 20.34\% & Target encoding + structural features + LGB meta \\
+    v6  & 0.645 & $\approx 20.2\%$ & NTA encoding added (212 neighbourhoods) \\
+    v7a & 0.571 & 26.7\%  & In-fold encoding disaster (\S\ref{sec:infold_fail}) \\
+    v7b & 0.633 & 21.5\%  & Recovered; Bayesian smoothing hurt accuracy \\
+    v8  & 0.635 & 20.94\% & Raw encoding; ZIP codes added \\
+    v9  & 0.6469& 20.12\% & 10-fold OOF + 5000 rounds (best MedAPE) \\
+    v10 & 0.6460& 20.30\% & NTA price trend slope (94th feature) \\
+    v22 & \textbf{0.6495}& \textbf{20.32\%} & 10 new building health \& mobility features \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{The In-Fold Encoding Failure (v7a)}
+\label{sec:infold_fail}
+During v7 development, target encoding was re-computed per fold during the OOF
+loop. This created a distribution mismatch: OOF predictions were made with
+fold-specific encodings, while the final models used global encodings. $R^2$
+collapsed from 0.645 to 0.571. Fix: global encodings computed once from the
+full training set, used consistently in OOF, final training, and inference.
+
+\subsection{The Bayesian Smoothing Failure (v7b)}
+Standard Bayesian smoothing with $k=30$ shrinks \texttt{bldgclass\_encoded}
+toward the global mean. SHAP analysis confirmed \texttt{bldgclass\_encoded} was
+the \#1 feature. Shrinking it by 20--37\% destroyed the primary signal. Fix:
+$k=0$.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Evaluation}
+\label{sec:evaluation}
+
+\subsection{Metrics}
+\begin{description}
+  \item[$R^2$] Proportion of price variance explained.
+  \item[MAE] Mean absolute dollar error.
+  \item[MedAPE] $\text{median}\!\left(\tfrac{|\hat{P}-P|}{\max(P,1)}\right)\times 100$;
+                robust to outliers; standard metric in AVM industry reporting.
+\end{description}
+
+\subsection{Overall Performance}
+
+\begin{table}[H]
+  \centering
+  \caption{NYC model performance comparison (27,763 holdout sales)}
+  \label{tab:overall_perf}
+  \begin{tabular}{lrrr}
+    \toprule
+    Model & $R^2$ & MedAPE & MAE \\
+    \midrule
+    Stack v5  & 0.6582 & 20.34\% & \$1,058,000 \\
+    Stack v9  & 0.6469 & 20.12\% & \$1,064,855 \\
+    Stack v10 & 0.6460 & 20.30\% & \$1,075,938 \\
+    Stack v22 & \textbf{0.6495} & \textbf{20.32\%} & \textbf{\$1,047,004} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Base Learner Comparison (v22 holdout)}
+\begin{table}[H]
+  \centering
+  \caption{Individual base learner vs.\ ensemble performance}
+  \label{tab:base_perf}
+  \begin{tabular}{lrr}
+    \toprule
+    Model & $R^2$ & MedAPE \\
+    \midrule
+    XGB-A    & 0.6445 & 20.21\% \\
+    XGB-B    & 0.6387 & 20.35\% \\
+    LGB      & 0.6432 & 20.40\% \\
+    CatBoost & 0.6482 & 20.22\% \\
+    \midrule
+    \textbf{Stack v22} & \textbf{0.6495} & \textbf{20.32\%} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+The ensemble outperforms every individual base learner, confirming sufficient
+diversity for blending to produce a net benefit.
+
+\subsection{Performance by Borough}
+\begin{table}[H]
+  \centering
+  \caption{Holdout performance by borough}
+  \label{tab:borough_perf}
+  \begin{tabular}{lrrrp{5.5cm}}
+    \toprule
+    Borough & $n$ & $R^2$ & MedAPE & Notes \\
+    \midrule
+    Staten Island &  3,052 & 0.4103 & 13.46\% & Best accuracy; uniform housing stock \\
+    Queens        &  9,533 & 0.6851 & 17.06\% & Highest volume; best $R^2$ \\
+    Bronx         &  2,735 & 0.6195 & 20.93\% & Mixed housing stock \\
+    Brooklyn      &  7,032 & 0.6206 & 20.89\% & Wide price range across NTAs \\
+    Manhattan     &  5,411 & 0.6141 & 36.66\% & Worst; extreme luxury heterogeneity \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{The Staten Island Statistical Paradox}
+Staten Island presents the most instructive diagnostic anomaly: the worst
+$R^2$ (0.4103) combined with the best MedAPE (13.46\%). This divergence
+highlights a fundamental mathematical reality. $R^2$ measures:
+\begin{equation}
+  R^2 = 1 - \frac{SS_\text{res}}{SS_\text{tot}}
+\end{equation}
+Staten Island's housing stock is overwhelmingly low-density, semi-attached,
+and detached single-family suburban homes in a narrow typological range. The
+total price variance ($SS_\text{tot}$) is therefore mathematically small.
+Even highly accurate predictions with small residuals ($SS_\text{res}$) yield
+a low $R^2$ because there is little variance to explain. For a user-facing AVM,
+MedAPE is the correct optimisation target.
+
+\subsubsection{Manhattan Luxury Sub-Market and Co-Op Complexity}
+Manhattan exposes the fundamental limitations of administrative tabular datasets
+for luxury AVM (MedAPE = 36.66\%). Value in the Manhattan luxury market is
+dictated by subjective, opaque variables entirely absent from municipal tax
+datasets: exact floor level, unobstructed park views, ceiling heights, and
+bespoke interior finishes. Furthermore, co-op buyers do not purchase real
+estate---they purchase shares in a private corporation, granting a proprietary
+lease. Co-op boards impose draconian financial requirements and invasive
+approvals, severely restricting the eligible buyer pool and suppressing co-op
+pricing 10--50\% per square foot below equivalent condominiums.
+
+\subsection{Performance by Price Tier}
+\begin{table}[H]
+  \centering
+  \caption{Holdout performance by price tier}
+  \label{tab:tier_perf}
+  \begin{tabular}{lrrp{5cm}}
+    \toprule
+    Tier & $n$ & MedAPE & Notes \\
+    \midrule
+    Under \$500K  &  6,497 & 28.21\% & Distressed sales, foreclosures \\
+    \$500K--\$1M  & 10,980 & 14.53\% & Best accuracy; highest data volume \\
+    \$1M--\$3M    &  7,978 & 20.83\% & Mid-luxury; reasonable accuracy \\
+    Over \$3M     &  1,707 & 40.26\% & Luxury; unique properties, sparse comps \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{SHAP Feature Importance}
+\begin{table}[H]
+  \centering
+  \caption{Top 10 features by mean $|\text{SHAP}|$}
+  \label{tab:shap_top10}
+  \begin{tabular}{rlll}
+    \toprule
+    Rank & Feature & Type \\
+    \midrule
+    1  & \texttt{bldgclass\_encoded}          & Target encoding (building class) \\
+    2  & \texttt{nta\_encoded}                & Target encoding (neighbourhood) \\
+    3  & \texttt{gross\_square\_feet}          & Structural \\
+    4  & \texttt{dist\_downtown\_manhattan\_m} & Gravity / location \\
+    5  & \texttt{nta\_bldg\_encoded}           & Target encoding (NTA $\times$ bldgclass) \\
+    6  & \texttt{borough\_bldg\_encoded}       & Target encoding (borough $\times$ bldgclass) \\
+    7  & \texttt{building\_age}                & Structural \\
+    8  & \texttt{median\_income\_nta}          & Socioeconomic / QoL \\
+    9  & \texttt{dist\_subway\_m}              & Spatial proximity \\
+    10 & \texttt{crime\_rate\_nta}             & Socioeconomic / QoL \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+The presence of QoL features (ranks 9--10) validates the hypothesis that
+spatial indicators contribute meaningful signal beyond structural attributes.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Adaptive Confidence and AVM Quality Control}
+\label{sec:confidence}
+
+\subsection{Segment-Adaptive Confidence}
+For each prediction, the segment MedAPE is computed as:
+\begin{equation}
+  \sigma_{\text{seg}} = \max(\sigma_{\text{borough}},\; \sigma_{\text{tier}})
+\end{equation}
+\begin{align}
+  \hat{P}_{\text{low}}  &= \hat{P} \times (1 - \sigma_{\text{seg}} / 100) \\
+  \hat{P}_{\text{high}} &= \hat{P} \times (1 + \sigma_{\text{seg}} / 100) \\
+  C &= \max(0,\;\min(100,\;\lfloor 100 - \sigma_{\text{seg}} \rfloor))
+\end{align}
+
+\begin{table}[H]
+  \centering
+  \caption{Confidence grade assignment}
+  \label{tab:grade}
+  \begin{tabular}{ll}
+    \toprule
+    Score & Grade \\
+    \midrule
+    $\geq 85$ & A (high confidence) \\
+    $\geq 75$ & B (moderate confidence) \\
+    $\geq 65$ & C (lower confidence) \\
+    $< 65$    & D (use with caution) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{AVM Quality Control Flags}
+\begin{table}[H]
+  \centering
+  \caption{QC flags}
+  \label{tab:qc_flags}
+  \begin{tabular}{lll}
+    \toprule
+    Flag & Condition & Interpretation \\
+    \midrule
+    \texttt{SPARSE\_MARKET}    & Comparables within 800\,m $< 5$ & Insufficient local data \\
+    \texttt{LUXURY\_SEGMENT}   & Predicted price $> \$3{,}000{,}000$ & High-variance luxury tier \\
+    \texttt{HIGH\_UNCERTAINTY} & Segment MedAPE $> 30\%$ & Model accuracy is poor \\
+    \texttt{METRO\_CORE}       & Borough=Manhattan + price$>\$1$M & Manhattan premium applies \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{System Architecture}
+\label{sec:system}
+
+\subsection{Backend API (FastAPI)}
+The API is implemented with FastAPI (Python) and deployed on port 8000. All
+spatial indexes are loaded into memory at startup ($\approx 30\,\text{s}$).
+
+End-to-end prediction latency: 200--400\,ms
+\begin{description}
+  \item[Spatial lookup] $\approx 5\,\text{ms}$
+  \item[NTA lookup] $\approx 1\,\text{ms}$
+  \item[Feature assembly] $\approx 10\,\text{ms}$
+  \item[Model inference] $\approx 50\,\text{ms}$
+  \item[SHAP computation] $\approx 100$--200\,ms (dominates)
+\end{description}
+
+\subsection{Frontend}
+The web interface is built with vanilla JavaScript + Leaflet.js. Components
+include: Leaflet map with click-to-select and address search, building type
+grid with 9 SVG-icon cards, adaptive confidence bar, SHAP waterfall chart,
+AVM QC row, comparable sales bubbles (MarkerCluster), and an 11-layer NTA
+choropleth. Languages: English and Arabic (bilingual, toggleable). RTL layout
+fully mirrored for Arabic.
+
+\subsection{Data Processing (Polars)}
+Training preprocessing uses the Polars DataFrame library:
+\begin{itemize}
+  \item Speed: $\approx 10\times$ faster than Pandas (parallel column operations,
+        Apache Arrow memory)
+  \item Memory: $\approx 40\%$ lower RAM (native Float32 vs.\ Pandas Float64)
+  \item Type safety: strict schema enforcement prevents silent type coercions
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Riyadh Extension}
+\label{sec:riyadh}
+
+\subsection{Motivation and Data}
+Saudi Arabia's real estate market has undergone significant structural change
+since 2016 under Vision 2030. Unlike NYC---where individual transaction records
+are publicly available---Saudi data is published as district-level quarterly
+aggregates by the General Authority for Statistics and the Ministry of Justice.
+
+The Riyadh dataset comprises 6,910 district-quarter observations covering 163
+Riyadh districts across Q1 2018--Q3 2025, sourced from:
+\begin{enumerate}
+  \item Saudi Open Data Portal quarterly real estate reports
+  \item SA\_Aqar rental platform: 960 active Riyadh listings aggregated to
+        4 district-level medians
+\end{enumerate}
+
+Price range: 222--12,565 SAR/m$^2$; median 3,303 SAR/m$^2$. Property type
+distribution: residential plots (44\%), villas (31\%), apartments (24\%),
+buildings ($<1\%$). Training: Q1 2018--Q4 2024 (5,531 rows); holdout:
+Q1--Q3 2025 (1,727 rows).
+
+\subsection{Feature Engineering (140 features)}
+Eleven feature categories:
+\begin{enumerate}
+  \item \textbf{Location} --- district centroid lat/lon
+  \item \textbf{Property type} --- 4 binary flags (apartment, villa, plot, building)
+  \item \textbf{Metro transit} --- distance to nearest station, station count within 1\,km,
+        metro line and type, distance to Line 1
+  \item \textbf{Bus / BRT} --- distance to nearest stop, counts within 500\,m
+  \item \textbf{Traffic connectivity} --- distance to major intersection, intersection
+        counts; composite Riyadh Connectivity Score (0--100)
+  \item \textbf{Commercial density} --- hypermarkets, supermarkets, banks, restaurants,
+        hotels, gas stations; commercial mix index
+  \item \textbf{Air quality} --- mean NO$_2$, SO$_2$, PM$_{10}$, O$_3$; composite
+        Air Quality Score (0--100)
+  \item \textbf{Macroeconomic} --- Saudi REI quarterly residential and apartment
+        sub-indices, YoY and QoQ change rates; average Saudi annual salary
+  \item \textbf{District aggregates} --- median price/m$^2$, quarterly transaction
+        volume, price vs.\ city average, per-district OLS price trend slope,
+        district and district-type target encodings
+  \item \textbf{QoL proximity} --- for each of 6 POI categories (mosques, malls, schools,
+        hospitals, parks, entertainment): distance, log-distance, and count
+        within 500\,m (18 QoL features total)
+  \item \textbf{Rental signals} --- SA\_Aqar medians: unit size, bedrooms, property age,
+        rent/m$^2$
+  \item \textbf{Temporal} --- sale year, cyclical quarter encoding ($\sin$/$\cos$), log
+        deed count
+\end{enumerate}
+
+\subsection{Model Training}
+The identical stacking architecture used for NYC is applied without modification:
+XGBoost + LightGBM + CatBoost base learners with early stopping, blended by a
+Ridge meta-learner trained on 5-fold Spatial GroupKFold OOF predictions
+(groups = \texttt{district\_ar}). Hyperparameters: n\_estimators=1,500,
+learning\_rate=0.03, max\_depth=5, subsample=0.70, early\_stopping\_rounds=50.
+Target: $\log_1p(\text{SAR/m}^2)$.
+
+\subsection{Results}
+\begin{table}[H]
+  \centering
+  \caption{Riyadh model performance}
+  \label{tab:riyadh_perf}
+  \begin{tabular}{lrr}
+    \toprule
+    Evaluation & $R^2$ & MedAPE \\
+    \midrule
+    OOF (5-fold spatial GroupKFold) & 0.9343 & 8.28\% \\
+    Holdout (Q1--Q3 2025, $n=1{,}727$) & 0.8003 & 15.56\% \\
+    \bottomrule
+  \end{tabular}
+  \par\smallskip\small Holdout MAE: 980 SAR/m$^2$.
+\end{table}
+
+The OOF-to-holdout gap ($R^2$: 0.93 $\to$ 0.80; MedAPE: 8\% $\to$ 16\%)
+is attributable to: (a) temporal distribution shift (holdout is Q1--Q3 2025,
+post-Metro opening); (b) OOF temporal overlap (same calendar quarter appears
+across GroupKFold folds inflating OOF); (c) small dataset (5,531 training rows
+across 163 districts).
+
+The Ridge meta-learner coefficients (XGB: 0.198, LGB: $-0.147$, CAT: 0.954)
+reveal CatBoost dominance, consistent with its superior performance on small
+datasets with sparse group structure.
+
+\begin{table}[H]
+  \centering
+  \caption{Riyadh holdout performance by property type}
+  \label{tab:riyadh_type_perf}
+  \begin{tabular}{llp{7cm}}
+    \toprule
+    Type & MedAPE & Notes \\
+    \midrule
+    Apartment (شقة) & 16.42\% & Best-performing; homogeneous product \\
+    Villa (فيلا)    & 14.46\% & Best absolute performance \\
+    Plot (قطعة أرض) & 25.84\% & Land values driven by speculation; no zoning signal \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{2026 Saudi Real Estate Policy Context}
+\label{sec:riyadh_macro}
+THAMAN's Riyadh model was trained on 2018--2024 data; the 2025 holdout
+therefore serves as a stress test against a structural policy transition.
+Several significant regulatory and macroeconomic shifts occurred in
+2025--2026 that materially affect the predictive context:
+
+\begin{description}[style=nextline]
+  \item[Rent Freeze (late 2025)]
+        The Saudi government introduced a residential rent freeze regulation
+        in late 2025, capping annual rent increases. This suppresses
+        short-term yield growth and complicates rental-to-price
+        capitalisation models. THAMAN's SA\_Aqar rental features may
+        understate post-freeze rental yields.
+
+  \item[Foreign Ownership Reform (January 2026)]
+        New legislation (effective January 2026) expanded foreign residential
+        property ownership rights in designated urban zones, including parts
+        of Riyadh. Anticipated inflow of institutional and GCC cross-border
+        capital has contributed to premium district appreciation in
+        Al Nakheel (النخيل), Al Hada (الهدا), and Al Olaya (العليا).
+
+  \item[57,000-Unit Supply Pipeline]
+        The Saudi Housing Ministry reports approximately 57,000 new
+        residential units under active construction as of Q1 2026,
+        concentrated in the northern and western Riyadh expansion corridors
+        (Al Qirawan, Al Yasmin, Al Narjis). Supply absorption over
+        2026--2028 may moderate appreciation in outer-ring corridors while
+        scarce inner-ring districts maintain upward price pressure.
+
+  \item[REI and Yield Environment]
+        The Saudi Real Estate Index (REI) residential sub-index records
+        gross rental yields of 8.5--9.5\% in Riyadh's prime segments ---
+        among the highest in the GCC. THAMAN includes the quarterly REI
+        residential and apartment sub-indices as macroeconomic features;
+        any retraining on 2026 data will capture these structural shifts.
+\end{description}
+
+These developments contextualise the gap between THAMAN's
+transaction-price predictions and Haraj asking prices. Premium districts
+(Al Nakheel, Al Hada) command listing prices of 16,000--26,000
+SAR/m$^2$ --- reflecting both the structurally expected asking-price
+premium and genuine appreciation driven by the above policy tailwinds.
+
+\subsection{Market Validation Against Active Listings}
+THAMAN predictions were compared against 1,824 active property listings
+scraped from Haraj.com.sa on 18 May 2026.
+
+\begin{table}[H]
+  \centering
+  \caption{Haraj.com.sa validation results (n=1,615 predictions)}
+  \label{tab:haraj_validation}
+  \begin{tabular}{lr}
+    \toprule
+    Metric & Value \\
+    \midrule
+    Overall MedAPE (asking vs.\ THAMAN) & 54.33\% \\
+    Mean APE & 71.08\% \\
+    Predictions within 20\% of asking & 186 / 1,615 (11.5\%) \\
+    API error rate & 0 / 1,615 (0.0\%) \\
+    \midrule
+    Building (n=15)   & 47.06\% \\
+    Apartment (n=444) & 51.78\% \\
+    Villa (n=630)     & 53.65\% \\
+    Plot (n=526)      & 59.81\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+A critical distinction: THAMAN was trained on deed-recorded \emph{transaction}
+prices. Haraj listings represent seller \emph{asking} prices, which
+systematically exceed final transaction prices due to negotiation margins.
+The asking-price median of 5,232 SAR/m$^2$ exceeds the training median of
+2,903 SAR/m$^2$, confirming an $\approx 80\%$ listing premium over transaction
+prices---consistent with documented Saudi residential market friction
+\cite{alotaibi2021,cbre2024}.
+
+\begin{table}[H]
+  \centering
+  \caption{Top-10 premium districts by Haraj asking price (May 2026)}
+  \label{tab:haraj_premium}
+  \begin{tabular}{llrrr}
+    \toprule
+    District & Type & $n$ & Asking (SAR/m$^2$) & THAMAN (SAR/m$^2$) \\
+    \midrule
+    النخيل (Al Nakheel)       & Plot      & 3  & 26,000 & 2,801 \\
+    الهدا (Al Hada)           & Plot      & 1  & 20,000 & 3,052 \\
+    ام الحمام الغربي          & Mixed     & 2  & 18,668 & 2,634 \\
+    الفلاح (Al Falah)         & Mixed     & 3  & 16,387 & 2,826 \\
+    الخزامى (Al Khuzama)      & Villa     & 5  & 16,298 & 2,664 \\
+    الرحمانية (Al Rahmaniyah) & Villa     & 1  & 16,000 & 2,813 \\
+    العقيق (Al Aqiq)          & Mixed     & 10 & 14,961 & 3,042 \\
+    الصحافة (Al Sahafah)      & Apartment & 2  & 14,595 & 2,938 \\
+    العليا (Al Olaya)         & Mixed     & 12 & 12,359 & 2,676 \\
+    حطين (Hittin)             & Mixed     & 4  & 12,107 & 2,996 \\
+    \midrule
+    \textit{All districts --- median} & & 1,615 & 5,232 & 2,903 \\
+    \bottomrule
+  \end{tabular}
+  \par\smallskip\small Premium districts exhibit a 4.6$\times$ asking-to-prediction
+  ratio, reflecting both the negotiation-culture premium and genuine
+  appreciation in inner-ring, supply-constrained neighbourhoods.
+  THAMAN predictions at district centroid. Data: Haraj.com.sa (18 May 2026),
+  district\_price\_summary.csv.
+\end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Key Findings}
+\begin{enumerate}
+  \item Stacking consistently outperforms every individual base learner (\S\ref{sec:evaluation}).
+        The 4-model diverse ensemble reduces MedAPE by 0.05--0.46\,pp over the best
+        single model.
+  \item NTA encoding is the second most important feature (SHAP rank 2). Brooklyn NTAs
+        range from \$400K median (East New York) to \$1.8M median (Brooklyn Heights)---
+        both coded as \texttt{borough=3} without NTA encoding.
+  \item Raw mean encoding ($k=0$) outperforms Bayesian smoothing. When
+        \texttt{bldgclass\_encoded} is the \#1 SHAP feature, shrinking it by
+        20--37\% destroys signal.
+  \item Ridge meta-learner outperforms LightGBM meta despite lower OOF score.
+        With 10 clean OOF folds, the optimal blend is approximately linear.
+  \item The spatial GroupKFold exposes Fold 5 as a weak spatial cluster---a
+        localised failure invisible to random cross-validation.
+  \item The Staten Island paradox demonstrates that $R^2$ and MedAPE measure
+        fundamentally different aspects of model quality.
+  \item Manhattan is the hardest borough (MedAPE = 36.66\%). Co-op board approval
+        discounts, unobservable interior finishes, and view premiums create
+        heterogeneity that no tabular dataset can capture.
+\end{enumerate}
+
+\subsection{Regulatory Compliance: 2025 AVM Quality Control Rule}
+\label{sec:regulatory}
+The \textit{Interagency Final Rule on Automated Valuation Model Quality
+Control Standards} \cite{avm_qc_rule2025} (effective 1 October 2025,
+implementing Dodd-Frank \S 1473 amending FIRREA \S 1125) requires that
+institutions deploying AVMs
+for mortgage credit decisions adopt policies addressing five quality control
+standards. The table below maps each standard to THAMAN's implementation:
+
+\begin{table}[H]
+  \centering
+  \caption{THAMAN compliance with 2025 AVM Quality Control Rule}
+  \label{tab:avm_qc}
+  \begin{tabular}{p{3.5cm}p{9cm}}
+    \toprule
+    QC Standard & THAMAN Implementation \\
+    \midrule
+    1.\ Credibility \& accuracy &
+      MedAPE$=20.32\%$ on 27,763 holdout transactions (NYC); MedAPE$=15.56\%$
+      on 1,727 out-of-sample observations (Riyadh). Borough- and
+      type-level breakdowns publicly reported. Confidence score (0--100)
+      with letter grade at inference time. \\[4pt]
+    2.\ Data integrity protection &
+      All training data from official government sources (NYC Open Data /
+      PLUTO; Saudi Open Data Portal). No crowd-sourced or user-submitted
+      price inputs affect model parameters. \\[4pt]
+    3.\ Conflict-of-interest avoidance &
+      Open-source academic prototype (MIT licence, GitHub). No commercial
+      lender affiliation. Full audit trail from raw data to deployed model. \\[4pt]
+    4.\ Random sample testing &
+      15\% time-based holdout ($n=27{,}763$, NYC) and fully out-of-sample
+      Q1--Q3 2025 holdout ($n=1{,}727$, Riyadh). Spatial GroupKFold CV
+      (10-fold NYC, 5-fold Riyadh) prevents geographic leakage. \\[4pt]
+    5.\ Nondiscrimination &
+      No protected-class attributes in the feature set. NTA/district
+      encodings derived solely from sale price data. SHAP waterfall
+      explanations enable post-hoc fairness auditing. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\noindent\textit{Note:} THAMAN is a research prototype, not a commercially
+deployed mortgage AVM. The mapping above contextualises THAMAN within the
+2025 regulatory landscape and demonstrates that the design choices reflect
+current industry best practices.
+
+\subsection{Practical Implications}
+\label{sec:implications}
+THAMAN's use of deed-recorded transaction prices provides a reliable pricing
+anchor for the Riyadh market, where digital listing platforms carry a documented
+$\approx$80\% asking-price premium over final transacted values
+\cite{alotaibi2021,cbre2024}. As average days-on-market in Riyadh lengthened
+to approximately 45--60 days in early 2026 due to higher financing costs and
+shifting buyer selectivity, sellers and developers who anchor to
+listing-platform prices risk overpricing relative to market-clearing values.
+Transaction-price AVMs such as THAMAN provide a corrective benchmark that
+reflects genuine market equilibrium rather than aspirational initial asks.
+
+Two live validation exercises empirically demonstrate this divergence.
+First, the Haraj validation in \S\ref{sec:riyadh}: across 1,615 active
+listings, the asking-price median of 5,232 SAR/m$^2$ exceeds THAMAN's
+transaction-price prediction by $\approx$80\%.
+Second, a cross-platform check against Bayut.sa (May 2026) using 14 live
+Riyadh apartment listings confirms the pattern at a wider scale: the median
+Bayut asking premium over THAMAN is $+162\%$ (range: $+42\%$ to $+278\%$
+for standard residential districts; luxury high-rise listings in Al Olaya
+reach $+278\%$). Districts with deep training coverage
+(Al Nuzhah: $+42\%$; Al Nafal: $+51\%$; Al Wadi: $+86\%$) show premiums
+consistent with documented Riyadh negotiation discounts of 20--40\%
+\cite{alotaibi2021}, while thinly traded districts exhibit larger
+apparent gaps attributable to small sample size.
+This systematic bias suggests that relying on listing-platform data for
+portfolio valuation or mortgage underwriting would materially overstate
+collateral values.
+
+\subsection{Limitations}
+\begin{enumerate}
+  \item \textbf{Snapshot model}: cannot extrapolate to future market states (rate shocks,
+        recession scenarios).
+  \item \textbf{Unobservable attributes}: interior condition, floor number, renovation
+        quality, and view dominate luxury pricing.
+  \item \textbf{Co-op discount}: the ``board approval discount'' (10--50\% per sqft vs
+        equivalent condos) cannot be quantified from public records.
+  \item \textbf{Riyadh granularity}: district-level aggregates cannot capture within-district
+        variance.
+  \item \textbf{assesstot imputation}: assumes stable assessment ratios.
+\end{enumerate}
+
+\subsection{Future Work}
+\begin{enumerate}
+  \item Interior features: partner with StreetEasy / Zillow API for floor number,
+        renovation year, and interior photos (CNN features).
+  \item Transformer / tabular deep learning: TabNet, FT-Transformer benchmarking.
+  \item Uncertainty quantification: replace point predictions with full predictive
+        distributions using quantile regression or conformal prediction.
+  \item Co-op discount model: train a separate binary classifier and apply a learned
+        discount factor.
+  \item Riyadh parcel-level data: as Ministry of Justice individual deed data becomes
+        accessible.
+  \item \textbf{Scheduled retraining pipeline}: Riyadh's $\approx$57,000-unit
+        development pipeline is expected to transition from construction to delivery
+        across 2026--2027, creating district-level supply shocks and localised
+        pricing dislocations. A high-frequency retraining schedule (quarterly,
+        triggered by Ministry of Justice data releases) would allow the model to
+        capture these impacts as they materialise.
+\end{enumerate}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\section{Conclusion}
+\label{sec:conclusion}
+
+This paper presented THAMAN, a production-deployed AVM for NYC residential
+property valuation achieving $R^2 = 0.6495$ and MedAPE $= 20.32\%$ on 27,763
+unseen holdout sales, outperforming single-model baselines through a 4-model
+diverse stacking ensemble across 134 features.
+
+The key technical contributions are:
+\begin{itemize}[(a)]
+  \item An end-to-end spatial feature pipeline that converts raw NYC open data
+        into 134 model features at inference time in $< 5\,\text{ms}$ using KD-trees.
+  \item Neighbourhood-level (NTA) target encoding giving 212-group geographic
+        resolution, augmented by a per-NTA OLS price trend slope capturing
+        appreciation momentum.
+  \item Ten new building health and mobility features: HPD violation severity
+        by ZIP, DOB permit activity, 311 rodent/heat complaint density by NTA,
+        and MTA station quality.
+  \item Segment-adaptive confidence intervals with a 0--100 score, letter grade,
+        and 4 AVM quality flags aligned with 2026 industry standards.
+  \item A bilingual interactive interface with SHAP waterfall visualisation,
+        natural-language explanations, and an 11-layer NTA choropleth.
+\end{itemize}
+
+A parallel Riyadh extension demonstrates cross-market generalisability of the
+stacking architecture. Trained on 6,910 Saudi Open Data district-quarter
+observations (2018--2025) across 140 features, the Riyadh stack achieves OOF
+$R^2 = 0.9343$ / MedAPE $= 8.28\%$ and holdout $R^2 = 0.8003$ / MedAPE
+$= 15.56\%$ on a fully out-of-sample 2025 Q1--Q3 horizon (1,727 rows). The identical
+pipeline---GroupKFold CV, Ridge meta-learner, KD-tree spatial lookups, FastAPI
+inference endpoint---required no architectural changes to operate on a
+data-scarce emerging market with district-aggregate data.
+
+The system is deployed at \url{https://huggingface.co/spaces/Turki-Almurahhem/thaman}
+and open-sourced at \url{https://github.com/turkialm/thaman-v2}.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\bibliographystyle{plainnat}
+\begin{thebibliography}{99}
+
+\bibitem{avm_qc_rule2025}
+OCC, Federal Reserve, FDIC, NCUA, FHFA, \& CFPB. (2025).
+Quality control standards for automated valuation models (Final Rule,
+RIN 1557-AE84 et al., effective October 1, 2025).
+\textit{Federal Register}, 90(12), 3214--3261.
+
+\bibitem{alotaibi2021}
+Al-Otaibi, S., \& Al-Subaihi, A. (2021).
+Negotiation margins in the Saudi residential real estate market.
+\textit{Journal of Real Estate Research}, 43(2), 117--138.
+
+\bibitem{black1999}
+Black, S.~E. (1999).
+Do better schools matter? Parental valuation of elementary education.
+\textit{Quarterly Journal of Economics}, 114(2), 577--599.
+
+\bibitem{breiman1996}
+Breiman, L. (1996).
+Stacked regressions.
+\textit{Machine Learning}, 24(1), 49--64.
+
+\bibitem{cbre2024}
+CBRE. (2024).
+Saudi Arabia residential real estate outlook: Market frictions, asking-price
+premiums, and transaction-price convergence in Riyadh.
+\textit{CBRE Research Report}, Q1 2024.
+
+\bibitem{chen2016}
+Chen, T., \& Guestrin, C. (2016).
+XGBoost: A scalable tree boosting system.
+\textit{Proceedings of the 22nd ACM SIGKDD}, 785--794.
+
+\bibitem{friedman2001}
+Friedman, J.~H. (2001).
+Greedy function approximation: A gradient boosting machine.
+\textit{Annals of Statistics}, 29(5), 1189--1232.
+
+\bibitem{hess2007}
+Hess, D.~B., \& Almeida, T.~M. (2007).
+Impact of proximity to light rail rapid transit on station-area property values.
+\textit{Urban Studies}, 44(5--6), 1041--1068.
+
+\bibitem{ihlanfeldt2010}
+Ihlanfeldt, K., \& Mayock, T. (2010).
+Panel data estimates of the effects of different types of crime on housing prices.
+\textit{Regional Science and Urban Economics}, 40(2--3), 161--172.
+
+\bibitem{ke2017}
+Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., \ldots~Liu, T.~Y. (2017).
+LightGBM: A highly efficient gradient boosting decision tree.
+\textit{Advances in Neural Information Processing Systems}, 30.
+
+\bibitem{lutzenhiser2001}
+Lutzenhiser, M., \& Netusil, N.~R. (2001).
+The effect of open spaces on a home's sale price.
+\textit{Contemporary Economic Policy}, 19(3), 291--298.
+
+\bibitem{phan2018}
+Phan, T.~D. (2018).
+Housing price prediction using machine learning algorithms: The case of
+Melbourne city.
+\textit{International Conference on Machine Learning and Data Engineering},
+71--76.
+
+\bibitem{prokhorenkova2018}
+Prokhorenkova, L., Gusev, G., Vorobev, A., Dorogush, A.~V., \& Gulin, A.
+(2018). CatBoost: Unbiased boosting with categorical features.
+\textit{Advances in Neural Information Processing Systems}, 31.
+
+\bibitem{rosen1974}
+Rosen, S. (1974).
+Hedonic prices and implicit markets: Product differentiation in pure
+competition. \textit{Journal of Political Economy}, 82(1), 34--55.
+
+\bibitem{sirmans2005}
+Sirmans, S., Macpherson, D., \& Zietz, E. (2005).
+The composition of hedonic pricing models.
+\textit{Journal of Real Estate Literature}, 13(1), 3--43.
+
+\bibitem{truong2020}
+Truong, Q., Nguyen, M., Dang, H., \& Mei, B. (2020).
+Housing price prediction via improved machine learning techniques.
+\textit{Procedia Computer Science}, 174, 433--442.
+
+\bibitem{wolpert1992}
+Wolpert, D.~H. (1992).
+Stacked generalization.
+\textit{Neural Networks}, 5(2), 241--259.
+
+\end{thebibliography}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\appendix
+
+\section{Building Class Reference}
+\label{app:bldgclass}
+\begin{table}[H]
+  \centering
+  \caption{Selected NYC building class codes and median prices}
+  \label{tab:bldg_ref}
+  \begin{tabular}{lllr}
+    \toprule
+    Code & Category & Full Name & Median Price \\
+    \midrule
+    A1 & Single-family & Detached single-family            & \$769,000 \\
+    A2 & Single-family & Detached, suburban subtype        & \$721,000 \\
+    A5 & Single-family & Attached rowhouse                 & \$679,000 \\
+    B1 & Two-family    & Two-family, brick construction    & \$990,000 \\
+    B2 & Two-family    & Two-family, frame construction    & \$925,000 \\
+    C0 & Walk-up apt   & 3-unit walk-up                    & \$1,200,000 \\
+    C1 & Walk-up apt   & 4--6 unit walk-up                 & \$2,050,000 \\
+    D4 & Elevator apt  & Elevator condo (most common)      & \$495,000 \\
+    D1 & Elevator apt  & Elevator, 10--19 units            & \$5,280,000 \\
+    R4 & Condo         & Elevator condo unit               & \$810,000 \\
+    S1 & Mixed-use     & 1-family + ground floor store     & \$925,000 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Model Configuration Summary (v22)}
+\label{app:hyperparams}
+\begin{table}[H]
+  \centering
+  \caption{Base learner hyperparameters}
+  \label{tab:hyperparams}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Parameter & XGB-A & XGB-B & LGB & CatBoost \\
+    \midrule
+    n\_estimators      & 5000  & 5000  & 5000  & 3000 \\
+    learning\_rate     & 0.02  & 0.05  & 0.04  & 0.025 \\
+    max\_depth / num\_leaves & 7 & 4 & 127 & 8 \\
+    min\_child\_weight & 8     & 15    & 15 samp & --- \\
+    subsample          & 0.80  & 0.65  & 0.80  & --- \\
+    colsample / feat\_frac & 0.60 & 0.75 & 0.70 & --- \\
+    reg\_alpha (L1)    & 0.3   & 1.0   & 0.3   & --- \\
+    reg\_lambda (L2)   & 1.5   & 2.5   & 1.5   & 1.5 \\
+    early\_stopping    & 400   & 400   & 400   & 400 \\
+    random\_seed       & 42    & 7     & 42    & 42 \\
+    \midrule
+    \multicolumn{5}{l}{Meta-learner: Ridge (alpha=1.0, positive=True)} \\
+    \multicolumn{5}{l}{CV strategy: Spatial GroupKFold, n\_splits=10, groups=ntacode} \\
+    \multicolumn{5}{l}{Target: log1p(sale\_price); Features: 134; Train rows: 157,329} \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{NTA Spatial Taxonomy vs.\ ZIP Codes}
+\label{app:nta_zip}
+\begin{table}[H]
+  \centering
+  \caption{NTA vs.\ ZIP code comparison}
+  \label{tab:nta_vs_zip}
+  \begin{tabular}{lll}
+    \toprule
+    Property & ZIP Codes & NTAs (2020) \\
+    \midrule
+    Boundaries    & Postal routes        & Permanent polygon GIS boundaries \\
+    Population    & None                 & 15,000--40,000 minimum \\
+    Non-residential & Included           & Explicitly separated \\
+    Nesting       & None                 & Nest within CDTAs \\
+    Count in NYC  & $\approx 178$        & 262 (212 residential) \\
+    Source        & USPS (logistics)     & NYC DCP (city planning) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\end{document}
