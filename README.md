@@ -9,8 +9,7 @@ pinned: false
 
 # 🏙️🕌 THAMAN — Dual-City AI Property Valuation
 
-> BSc Graduation Project — Umm Al-Qura University  
-> Interactive map-based AVM for **New York City** and **Riyadh** using stacked ensemble ML, SHAP explainability, and Quality-of-Life spatial indicators.
+> Interactive AVM for **New York City** and **Riyadh** using stacked ensemble ML, SHAP explainability, and geospatial enrichment.
 
 **Live demo:** https://huggingface.co/spaces/Turki-Almurahhem/thaman  
 **GitHub:** https://github.com/turkialm/thaman-v2
@@ -21,44 +20,60 @@ pinned: false
 
 | City | Flow |
 |---|---|
-| 🗽 **NYC** | Click map → fill building details → get USD price estimate + confidence interval + SHAP drivers + spatial grid |
-| 🕌 **Riyadh** | Click map → select property type + area → get SAR/sqm estimate + AVM grade badge + Bayut asking overlay |
+| 🗽 **NYC** | Click map → fill building details → USD estimate + confidence interval + SHAP drivers + 19-factor spatial grid |
+| 🕌 **Riyadh** | Click map → select property type + area → SAR/m² estimate + AVM grade + Bayut asking overlay + weerate benchmarks |
 
-Toggle between cities with the NYC / Riyadh button on the map. Full bilingual (EN/AR) with RTL support.
+- Toggle cities with the NYC / Riyadh button
+- Full bilingual EN/AR with RTL support
+- Share any estimate via URL — restores form + auto-runs on open
+- Install as PWA on mobile (iOS + Android)
+- Batch valuations via CSV upload (up to 50 properties)
+- Embeddable iframe widget
+
+---
+
+## Pages
+
+| URL | Description |
+|---|---|
+| `/` | Landing page |
+| `/ui` | Interactive map app |
+| `/ui/charts.html` | Analytics dashboard — model history, borough/district breakdown, weerate Jun 2026 |
+| `/ui/batch.html` | Batch CSV valuation — NYC or Riyadh, download results |
+| `/ui/embed.html` | Lightweight embeddable widget |
+| `/docs` | Swagger API docs |
 
 ---
 
 ## Model Performance
 
-### NYC — Stack v22 (134 features, 157K sales, 2022–2026)
+### NYC — Stack v22 (134 features · 157K sales · 2022–2026)
 
 | Metric | Value |
 |---|---|
-| R² (holdout) | 0.6495 |
+| R² holdout | 0.6495 |
 | MedAPE | 20.32% |
-| CV Strategy | 10-fold Spatial GroupKFold (by NTA) |
+| CV | 10-fold Spatial GroupKFold by NTA |
 | Stack | XGB-A + XGB-B + LightGBM + CatBoost + Ridge meta |
 
-**By borough:** Manhattan 35.16% · Bronx 21.08% · Brooklyn 20.64% · Queens 17.43% · Staten Island 14.41%
+Borough MedAPE: Manhattan 35.2% · Bronx 21.1% · Brooklyn 20.6% · Queens 17.4% · Staten Island 14.4%
 
-Key v22 features: NTA × building-type temporal lag (2 lags + momentum), BBL building-level LOO $/sqft history.
+Key features: NTA × building-type temporal lag (2 lags + momentum), BBL building-level LOO $/sqft history, 57K Overture POIs (12 categories).
 
-### Riyadh — Stack v11 (140 features, 7,258 transactions, 2018–2025)
+### Riyadh — Stack v12 (149 features · 7,261 district-quarter records · 2018–2026)
 
 | Metric | Value |
 |---|---|
-| OOF R² | 0.9343 |
-| OOF MedAPE | 8.28% |
-| Holdout R² | 0.8003 |
-| Holdout MedAPE | 15.56% |
-| Holdout MAE | 980 SAR/m² |
-| Holdout period | 2025 Q1+ (1,727 rows, fully unseen) |
-| CV Strategy | 5-fold Spatial GroupKFold (by district) |
+| OOF R² | 0.9348 |
+| OOF MedAPE | 8.25% |
+| Holdout R² | 0.8014 |
+| Holdout MedAPE | 15.59% |
+| CV | 5-fold Spatial GroupKFold by district |
 | Stack | XGBoost + LightGBM + CatBoost + Ridge meta |
 
-**By type:** Apartment 12.70% · Villa 12.83% · Residential Plot 21.20% · Building 21.45%
+Type MedAPE: Apartment 12.8% · Villa 12.4% · Residential Plot 20.8% · Building 18.6%
 
-Key v11 features: type-stratified district lag prices + price volatility + Suhail transaction density.
+Key features: type-stratified district lag prices, Suhail transaction density, Riyadh Metro proximity (94 stations), Haraj asking prices, REI indices, Bayut villa medians, Haraj structural (type-stratified area + age).
 
 ---
 
@@ -69,10 +84,50 @@ Key v11 features: type-stratified district lag prices + price volatility + Suhai
 | ML | XGBoost, LightGBM, CatBoost, scikit-learn Ridge |
 | Backend | FastAPI + Uvicorn |
 | Spatial | SciPy BallTree/cKDTree, GeoPandas, Polars |
-| Explainability | SHAP (TreeExplainer), custom waterfall chart |
+| Explainability | SHAP TreeExplainer — bar + waterfall views |
 | Frontend | Leaflet.js, Chart.js, vanilla JS (bilingual EN/AR) |
+| Mobile | PWA (manifest + service worker), CSS bottom-drawer |
 | Deployment | Docker (Hugging Face Spaces) |
-| Data pipeline | Polars (training), Pandas (feature scripts) |
+
+---
+
+## API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/health` | Model load status |
+| `POST` | `/predict` | NYC single estimate (USD) |
+| `POST` | `/predict/riyadh` | Riyadh single estimate (SAR/m²) |
+| `POST` | `/batch` | NYC batch — up to 50 properties |
+| `POST` | `/batch/riyadh` | Riyadh batch — up to 50 properties |
+| `GET` | `/riyadh/stats` | Riyadh analytics + weerate Jun 2026 benchmarks |
+| `GET` | `/metrics` | Live model metrics |
+| `GET` | `/scatter?city=nyc\|riyadh` | Predicted-vs-actual scatter data |
+| `GET` | `/layers/nta` | NYC NTA choropleth GeoJSON |
+| `GET` | `/layers/nyc-heatmap` | NTA-level sales heatmap |
+| `GET` | `/robots.txt` | SEO |
+| `GET` | `/sitemap.xml` | Dynamic sitemap |
+
+### NYC Example
+```bash
+curl -X POST https://huggingface.co/spaces/Turki-Almurahhem/thaman/predict \
+  -H "Content-Type: application/json" \
+  -d '{"latitude":40.6892,"longitude":-73.9442,"gross_square_feet":1800,
+       "building_age":55,"bldgclass":"A1","borough":3,"numfloors":2,"residential_units":1}'
+```
+
+### Riyadh Example
+```bash
+curl -X POST https://huggingface.co/spaces/Turki-Almurahhem/thaman/predict/riyadh \
+  -H "Content-Type: application/json" \
+  -d '{"latitude":24.7136,"longitude":46.6753,"property_type":"شقة","area_sqm":150}'
+```
+
+### Embed Widget
+```html
+<iframe src="https://huggingface.co/spaces/Turki-Almurahhem/thaman/ui/embed.html"
+        width="340" height="560" frameborder="0"></iframe>
+```
 
 ---
 
@@ -83,130 +138,94 @@ git clone https://github.com/turkialm/thaman-v2.git
 cd thaman-v2
 pip install -r requirements.txt
 uvicorn api.main:app --port 8000
-# Open: http://localhost:8000/ui
+# Open: http://localhost:8000
 ```
 
-> First startup ~30 seconds — loads both ML stacks and all spatial data.
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/health` | Model + spatial status |
-| `GET` | `/bldgclasses` | NYC building class codes |
-| `POST` | `/predict` | NYC price estimate (USD) |
-| `POST` | `/predict/riyadh` | Riyadh price estimate (SAR/m²) |
-| `POST` | `/batch` | NYC batch predictions (up to 50 properties) |
-| `GET` | `/layers/nta` | NYC NTA choropleth GeoJSON |
-| `GET` | `/layers/district` | Riyadh district polygon GeoJSON |
-| `GET` | `/riyadh/stats` | Riyadh model statistics |
-| `GET` | `/docs` | Swagger UI |
-
-### NYC Example
-
-```bash
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"latitude":40.6892,"longitude":-73.9442,"gross_square_feet":1800,
-       "building_age":55,"bldgclass":"A1","borough":3,
-       "numfloors":2,"residential_units":1}'
-```
-
-### Riyadh Example
-
-```bash
-curl -X POST http://localhost:8000/predict/riyadh \
-  -H "Content-Type: application/json" \
-  -d '{"latitude":24.7136,"longitude":46.6753,
-       "property_type":"شقة","area_sqm":150}'
-```
+First startup ~30 sec — loads both ML stacks + spatial data.
 
 ---
 
 ## Project Structure
 
 ```
-new_try/
 ├── api/
-│   ├── main.py          # FastAPI — all endpoints (NYC + Riyadh)
-│   ├── spatial.py       # SpatialLookup + RiyadhSpatialLookup (BallTree/cKDTree)
-│   └── models.py        # Pydantic request/response schemas
+│   ├── main.py           # All FastAPI endpoints
+│   ├── models.py         # Pydantic schemas
+│   └── schemas.py
 ├── models/
-│   ├── scorer.py            # ThamanScorer — stacked ensemble inference
-│   ├── thaman_stack.pkl     # NYC Stack v22 (134 features, 52 MB)
-│   ├── xgboost_model.json   # NYC XGBoost base learner (JSON)
-│   ├── meta.json            # NYC feature names + NTA lookups + BBL history
-│   ├── riyadh_stack.pkl     # Riyadh Stack v11 (140 features)
-│   └── riyadh_meta.json     # Riyadh feature names + district lag maps
+│   ├── scorer.py         # ThamanScorer — stacked ensemble inference
+│   ├── thaman_stack.pkl  # NYC Stack v22 (134 features, ~50 MB)
+│   ├── riyadh_stack.pkl  # Riyadh Stack v12 (149 features)
+│   ├── meta.json         # NYC lookups (NTA, BBL, income)
+│   └── riyadh_meta.json  # Riyadh lookups (district lags, metro, Haraj)
 ├── frontend/
-│   ├── index.html       # Dual-city map UI (bilingual EN/AR)
-│   ├── app.js           # Leaflet + city toggle + predict + i18n
-│   ├── style.css        # Responsive CSS (dark header, RTL-aware)
-│   └── charts.html      # Analytics dashboard (NYC + Riyadh)
+│   ├── landing.html      # Marketing landing page
+│   ├── index.html        # Dual-city map UI (bilingual EN/AR)
+│   ├── app.js            # Leaflet + city toggle + predict + share + i18n
+│   ├── style.css         # Responsive CSS (mobile drawer, RTL)
+│   ├── charts.html       # Analytics dashboard
+│   ├── batch.html        # Batch CSV valuation
+│   ├── embed.html        # Embeddable iframe widget
+│   ├── manifest.json     # PWA manifest
+│   └── sw.js             # Service worker (cache-first static)
 ├── training/
-│   ├── train_stack_v12.py        # NYC Stack training (current, v22+)
-│   └── train_stack_riyadh_v2.py  # Riyadh Stack training (current, v11+)
+│   ├── train_stack_v12.py        # NYC v22+ training pipeline
+│   └── train_stack_riyadh_v4.py  # Riyadh v11+ training pipeline
 ├── scripts/
-│   ├── generate_scatter.py       # Holdout scatter plot data
-│   └── prepare_v12_features.py   # NYC feature engineering pipeline
+│   ├── fetch_suhail_transactions.py   # Pull fresh Suhail MOJ data
+│   ├── aggregate_suhail_quarterly.py  # District-quarter aggregation
+│   ├── riyadh_structural_features.py  # Aqar/Bayut/Haraj enrichment
+│   └── generate_scatter.py            # Holdout scatter data
 ├── data/
-│   ├── processed/
-│   │   ├── features_riyadh_v2.csv           # Riyadh feature matrix (7,258 × 140)
-│   │   ├── nta_simplified.geojson           # NYC NTA polygons
-│   │   └── riyadh_district_polygons.geojson # Riyadh district polygons
-│   └── raw/                                 # Source data files
-├── tests/
-│   └── test_api.py              # API smoke + integration tests
-├── docs/
-│   └── DATA_CATALOG.md
+│   ├── processed/        # Feature matrices (git-ignored, large)
+│   └── raw/
+│       └── weerate_riyadh_jun2026.json  # Market benchmarks (Bayut/KF/Maxwell/GASTAT)
+├── tests/                # 109 tests across 8 files
 ├── Dockerfile
 └── requirements.txt
 ```
 
 ---
 
-## Test Suite
-
-Run with `pytest tests/ -v`.
-
-| File | Tests |
-|---|---|
-| `test_api.py` | Smoke / integration (NYC + Riyadh endpoints) |
-
----
-
 ## Data Sources
 
 ### NYC
-| Dataset | Source |
-|---|---|
-| Property Sales (185K) | NYC Open Data — Citywide Rolling Sales 2022–2026 |
-| Building Data | NYC DCP — PLUTO 2025 |
-| Subway / Bus | MTA Open Data |
-| Crime / 311 | NYPD + NYC Open Data |
-| Parks / Schools | NYC Open Data |
-| Airbnb Listings | Inside Airbnb |
-| NTA Boundaries | NYC DCP (2020 NTAs, 207 codes) |
-| Mortgage Rates | FRED Economic Data |
-| Historic Districts / Flood Zones | NYC LPC + FEMA 2015 |
-| Census Income | ACS 5-Year (2020), 2,327 tracts |
-| Overture POIs | Overture Maps (57,669 POIs, 12 categories) |
+- **Property Sales** (157K) — NYC Open Data Rolling Calendar 2022–2026
+- **Building Data** — NYC DCP PLUTO 2025
+- **Transit** — MTA subway, bus stops, LIRR/Metro-North
+- **POIs** — Overture Maps (57K POIs, 12 categories)
+- **Census** — ACS 5-Year income (2,327 tracts)
+- **Other** — NYPD crime, HPD violations, DOB permits, flood zones, historic districts
 
 ### Riyadh
-| Dataset | Source |
-|---|---|
-| Real Estate Transactions | Suhail / Saudi Open Data Portal (2018–2026) |
-| Asking Prices | Haraj listings (May 2026, 1,824 listings) |
-| Metro Stations | REGA / Saudi Open Data (94 stations, 6 lines) |
-| Bus Stops / POIs | OSM Overpass API |
-| Air Quality | RCRC / Saudi Open Data Portal |
-| District Polygons | OSM (admin_level=10) |
-| Real Estate Price Index | Saudi Open Data Portal (REI by type, 19 quarters) |
+- **Transactions** (33K) — Suhail / MOJ deed transfers 2018–2026
+- **Asking Prices** — Haraj listings (May 2026, 1,824 listings)
+- **Metro** — REGA (94 stations, 6 lines)
+- **Market Benchmarks** — weerate Jun 2026 (Bayut · Knight Frank · Cavendish Maxwell · GASTAT · JLL)
+- **POIs** — OSM (mosques, malls, schools, hospitals, parks)
+- **Price Index** — Saudi Open Data REI (19 quarters, by type)
+
+---
+
+## Tests
+
+```bash
+python -m pytest tests/ -v   # 109 tests
+```
+
+| File | Tests | Coverage |
+|---|---|---|
+| `test_api.py` | 31 | Endpoints, validation, Riyadh batch, robots, sitemap, 404 |
+| `test_scorer.py` | 17 | Features, predict, SHAP, confidence |
+| `test_feature_parity.py` | 15 | Feature counts, NTA lookup |
+| `test_shap.py` | 14 | SHAP structure, sensitivity |
+| `test_distribution.py` | 12 | Grid median, borough ordering |
+| `test_golden.py` | 9 | Known price ranges |
+| `test_regression.py` | 6 | Pinned output regression (±5%) |
+| `test_load.py` | 5 | Concurrent load (10 threads) |
 
 ---
 
 ## Author
 
-**Turki Almurahhem** — BSc Computer Science, Umm Al-Qura University
+**Turki Almurahhem**

@@ -651,12 +651,9 @@ function setCityMode(mode) {
   // Swap header badges, tagline, and page title
   document.getElementById('nycBadgeGroup').style.display    = isRiyadh ? 'none'    : '';
   document.getElementById('riyadhBadgeGroup').style.display = isRiyadh ? ''        : 'none';
-  document.getElementById('headerTagline').textContent      = isRiyadh
-    ? 'Riyadh Property Valuation · AI-Powered'
-    : 'NYC Property Valuation · AI-Powered';
-  document.title = isRiyadh
-    ? 'THAMAN — Riyadh Property Valuation'
-    : 'THAMAN — NYC Property Valuation';
+  const _T = TR[currentLang];
+  document.getElementById('headerTagline').textContent = isRiyadh ? _T.taglineRiyadh : _T.tagline;
+  document.title = isRiyadh ? 'THAMAN — Riyadh Property Valuation' : 'THAMAN — NYC Property Valuation';
 
   // Red out-of-bounds mask — each city masks areas outside its limits
   _setNycOutOfBoundsMask(!isRiyadh);
@@ -1017,6 +1014,40 @@ document.addEventListener('click', (e) => {
 });
 
 loadBldgClasses().then(() => parseURLParams());
+
+// ── Mobile bottom drawer ───────────────────────────────────────────────
+(function initDrawer() {
+  if (window.innerWidth > 768) return;
+  const sidebar   = document.querySelector('.sidebar');
+  const handle    = document.getElementById('drawerHandle');
+  const backdrop  = document.getElementById('drawerBackdrop');
+  if (!sidebar || !handle) return;
+
+  function open()  { sidebar.classList.add('drawer-open');    backdrop.classList.add('visible'); }
+  function close() { sidebar.classList.remove('drawer-open'); backdrop.classList.remove('visible'); }
+  function toggle(){ sidebar.classList.contains('drawer-open') ? close() : open(); }
+
+  handle.addEventListener('click', toggle);
+  handle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') toggle(); });
+  backdrop.addEventListener('click', close);
+
+  // Swipe-up / swipe-down on sidebar
+  let _ty = 0;
+  sidebar.addEventListener('touchstart', e => { _ty = e.touches[0].clientY; }, { passive: true });
+  sidebar.addEventListener('touchend',   e => {
+    const dy = e.changedTouches[0].clientY - _ty;
+    if (dy < -40) open();
+    if (dy >  40 && sidebar.scrollTop === 0) close();
+  }, { passive: true });
+
+  // Auto-open when estimate completes
+  document.addEventListener('thaman:result', open);
+})();
+
+// ── PWA service worker ────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/ui/sw.js').catch(() => {});
+}
 
 // ── Building type info data ────────────────────────────────────────────
 const BLDG_INFO = {
@@ -1713,6 +1744,10 @@ function renderRiyadhResults(data) {
   // ── Price hero ────────────────────────────────────────────────────────
   const sqmEl = document.getElementById('riyadhPriceSqm');
   if (sqmEl) animateSAR(sqmEl, psqm, fmtSAR);
+  _updateOGMeta(
+    `THAMAN — ﷼${Math.round(psqm).toLocaleString()}/m² Riyadh estimate`,
+    `AI property valuation: ﷼${Math.round(psqm).toLocaleString()}/m² · ${data.district_ar || 'Riyadh'} · THAMAN stacked ML`
+  );
   const totalEl = document.getElementById('riyadhPriceTotal');
   if (totalEl) animateSAR(totalEl, total, fmtSAR);
   const confEl = document.getElementById('riyadhConfidence');
@@ -1774,6 +1809,24 @@ function renderRiyadhResults(data) {
     } else {
       askingOverlay.style.display = 'none';
     }
+  }
+
+  // !! weerate Jun 2026 — multi-source benchmark row below Bayut overlay
+  const benchEl = document.getElementById('riyadhBenchmarkRow');
+  if (benchEl && psqm) {
+    const sources = [
+      { label: 'Bayut',    val: 5100 },
+      { label: 'KF',       val: 5470 },
+      { label: 'Maxwell',  val: 5000 },
+      { label: 'GASTAT',   val: 6160 },
+    ];
+    benchEl.innerHTML = '<span class="bench-title">Market benchmarks (Jun 2026):</span>' +
+      sources.map(s => {
+        const diff = Math.round((psqm / s.val - 1) * 100);
+        const cls  = diff >= 0 ? 'bench-above' : 'bench-below';
+        return `<span class="bench-src">${s.label} <span class="${cls}">${diff >= 0 ? '+' : ''}${diff}%</span></span>`;
+      }).join('');
+    benchEl.style.display = '';
   }
 
   // ── Spatial grid (in riyadhSpatialCard, uses .spatial-grid class) ─────
@@ -1850,6 +1903,7 @@ function renderRiyadhResults(data) {
   if (drivers.length) showCard(document.getElementById('riyadhShapCard'), 80);
   showCard(document.getElementById('riyadhSpatialCard'), 160);
   document.getElementById('riyadhResults').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  document.dispatchEvent(new CustomEvent('thaman:result'));
 }
 
 // ── Loading state (with skeleton cards) ───────────────────────────────
@@ -1923,6 +1977,16 @@ function animatePrice(el, target) {
   requestAnimationFrame(tick);
 }
 
+function _updateOGMeta(title, desc) {
+  document.title = title;
+  let m = document.querySelector('meta[property="og:title"]');
+  if (m) m.content = title;
+  m = document.querySelector('meta[property="og:description"]');
+  if (m) m.content = desc;
+  m = document.querySelector('meta[name="description"]');
+  if (m) m.content = desc;
+}
+
 function renderResults(data) {
   _lastPrediction = { price: data.predicted_price, sqft: null };  // sqft filled below
 
@@ -1941,6 +2005,10 @@ function renderResults(data) {
   void priceMain.offsetWidth;
   priceMain.classList.add('price-reveal');
   animatePrice(priceMain, data.predicted_price);
+  _updateOGMeta(
+    `THAMAN — $${Math.round(data.predicted_price/1000)}K NYC estimate`,
+    `AI property valuation: $${Math.round(data.predicted_price).toLocaleString()} · NYC · THAMAN stacked ML`
+  );
 
   // Per-sqft / per-sqm secondary row
   const _psfRow = document.getElementById('pricePsfRow');
@@ -2135,6 +2203,7 @@ function renderResults(data) {
 
   // Scroll sidebar to results
   resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  document.dispatchEvent(new CustomEvent('thaman:result'));
 }
 
 // ── Keyboard shortcut: Enter on form ─────────────────────────────────
@@ -2514,9 +2583,23 @@ function copyResults() {
 }
 
 function shareRiyadhEstimate() {
-  const lat = document.getElementById('riyadhLat')?.value;
-  const lon = document.getElementById('riyadhLon')?.value;
-  const url = `${location.origin}${location.pathname}?city=riyadh&lat=${lat}&lon=${lon}`;
+  const lat  = document.getElementById('riyadhLat')?.value;
+  const lon  = document.getElementById('riyadhLon')?.value;
+  const type = document.getElementById('riyadhType')?.value;
+  const area = document.getElementById('riyadhArea')?.value;
+  const year = document.getElementById('riyadhYear')?.value;
+  const priceEl = document.getElementById('riyadhPriceSqm');
+  const price   = priceEl?.textContent?.replace(/[^\d]/g, '') || '';
+
+  const p = new URLSearchParams({ city: 'riyadh', autorun: '1' });
+  if (lat)   p.set('lat',   parseFloat(lat).toFixed(6));
+  if (lon)   p.set('lon',   parseFloat(lon).toFixed(6));
+  if (type)  p.set('rtype', type);
+  if (area)  p.set('area',  area);
+  if (year)  p.set('year',  year);
+  if (price) p.set('price', price);
+  const url = `${location.origin}${location.pathname}?${p.toString()}`;
+
   navigator.clipboard.writeText(url)
     .then(() => showToast('🔗 Share link copied!'))
     .catch(() => {
@@ -2560,7 +2643,7 @@ function copyRiyadhResults() {
     driverLines ? `Top Price Drivers:\n${driverLines}` : '',
     '',
     `Generated by THAMAN · AI-Powered Property Valuation`,
-    `R² 0.800 · MedAPE 15.56% · Riyadh Stack v11 · 7,258 Transactions`,
+    `R² 0.800 · MedAPE 15.56% · Riyadh Stack v11 · 7,258 Records`,
   ].filter(l => l !== null && l !== undefined).join('\n').replace(/\n{3,}/g, '\n\n');
 
   navigator.clipboard.writeText(text)
@@ -2577,6 +2660,52 @@ function copyRiyadhResults() {
 /** Parse URL params on page load — pre-fills form and optionally auto-submits */
 function parseURLParams() {
   const p = new URLSearchParams(window.location.search);
+
+  // ── Riyadh share restore ──────────────────────────────────────────────
+  if (p.get('city') === 'riyadh') {
+    const lat  = parseFloat(p.get('lat'));
+    const lon  = parseFloat(p.get('lon'));
+    if (!lat || !lon || !isInRiyadh(lat, lon)) return;
+
+    setCityMode('riyadh');
+
+    document.getElementById('riyadhLat').value = lat.toFixed(6);
+    document.getElementById('riyadhLon').value = lon.toFixed(6);
+
+    if (!marker) {
+      marker = L.marker([lat, lon], { icon: pinIcon }).addTo(map);
+    } else {
+      marker.setLatLng([lat, lon]);
+    }
+    map.setView([lat, lon], 14);
+
+    const rtype = p.get('rtype');
+    if (rtype) {
+      document.getElementById('riyadhType').value = rtype;
+      document.querySelectorAll('.riyadh-type-card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.value === rtype);
+      });
+    }
+    if (p.get('area')) document.getElementById('riyadhArea').value = p.get('area');
+    if (p.get('year')) document.getElementById('riyadhYear').value = p.get('year');
+
+    document.getElementById('riyadhSubmitBtn').disabled = false;
+    document.getElementById('riyadhBtnText').textContent = '🔍 ' + TR[currentLang].estimateBtn;
+
+    if (p.get('autorun') === '1') {
+      setTimeout(() => document.getElementById('riyadhForm').requestSubmit(), 600);
+    }
+
+    // Update OG description with shared price if encoded in URL
+    const sharedPrice = p.get('price');
+    if (sharedPrice) {
+      const fmt = new Intl.NumberFormat('en-SA').format(parseInt(sharedPrice));
+      _updateOGMeta(`THAMAN — ﷼${fmt}/m² · Riyadh`, `AI property valuation: ﷼${fmt}/m² in Riyadh — powered by THAMAN`);
+    }
+    return;
+  }
+
+  // ── NYC share restore ─────────────────────────────────────────────────
   const lat  = parseFloat(p.get('lat'));
   const lon  = parseFloat(p.get('lon'));
   if (!lat || !lon || !isInNYC(lat, lon)) return;

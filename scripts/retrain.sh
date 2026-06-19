@@ -3,7 +3,7 @@
 #  THAMAN — Automated Retrain Script
 #  Runs every 6 months via launchd (com.thaman.retrain).
 #  - Backs up current model
-#  - Trains train_stack_v11.py
+#  - Trains train_stack_v12.py (current NYC Stack v22 pipeline)
 #  - Keeps new model only if R² improves or stays equal
 #  - Sends macOS notification with result
 #  - Logs to ~/Library/Logs/thaman_retrain.log
@@ -42,7 +42,7 @@ log "Backup saved → $BACKUP_DIR/*_${STAMP}.*"
 
 # ── Run training ─────────────────────────────────────────────
 log "Training started …"
-"$PYTHON" -u training/train_stack_v11.py >> "$LOG" 2>&1
+"$PYTHON" -u training/train_stack_v12.py >> "$LOG" 2>&1
 log "Training finished."
 
 # ── Check if new model is better ─────────────────────────────

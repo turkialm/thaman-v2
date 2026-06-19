@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THAMAN Widget</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f172a;color:#e2e8f0;
+    min-height:100vh;display:flex;align-items:stretch}
+  .widget{width:100%;padding:20px;display:flex;flex-direction:column;gap:12px}
+  .widget-header{display:flex;align-items:center;justify-content:space-between}
+  .logo{font-size:.95rem;font-weight:800;letter-spacing:-.5px;color:#fff}
+  .logo span{color:#3b82f6}
+  .city-toggle{display:flex;gap:4px;background:#1e293b;border-radius:8px;padding:3px}
+  .city-btn{padding:4px 12px;border-radius:6px;border:none;font-size:.75rem;font-weight:600;
+    cursor:pointer;color:#94a3b8;background:transparent;transition:all .15s}
+  .city-btn.active{background:#3b82f6;color:#fff}
+  .city-btn.riyadh.active{background:#059669}
+  form{display:flex;flex-direction:column;gap:8px}
+  label{font-size:.72rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+  input,select{width:100%;padding:8px 10px;background:#1e293b;border:1px solid #334155;
+    border-radius:7px;color:#f1f5f9;font-size:.82rem;outline:none;transition:border-color .15s}
+  input:focus,select:focus{border-color:#3b82f6}
+  .riyadh-mode input:focus,.riyadh-mode select:focus{border-color:#059669}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .submit-btn{padding:10px;border-radius:8px;border:none;font-size:.85rem;font-weight:700;
+    cursor:pointer;color:#fff;background:#3b82f6;transition:opacity .15s;margin-top:2px}
+  .submit-btn:hover:not(:disabled){opacity:.85}
+  .submit-btn:disabled{opacity:.5;cursor:not-allowed}
+  .riyadh-mode .submit-btn{background:#059669}
+  /* Price reveal */
+  .price-card{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px 16px;
+    display:none;animation:fadein .3s}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .price-label{font-size:.7rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  .price-main{font-size:1.6rem;font-weight:900;letter-spacing:-1px;color:#fff;margin:4px 0}
+  .price-range{font-size:.72rem;color:#64748b}
+  .price-meta{font-size:.72rem;color:#94a3b8;margin-top:6px}
+  .poweredby{font-size:.65rem;color:#475569;text-align:center;margin-top:auto;padding-top:4px}
+  .poweredby a{color:#3b82f6;text-decoration:none}
+  .err{font-size:.75rem;color:#f87171;padding:6px 0}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);
+    border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="widget" id="widget">
+  <div class="widget-header">
+    <div class="logo">THA<span>MAN</span></div>
+    <div class="city-toggle">
+      <button class="city-btn active" id="btnNYC"    onclick="setCity('nyc')">NYC</button>
+      <button class="city-btn riyadh" id="btnRiyadh" onclick="setCity('riyadh')">Riyadh</button>
+    </div>
+  </div>
+
+  <!-- NYC form -->
+  <form id="nycForm" onsubmit="runNYC(event)">
+    <div>
+      <label>Latitude</label>
+      <input type="number" id="nLat" step="0.0001" placeholder="40.7580" required>
+    </div>
+    <div>
+      <label>Longitude</label>
+      <input type="number" id="nLon" step="0.0001" placeholder="-73.9855" required>
+    </div>
+    <div class="row2">
+      <div>
+        <label>Gross Sq Ft</label>
+        <input type="number" id="nSqft" placeholder="1200" required>
+      </div>
+      <div>
+        <label>Building Age</label>
+        <input type="number" id="nAge" placeholder="45" required>
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label>Bldg Class</label>
+        <input type="text" id="nBldg" placeholder="R4" maxlength="3" required>
+      </div>
+      <div>
+        <label>Borough (1–5)</label>
+        <input type="number" id="nBoro" min="1" max="5" placeholder="1" required>
+      </div>
+    </div>
+    <div class="row2">
+      <div>
+        <label>Floors</label>
+        <input type="number" id="nFloors" placeholder="12" required>
+      </div>
+      <div>
+        <label>Res. Units</label>
+        <input type="number" id="nUnits" placeholder="1" required>
+      </div>
+    </div>
+    <button class="submit-btn" type="submit" id="nycBtn">Estimate Value</button>
+  </form>
+
+  <!-- Riyadh form -->
+  <form id="riyadhForm" style="display:none" onsubmit="runRiyadh(event)">
+    <div>
+      <label>Latitude</label>
+      <input type="number" id="rLat" step="0.0001" placeholder="24.7500" required>
+    </div>
+    <div>
+      <label>Longitude</label>
+      <input type="number" id="rLon" step="0.0001" placeholder="46.6800" required>
+    </div>
+    <div>
+      <label>Property Type</label>
+      <select id="rType" required>
+        <option value="شقة">شقة — Apartment</option>
+        <option value="فيلا">فيلا — Villa</option>
+        <option value="قطعة أرض-سكنى">قطعة أرض-سكنى — Residential Plot</option>
+        <option value="عمارة">عمارة — Building</option>
+      </select>
+    </div>
+    <div>
+      <label>Area (m²)</label>
+      <input type="number" id="rArea" placeholder="150" required>
+    </div>
+    <button class="submit-btn" type="submit" id="riyadhBtn">Estimate Value</button>
+  </form>
+
+  <div class="price-card" id="priceCard">
+    <div class="price-label" id="priceLabel">Estimated Value</div>
+    <div class="price-main" id="priceMain">—</div>
+    <div class="price-range" id="priceRange"></div>
+    <div class="price-meta" id="priceMeta"></div>
+  </div>
+  <div class="err" id="errMsg"></div>
+
+  <div class="poweredby">Powered by <a href="/" target="_blank">THAMAN</a> · AI Property Valuation</div>
+</div>
+
+<script>
+'use strict';
+let _city = 'nyc';
+
+// Pre-fill from URL params
+(function() {
+  const p = new URLSearchParams(location.search);
+  if (p.get('city') === 'riyadh') setCity('riyadh');
+  if (p.get('lat'))  { document.getElementById('nLat').value = p.get('lat'); document.getElementById('rLat').value = p.get('lat'); }
+  if (p.get('lon'))  { document.getElementById('nLon').value = p.get('lon'); document.getElementById('rLon').value = p.get('lon'); }
+  if (p.get('sqft')) document.getElementById('nSqft').value = p.get('sqft');
+  if (p.get('age'))  document.getElementById('nAge').value  = p.get('age');
+  if (p.get('bldg')) document.getElementById('nBldg').value = p.get('bldg');
+  if (p.get('boro')) document.getElementById('nBoro').value = p.get('boro');
+  if (p.get('area')) document.getElementById('rArea').value = p.get('area');
+  if (p.get('rtype'))document.getElementById('rType').value = decodeURIComponent(p.get('rtype'));
+})();
+
+function setCity(c) {
+  _city = c;
+  const isR = c === 'riyadh';
+  document.getElementById('nycForm').style.display    = isR ? 'none' : '';
+  document.getElementById('riyadhForm').style.display = isR ? '' : 'none';
+  document.getElementById('btnNYC').classList.toggle('active', !isR);
+  document.getElementById('btnRiyadh').classList.toggle('active', isR);
+  document.getElementById('widget').classList.toggle('riyadh-mode', isR);
+  document.getElementById('priceCard').style.display = 'none';
+  document.getElementById('errMsg').textContent = '';
+}
+
+function setLoading(id, on) {
+  const btn = document.getElementById(id);
+  btn.disabled = on;
+  btn.innerHTML = on ? '<span class="spinner"></span> Estimating…' : 'Estimate Value';
+}
+
+function showPrice(main, range, meta) {
+  document.getElementById('priceMain').textContent  = main;
+  document.getElementById('priceRange').textContent = range;
+  document.getElementById('priceMeta').textContent  = meta;
+  document.getElementById('priceCard').style.display = 'block';
+  document.getElementById('errMsg').textContent = '';
+}
+
+function showErr(msg) {
+  document.getElementById('errMsg').textContent = msg;
+  document.getElementById('priceCard').style.display = 'none';
+}
+
+function fmt$(v) { return '$' + Math.round(v).toLocaleString(); }
+function fmtSAR(v) { return '﷼' + Math.round(v).toLocaleString(); }
+
+async function runNYC(e) {
+  e.preventDefault();
+  setLoading('nycBtn', true);
+  try {
+    const body = {
+      latitude:          parseFloat(document.getElementById('nLat').value),
+      longitude:         parseFloat(document.getElementById('nLon').value),
+      gross_square_feet: parseFloat(document.getElementById('nSqft').value),
+      building_age:      parseInt(document.getElementById('nAge').value, 10),
+      bldgclass:         document.getElementById('nBldg').value.trim().toUpperCase(),
+      borough:           parseInt(document.getElementById('nBoro').value, 10),
+      numfloors:         parseFloat(document.getElementById('nFloors').value),
+      residential_units: parseInt(document.getElementById('nUnits').value, 10),
+    };
+    const res = await fetch('/predict', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!res.ok) { const e2 = await res.json().catch(()=>({})); throw new Error(e2.detail || `HTTP ${res.status}`); }
+    const d = await res.json();
+    showPrice(
+      fmt$(d.predicted_price),
+      `Range: ${fmt$(d.confidence_low)} – ${fmt$(d.confidence_high)}`,
+      `${d.borough_name} · ${d.bldgclass_description || body.bldgclass}`
+    );
+  } catch(err) { showErr(err.message); }
+  finally { setLoading('nycBtn', false); }
+}
+
+async function runRiyadh(e) {
+  e.preventDefault();
+  setLoading('riyadhBtn', true);
+  try {
+    const body = {
+      latitude:      parseFloat(document.getElementById('rLat').value),
+      longitude:     parseFloat(document.getElementById('rLon').value),
+      property_type: document.getElementById('rType').value,
+      area_sqm:      parseFloat(document.getElementById('rArea').value),
+    };
+    const res = await fetch('/predict/riyadh', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    if (!res.ok) { const e2 = await res.json().catch(()=>({})); throw new Error(e2.detail || `HTTP ${res.status}`); }
+    const d = await res.json();
+    showPrice(
+      fmtSAR(d.predicted_total_sar),
+      `${fmtSAR(d.predicted_price_sqm)}/m²  ·  Range: ${fmtSAR(d.confidence_low_sar)} – ${fmtSAR(d.confidence_high_sar)}`,
+      `${d.district_ar || ''} · ${d.property_type} · ${d.area_sqm}m²`
+    );
+  } catch(err) { showErr(err.message); }
+  finally { setLoading('riyadhBtn', false); }
+}
+</script>
+</body>
+</html>

@@ -26,3 +26,4 @@ data/processed/features_v6.csv
 __pycache__/
 *.pyc
 .env
+data/processed/features_v7.csv

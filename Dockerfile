@@ -54,6 +54,7 @@ COPY data/processed/scatter_riyadh.json           data/processed/scatter_riyadh.
 COPY data/processed/asking_price_spreads_nyc.json data/processed/asking_price_spreads_nyc.json
 COPY data/processed/asking_price_spreads_riyadh.json data/processed/asking_price_spreads_riyadh.json
 COPY data/processed/bayut_listings_riyadh.json    data/processed/bayut_listings_riyadh.json
+COPY data/raw/weerate_riyadh_jun2026.json         data/raw/weerate_riyadh_jun2026.json
 
 # Create model dirs so download_models.py can write into them at runtime
 RUN mkdir -p models data/raw data/processed

@@ -575,6 +575,37 @@
         <div class="chart-wrap" style="height:380px"><canvas id="riyadhScatterChart"></canvas></div>
       </div>
     </div>
+
+    <!-- 2-col row: Growth trends + Price by bedrooms -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div class="chart-card" style="padding:16px">
+        <h2 style="font-size:.9rem;font-weight:700;margin-bottom:2px">📈 Market Growth Trends</h2>
+        <div class="chart-sub">YoY % by quarter · weerate Jun 2026 · Bayut · Knight Frank</div>
+        <div class="chart-wrap" style="height:240px"><canvas id="riyadhGrowthChart"></canvas></div>
+      </div>
+      <div class="chart-card" style="padding:16px">
+        <h2 style="font-size:.9rem;font-weight:700;margin-bottom:2px">🛏️ Price Range by Bedrooms</h2>
+        <div class="chart-sub">SAR million · min–max range · weerate Jun 2026</div>
+        <div class="chart-wrap" style="height:240px"><canvas id="riyadhBedroomsChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Full-width: District avg price (weerate) -->
+    <div class="chart-card" style="padding:16px;margin-bottom:20px">
+      <h2 style="font-size:.9rem;font-weight:700;margin-bottom:2px">🏘️ District Apartment Prices (weerate Jun 2026)</h2>
+      <div class="chart-sub">Average total price SAR million · Bayut listings · 6 key districts</div>
+      <div class="chart-wrap" style="height:220px"><canvas id="riyadhDistrictPriceChart"></canvas></div>
+    </div>
+
+    <!-- Full-width: NYC borough activity -->
+    <div class="chart-card" style="padding:16px;margin-bottom:20px">
+      <h2 style="font-size:.9rem;font-weight:700;margin-bottom:2px">🗽 NYC Median $/sqft by Borough</h2>
+      <div class="chart-sub">NTA-level sales aggregated to borough · last 4 quarters · NYC Open Data rolling calendar</div>
+      <div id="nycBoroughLoading" style="text-align:center;padding:30px;color:#9ca3af;font-size:.85rem">Loading…</div>
+      <div id="nycBoroughWrap" style="display:none">
+        <div class="chart-wrap" style="height:220px"><canvas id="nycBoroughChart"></canvas></div>
+      </div>
+    </div>
   </div>
 
   <!-- ── Scripts ───────────────────────────────────────────── -->
@@ -1811,6 +1842,89 @@ async function loadRiyadhCharts() {
     // Scatter chart (non-blocking)
     loadRiyadhScatterChart();
 
+    // ── weerate benchmark charts ──────────────────────────────────
+    const mb = data.market_benchmarks || {};
+
+    // Growth trends
+    const gt = mb.growth_trends || {};
+    const gtQ = Object.keys(gt).sort();
+    if (gtQ.length && ctx('riyadhGrowthChart')) {
+      new Chart(ctx('riyadhGrowthChart'), {
+        type: 'line',
+        data: {
+          labels: gtQ.map(q => q.replace('_', ' ')),
+          datasets: [
+            { label: 'Villa YoY %', data: gtQ.map(q => gt[q].villa_yoy_pct),
+              borderColor: '#059669', backgroundColor: 'rgba(5,150,105,.1)',
+              tension: 0.35, fill: true, pointRadius: 5 },
+            { label: 'Apt YoY %',   data: gtQ.map(q => gt[q].apt_yoy_pct),
+              borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,.08)',
+              tension: 0.35, fill: true, pointRadius: 5 },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 10 } } },
+          scales: { y: { ticks: { callback: v => (v >= 0 ? '+' : '') + v + '%' },
+                         grid: { color: 'rgba(0,0,0,.06)' } } },
+        },
+      });
+    }
+
+    // Price by bedrooms (stacked min + delta)
+    const pb = mb.price_by_bedrooms || {};
+    const pbK = Object.keys(pb);
+    if (pbK.length && ctx('riyadhBedroomsChart')) {
+      new Chart(ctx('riyadhBedroomsChart'), {
+        type: 'bar',
+        data: {
+          labels: pbK.map(k => k === 'studio' ? 'Studio' : k.replace('br', 'BR')),
+          datasets: [
+            { label: 'Min SAR M', data: pbK.map(k => pb[k].min),
+              backgroundColor: 'rgba(16,185,129,.45)', borderColor: '#059669',
+              borderWidth: 1, borderRadius: 3 },
+            { label: 'Range', data: pbK.map(k => +(pb[k].max - pb[k].min).toFixed(2)),
+              backgroundColor: 'rgba(59,130,246,.35)', borderColor: '#3b82f6',
+              borderWidth: 1, borderRadius: 3 },
+          ],
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 10 } },
+            tooltip: { callbacks: { label: c => {
+              const k = pbK[c.dataIndex];
+              return `﷼${pb[k].min}M – ﷼${pb[k].max}M`;
+            }}},
+          },
+          scales: { x: { stacked: true }, y: { stacked: true,
+            ticks: { callback: v => '﷼' + v + 'M' } } },
+        },
+      });
+    }
+
+    // District apartment prices
+    const dp = mb.district_prices || {};
+    const dpK = Object.keys(dp).sort((a, b) => dp[b].avg_total_sar_m - dp[a].avg_total_sar_m);
+    if (dpK.length && ctx('riyadhDistrictPriceChart')) {
+      const tierColor = { premium: '#059669', 'mid-high': '#3b82f6', subsidized: '#9ca3af' };
+      new Chart(ctx('riyadhDistrictPriceChart'), {
+        type: 'bar',
+        data: {
+          labels: dpK,
+          datasets: [{ label: 'Avg SAR M', data: dpK.map(k => dp[k].avg_total_sar_m),
+            backgroundColor: dpK.map(k => tierColor[dp[k].tier] || '#6b7280'),
+            borderRadius: 4 }],
+        },
+        options: {
+          indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false },
+            tooltip: { callbacks: { label: c => `﷼${c.raw}M · ${dp[dpK[c.dataIndex]].tier}` }}},
+          scales: { x: { ticks: { callback: v => '﷼' + v + 'M' } } },
+        },
+      });
+    }
+
   } catch (e) {
     console.error('Riyadh stats load failed', e);
     const kpiEl = document.getElementById('riyadhKpis');
@@ -2105,6 +2219,57 @@ async function loadScatterChart() {
 }
 
 loadScatterChart();
+
+// ── NYC Borough activity from /layers/nyc-heatmap ────────────────────
+async function loadNycBoroughChart() {
+  try {
+    const res = await fetch(`${API_BASE}/layers/nyc-heatmap`);
+    if (!res.ok) throw new Error('no heatmap');
+    const data = await res.json();
+    const ntas  = data.ntas || [];
+    if (!ntas.length) throw new Error('empty');
+
+    // Group NTAs by borough prefix (first 2 chars of NTA code)
+    const BOR_NAMES = { BK: 'Brooklyn', BX: 'Bronx', MN: 'Manhattan', QN: 'Queens', SI: 'Staten Island' };
+    const BOR_COLORS = { BK: '#3b82f6', BX: '#f59e0b', MN: '#8b5cf6', QN: '#10b981', SI: '#ef4444' };
+    const agg = {};
+    ntas.forEach(n => {
+      const code = (n.nta || '').slice(0, 2).toUpperCase();
+      if (!BOR_NAMES[code]) return;
+      if (!agg[code]) agg[code] = { vals: [], counts: [] };
+      if (n.median_psf) agg[code].vals.push(n.median_psf * 10.764); // psf → psm
+    });
+    const borKeys = Object.keys(BOR_NAMES).filter(k => agg[k] && agg[k].vals.length);
+    if (!borKeys.length) throw new Error('no borough data');
+    const medians = borKeys.map(k => {
+      const v = agg[k].vals.slice().sort((a, b) => a - b);
+      return v[Math.floor(v.length / 2)] || 0;
+    });
+
+    document.getElementById('nycBoroughLoading').style.display = 'none';
+    document.getElementById('nycBoroughWrap').style.display    = 'block';
+    new Chart(ctx('nycBoroughChart'), {
+      type: 'bar',
+      data: {
+        labels: borKeys.map(k => BOR_NAMES[k]),
+        datasets: [{
+          label: 'Median $/sqm',
+          data: medians,
+          backgroundColor: borKeys.map(k => BOR_COLORS[k]),
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { ticks: { callback: v => '$' + Math.round(v).toLocaleString() } } },
+      },
+    });
+  } catch(e) {
+    document.getElementById('nycBoroughLoading').textContent = 'Borough activity data unavailable';
+  }
+}
+loadNycBoroughChart();
 
   </script>
 </body>

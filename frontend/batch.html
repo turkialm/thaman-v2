@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THAMAN — Batch Valuation</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f8fafc;color:#1e293b;min-height:100vh}
+  .topbar{background:#1e293b;color:#fff;padding:12px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .topbar a{color:#94a3b8;text-decoration:none;font-size:.85rem}
+  .topbar a:hover{color:#fff}
+  .topbar .sep{color:#475569}
+  h1{font-size:1rem;font-weight:700;color:#fff}
+  .wrap{max-width:960px;margin:0 auto;padding:32px 16px}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px;margin-bottom:20px}
+  h2{font-size:.95rem;font-weight:700;margin-bottom:8px;color:#0f172a}
+  .sub{font-size:.8rem;color:#64748b;margin-bottom:16px}
+  /* City toggle */
+  .city-toggle{display:flex;gap:4px;background:#f1f5f9;border-radius:10px;padding:4px;margin-bottom:16px;width:fit-content}
+  .city-btn{padding:6px 20px;border-radius:7px;border:none;font-size:.82rem;font-weight:700;
+    cursor:pointer;color:#64748b;background:transparent;transition:all .15s}
+  .city-btn.active-nyc{background:#3b82f6;color:#fff}
+  .city-btn.active-riyadh{background:#059669;color:#fff}
+  /* Drop zone */
+  .dropzone{border:2px dashed #cbd5e1;border-radius:10px;padding:40px;text-align:center;
+    cursor:pointer;transition:border-color .2s,background .2s}
+  .dropzone:hover,.dropzone.drag{border-color:#3b82f6;background:#eff6ff}
+  .dropzone.riyadh:hover,.dropzone.riyadh.drag{border-color:#059669;background:#ecfdf5}
+  .dropzone input{display:none}
+  .dropzone-icon{font-size:2.5rem;margin-bottom:8px}
+  .dropzone-label{font-size:.9rem;color:#475569}
+  .dropzone-hint{font-size:.75rem;color:#94a3b8;margin-top:4px}
+  /* Template strip */
+  .template-strip{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .btn{padding:8px 16px;border-radius:7px;border:none;font-size:.82rem;font-weight:600;
+    cursor:pointer;transition:opacity .15s}
+  .btn:hover{opacity:.85}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn-primary{background:#3b82f6;color:#fff}
+  .btn-primary.riyadh{background:#059669}
+  .btn-secondary{background:#f1f5f9;color:#1e293b;border:1px solid #e2e8f0}
+  .btn-green{background:#059669;color:#fff}
+  /* Preview table */
+  .table-wrap{overflow-x:auto;margin-top:12px}
+  table{width:100%;border-collapse:collapse;font-size:.78rem}
+  th{background:#f8fafc;border:1px solid #e2e8f0;padding:6px 10px;text-align:left;
+    font-weight:600;color:#475569;white-space:nowrap}
+  td{border:1px solid #e2e8f0;padding:6px 10px;white-space:nowrap}
+  tr:nth-child(even) td{background:#fafafa}
+  td.err{color:#dc2626;font-size:.72rem}
+  td.price{font-weight:700;color:#059669}
+  td.price-nyc{font-weight:700;color:#3b82f6}
+  td.range{color:#64748b;font-size:.72rem}
+  td.loc{color:#64748b;font-size:.72rem}
+  /* Status bar */
+  .status{font-size:.82rem;color:#475569;padding:8px 0}
+  .status.ok{color:#059669}
+  .status.err{color:#dc2626}
+  /* Progress */
+  .progress-wrap{background:#e2e8f0;border-radius:99px;height:6px;margin:10px 0;display:none}
+  .progress-bar{height:6px;border-radius:99px;background:#3b82f6;width:0;transition:width .3s}
+  .progress-bar.riyadh{background:#059669}
+  /* Validation badge */
+  .badge{display:inline-block;padding:2px 7px;border-radius:99px;font-size:.7rem;font-weight:600}
+  .badge-ok{background:#dcfce7;color:#166534}
+  .badge-warn{background:#fef9c3;color:#854d0e}
+  .badge-err{background:#fee2e2;color:#991b1b}
+  code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:.78rem}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <h1>THAMAN</h1>
+  <span class="sep">|</span>
+  <a href="/ui">← Single Estimate</a>
+  <span class="sep">|</span>
+  <a href="/ui/charts.html">Analytics</a>
+  <span class="sep">|</span>
+  <span id="topbarLabel" style="color:#fff;font-size:.85rem">Batch Valuation (NYC · max 50)</span>
+</div>
+
+<div class="wrap">
+  <!-- Upload card -->
+  <div class="card">
+    <h2>Batch Valuation</h2>
+
+    <!-- City toggle -->
+    <div class="city-toggle">
+      <button class="city-btn active-nyc" id="btnNYC"    onclick="setCity('nyc')">🗽 NYC</button>
+      <button class="city-btn"            id="btnRiyadh" onclick="setCity('riyadh')">🕌 Riyadh</button>
+    </div>
+
+    <!-- NYC requirements -->
+    <div id="nycHints">
+      <div class="sub">Required columns: <code>latitude, longitude, gross_square_feet, building_age, bldgclass, borough, numfloors, residential_units</code></div>
+    </div>
+    <!-- Riyadh requirements -->
+    <div id="riyadhHints" style="display:none">
+      <div class="sub">Required columns: <code>latitude, longitude, property_type, area_sqm</code> · bbox: lat 23.5–26.0 · lon 45.5–48.0 · property_type: شقة | فيلا | قطعة أرض-سكنى | عمارة</div>
+    </div>
+
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" accept=".csv">
+      <div class="dropzone-icon">📂</div>
+      <div class="dropzone-label">Drop CSV here or click to browse</div>
+      <div class="dropzone-hint" id="dropHint">Max 50 rows · NYC properties only</div>
+    </div>
+    <div class="template-strip">
+      <button class="btn btn-secondary" onclick="downloadTemplate()">⬇ Download template</button>
+      <button class="btn btn-secondary" onclick="loadExample()">📋 Load example (5 rows)</button>
+    </div>
+  </div>
+
+  <!-- Preview + run card -->
+  <div class="card" id="previewCard" style="display:none">
+    <h2>Preview <span id="previewCount"></span></h2>
+    <div class="status" id="validationStatus"></div>
+    <div class="table-wrap" id="previewTable"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="runBtn" onclick="runBatch()">▶ Run Batch Valuation</button>
+      <button class="btn btn-secondary" onclick="clearAll()">✕ Clear</button>
+    </div>
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="status" id="runStatus"></div>
+  </div>
+
+  <!-- Results card -->
+  <div class="card" id="resultsCard" style="display:none">
+    <h2>Results <span id="resultsCount"></span></h2>
+    <div class="sub" id="resultsSub"></div>
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <button class="btn btn-green" onclick="downloadResults()">⬇ Download results CSV</button>
+      <button class="btn btn-secondary" onclick="clearAll()">🔄 New batch</button>
+    </div>
+    <div class="table-wrap" id="resultsTable"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ── Config per city ────────────────────────────────────────────────────
+const CFG = {
+  nyc: {
+    required: ['latitude','longitude','gross_square_feet','building_age','bldgclass','borough','numfloors','residential_units'],
+    endpoint: '/batch',
+    template:  'latitude,longitude,gross_square_feet,building_age,bldgclass,borough,numfloors,residential_units,land_square_feet,has_elevator,is_condo\n',
+    example:   'latitude,longitude,gross_square_feet,building_age,bldgclass,borough,numfloors,residential_units\n40.7580,-73.9855,1200,45,R4,1,12,1\n40.6782,-73.9442,900,70,A1,3,2,1\n40.7282,-73.7949,2400,30,D4,4,6,4\n40.8448,-73.8648,1800,55,B1,2,3,2\n40.5795,-74.1502,1600,85,A2,5,2,1',
+    validate:  r => {
+      const lat = parseFloat(r.latitude), lon = parseFloat(r.longitude);
+      if (isNaN(lat) || lat < 40.4 || lat > 40.95) return 'lat out of NYC range';
+      if (isNaN(lon) || lon < -74.3 || lon > -73.7) return 'lon out of NYC range';
+      if (!r.bldgclass) return 'missing bldgclass';
+      const b = parseInt(r.borough, 10);
+      if (isNaN(b) || b < 1 || b > 5) return 'borough must be 1–5';
+      return null;
+    },
+    buildRow:  r => {
+      const obj = {
+        latitude: parseFloat(r.latitude), longitude: parseFloat(r.longitude),
+        gross_square_feet: parseFloat(r.gross_square_feet),
+        building_age: parseInt(r.building_age, 10),
+        bldgclass: r.bldgclass, borough: parseInt(r.borough, 10),
+        numfloors: parseFloat(r.numfloors), residential_units: parseInt(r.residential_units, 10),
+      };
+      ['land_square_feet','has_elevator','is_condo','is_multifamily','is_single_fam',
+       'builtfar','residfar','prior_sale_price','has_prior_sale','is_flip','renovated_since_2018'
+      ].forEach(k => { if (r[k] !== undefined && r[k] !== '') obj[k] = parseFloat(r[k]); });
+      return obj;
+    },
+  },
+  riyadh: {
+    required: ['latitude','longitude','property_type','area_sqm'],
+    endpoint: '/batch/riyadh',
+    template:  'latitude,longitude,property_type,area_sqm\n',
+    example:   'latitude,longitude,property_type,area_sqm\n24.7500,46.6800,شقة,150\n24.8000,46.7200,فيلا,400\n24.6900,46.7100,شقة,120\n24.7200,46.6500,قطعة أرض-سكنى,600\n24.7800,46.7500,عمارة,800',
+    validate:  r => {
+      const lat = parseFloat(r.latitude), lon = parseFloat(r.longitude);
+      if (isNaN(lat) || lat < 23.5 || lat > 26.0) return 'lat out of Riyadh range (23.5–26.0)';
+      if (isNaN(lon) || lon < 45.5 || lon > 48.0) return 'lon out of Riyadh range (45.5–48.0)';
+      const VALID_TYPES = ['شقة','فيلا','قطعة أرض-سكنى','عمارة','apartment','villa','residential_plot','building'];
+      if (!VALID_TYPES.includes(r.property_type)) return `unknown type: ${r.property_type}`;
+      if (isNaN(parseFloat(r.area_sqm)) || parseFloat(r.area_sqm) <= 0) return 'area_sqm must be > 0';
+      return null;
+    },
+    buildRow:  r => ({
+      latitude: parseFloat(r.latitude), longitude: parseFloat(r.longitude),
+      property_type: r.property_type, area_sqm: parseFloat(r.area_sqm),
+    }),
+  },
+};
+
+const BOROUGH_NAMES = {1:'Manhattan',2:'Bronx',3:'Brooklyn',4:'Queens',5:'Staten Island'};
+
+let _city   = 'nyc';
+let _rows   = [];
+let _headers = [];
+let _results = [];
+let _payload = [];
+
+// ── City switch ────────────────────────────────────────────────────────
+function setCity(c) {
+  _city = c;
+  const isR = c === 'riyadh';
+  document.getElementById('btnNYC').className    = 'city-btn' + (isR ? '' : ' active-nyc');
+  document.getElementById('btnRiyadh').className = 'city-btn' + (isR ? ' active-riyadh' : '');
+  document.getElementById('nycHints').style.display    = isR ? 'none' : '';
+  document.getElementById('riyadhHints').style.display = isR ? '' : 'none';
+  document.getElementById('dropzone').className  = 'dropzone' + (isR ? ' riyadh' : '');
+  document.getElementById('dropHint').textContent = isR ? 'Max 50 rows · Riyadh properties only' : 'Max 50 rows · NYC properties only';
+  document.getElementById('progressBar').className = 'progress-bar' + (isR ? ' riyadh' : '');
+  document.getElementById('runBtn').className    = 'btn btn-primary' + (isR ? ' riyadh' : '');
+  document.getElementById('topbarLabel').textContent = isR ? 'Batch Valuation (Riyadh · max 50)' : 'Batch Valuation (NYC · max 50)';
+  clearAll();
+}
+
+// ── Drag-and-drop ──────────────────────────────────────────────────────
+const dz = document.getElementById('dropzone');
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if (f) loadFile(f);
+});
+document.getElementById('fileInput').addEventListener('change', e => {
+  if (e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => parseCSV(e.target.result);
+  reader.readAsText(file);
+}
+
+// ── CSV parser ─────────────────────────────────────────────────────────
+function parseCSV(text) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) { alert('CSV must have a header row and at least one data row.'); return; }
+  _headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  _rows = lines.slice(1).map(line => {
+    const vals = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+    const obj = {};
+    _headers.forEach((h, i) => { obj[h] = vals[i] ?? ''; });
+    return obj;
+  }).filter(r => Object.values(r).some(v => v !== ''));
+
+  if (_rows.length > 50) {
+    alert(`CSV has ${_rows.length} rows. Only first 50 will be used.`);
+    _rows = _rows.slice(0, 50);
+  }
+  showPreview();
+}
+
+// ── Preview table ──────────────────────────────────────────────────────
+function showPreview() {
+  const cfg     = CFG[_city];
+  const missing = cfg.required.filter(c => !_headers.includes(c));
+  const statusEl = document.getElementById('validationStatus');
+  document.getElementById('previewCount').textContent = `— ${_rows.length} row${_rows.length !== 1 ? 's' : ''}`;
+
+  // Row-level validation
+  const rowErrors = _rows.map(r => cfg.validate(r));
+  const invalidCt = rowErrors.filter(Boolean).length;
+
+  if (missing.length) {
+    statusEl.className   = 'status err';
+    statusEl.textContent = `Missing required columns: ${missing.join(', ')}`;
+    document.getElementById('runBtn').disabled = true;
+  } else if (invalidCt === _rows.length) {
+    statusEl.className   = 'status err';
+    statusEl.textContent = `All ${invalidCt} rows failed validation — check coordinates and required fields`;
+    document.getElementById('runBtn').disabled = true;
+  } else {
+    const warnMsg = invalidCt ? ` · ${invalidCt} rows will be skipped (validation errors)` : '';
+    statusEl.className   = 'status ok';
+    statusEl.textContent = `✓ ${_rows.length - invalidCt} valid rows ready${warnMsg}`;
+    document.getElementById('runBtn').disabled = false;
+  }
+
+  const cols    = cfg.required.filter(c => _headers.includes(c));
+  const preview = _rows.slice(0, 10);
+  const html = `<table>
+    <thead><tr>${cols.map(c => `<th>${c}</th>`).join('')}<th>status</th></tr></thead>
+    <tbody>${preview.map((r, i) => {
+      const err = rowErrors[i];
+      const badge = err
+        ? `<span class="badge badge-err">${err}</span>`
+        : `<span class="badge badge-ok">✓ ready</span>`;
+      return `<tr>${cols.map(c => `<td>${r[c] ?? ''}</td>`).join('')}<td>${badge}</td></tr>`;
+    }).join('')}</tbody>
+  </table>${_rows.length > 10 ? `<div class="sub" style="margin-top:6px">…and ${_rows.length - 10} more rows</div>` : ''}`;
+
+  document.getElementById('previewTable').innerHTML = html;
+  document.getElementById('previewCard').style.display = 'block';
+  document.getElementById('resultsCard').style.display = 'none';
+  document.getElementById('runStatus').textContent = '';
+  _results = [];
+}
+
+// ── Run batch ──────────────────────────────────────────────────────────
+async function runBatch() {
+  const cfg  = CFG[_city];
+  const rowErrs = _rows.map(r => cfg.validate(r));
+  _payload = _rows
+    .map((r, i) => rowErrs[i] ? null : cfg.buildRow(r))
+    .filter(Boolean);
+
+  if (!_payload.length) {
+    document.getElementById('runStatus').className   = 'status err';
+    document.getElementById('runStatus').textContent = 'No valid rows to submit.';
+    return;
+  }
+
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('runStatus').className   = 'status';
+  document.getElementById('runStatus').textContent = `Sending ${_payload.length} properties…`;
+  const pw = document.getElementById('progressWrap');
+  const pb = document.getElementById('progressBar');
+  pw.style.display = 'block';
+  pb.style.width   = '30%';
+
+  try {
+    const res = await fetch(cfg.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(_payload),
+    });
+    pb.style.width = '80%';
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    pb.style.width = '100%';
+    setTimeout(() => { pw.style.display = 'none'; pb.style.width = '0'; }, 600);
+
+    _results = data.results || [];
+    showResults();
+
+    document.getElementById('runStatus').className   = 'status ok';
+    document.getElementById('runStatus').textContent = `✓ ${_results.length} estimates complete`;
+  } catch (e) {
+    pb.style.width = '0'; pw.style.display = 'none';
+    document.getElementById('runStatus').className   = 'status err';
+    document.getElementById('runStatus').textContent = `Error: ${e.message}`;
+  } finally {
+    document.getElementById('runBtn').disabled = false;
+  }
+}
+
+// ── Results table ──────────────────────────────────────────────────────
+function fmt$(v)   { return '$' + Math.round(v).toLocaleString(); }
+function fmtSAR(v) { return '﷼' + Math.round(v).toLocaleString(); }
+
+function showResults() {
+  const ok    = _results.filter(r => !r.error).length;
+  const errCt = _results.filter(r => r.error).length;
+  document.getElementById('resultsCount').textContent = `— ${ok} OK${errCt ? `, ${errCt} failed` : ''}`;
+
+  let html;
+  if (_city === 'nyc') {
+    document.getElementById('resultsSub').textContent = 'NYC Stack v22 · 4-model ensemble · results ordered by input row';
+    html = `<table><thead><tr>
+      <th>#</th><th>lat</th><th>lon</th><th>sqft</th><th>bldgclass</th><th>borough</th>
+      <th>Estimated Price</th><th>Low</th><th>High</th><th>status</th>
+    </tr></thead><tbody>${_results.map((r, i) => {
+      const inp = _payload[i] || {};
+      if (r.error) return `<tr><td>${i+1}</td><td>${inp.latitude??''}</td><td>${inp.longitude??''}</td>
+        <td>${inp.gross_square_feet??''}</td><td>${inp.bldgclass??''}</td><td></td>
+        <td colspan="3" class="err">${r.error}</td><td><span class="badge badge-err">error</span></td></tr>`;
+      const bname = r.borough_name || BOROUGH_NAMES[inp.borough] || '';
+      return `<tr><td>${i+1}</td><td class="loc">${inp.latitude}</td><td class="loc">${inp.longitude}</td>
+        <td>${inp.gross_square_feet}</td><td>${r.bldgclass||inp.bldgclass||''}</td>
+        <td class="loc">${bname}</td>
+        <td class="price-nyc">${fmt$(r.predicted_price)}</td>
+        <td class="range">${fmt$(r.confidence_low)}</td>
+        <td class="range">${fmt$(r.confidence_high)}</td>
+        <td><span class="badge badge-ok">✓</span></td></tr>`;
+    }).join('')}</tbody></table>`;
+  } else {
+    document.getElementById('resultsSub').textContent = 'Riyadh Stack v11 · 4-model ensemble · results ordered by input row';
+    html = `<table><thead><tr>
+      <th>#</th><th>lat</th><th>lon</th><th>type</th><th>area m²</th><th>district</th>
+      <th>Total SAR</th><th>SAR/m²</th><th>Low</th><th>High</th><th>status</th>
+    </tr></thead><tbody>${_results.map((r, i) => {
+      const inp = _payload[i] || {};
+      if (r.error) return `<tr><td>${i+1}</td><td>${inp.latitude??''}</td><td>${inp.longitude??''}</td>
+        <td>${inp.property_type??''}</td><td>${inp.area_sqm??''}</td><td></td>
+        <td colspan="4" class="err">${r.error}</td><td><span class="badge badge-err">error</span></td></tr>`;
+      return `<tr><td>${i+1}</td><td class="loc">${inp.latitude}</td><td class="loc">${inp.longitude}</td>
+        <td>${r.property_type||inp.property_type||''}</td><td>${r.area_sqm||inp.area_sqm||''}</td>
+        <td class="loc">${r.district_ar||''}</td>
+        <td class="price">${fmtSAR(r.predicted_total_sar)}</td>
+        <td class="range">${fmtSAR(r.predicted_price_sqm)}</td>
+        <td class="range">${fmtSAR(r.confidence_low_sar)}</td>
+        <td class="range">${fmtSAR(r.confidence_high_sar)}</td>
+        <td><span class="badge badge-ok">✓</span></td></tr>`;
+    }).join('')}</tbody></table>`;
+  }
+
+  document.getElementById('resultsTable').innerHTML = html;
+  document.getElementById('resultsCard').style.display = 'block';
+  document.getElementById('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Download results CSV ───────────────────────────────────────────────
+function downloadResults() {
+  if (!_results.length) return;
+  let header, rows;
+  if (_city === 'nyc') {
+    header = 'index,latitude,longitude,gross_square_feet,bldgclass,borough,predicted_price,confidence_low,confidence_high,error';
+    rows = _results.map((r, i) => {
+      const inp = _payload[i] || {};
+      if (r.error) return [i+1,inp.latitude||'',inp.longitude||'',inp.gross_square_feet||'',inp.bldgclass||'',inp.borough||'','','','',r.error].join(',');
+      return [i+1,inp.latitude||'',inp.longitude||'',inp.gross_square_feet||'',r.bldgclass||inp.bldgclass||'',inp.borough||'',Math.round(r.predicted_price),Math.round(r.confidence_low),Math.round(r.confidence_high),''].join(',');
+    });
+  } else {
+    header = 'index,latitude,longitude,property_type,area_sqm,district_ar,predicted_total_sar,predicted_price_sqm,confidence_low_sar,confidence_high_sar,error';
+    rows = _results.map((r, i) => {
+      const inp = _payload[i] || {};
+      if (r.error) return [i+1,inp.latitude||'',inp.longitude||'',inp.property_type||'',inp.area_sqm||'','','','','','',r.error].join(',');
+      return [i+1,inp.latitude||'',inp.longitude||'',r.property_type||inp.property_type||'',r.area_sqm||inp.area_sqm||'',r.district_ar||'',r.predicted_total_sar,r.predicted_price_sqm,r.confidence_low_sar,r.confidence_high_sar,''].join(',');
+    });
+  }
+  const blob = new Blob([[header,...rows].join('\n')], { type:'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `thaman_batch_${_city}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── Download template CSV ──────────────────────────────────────────────
+function downloadTemplate() {
+  const cfg  = CFG[_city];
+  const blob = new Blob([cfg.template], { type:'text/csv' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `thaman_batch_${_city}_template.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ── Example data ───────────────────────────────────────────────────────
+function loadExample() { parseCSV(CFG[_city].example); }
+
+// ── Clear ──────────────────────────────────────────────────────────────
+function clearAll() {
+  _rows = []; _results = []; _headers = []; _payload = [];
+  document.getElementById('previewCard').style.display = 'none';
+  document.getElementById('resultsCard').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+}
+</script>
+</body>
+</html>
