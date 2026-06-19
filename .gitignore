@@ -84,3 +84,9 @@ data/processed/features_v6.csv
 data/processed/features_v7.csv
 data/processed/features_riyadh_v2.csv
 data/processed/features_v4.csv
+models/thaman_stack.pkl
+models/xgboost_model.json
+models/luxury_model.json
+models/riyadh_stack.pkl
+models/meta.json
+models/riyadh_meta.json
