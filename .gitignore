@@ -90,3 +90,9 @@ models/luxury_model.json
 models/riyadh_stack.pkl
 models/meta.json
 models/riyadh_meta.json
+data/processed/features.csv
+data/raw/nyc_bike_lanes.geojson
+data/raw/nyc_coastline_pts.npy
+models/*.png
+docs/figures/
+docs/*.png
