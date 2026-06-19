@@ -1,0 +1,593 @@
+{
+  "global_spread_pct": 39.7,
+  "districts": {
+    "البديعة": {
+      "bayut_median_psqm": 6235.0,
+      "moj_median_psqm": 7616.0,
+      "spread_pct": -18.1,
+      "bayut_n": 1,
+      "moj_n": 1
+    },
+    "التعاون": {
+      "bayut_median_psqm": 11691.0,
+      "moj_median_psqm": 5080.0,
+      "spread_pct": 130.1,
+      "bayut_n": 49,
+      "moj_n": 25
+    },
+    "الجنادرية": {
+      "bayut_median_psqm": 4776.0,
+      "moj_median_psqm": 4358.0,
+      "spread_pct": 9.6,
+      "bayut_n": 437,
+      "moj_n": 18
+    },
+    "الحزم": {
+      "bayut_median_psqm": 3724.0,
+      "moj_median_psqm": 2894.0,
+      "spread_pct": 28.7,
+      "bayut_n": 230,
+      "moj_n": 32
+    },
+    "الحمراء": {
+      "bayut_median_psqm": 7303.0,
+      "moj_median_psqm": 3394.0,
+      "spread_pct": 115.2,
+      "bayut_n": 19,
+      "moj_n": 30
+    },
+    "الخليج": {
+      "bayut_median_psqm": 7933.0,
+      "moj_median_psqm": 5785.0,
+      "spread_pct": 37.1,
+      "bayut_n": 34,
+      "moj_n": 16
+    },
+    "الدار البيضاء": {
+      "bayut_median_psqm": 3740.0,
+      "moj_median_psqm": 2748.0,
+      "spread_pct": 36.1,
+      "bayut_n": 73,
+      "moj_n": 40
+    },
+    "الدريهمية": {
+      "bayut_median_psqm": 4813.0,
+      "moj_median_psqm": 2795.0,
+      "spread_pct": 72.2,
+      "bayut_n": 1,
+      "moj_n": 23
+    },
+    "الديرة": {
+      "bayut_median_psqm": 2830.0,
+      "moj_median_psqm": 1265.0,
+      "spread_pct": 123.8,
+      "bayut_n": 1,
+      "moj_n": 2
+    },
+    "الرائد": {
+      "bayut_median_psqm": 15721.0,
+      "moj_median_psqm": 7826.0,
+      "spread_pct": 100.9,
+      "bayut_n": 2,
+      "moj_n": 14
+    },
+    "الربيع": {
+      "bayut_median_psqm": 10263.0,
+      "moj_median_psqm": 5533.0,
+      "spread_pct": 85.5,
+      "bayut_n": 6,
+      "moj_n": 20
+    },
+    "الرحمانية": {
+      "bayut_median_psqm": 23009.0,
+      "moj_median_psqm": 7902.0,
+      "spread_pct": 191.2,
+      "bayut_n": 11,
+      "moj_n": 5
+    },
+    "الرفيعة": {
+      "bayut_median_psqm": 7621.0,
+      "moj_median_psqm": 3834.0,
+      "spread_pct": 98.8,
+      "bayut_n": 5,
+      "moj_n": 3
+    },
+    "الرمال": {
+      "bayut_median_psqm": 6254.0,
+      "moj_median_psqm": 5483.0,
+      "spread_pct": 14.1,
+      "bayut_n": 510,
+      "moj_n": 25
+    },
+    "الروابي": {
+      "bayut_median_psqm": 6132.0,
+      "moj_median_psqm": 6022.0,
+      "spread_pct": 1.8,
+      "bayut_n": 17,
+      "moj_n": 10
+    },
+    "الروضة": {
+      "bayut_median_psqm": 9932.0,
+      "moj_median_psqm": 6270.0,
+      "spread_pct": 58.4,
+      "bayut_n": 16,
+      "moj_n": 18
+    },
+    "الريان": {
+      "bayut_median_psqm": 9116.0,
+      "moj_median_psqm": 7233.0,
+      "spread_pct": 26.0,
+      "bayut_n": 4,
+      "moj_n": 16
+    },
+    "الزهرة": {
+      "bayut_median_psqm": 4577.0,
+      "moj_median_psqm": 4508.0,
+      "spread_pct": 1.5,
+      "bayut_n": 61,
+      "moj_n": 19
+    },
+    "السعادة": {
+      "bayut_median_psqm": 5976.0,
+      "moj_median_psqm": 4619.0,
+      "spread_pct": 29.4,
+      "bayut_n": 42,
+      "moj_n": 26
+    },
+    "السلام": {
+      "bayut_median_psqm": 6186.0,
+      "moj_median_psqm": 5377.0,
+      "spread_pct": 15.1,
+      "bayut_n": 9,
+      "moj_n": 9
+    },
+    "السليمانية": {
+      "bayut_median_psqm": 14098.0,
+      "moj_median_psqm": 10636.0,
+      "spread_pct": 32.6,
+      "bayut_n": 2,
+      "moj_n": 11
+    },
+    "السويدي": {
+      "bayut_median_psqm": 5147.0,
+      "moj_median_psqm": 4019.0,
+      "spread_pct": 28.1,
+      "bayut_n": 33,
+      "moj_n": 21
+    },
+    "السويدي الغربي": {
+      "bayut_median_psqm": 6522.0,
+      "moj_median_psqm": 4638.0,
+      "spread_pct": 40.6,
+      "bayut_n": 32,
+      "moj_n": 9
+    },
+    "الشفا": {
+      "bayut_median_psqm": 3953.0,
+      "moj_median_psqm": 3270.0,
+      "spread_pct": 20.9,
+      "bayut_n": 15,
+      "moj_n": 3
+    },
+    "الشهداء": {
+      "bayut_median_psqm": 10544.0,
+      "moj_median_psqm": 7063.0,
+      "spread_pct": 49.3,
+      "bayut_n": 8,
+      "moj_n": 11
+    },
+    "الصحافة": {
+      "bayut_median_psqm": 12946.0,
+      "moj_median_psqm": 10000.0,
+      "spread_pct": 29.5,
+      "bayut_n": 102,
+      "moj_n": 23
+    },
+    "الصفا": {
+      "bayut_median_psqm": 9098.0,
+      "moj_median_psqm": 7809.0,
+      "spread_pct": 16.5,
+      "bayut_n": 6,
+      "moj_n": 1
+    },
+    "العارض": {
+      "bayut_median_psqm": 9267.0,
+      "moj_median_psqm": 6683.0,
+      "spread_pct": 38.7,
+      "bayut_n": 256,
+      "moj_n": 31
+    },
+    "العزيزية": {
+      "bayut_median_psqm": 4316.0,
+      "moj_median_psqm": 3191.0,
+      "spread_pct": 35.2,
+      "bayut_n": 14,
+      "moj_n": 34
+    },
+    "العقيق": {
+      "bayut_median_psqm": 13440.0,
+      "moj_median_psqm": 6622.0,
+      "spread_pct": 102.9,
+      "bayut_n": 29,
+      "moj_n": 26
+    },
+    "العليا": {
+      "bayut_median_psqm": 20675.0,
+      "moj_median_psqm": 11032.0,
+      "spread_pct": 87.4,
+      "bayut_n": 8,
+      "moj_n": 4
+    },
+    "العوالي": {
+      "bayut_median_psqm": 4876.0,
+      "moj_median_psqm": 4097.0,
+      "spread_pct": 19.0,
+      "bayut_n": 94,
+      "moj_n": 18
+    },
+    "الغدير": {
+      "bayut_median_psqm": 13768.0,
+      "moj_median_psqm": 5481.0,
+      "spread_pct": 151.2,
+      "bayut_n": 20,
+      "moj_n": 7
+    },
+    "الفلاح": {
+      "bayut_median_psqm": 11030.0,
+      "moj_median_psqm": 7649.0,
+      "spread_pct": 44.2,
+      "bayut_n": 2,
+      "moj_n": 5
+    },
+    "الفيحاء": {
+      "bayut_median_psqm": 6785.0,
+      "moj_median_psqm": 3373.0,
+      "spread_pct": 101.2,
+      "bayut_n": 45,
+      "moj_n": 21
+    },
+    "القادسية": {
+      "bayut_median_psqm": 8072.0,
+      "moj_median_psqm": 5045.0,
+      "spread_pct": 60.0,
+      "bayut_n": 59,
+      "moj_n": 27
+    },
+    "القدس": {
+      "bayut_median_psqm": 10595.0,
+      "moj_median_psqm": 6077.0,
+      "spread_pct": 74.4,
+      "bayut_n": 45,
+      "moj_n": 25
+    },
+    "القيروان": {
+      "bayut_median_psqm": 10104.0,
+      "moj_median_psqm": 4499.0,
+      "spread_pct": 124.6,
+      "bayut_n": 59,
+      "moj_n": 33
+    },
+    "المحمدية": {
+      "bayut_median_psqm": 14623.0,
+      "moj_median_psqm": 8507.0,
+      "spread_pct": 71.9,
+      "bayut_n": 3,
+      "moj_n": 8
+    },
+    "المربع": {
+      "bayut_median_psqm": 11716.0,
+      "moj_median_psqm": 4183.0,
+      "spread_pct": 180.1,
+      "bayut_n": 3,
+      "moj_n": 3
+    },
+    "المرجان": {
+      "bayut_median_psqm": 5024.0,
+      "moj_median_psqm": 5230.0,
+      "spread_pct": -3.9,
+      "bayut_n": 102,
+      "moj_n": 13
+    },
+    "المرسلات": {
+      "bayut_median_psqm": 9923.0,
+      "moj_median_psqm": 8128.0,
+      "spread_pct": 22.1,
+      "bayut_n": 8,
+      "moj_n": 6
+    },
+    "المروة": {
+      "bayut_median_psqm": 4198.0,
+      "moj_median_psqm": 2524.0,
+      "spread_pct": 66.3,
+      "bayut_n": 40,
+      "moj_n": 21
+    },
+    "المروج": {
+      "bayut_median_psqm": 9042.0,
+      "moj_median_psqm": 8201.0,
+      "spread_pct": 10.3,
+      "bayut_n": 10,
+      "moj_n": 11
+    },
+    "المصيف": {
+      "bayut_median_psqm": 13786.0,
+      "moj_median_psqm": 7722.0,
+      "spread_pct": 78.5,
+      "bayut_n": 13,
+      "moj_n": 13
+    },
+    "الملز": {
+      "bayut_median_psqm": 10274.0,
+      "moj_median_psqm": 4338.0,
+      "spread_pct": 136.8,
+      "bayut_n": 5,
+      "moj_n": 5
+    },
+    "الملقا": {
+      "bayut_median_psqm": 10170.0,
+      "moj_median_psqm": 6482.0,
+      "spread_pct": 56.9,
+      "bayut_n": 224,
+      "moj_n": 33
+    },
+    "الملك سلمان": {
+      "bayut_median_psqm": 11683.0,
+      "moj_median_psqm": 9246.0,
+      "spread_pct": 26.4,
+      "bayut_n": 11,
+      "moj_n": 1
+    },
+    "الملك عبدالله": {
+      "bayut_median_psqm": 6538.0,
+      "moj_median_psqm": 3779.0,
+      "spread_pct": 73.0,
+      "bayut_n": 5,
+      "moj_n": 1
+    },
+    "الملك فهد": {
+      "bayut_median_psqm": 8133.0,
+      "moj_median_psqm": 9607.0,
+      "spread_pct": -15.3,
+      "bayut_n": 9,
+      "moj_n": 2
+    },
+    "الملك فيصل": {
+      "bayut_median_psqm": 7402.0,
+      "moj_median_psqm": 5548.0,
+      "spread_pct": 33.4,
+      "bayut_n": 16,
+      "moj_n": 21
+    },
+    "المنار": {
+      "bayut_median_psqm": 7426.0,
+      "moj_median_psqm": 4802.0,
+      "spread_pct": 54.6,
+      "bayut_n": 9,
+      "moj_n": 23
+    },
+    "المهدية": {
+      "bayut_median_psqm": 6667.0,
+      "moj_median_psqm": 5490.0,
+      "spread_pct": 21.4,
+      "bayut_n": 947,
+      "moj_n": 15
+    },
+    "المونسية": {
+      "bayut_median_psqm": 7520.0,
+      "moj_median_psqm": 5783.0,
+      "spread_pct": 30.0,
+      "bayut_n": 292,
+      "moj_n": 30
+    },
+    "النخيل": {
+      "bayut_median_psqm": 15648.0,
+      "moj_median_psqm": 8354.0,
+      "spread_pct": 87.3,
+      "bayut_n": 16,
+      "moj_n": 18
+    },
+    "الندى": {
+      "bayut_median_psqm": 10638.0,
+      "moj_median_psqm": 6825.0,
+      "spread_pct": 55.9,
+      "bayut_n": 19,
+      "moj_n": 29
+    },
+    "النرجس": {
+      "bayut_median_psqm": 9735.0,
+      "moj_median_psqm": 6866.0,
+      "spread_pct": 41.8,
+      "bayut_n": 323,
+      "moj_n": 35
+    },
+    "النزهة": {
+      "bayut_median_psqm": 11319.0,
+      "moj_median_psqm": 6731.0,
+      "spread_pct": 68.2,
+      "bayut_n": 41,
+      "moj_n": 19
+    },
+    "النسيم الشرقي": {
+      "bayut_median_psqm": 5043.0,
+      "moj_median_psqm": 4397.0,
+      "spread_pct": 14.7,
+      "bayut_n": 56,
+      "moj_n": 5
+    },
+    "النسيم الغربي": {
+      "bayut_median_psqm": 6238.0,
+      "moj_median_psqm": 4761.0,
+      "spread_pct": 31.0,
+      "bayut_n": 28,
+      "moj_n": 8
+    },
+    "النظيم": {
+      "bayut_median_psqm": 5578.0,
+      "moj_median_psqm": 2939.0,
+      "spread_pct": 89.8,
+      "bayut_n": 38,
+      "moj_n": 13
+    },
+    "النفل": {
+      "bayut_median_psqm": 11326.0,
+      "moj_median_psqm": 10149.0,
+      "spread_pct": 11.6,
+      "bayut_n": 5,
+      "moj_n": 21
+    },
+    "النهضة": {
+      "bayut_median_psqm": 6236.0,
+      "moj_median_psqm": 5255.0,
+      "spread_pct": 18.7,
+      "bayut_n": 42,
+      "moj_n": 23
+    },
+    "الوادي": {
+      "bayut_median_psqm": 13051.0,
+      "moj_median_psqm": 7952.0,
+      "spread_pct": 64.1,
+      "bayut_n": 4,
+      "moj_n": 8
+    },
+    "الورود": {
+      "bayut_median_psqm": 10778.0,
+      "moj_median_psqm": 5437.0,
+      "spread_pct": 98.2,
+      "bayut_n": 2,
+      "moj_n": 3
+    },
+    "الياسمين": {
+      "bayut_median_psqm": 9028.0,
+      "moj_median_psqm": 6210.0,
+      "spread_pct": 45.4,
+      "bayut_n": 119,
+      "moj_n": 34
+    },
+    "اليرموك": {
+      "bayut_median_psqm": 6515.0,
+      "moj_median_psqm": 4860.0,
+      "spread_pct": 34.0,
+      "bayut_n": 280,
+      "moj_n": 35
+    },
+    "بدر": {
+      "bayut_median_psqm": 3506.0,
+      "moj_median_psqm": 2803.0,
+      "spread_pct": 25.1,
+      "bayut_n": 336,
+      "moj_n": 40
+    },
+    "جرير": {
+      "bayut_median_psqm": 9583.0,
+      "moj_median_psqm": 7536.0,
+      "spread_pct": 27.2,
+      "bayut_n": 4,
+      "moj_n": 6
+    },
+    "حطين": {
+      "bayut_median_psqm": 10691.0,
+      "moj_median_psqm": 6188.0,
+      "spread_pct": 72.8,
+      "bayut_n": 36,
+      "moj_n": 26
+    },
+    "ديراب": {
+      "bayut_median_psqm": 3673.0,
+      "moj_median_psqm": 3539.0,
+      "spread_pct": 3.8,
+      "bayut_n": 72,
+      "moj_n": 4
+    },
+    "سلطانة": {
+      "bayut_median_psqm": 3973.0,
+      "moj_median_psqm": 3859.0,
+      "spread_pct": 2.9,
+      "bayut_n": 1,
+      "moj_n": 2
+    },
+    "شبرا": {
+      "bayut_median_psqm": 6154.0,
+      "moj_median_psqm": 5034.0,
+      "spread_pct": 22.2,
+      "bayut_n": 7,
+      "moj_n": 5
+    },
+    "ضاحية نمار": {
+      "bayut_median_psqm": 4292.0,
+      "moj_median_psqm": 3648.0,
+      "spread_pct": 17.6,
+      "bayut_n": 64,
+      "moj_n": 31
+    },
+    "طويق": {
+      "bayut_median_psqm": 5265.0,
+      "moj_median_psqm": 3846.0,
+      "spread_pct": 36.9,
+      "bayut_n": 342,
+      "moj_n": 32
+    },
+    "طيبة": {
+      "bayut_median_psqm": 3368.0,
+      "moj_median_psqm": 3915.0,
+      "spread_pct": -14.0,
+      "bayut_n": 105,
+      "moj_n": 4
+    },
+    "ظهرة البديعة": {
+      "bayut_median_psqm": 5172.0,
+      "moj_median_psqm": 4650.0,
+      "spread_pct": 11.2,
+      "bayut_n": 23,
+      "moj_n": 5
+    },
+    "ظهرة لبن": {
+      "bayut_median_psqm": 5333.0,
+      "moj_median_psqm": 2853.0,
+      "spread_pct": 86.9,
+      "bayut_n": 222,
+      "moj_n": 33
+    },
+    "عرقة": {
+      "bayut_median_psqm": 11852.0,
+      "moj_median_psqm": 8104.0,
+      "spread_pct": 46.2,
+      "bayut_n": 23,
+      "moj_n": 11
+    },
+    "عكاظ": {
+      "bayut_median_psqm": 3976.0,
+      "moj_median_psqm": 3249.0,
+      "spread_pct": 22.4,
+      "bayut_n": 154,
+      "moj_n": 40
+    },
+    "غرناطة": {
+      "bayut_median_psqm": 8333.0,
+      "moj_median_psqm": 5453.0,
+      "spread_pct": 52.8,
+      "bayut_n": 36,
+      "moj_n": 20
+    },
+    "قرطبة": {
+      "bayut_median_psqm": 8374.0,
+      "moj_median_psqm": 5628.0,
+      "spread_pct": 48.8,
+      "bayut_n": 124,
+      "moj_n": 35
+    },
+    "لبن": {
+      "bayut_median_psqm": 5978.0,
+      "moj_median_psqm": 3273.0,
+      "spread_pct": 82.7,
+      "bayut_n": 6,
+      "moj_n": 33
+    },
+    "نمار": {
+      "bayut_median_psqm": 5656.0,
+      "moj_median_psqm": 3394.0,
+      "spread_pct": 66.6,
+      "bayut_n": 6,
+      "moj_n": 17
+    }
+  }
+}

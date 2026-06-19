@@ -1,0 +1,6265 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7975701,
+          24.7250989
+        ]
+      },
+      "properties": {
+        "osm_id": 53447620,
+        "osm_type": "way",
+        "name": "المنار",
+        "name_en": "Al Manar",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7250989,
+        "longitude": 46.7975701
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4348761,
+          24.9063209
+        ]
+      },
+      "properties": {
+        "osm_id": 329088577,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.9063209,
+        "longitude": 46.4348761
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4314041,
+          24.9042893
+        ]
+      },
+      "properties": {
+        "osm_id": 329088579,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.9042893,
+        "longitude": 46.4314041
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.436316,
+          24.9126945
+        ]
+      },
+      "properties": {
+        "osm_id": 329088593,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.9126945,
+        "longitude": 46.436316
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4255208,
+          24.9196576
+        ]
+      },
+      "properties": {
+        "osm_id": 329088594,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.9196576,
+        "longitude": 46.4255208
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4297096,
+          24.9138666
+        ]
+      },
+      "properties": {
+        "osm_id": 329088595,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.9138666,
+        "longitude": 46.4297096
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6197605,
+          24.9692796
+        ]
+      },
+      "properties": {
+        "osm_id": 329203398,
+        "osm_type": "way",
+        "name": "اسكان الرياض",
+        "name_en": "Riyadh housing",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.9692796,
+        "longitude": 46.6197605
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5392126,
+          24.6182099
+        ]
+      },
+      "properties": {
+        "osm_id": 329964310,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6182099,
+        "longitude": 46.5392126
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6429976,
+          24.658057
+        ]
+      },
+      "properties": {
+        "osm_id": 329992138,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.658057,
+        "longitude": 46.6429976
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5283315,
+          24.5103366
+        ]
+      },
+      "properties": {
+        "osm_id": 331516928,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5103366,
+        "longitude": 46.5283315
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5465345,
+          24.4886861
+        ]
+      },
+      "properties": {
+        "osm_id": 331516949,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4886861,
+        "longitude": 46.5465345
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4559159,
+          24.5115998
+        ]
+      },
+      "properties": {
+        "osm_id": 331530602,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5115998,
+        "longitude": 46.4559159
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5185087,
+          24.4882074
+        ]
+      },
+      "properties": {
+        "osm_id": 331530621,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4882074,
+        "longitude": 46.5185087
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5390919,
+          24.4826378
+        ]
+      },
+      "properties": {
+        "osm_id": 331530622,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4826378,
+        "longitude": 46.5390919
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5110399,
+          24.5590852
+        ]
+      },
+      "properties": {
+        "osm_id": 331544943,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5590852,
+        "longitude": 46.5110399
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5713867,
+          24.5171969
+        ]
+      },
+      "properties": {
+        "osm_id": 331557521,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5171969,
+        "longitude": 46.5713867
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6557628,
+          24.5236346
+        ]
+      },
+      "properties": {
+        "osm_id": 331878226,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5236346,
+        "longitude": 46.6557628
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7345983,
+          24.5195501
+        ]
+      },
+      "properties": {
+        "osm_id": 332014310,
+        "osm_type": "way",
+        "name": "حي الإسكان",
+        "name_en": "Askan 1",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5195501,
+        "longitude": 46.7345983
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7183205,
+          24.5114826
+        ]
+      },
+      "properties": {
+        "osm_id": 332014316,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "Askan 3",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5114826,
+        "longitude": 46.7183205
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7458204,
+          24.5322676
+        ]
+      },
+      "properties": {
+        "osm_id": 332017166,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "Askan 2",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5322676,
+        "longitude": 46.7458204
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5753721,
+          24.7359848
+        ]
+      },
+      "properties": {
+        "osm_id": 332170438,
+        "osm_type": "way",
+        "name": "البجيري",
+        "name_en": "Albujairi",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7359848,
+        "longitude": 46.5753721
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5455077,
+          24.6291971
+        ]
+      },
+      "properties": {
+        "osm_id": 384467052,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6291971,
+        "longitude": 46.5455077
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6516256,
+          24.8566401
+        ]
+      },
+      "properties": {
+        "osm_id": 385269959,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.8566401,
+        "longitude": 46.6516256
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5104892,
+          24.5644335
+        ]
+      },
+      "properties": {
+        "osm_id": 509090912,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5644335,
+        "longitude": 46.5104892
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5650762,
+          24.7809571
+        ]
+      },
+      "properties": {
+        "osm_id": 509091048,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7809571,
+        "longitude": 46.5650762
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5420353,
+          24.5580455
+        ]
+      },
+      "properties": {
+        "osm_id": 558542796,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5580455,
+        "longitude": 46.5420353
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.532624,
+          24.5651356
+        ]
+      },
+      "properties": {
+        "osm_id": 558542799,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5651356,
+        "longitude": 46.532624
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5305992,
+          24.571106
+        ]
+      },
+      "properties": {
+        "osm_id": 558542801,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.571106,
+        "longitude": 46.5305992
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5277324,
+          24.5655559
+        ]
+      },
+      "properties": {
+        "osm_id": 558542805,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5655559,
+        "longitude": 46.5277324
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5172796,
+          24.5591874
+        ]
+      },
+      "properties": {
+        "osm_id": 558542806,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5591874,
+        "longitude": 46.5172796
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5221598,
+          24.5594331
+        ]
+      },
+      "properties": {
+        "osm_id": 558542807,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5594331,
+        "longitude": 46.5221598
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5271444,
+          24.5594411
+        ]
+      },
+      "properties": {
+        "osm_id": 558542809,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5594411,
+        "longitude": 46.5271444
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5208787,
+          24.5654569
+        ]
+      },
+      "properties": {
+        "osm_id": 558542810,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5654569,
+        "longitude": 46.5208787
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.3625392,
+          25.1129733
+        ]
+      },
+      "properties": {
+        "osm_id": 558587295,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 25.1129733,
+        "longitude": 46.3625392
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5909932,
+          24.8411922
+        ]
+      },
+      "properties": {
+        "osm_id": 558587365,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.8411922,
+        "longitude": 46.5909932
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6559561,
+          24.8685923
+        ]
+      },
+      "properties": {
+        "osm_id": 558587440,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.8685923,
+        "longitude": 46.6559561
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8421233,
+          24.9418934
+        ]
+      },
+      "properties": {
+        "osm_id": 558642967,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.9418934,
+        "longitude": 46.8421233
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8673244,
+          24.8488831
+        ]
+      },
+      "properties": {
+        "osm_id": 558643129,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.8488831,
+        "longitude": 46.8673244
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8584709,
+          24.811713
+        ]
+      },
+      "properties": {
+        "osm_id": 595948255,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.811713,
+        "longitude": 46.8584709
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8703681,
+          24.6848288
+        ]
+      },
+      "properties": {
+        "osm_id": 595958271,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6848288,
+        "longitude": 46.8703681
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5273818,
+          24.7459913
+        ]
+      },
+      "properties": {
+        "osm_id": 636252484,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7459913,
+        "longitude": 46.5273818
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5244156,
+          24.7491674
+        ]
+      },
+      "properties": {
+        "osm_id": 636252486,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7491674,
+        "longitude": 46.5244156
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5285816,
+          24.7496788
+        ]
+      },
+      "properties": {
+        "osm_id": 636252488,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7496788,
+        "longitude": 46.5285816
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5331702,
+          24.7485955
+        ]
+      },
+      "properties": {
+        "osm_id": 636252504,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7485955,
+        "longitude": 46.5331702
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5324268,
+          24.746315
+        ]
+      },
+      "properties": {
+        "osm_id": 636252505,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.746315,
+        "longitude": 46.5324268
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5859315,
+          24.8489924
+        ]
+      },
+      "properties": {
+        "osm_id": 636252625,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.8489924,
+        "longitude": 46.5859315
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8014084,
+          24.6943559
+        ]
+      },
+      "properties": {
+        "osm_id": 636417334,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6943559,
+        "longitude": 46.8014084
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7436576,
+          24.6130996
+        ]
+      },
+      "properties": {
+        "osm_id": 636433846,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6130996,
+        "longitude": 46.7436576
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7746681,
+          24.7616872
+        ]
+      },
+      "properties": {
+        "osm_id": 636444372,
+        "osm_type": "way",
+        "name": "حي الملك فيصل",
+        "name_en": "King Faisal District",
+        "place": "suburb",
+        "admin_level": "",
+        "latitude": 24.7616872,
+        "longitude": 46.7746681
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5678186,
+          24.7414051
+        ]
+      },
+      "properties": {
+        "osm_id": 636659064,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "Ghusaybah District in ad-Dir'iyah",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7414051,
+        "longitude": 46.5678186
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6239382,
+          24.5793537
+        ]
+      },
+      "properties": {
+        "osm_id": 636713280,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.5793537,
+        "longitude": 46.6239382
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6145003,
+          24.5748704
+        ]
+      },
+      "properties": {
+        "osm_id": 636713281,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.5748704,
+        "longitude": 46.6145003
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6299183,
+          24.5712478
+        ]
+      },
+      "properties": {
+        "osm_id": 636713285,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.5712478,
+        "longitude": 46.6299183
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.622665,
+          24.5688112
+        ]
+      },
+      "properties": {
+        "osm_id": 636713287,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.5688112,
+        "longitude": 46.622665
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6373753,
+          24.5644671
+        ]
+      },
+      "properties": {
+        "osm_id": 636713288,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.5644671,
+        "longitude": 46.6373753
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.632142,
+          24.5875122
+        ]
+      },
+      "properties": {
+        "osm_id": 636713313,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.5875122,
+        "longitude": 46.632142
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6418407,
+          24.5934904
+        ]
+      },
+      "properties": {
+        "osm_id": 636713315,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.5934904,
+        "longitude": 46.6418407
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6533665,
+          24.5970999
+        ]
+      },
+      "properties": {
+        "osm_id": 636724123,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.5970999,
+        "longitude": 46.6533665
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6629406,
+          24.6032666
+        ]
+      },
+      "properties": {
+        "osm_id": 636724134,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6032666,
+        "longitude": 46.6629406
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6502953,
+          24.658996
+        ]
+      },
+      "properties": {
+        "osm_id": 636758853,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.658996,
+        "longitude": 46.6502953
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.622903,
+          24.6981526
+        ]
+      },
+      "properties": {
+        "osm_id": 636778526,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6981526,
+        "longitude": 46.622903
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8611368,
+          24.6704238
+        ]
+      },
+      "properties": {
+        "osm_id": 638013451,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6704238,
+        "longitude": 46.8611368
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8647348,
+          24.6756639
+        ]
+      },
+      "properties": {
+        "osm_id": 638013455,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6756639,
+        "longitude": 46.8647348
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8740093,
+          24.6754054
+        ]
+      },
+      "properties": {
+        "osm_id": 638013456,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6754054,
+        "longitude": 46.8740093
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8801921,
+          24.673482
+        ]
+      },
+      "properties": {
+        "osm_id": 638013457,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.673482,
+        "longitude": 46.8801921
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8733397,
+          24.6714712
+        ]
+      },
+      "properties": {
+        "osm_id": 638013460,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6714712,
+        "longitude": 46.8733397
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8791453,
+          24.6661134
+        ]
+      },
+      "properties": {
+        "osm_id": 638013461,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6661134,
+        "longitude": 46.8791453
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8742103,
+          24.6649023
+        ]
+      },
+      "properties": {
+        "osm_id": 638013462,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6649023,
+        "longitude": 46.8742103
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8657573,
+          24.669256
+        ]
+      },
+      "properties": {
+        "osm_id": 638013465,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.669256,
+        "longitude": 46.8657573
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8614195,
+          24.6617902
+        ]
+      },
+      "properties": {
+        "osm_id": 638013466,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6617902,
+        "longitude": 46.8614195
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8672898,
+          24.6644956
+        ]
+      },
+      "properties": {
+        "osm_id": 638013467,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6644956,
+        "longitude": 46.8672898
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8684332,
+          24.6600625
+        ]
+      },
+      "properties": {
+        "osm_id": 638013468,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6600625,
+        "longitude": 46.8684332
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8763724,
+          24.6595972
+        ]
+      },
+      "properties": {
+        "osm_id": 638013471,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.6595972,
+        "longitude": 46.8763724
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8069828,
+          24.5554477
+        ]
+      },
+      "properties": {
+        "osm_id": 638520262,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.5554477,
+        "longitude": 46.8069828
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6235341,
+          24.6767611
+        ]
+      },
+      "properties": {
+        "osm_id": 766599181,
+        "osm_type": "way",
+        "name": "حي السفارات",
+        "name_en": "Diplomatic Quarter",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6767611,
+        "longitude": 46.6235341
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5643094,
+          24.847602
+        ]
+      },
+      "properties": {
+        "osm_id": 846335895,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.847602,
+        "longitude": 46.5643094
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5326998,
+          24.5206356
+        ]
+      },
+      "properties": {
+        "osm_id": 907836888,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5206356,
+        "longitude": 46.5326998
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.553049,
+          24.5001185
+        ]
+      },
+      "properties": {
+        "osm_id": 907836894,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5001185,
+        "longitude": 46.553049
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5647192,
+          24.4964038
+        ]
+      },
+      "properties": {
+        "osm_id": 907836895,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4964038,
+        "longitude": 46.5647192
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5575099,
+          24.4843566
+        ]
+      },
+      "properties": {
+        "osm_id": 907836896,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4843566,
+        "longitude": 46.5575099
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5341732,
+          24.4932977
+        ]
+      },
+      "properties": {
+        "osm_id": 907836937,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4932977,
+        "longitude": 46.5341732
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5392267,
+          24.5051664
+        ]
+      },
+      "properties": {
+        "osm_id": 907836938,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5051664,
+        "longitude": 46.5392267
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.523529,
+          24.4985322
+        ]
+      },
+      "properties": {
+        "osm_id": 907836939,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4985322,
+        "longitude": 46.523529
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5299776,
+          24.4835468
+        ]
+      },
+      "properties": {
+        "osm_id": 907836954,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4835468,
+        "longitude": 46.5299776
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4981208,
+          24.4962086
+        ]
+      },
+      "properties": {
+        "osm_id": 907836958,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4962086,
+        "longitude": 46.4981208
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5087254,
+          24.4916419
+        ]
+      },
+      "properties": {
+        "osm_id": 907836959,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4916419,
+        "longitude": 46.5087254
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4775441,
+          24.5040744
+        ]
+      },
+      "properties": {
+        "osm_id": 907836960,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5040744,
+        "longitude": 46.4775441
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4883854,
+          24.4995755
+        ]
+      },
+      "properties": {
+        "osm_id": 907836961,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4995755,
+        "longitude": 46.4883854
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4835004,
+          24.4886007
+        ]
+      },
+      "properties": {
+        "osm_id": 907836983,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4886007,
+        "longitude": 46.4835004
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4923817,
+          24.4857778
+        ]
+      },
+      "properties": {
+        "osm_id": 907836984,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.4857778,
+        "longitude": 46.4923817
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4671987,
+          24.5072938
+        ]
+      },
+      "properties": {
+        "osm_id": 907836985,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.5072938,
+        "longitude": 46.4671987
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4688926,
+          24.6072639
+        ]
+      },
+      "properties": {
+        "osm_id": 907837020,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6072639,
+        "longitude": 46.4688926
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4620832,
+          24.6073223
+        ]
+      },
+      "properties": {
+        "osm_id": 907837021,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6073223,
+        "longitude": 46.4620832
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4603873,
+          24.6042869
+        ]
+      },
+      "properties": {
+        "osm_id": 907837022,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6042869,
+        "longitude": 46.4603873
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4735874,
+          24.6077108
+        ]
+      },
+      "properties": {
+        "osm_id": 907837024,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6077108,
+        "longitude": 46.4735874
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4915521,
+          24.6087721
+        ]
+      },
+      "properties": {
+        "osm_id": 907837032,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6087721,
+        "longitude": 46.4915521
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4980059,
+          24.6104883
+        ]
+      },
+      "properties": {
+        "osm_id": 907837033,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6104883,
+        "longitude": 46.4980059
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4959135,
+          24.6156293
+        ]
+      },
+      "properties": {
+        "osm_id": 907837034,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6156293,
+        "longitude": 46.4959135
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5037139,
+          24.6112065
+        ]
+      },
+      "properties": {
+        "osm_id": 907837035,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6112065,
+        "longitude": 46.5037139
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5069104,
+          24.6162889
+        ]
+      },
+      "properties": {
+        "osm_id": 907837036,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6162889,
+        "longitude": 46.5069104
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5102897,
+          24.6184011
+        ]
+      },
+      "properties": {
+        "osm_id": 907837037,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6184011,
+        "longitude": 46.5102897
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5081254,
+          24.6132
+        ]
+      },
+      "properties": {
+        "osm_id": 907837038,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6132,
+        "longitude": 46.5081254
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5130398,
+          24.6163574
+        ]
+      },
+      "properties": {
+        "osm_id": 907837039,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6163574,
+        "longitude": 46.5130398
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5145636,
+          24.6142083
+        ]
+      },
+      "properties": {
+        "osm_id": 907837040,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6142083,
+        "longitude": 46.5145636
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5096939,
+          24.6111487
+        ]
+      },
+      "properties": {
+        "osm_id": 907837041,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6111487,
+        "longitude": 46.5096939
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.4981177,
+          24.618619
+        ]
+      },
+      "properties": {
+        "osm_id": 907837042,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.618619,
+        "longitude": 46.4981177
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5025173,
+          24.6141239
+        ]
+      },
+      "properties": {
+        "osm_id": 907837043,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6141239,
+        "longitude": 46.5025173
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5139562,
+          24.6213917
+        ]
+      },
+      "properties": {
+        "osm_id": 907837044,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6213917,
+        "longitude": 46.5139562
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5201705,
+          24.6133066
+        ]
+      },
+      "properties": {
+        "osm_id": 907837045,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6133066,
+        "longitude": 46.5201705
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5270121,
+          24.6174952
+        ]
+      },
+      "properties": {
+        "osm_id": 907837046,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6174952,
+        "longitude": 46.5270121
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5060422,
+          24.6081647
+        ]
+      },
+      "properties": {
+        "osm_id": 907837047,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6081647,
+        "longitude": 46.5060422
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5123021,
+          24.6091336
+        ]
+      },
+      "properties": {
+        "osm_id": 907837048,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6091336,
+        "longitude": 46.5123021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5190376,
+          24.6163001
+        ]
+      },
+      "properties": {
+        "osm_id": 907837049,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6163001,
+        "longitude": 46.5190376
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5219687,
+          24.6226355
+        ]
+      },
+      "properties": {
+        "osm_id": 907837050,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6226355,
+        "longitude": 46.5219687
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5242653,
+          24.6195748
+        ]
+      },
+      "properties": {
+        "osm_id": 907837051,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6195748,
+        "longitude": 46.5242653
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5167075,
+          24.6193898
+        ]
+      },
+      "properties": {
+        "osm_id": 907837052,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6193898,
+        "longitude": 46.5167075
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5252998,
+          24.6278512
+        ]
+      },
+      "properties": {
+        "osm_id": 907837053,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6278512,
+        "longitude": 46.5252998
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5306499,
+          24.6206208
+        ]
+      },
+      "properties": {
+        "osm_id": 907837054,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6206208,
+        "longitude": 46.5306499
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5341976,
+          24.6228835
+        ]
+      },
+      "properties": {
+        "osm_id": 907837055,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6228835,
+        "longitude": 46.5341976
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5364721,
+          24.6197104
+        ]
+      },
+      "properties": {
+        "osm_id": 907837056,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6197104,
+        "longitude": 46.5364721
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5329387,
+          24.6175256
+        ]
+      },
+      "properties": {
+        "osm_id": 907837057,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6175256,
+        "longitude": 46.5329387
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5208564,
+          24.6257705
+        ]
+      },
+      "properties": {
+        "osm_id": 907837058,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6257705,
+        "longitude": 46.5208564
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5264157,
+          24.6247951
+        ]
+      },
+      "properties": {
+        "osm_id": 907837059,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6247951,
+        "longitude": 46.5264157
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5279891,
+          24.6226494
+        ]
+      },
+      "properties": {
+        "osm_id": 907837060,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6226494,
+        "longitude": 46.5279891
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.532996,
+          24.6258875
+        ]
+      },
+      "properties": {
+        "osm_id": 907837061,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6258875,
+        "longitude": 46.532996
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5314975,
+          24.6280088
+        ]
+      },
+      "properties": {
+        "osm_id": 907837062,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6280088,
+        "longitude": 46.5314975
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5386321,
+          24.6249122
+        ]
+      },
+      "properties": {
+        "osm_id": 907837063,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6249122,
+        "longitude": 46.5386321
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5402773,
+          24.6226755
+        ]
+      },
+      "properties": {
+        "osm_id": 907837064,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6226755,
+        "longitude": 46.5402773
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5470722,
+          24.6270579
+        ]
+      },
+      "properties": {
+        "osm_id": 907837065,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6270579,
+        "longitude": 46.5470722
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.537688,
+          24.6274935
+        ]
+      },
+      "properties": {
+        "osm_id": 907837066,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6274935,
+        "longitude": 46.537688
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5428808,
+          24.6206858
+        ]
+      },
+      "properties": {
+        "osm_id": 907837067,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6206858,
+        "longitude": 46.5428808
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5482023,
+          24.624093
+        ]
+      },
+      "properties": {
+        "osm_id": 907837068,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.624093,
+        "longitude": 46.5482023
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5350702,
+          24.630946
+        ]
+      },
+      "properties": {
+        "osm_id": 907837069,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.630946,
+        "longitude": 46.5350702
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5287187,
+          24.6299837
+        ]
+      },
+      "properties": {
+        "osm_id": 907837070,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6299837,
+        "longitude": 46.5287187
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5325669,
+          24.6329334
+        ]
+      },
+      "properties": {
+        "osm_id": 907837071,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.6329334,
+        "longitude": 46.5325669
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.9374519,
+          24.8761889
+        ]
+      },
+      "properties": {
+        "osm_id": 1061517088,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.8761889,
+        "longitude": 46.9374519
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5308796,
+          24.748754
+        ]
+      },
+      "properties": {
+        "osm_id": 1064125541,
+        "osm_type": "way",
+        "name": "Ad Diriyah Al Jadida",
+        "name_en": "Ad Diriyah Al Jadida",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.748754,
+        "longitude": 46.5308796
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.575436,
+          24.744713
+        ]
+      },
+      "properties": {
+        "osm_id": 1064128638,
+        "osm_type": "way",
+        "name": "At Turayf Al Jadid",
+        "name_en": "At Turayf Al Jadid",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.744713,
+        "longitude": 46.575436
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6818127,
+          25.0614489
+        ]
+      },
+      "properties": {
+        "osm_id": 1064188716,
+        "osm_type": "way",
+        "name": "",
+        "name_en": "",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 25.0614489,
+        "longitude": 46.6818127
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6061111,
+          24.7679877
+        ]
+      },
+      "properties": {
+        "osm_id": 1218658187,
+        "osm_type": "way",
+        "name": "Square 2",
+        "name_en": "Square 2",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7679877,
+        "longitude": 46.6061111
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.603148,
+          24.7694416
+        ]
+      },
+      "properties": {
+        "osm_id": 1218658188,
+        "osm_type": "way",
+        "name": "Square 1",
+        "name_en": "Square 1",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7694416,
+        "longitude": 46.603148
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6405141,
+          24.7656298
+        ]
+      },
+      "properties": {
+        "osm_id": 1220645868,
+        "osm_type": "way",
+        "name": "مركز الملك عبدالله المالي",
+        "name_en": "KAFD",
+        "place": "neighbourhood",
+        "admin_level": "",
+        "latitude": 24.7656298,
+        "longitude": 46.6405141
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6434606,
+          24.9415952
+        ]
+      },
+      "properties": {
+        "osm_id": 1285193878,
+        "osm_type": "way",
+        "name": "ضاحية خزام",
+        "name_en": "ضاحية خزام",
+        "place": "suburb",
+        "admin_level": "",
+        "latitude": 24.9415952,
+        "longitude": 46.6434606
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7121396,
+          24.621916
+        ]
+      },
+      "properties": {
+        "osm_id": 1317010967,
+        "osm_type": "way",
+        "name": "الدوبية",
+        "name_en": "Al-Dubiyah",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.621916,
+        "longitude": 46.7121396
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7747047,
+          24.7615799
+        ]
+      },
+      "properties": {
+        "osm_id": 1317021524,
+        "osm_type": "way",
+        "name": "الملك فيصل",
+        "name_en": "King Faisal",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7615799,
+        "longitude": 46.7747047
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.600247,
+          24.9002791
+        ]
+      },
+      "properties": {
+        "osm_id": 1317112225,
+        "osm_type": "way",
+        "name": "العارض",
+        "name_en": "Al Aarid",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.9002791,
+        "longitude": 46.600247
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5553599,
+          24.8732742
+        ]
+      },
+      "properties": {
+        "osm_id": 1317251041,
+        "osm_type": "way",
+        "name": "القيروان",
+        "name_en": "Al Qirawan",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8732742,
+        "longitude": 46.5553599
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8223697,
+          24.958744
+        ]
+      },
+      "properties": {
+        "osm_id": 1317279489,
+        "osm_type": "way",
+        "name": "حي الفرسان",
+        "name_en": "حي الفرسان",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.958744,
+        "longitude": 46.8223697
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.9082006,
+          24.6864634
+        ]
+      },
+      "properties": {
+        "osm_id": 1317387688,
+        "osm_type": "way",
+        "name": "خشم العان",
+        "name_en": "Khashm Al Aan",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6864634,
+        "longitude": 46.9082006
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6395742,
+          24.7123867
+        ]
+      },
+      "properties": {
+        "osm_id": 8835053,
+        "osm_type": "relation",
+        "name": "بلدية المعذر",
+        "name_en": "Al Maathar Municipality",
+        "place": "municipality",
+        "admin_level": "9",
+        "latitude": 24.7123867,
+        "longitude": 46.6395742
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7044674,
+          24.7304349
+        ]
+      },
+      "properties": {
+        "osm_id": 8835054,
+        "osm_type": "relation",
+        "name": "بلدية العليا",
+        "name_en": "Municipality of Olaya",
+        "place": "municipality",
+        "admin_level": "9",
+        "latitude": 24.7304349,
+        "longitude": 46.7044674
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8621522,
+          24.8297436
+        ]
+      },
+      "properties": {
+        "osm_id": 8835056,
+        "osm_type": "relation",
+        "name": "بلدية الروضة",
+        "name_en": "Al Rawda Muncipality",
+        "place": "",
+        "admin_level": "9",
+        "latitude": 24.8297436,
+        "longitude": 46.8621522
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.9120057,
+          24.8159414
+        ]
+      },
+      "properties": {
+        "osm_id": 8835185,
+        "osm_type": "relation",
+        "name": "بلدية النسيم",
+        "name_en": "Al Naseem Municipality",
+        "place": "municipality",
+        "admin_level": "9",
+        "latitude": 24.8159414,
+        "longitude": 46.9120057
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.839082,
+          24.6380797
+        ]
+      },
+      "properties": {
+        "osm_id": 8835186,
+        "osm_type": "relation",
+        "name": "بلدية السلي",
+        "name_en": "As Sali Municipality",
+        "place": "municipality",
+        "admin_level": "9",
+        "latitude": 24.6380797,
+        "longitude": 46.839082
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.753201,
+          24.6193224
+        ]
+      },
+      "properties": {
+        "osm_id": 8835309,
+        "osm_type": "relation",
+        "name": "Al Batha Muncipality",
+        "name_en": "Al Batha Muncipality",
+        "place": "",
+        "admin_level": "9",
+        "latitude": 24.6193224,
+        "longitude": 46.753201
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7469703,
+          24.6792651
+        ]
+      },
+      "properties": {
+        "osm_id": 8835310,
+        "osm_type": "relation",
+        "name": "بلدية الملز",
+        "name_en": "Al Malaz Municipality",
+        "place": "municipality",
+        "admin_level": "9",
+        "latitude": 24.6792651,
+        "longitude": 46.7469703
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8012552,
+          24.5480881
+        ]
+      },
+      "properties": {
+        "osm_id": 8835311,
+        "osm_type": "relation",
+        "name": "Al Aziziyah Municipality",
+        "name_en": "Al Aziziyah Municipality",
+        "place": "",
+        "admin_level": "9",
+        "latitude": 24.5480881,
+        "longitude": 46.8012552
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7050717,
+          24.5418612
+        ]
+      },
+      "properties": {
+        "osm_id": 8835312,
+        "osm_type": "relation",
+        "name": "بلدية الشفا",
+        "name_en": "Municipality of Shifa",
+        "place": "",
+        "admin_level": "9",
+        "latitude": 24.5418612,
+        "longitude": 46.7050717
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6572954,
+          24.6444539
+        ]
+      },
+      "properties": {
+        "osm_id": 8838064,
+        "osm_type": "relation",
+        "name": "بلدية الشميسي",
+        "name_en": "Shmeisi Municipality",
+        "place": "municipality",
+        "admin_level": "9",
+        "latitude": 24.6444539,
+        "longitude": 46.6572954
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6363246,
+          24.6096016
+        ]
+      },
+      "properties": {
+        "osm_id": 8838262,
+        "osm_type": "relation",
+        "name": "بلدية العريجاء",
+        "name_en": "Al-Urayja Municipality",
+        "place": "municipality",
+        "admin_level": "9",
+        "latitude": 24.6096016,
+        "longitude": 46.6363246
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5736773,
+          24.5597327
+        ]
+      },
+      "properties": {
+        "osm_id": 8838263,
+        "osm_type": "relation",
+        "name": "بلدية نمار",
+        "name_en": "Namar Municipality",
+        "place": "municipality",
+        "admin_level": "9",
+        "latitude": 24.5597327,
+        "longitude": 46.5736773
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6435503,
+          24.7952484
+        ]
+      },
+      "properties": {
+        "osm_id": 8838771,
+        "osm_type": "relation",
+        "name": "بلدية الشمال",
+        "name_en": "Municipality of Al Shamal",
+        "place": "municipality",
+        "admin_level": "9",
+        "latitude": 24.7952484,
+        "longitude": 46.6435503
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5408055,
+          24.6510576
+        ]
+      },
+      "properties": {
+        "osm_id": 8838772,
+        "osm_type": "relation",
+        "name": "بلدية عرقة",
+        "name_en": "Municipalty of Irqah",
+        "place": "municipality",
+        "admin_level": "9",
+        "latitude": 24.6510576,
+        "longitude": 46.5408055
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7543965,
+          24.7538748
+        ]
+      },
+      "properties": {
+        "osm_id": 13253978,
+        "osm_type": "relation",
+        "name": "القدس",
+        "name_en": "Al Qouds District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7538748,
+        "longitude": 46.7543965
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7678703,
+          24.7337976
+        ]
+      },
+      "properties": {
+        "osm_id": 13253979,
+        "osm_type": "relation",
+        "name": "الروضة",
+        "name_en": "Al Rawdah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7337976,
+        "longitude": 46.7678703
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7886063,
+          24.7434698
+        ]
+      },
+      "properties": {
+        "osm_id": 13253980,
+        "osm_type": "relation",
+        "name": "الأندلس",
+        "name_en": "Al Andalus District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7434698,
+        "longitude": 46.7886063
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8158178,
+          24.7605267
+        ]
+      },
+      "properties": {
+        "osm_id": 13253981,
+        "osm_type": "relation",
+        "name": "النهضة",
+        "name_en": "Al Nahdhah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7605267,
+        "longitude": 46.8158178
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.80298,
+          24.7768606
+        ]
+      },
+      "properties": {
+        "osm_id": 13253982,
+        "osm_type": "relation",
+        "name": "حي الخليج",
+        "name_en": "Al Khalij District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7768606,
+        "longitude": 46.80298
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.792279,
+          24.7928027
+        ]
+      },
+      "properties": {
+        "osm_id": 13253983,
+        "osm_type": "relation",
+        "name": "اشبيلية",
+        "name_en": "Al Ishbiliyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7928027,
+        "longitude": 46.792279
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7535417,
+          24.7755155
+        ]
+      },
+      "properties": {
+        "osm_id": 13253984,
+        "osm_type": "relation",
+        "name": "الحمراء",
+        "name_en": "Hamra District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7755155,
+        "longitude": 46.7535417
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7834871,
+          24.8078691
+        ]
+      },
+      "properties": {
+        "osm_id": 13253985,
+        "osm_type": "relation",
+        "name": "اليرموك",
+        "name_en": "Al Yarmouk District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8078691,
+        "longitude": 46.7834871
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7357856,
+          24.8162225
+        ]
+      },
+      "properties": {
+        "osm_id": 13253986,
+        "osm_type": "relation",
+        "name": "قرطبة",
+        "name_en": "Qurtubah",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8162225,
+        "longitude": 46.7357856
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7697712,
+          24.832702
+        ]
+      },
+      "properties": {
+        "osm_id": 13253987,
+        "osm_type": "relation",
+        "name": "المونسية",
+        "name_en": "المونسية",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.832702,
+        "longitude": 46.7697712
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8114923,
+          24.6818742
+        ]
+      },
+      "properties": {
+        "osm_id": 13253988,
+        "osm_type": "relation",
+        "name": "حي الفيحاء",
+        "name_en": "Al Fayha District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6818742,
+        "longitude": 46.8114923
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8366319,
+          24.6976162
+        ]
+      },
+      "properties": {
+        "osm_id": 13253989,
+        "osm_type": "relation",
+        "name": "حي السعادة",
+        "name_en": "As Sa`adah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6976162,
+        "longitude": 46.8366319
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8161164,
+          24.6317406
+        ]
+      },
+      "properties": {
+        "osm_id": 13253990,
+        "osm_type": "relation",
+        "name": "حي النور",
+        "name_en": "Al Nour District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6317406,
+        "longitude": 46.8161164
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8542998,
+          24.6539619
+        ]
+      },
+      "properties": {
+        "osm_id": 13253991,
+        "osm_type": "relation",
+        "name": "حي السلى",
+        "name_en": "As Sulayy District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6539619,
+        "longitude": 46.8542998
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.868556,
+          24.6159471
+        ]
+      },
+      "properties": {
+        "osm_id": 13253992,
+        "osm_type": "relation",
+        "name": "حي المشاعل",
+        "name_en": "Al Mashael District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6159471,
+        "longitude": 46.868556
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7964098,
+          24.664647
+        ]
+      },
+      "properties": {
+        "osm_id": 13253993,
+        "osm_type": "relation",
+        "name": "حي الجزيرة",
+        "name_en": "Al Jazirah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.664647,
+        "longitude": 46.7964098
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7914926,
+          24.6960834
+        ]
+      },
+      "properties": {
+        "osm_id": 13253994,
+        "osm_type": "relation",
+        "name": "حي الروابي",
+        "name_en": "Al Rawabi District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6960834,
+        "longitude": 46.7914926
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7782867,
+          24.7113314
+        ]
+      },
+      "properties": {
+        "osm_id": 13253995,
+        "osm_type": "relation",
+        "name": "حي الريان",
+        "name_en": "Rayyan District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7113314,
+        "longitude": 46.7782867
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7972475,
+          24.725371
+        ]
+      },
+      "properties": {
+        "osm_id": 13253996,
+        "osm_type": "relation",
+        "name": "حي المنار",
+        "name_en": "Al Manar District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.725371,
+        "longitude": 46.7972475
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8239764,
+          24.7256904
+        ]
+      },
+      "properties": {
+        "osm_id": 13253997,
+        "osm_type": "relation",
+        "name": "النسيم الغربي",
+        "name_en": "Al Naseem District West",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7256904,
+        "longitude": 46.8239764
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8426396,
+          24.7375478
+        ]
+      },
+      "properties": {
+        "osm_id": 13253998,
+        "osm_type": "relation",
+        "name": "النسيم الشرقي",
+        "name_en": "Al Naseem District East",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7375478,
+        "longitude": 46.8426396
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8249263,
+          24.7876494
+        ]
+      },
+      "properties": {
+        "osm_id": 13253999,
+        "osm_type": "relation",
+        "name": "حي المعيزيلة",
+        "name_en": "Al Maizliyyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7876494,
+        "longitude": 46.8249263
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8239404,
+          24.8198219
+        ]
+      },
+      "properties": {
+        "osm_id": 13254000,
+        "osm_type": "relation",
+        "name": "حي القادسية",
+        "name_en": "Al-Qadisiyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8198219,
+        "longitude": 46.8239404
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8138366,
+          24.8633788
+        ]
+      },
+      "properties": {
+        "osm_id": 13254001,
+        "osm_type": "relation",
+        "name": "حي الرمال",
+        "name_en": "Al Rimal District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8633788,
+        "longitude": 46.8138366
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.9239218,
+          24.8666956
+        ]
+      },
+      "properties": {
+        "osm_id": 13254002,
+        "osm_type": "relation",
+        "name": "حي الجنادرية",
+        "name_en": "Al Janadriyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8666956,
+        "longitude": 46.9239218
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8735045,
+          24.7752006
+        ]
+      },
+      "properties": {
+        "osm_id": 13254003,
+        "osm_type": "relation",
+        "name": "حي الرماية",
+        "name_en": "Al Rimayah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7752006,
+        "longitude": 46.8735045
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.9676111,
+          24.8633408
+        ]
+      },
+      "properties": {
+        "osm_id": 13254004,
+        "osm_type": "relation",
+        "name": "حي النظيم",
+        "name_en": "Al-Nazim District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8633408,
+        "longitude": 46.9676111
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8636159,
+          24.8723999
+        ]
+      },
+      "properties": {
+        "osm_id": 13254005,
+        "osm_type": "relation",
+        "name": "الشرق",
+        "name_en": "الشرق",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8723999,
+        "longitude": 46.8636159
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6448507,
+          24.8945526
+        ]
+      },
+      "properties": {
+        "osm_id": 13254378,
+        "osm_type": "relation",
+        "name": "النرجس",
+        "name_en": "Al Nargis District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8945526,
+        "longitude": 46.6448507
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7023443,
+          24.812593
+        ]
+      },
+      "properties": {
+        "osm_id": 13254379,
+        "osm_type": "relation",
+        "name": "جامعة الإمام محمد بن سعود الإسلامية",
+        "name_en": "Imam Muhammad ibn Saud University",
+        "place": "",
+        "admin_level": "10",
+        "latitude": 24.812593,
+        "longitude": 46.7023443
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6829683,
+          24.8058522
+        ]
+      },
+      "properties": {
+        "osm_id": 13254380,
+        "osm_type": "relation",
+        "name": "الندى",
+        "name_en": "Al Nada District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8058522,
+        "longitude": 46.6829683
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6376544,
+          24.7963772
+        ]
+      },
+      "properties": {
+        "osm_id": 13254381,
+        "osm_type": "relation",
+        "name": "الصحافة",
+        "name_en": "As Sahafah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7963772,
+        "longitude": 46.6376544
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6419719,
+          24.8218455
+        ]
+      },
+      "properties": {
+        "osm_id": 13254382,
+        "osm_type": "relation",
+        "name": "الياسمين",
+        "name_en": "Al Yasmin District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.8218455,
+        "longitude": 46.6419719
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.709201,
+          24.7970459
+        ]
+      },
+      "properties": {
+        "osm_id": 13254383,
+        "osm_type": "relation",
+        "name": "الفلاح",
+        "name_en": "Al Falah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7970459,
+        "longitude": 46.709201
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6912353,
+          24.7894852
+        ]
+      },
+      "properties": {
+        "osm_id": 13254384,
+        "osm_type": "relation",
+        "name": "الوادي",
+        "name_en": "Al Wadi District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7894852,
+        "longitude": 46.6912353
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.673287,
+          24.7818897
+        ]
+      },
+      "properties": {
+        "osm_id": 13254385,
+        "osm_type": "relation",
+        "name": "النفل",
+        "name_en": "Al Nafil District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7818897,
+        "longitude": 46.673287
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6299827,
+          24.7736192
+        ]
+      },
+      "properties": {
+        "osm_id": 13254386,
+        "osm_type": "relation",
+        "name": "العقيق",
+        "name_en": "Al Aqeeq District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7736192,
+        "longitude": 46.6299827
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6606285,
+          24.7945691
+        ]
+      },
+      "properties": {
+        "osm_id": 13254387,
+        "osm_type": "relation",
+        "name": "الربيع",
+        "name_en": "Al Rabiea District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7945691,
+        "longitude": 46.6606285
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6546198,
+          24.7736583
+        ]
+      },
+      "properties": {
+        "osm_id": 13254388,
+        "osm_type": "relation",
+        "name": "الغدير",
+        "name_en": "Al Ghadir District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7736583,
+        "longitude": 46.6546198
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6008961,
+          24.7613192
+        ]
+      },
+      "properties": {
+        "osm_id": 13254389,
+        "osm_type": "relation",
+        "name": "حطين",
+        "name_en": "Hittin District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7613192,
+        "longitude": 46.6008961
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.62296,
+          24.7424069
+        ]
+      },
+      "properties": {
+        "osm_id": 13254390,
+        "osm_type": "relation",
+        "name": "النخيل",
+        "name_en": "Al Nakheel District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7424069,
+        "longitude": 46.62296
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6619573,
+          24.7572552
+        ]
+      },
+      "properties": {
+        "osm_id": 13254391,
+        "osm_type": "relation",
+        "name": "المروج",
+        "name_en": "Almuruj Dstrict",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7572552,
+        "longitude": 46.6619573
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.681536,
+          24.7654898
+        ]
+      },
+      "properties": {
+        "osm_id": 13254392,
+        "osm_type": "relation",
+        "name": "المصيف",
+        "name_en": "Al Masif District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7654898,
+        "longitude": 46.681536
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6994968,
+          24.7730503
+        ]
+      },
+      "properties": {
+        "osm_id": 13254393,
+        "osm_type": "relation",
+        "name": "التعاون",
+        "name_en": "At Taawun Distrikt",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7730503,
+        "longitude": 46.6994968
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7174689,
+          24.780614
+        ]
+      },
+      "properties": {
+        "osm_id": 13254394,
+        "osm_type": "relation",
+        "name": "الازدهار",
+        "name_en": "Al Izdihar District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.780614,
+        "longitude": 46.7174689
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6488285,
+          24.7325641
+        ]
+      },
+      "properties": {
+        "osm_id": 13254395,
+        "osm_type": "relation",
+        "name": "المحمدية",
+        "name_en": "Al Muhammadiyah",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7325641,
+        "longitude": 46.6488285
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6703366,
+          24.7406273
+        ]
+      },
+      "properties": {
+        "osm_id": 13254396,
+        "osm_type": "relation",
+        "name": "الملك فهد",
+        "name_en": "King Fahd District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7406273,
+        "longitude": 46.6703366
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6898869,
+          24.7488722
+        ]
+      },
+      "properties": {
+        "osm_id": 13254397,
+        "osm_type": "relation",
+        "name": "المرسلات",
+        "name_en": "Mursalat District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7488722,
+        "longitude": 46.6898869
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7079116,
+          24.7564399
+        ]
+      },
+      "properties": {
+        "osm_id": 13254398,
+        "osm_type": "relation",
+        "name": "النزهة",
+        "name_en": "Al Nuzhah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7564399,
+        "longitude": 46.7079116
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7257219,
+          24.7640196
+        ]
+      },
+      "properties": {
+        "osm_id": 13254399,
+        "osm_type": "relation",
+        "name": "المغرزات",
+        "name_en": "Al Mugharzat District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7640196,
+        "longitude": 46.7257219
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7144942,
+          24.7411843
+        ]
+      },
+      "properties": {
+        "osm_id": 13254400,
+        "osm_type": "relation",
+        "name": "الواحة",
+        "name_en": "Al Waha District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7411843,
+        "longitude": 46.7144942
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6972634,
+          24.7328058
+        ]
+      },
+      "properties": {
+        "osm_id": 13254401,
+        "osm_type": "relation",
+        "name": "صلاح الدين",
+        "name_en": "Salah ad Din District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7328058,
+        "longitude": 46.6972634
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6784981,
+          24.7243738
+        ]
+      },
+      "properties": {
+        "osm_id": 13254402,
+        "osm_type": "relation",
+        "name": "الورود",
+        "name_en": "Al Wuroud District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7243738,
+        "longitude": 46.6784981
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6593948,
+          24.7161022
+        ]
+      },
+      "properties": {
+        "osm_id": 13254403,
+        "osm_type": "relation",
+        "name": "الرحمانية",
+        "name_en": "Ar Rahmaniyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7161022,
+        "longitude": 46.6593948
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6244546,
+          24.7240028
+        ]
+      },
+      "properties": {
+        "osm_id": 13254404,
+        "osm_type": "relation",
+        "name": "جامعة الملك سعود",
+        "name_en": "King Saud University",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7240028,
+        "longitude": 46.6244546
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6386318,
+          24.7073495
+        ]
+      },
+      "properties": {
+        "osm_id": 13254405,
+        "osm_type": "relation",
+        "name": "الرائد",
+        "name_en": "Al Raid District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7073495,
+        "longitude": 46.6386318
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5997709,
+          24.7148167
+        ]
+      },
+      "properties": {
+        "osm_id": 13254406,
+        "osm_type": "relation",
+        "name": "الخزامى",
+        "name_en": "Al Khuzama District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7148167,
+        "longitude": 46.5997709
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5872079,
+          24.6890591
+        ]
+      },
+      "properties": {
+        "osm_id": 13254407,
+        "osm_type": "relation",
+        "name": "عرقة",
+        "name_en": "Irqah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6890591,
+        "longitude": 46.5872079
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5311274,
+          24.646829
+        ]
+      },
+      "properties": {
+        "osm_id": 13254408,
+        "osm_type": "relation",
+        "name": "المهدية",
+        "name_en": "Mahdia District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.646829,
+        "longitude": 46.5311274
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6226055,
+          24.6814326
+        ]
+      },
+      "properties": {
+        "osm_id": 13254409,
+        "osm_type": "relation",
+        "name": "السفارات",
+        "name_en": "Al Safarat District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6814326,
+        "longitude": 46.6226055
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6277935,
+          24.6639386
+        ]
+      },
+      "properties": {
+        "osm_id": 13254410,
+        "osm_type": "relation",
+        "name": "الهدا",
+        "name_en": "Al Hada District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6639386,
+        "longitude": 46.6277935
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6434151,
+          24.6894698
+        ]
+      },
+      "properties": {
+        "osm_id": 13254411,
+        "osm_type": "relation",
+        "name": "أم الحمام الغربي",
+        "name_en": "District of Umm Al-Hamam (West)",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6894698,
+        "longitude": 46.6434151
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6593107,
+          24.6828333
+        ]
+      },
+      "properties": {
+        "osm_id": 13254412,
+        "osm_type": "relation",
+        "name": "أم الحمام الشرقي",
+        "name_en": "أم الحمام الشرقي",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6828333,
+        "longitude": 46.6593107
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6608517,
+          24.6639136
+        ]
+      },
+      "properties": {
+        "osm_id": 13254413,
+        "osm_type": "relation",
+        "name": "الشرفية",
+        "name_en": "Ash Sharafiyah",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6639136,
+        "longitude": 46.6608517
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6768021,
+          24.6656118
+        ]
+      },
+      "properties": {
+        "osm_id": 13254414,
+        "osm_type": "relation",
+        "name": "المعذر",
+        "name_en": "Al Madhar ash Shamali District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6656118,
+        "longitude": 46.6768021
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6869858,
+          24.6698558
+        ]
+      },
+      "properties": {
+        "osm_id": 13254415,
+        "osm_type": "relation",
+        "name": "المؤتمرات",
+        "name_en": "Al Mutamarat District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6698558,
+        "longitude": 46.6869858
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6662311,
+          24.6916491
+        ]
+      },
+      "properties": {
+        "osm_id": 13254416,
+        "osm_type": "relation",
+        "name": "المعذر الشمالي",
+        "name_en": "North Maathar District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6916491,
+        "longitude": 46.6662311
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6834325,
+          24.6923969
+        ]
+      },
+      "properties": {
+        "osm_id": 13254417,
+        "osm_type": "relation",
+        "name": "العليا",
+        "name_en": "Al Olaya District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6923969,
+        "longitude": 46.6834325
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.702523,
+          24.6986005
+        ]
+      },
+      "properties": {
+        "osm_id": 13254418,
+        "osm_type": "relation",
+        "name": "السليمانية",
+        "name_en": "As Sulaymaniyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6986005,
+        "longitude": 46.702523
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.550461,
+          24.6336277
+        ]
+      },
+      "properties": {
+        "osm_id": 13254419,
+        "osm_type": "relation",
+        "name": "ظهرة لبن",
+        "name_en": "Zahrat Laban District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6336277,
+        "longitude": 46.550461
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.656686,
+          24.6259923
+        ]
+      },
+      "properties": {
+        "osm_id": 13254420,
+        "osm_type": "relation",
+        "name": "العريجاء",
+        "name_en": "Al Urayja",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6259923,
+        "longitude": 46.656686
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6604239,
+          24.6378309
+        ]
+      },
+      "properties": {
+        "osm_id": 13254421,
+        "osm_type": "relation",
+        "name": "الرفعية",
+        "name_en": "Al Rafiah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6378309,
+        "longitude": 46.6604239
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6679056,
+          24.6518679
+        ]
+      },
+      "properties": {
+        "osm_id": 13254422,
+        "osm_type": "relation",
+        "name": "الناصرية",
+        "name_en": "An Nasiriyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6518679,
+        "longitude": 46.6679056
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6831056,
+          24.6423358
+        ]
+      },
+      "properties": {
+        "osm_id": 13254423,
+        "osm_type": "relation",
+        "name": "الفاخرية",
+        "name_en": "Al Fakhiriyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6423358,
+        "longitude": 46.6831056
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6840898,
+          24.6333529
+        ]
+      },
+      "properties": {
+        "osm_id": 13254424,
+        "osm_type": "relation",
+        "name": "عليشه",
+        "name_en": "عليشه",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6333529,
+        "longitude": 46.6840898
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6936093,
+          24.6571643
+        ]
+      },
+      "properties": {
+        "osm_id": 13254425,
+        "osm_type": "relation",
+        "name": "النموذجية",
+        "name_en": "An Namudhajiyah",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6571643,
+        "longitude": 46.6936093
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6982554,
+          24.6436367
+        ]
+      },
+      "properties": {
+        "osm_id": 13254426,
+        "osm_type": "relation",
+        "name": "الوشام",
+        "name_en": "Al Washam District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6436367,
+        "longitude": 46.6982554
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6984746,
+          24.633783
+        ]
+      },
+      "properties": {
+        "osm_id": 13254427,
+        "osm_type": "relation",
+        "name": "أم سليم",
+        "name_en": "Umm Salim District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.633783,
+        "longitude": 46.6984746
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6993461,
+          24.6241601
+        ]
+      },
+      "properties": {
+        "osm_id": 13254428,
+        "osm_type": "relation",
+        "name": "الشميسي",
+        "name_en": "Ash Shumaysi District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6241601,
+        "longitude": 46.6993461
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6998159,
+          24.6144742
+        ]
+      },
+      "properties": {
+        "osm_id": 13254429,
+        "osm_type": "relation",
+        "name": "الجرادية",
+        "name_en": "Al Jarradiyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6144742,
+        "longitude": 46.6998159
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7014542,
+          24.6081096
+        ]
+      },
+      "properties": {
+        "osm_id": 13254430,
+        "osm_type": "relation",
+        "name": "صياح",
+        "name_en": "Siyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6081096,
+        "longitude": 46.7014542
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5977264,
+          24.800765
+        ]
+      },
+      "properties": {
+        "osm_id": 13254431,
+        "osm_type": "relation",
+        "name": "الملقا",
+        "name_en": "Al Malga District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.800765,
+        "longitude": 46.5977264
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7443464,
+          24.7919274
+        ]
+      },
+      "properties": {
+        "osm_id": 13254432,
+        "osm_type": "relation",
+        "name": "غرناطة",
+        "name_en": "Ghirnatah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7919274,
+        "longitude": 46.7443464
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7070539,
+          24.6628848
+        ]
+      },
+      "properties": {
+        "osm_id": 13254433,
+        "osm_type": "relation",
+        "name": "المربع",
+        "name_en": "Al Murabba District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6628848,
+        "longitude": 46.7070539
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7104455,
+          24.6421551
+        ]
+      },
+      "properties": {
+        "osm_id": 13254434,
+        "osm_type": "relation",
+        "name": "الفوطة",
+        "name_en": "Al Futah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6421551,
+        "longitude": 46.7104455
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7105727,
+          24.6305883
+        ]
+      },
+      "properties": {
+        "osm_id": 13254435,
+        "osm_type": "relation",
+        "name": "الديرة",
+        "name_en": "Al Deerah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6305883,
+        "longitude": 46.7105727
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7244264,
+          24.6457824
+        ]
+      },
+      "properties": {
+        "osm_id": 13254436,
+        "osm_type": "relation",
+        "name": "العمل",
+        "name_en": "Al Amal",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6457824,
+        "longitude": 46.7244264
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7271811,
+          24.6413128
+        ]
+      },
+      "properties": {
+        "osm_id": 13254437,
+        "osm_type": "relation",
+        "name": "ثليم",
+        "name_en": "Thulaym District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6413128,
+        "longitude": 46.7271811
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7257149,
+          24.6349341
+        ]
+      },
+      "properties": {
+        "osm_id": 13254438,
+        "osm_type": "relation",
+        "name": "المرقب",
+        "name_en": "Al Marqab District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6349341,
+        "longitude": 46.7257149
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7084959,
+          24.6216843
+        ]
+      },
+      "properties": {
+        "osm_id": 13254439,
+        "osm_type": "relation",
+        "name": "سلام",
+        "name_en": "Salam District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6216843,
+        "longitude": 46.7084959
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7200893,
+          24.6218746
+        ]
+      },
+      "properties": {
+        "osm_id": 13254441,
+        "osm_type": "relation",
+        "name": "البطيحا",
+        "name_en": "Batha District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6218746,
+        "longitude": 46.7200893
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7189071,
+          24.6254186
+        ]
+      },
+      "properties": {
+        "osm_id": 13254442,
+        "osm_type": "relation",
+        "name": "جبرة",
+        "name_en": "Jabrah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6254186,
+        "longitude": 46.7189071
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7157191,
+          24.6242066
+        ]
+      },
+      "properties": {
+        "osm_id": 13254443,
+        "osm_type": "relation",
+        "name": "الوسيطا",
+        "name_en": "Al Wasitiyya District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6242066,
+        "longitude": 46.7157191
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7147347,
+          24.6230985
+        ]
+      },
+      "properties": {
+        "osm_id": 13254444,
+        "osm_type": "relation",
+        "name": "معكال",
+        "name_en": "Mikal District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6230985,
+        "longitude": 46.7147347
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7178086,
+          24.6163753
+        ]
+      },
+      "properties": {
+        "osm_id": 13254445,
+        "osm_type": "relation",
+        "name": "السكيرينه",
+        "name_en": "As Skirinah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6163753,
+        "longitude": 46.7178086
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7192109,
+          24.613365
+        ]
+      },
+      "properties": {
+        "osm_id": 13254446,
+        "osm_type": "relation",
+        "name": "منفوحة الجديدة",
+        "name_en": "Manfuha Al-Jadidah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.613365,
+        "longitude": 46.7192109
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7364032,
+          24.6172585
+        ]
+      },
+      "properties": {
+        "osm_id": 13254447,
+        "osm_type": "relation",
+        "name": "غبيرا",
+        "name_en": "Gbraya District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6172585,
+        "longitude": 46.7364032
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7074664,
+          24.6016168
+        ]
+      },
+      "properties": {
+        "osm_id": 13254448,
+        "osm_type": "relation",
+        "name": "عتيقه",
+        "name_en": "عتيقه",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6016168,
+        "longitude": 46.7074664
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6840619,
+          24.6164985
+        ]
+      },
+      "properties": {
+        "osm_id": 13254449,
+        "osm_type": "relation",
+        "name": "البديعة",
+        "name_en": "Al Badiah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6164985,
+        "longitude": 46.6840619
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6877731,
+          24.6042877
+        ]
+      },
+      "properties": {
+        "osm_id": 13254450,
+        "osm_type": "relation",
+        "name": "سلطانة",
+        "name_en": "Sultanah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6042877,
+        "longitude": 46.6877731
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5465742,
+          24.5991474
+        ]
+      },
+      "properties": {
+        "osm_id": 13254451,
+        "osm_type": "relation",
+        "name": "وادي لبن",
+        "name_en": "Wadi Laban",
+        "place": "",
+        "admin_level": "10",
+        "latitude": 24.5991474,
+        "longitude": 46.5465742
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.741411,
+          24.7324161
+        ]
+      },
+      "properties": {
+        "osm_id": 13254452,
+        "osm_type": "relation",
+        "name": "الملك عبدالله",
+        "name_en": "King Abdullah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7324161,
+        "longitude": 46.741411
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7197668,
+          24.7218175
+        ]
+      },
+      "properties": {
+        "osm_id": 13254453,
+        "osm_type": "relation",
+        "name": "حديقة الملك سلمان",
+        "name_en": "حديقة الملك سلمان",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7218175,
+        "longitude": 46.7197668
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7131979,
+          24.6791431
+        ]
+      },
+      "properties": {
+        "osm_id": 13254454,
+        "osm_type": "relation",
+        "name": "الوزارات",
+        "name_en": "Al Wizarat District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6791431,
+        "longitude": 46.7131979
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.731978,
+          24.6871267
+        ]
+      },
+      "properties": {
+        "osm_id": 13254455,
+        "osm_type": "relation",
+        "name": "الزهراء",
+        "name_en": "Al Zahraa District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6871267,
+        "longitude": 46.731978
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7232451,
+          24.6799305
+        ]
+      },
+      "properties": {
+        "osm_id": 13254456,
+        "osm_type": "relation",
+        "name": "الضباط",
+        "name_en": "Ad Dubbat District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6799305,
+        "longitude": 46.7232451
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7263472,
+          24.6266583
+        ]
+      },
+      "properties": {
+        "osm_id": 13254457,
+        "osm_type": "relation",
+        "name": "العود",
+        "name_en": "Al Oud District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6266583,
+        "longitude": 46.7263472
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7357943,
+          24.6302967
+        ]
+      },
+      "properties": {
+        "osm_id": 13254458,
+        "osm_type": "relation",
+        "name": "الصالحية",
+        "name_en": "As Salihiyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6302967,
+        "longitude": 46.7357943
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7533042,
+          24.6232746
+        ]
+      },
+      "properties": {
+        "osm_id": 13254459,
+        "osm_type": "relation",
+        "name": "الخالدية",
+        "name_en": "Al Khalideyeh District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6232746,
+        "longitude": 46.7533042
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7465938,
+          24.6418977
+        ]
+      },
+      "properties": {
+        "osm_id": 13254460,
+        "osm_type": "relation",
+        "name": "الصناعية القديمة",
+        "name_en": "As Sinaiyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6418977,
+        "longitude": 46.7465938
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.735222,
+          24.6635678
+        ]
+      },
+      "properties": {
+        "osm_id": 13254461,
+        "osm_type": "relation",
+        "name": "الملز",
+        "name_en": "Al Malaz District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6635678,
+        "longitude": 46.735222
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7511092,
+          24.677353
+        ]
+      },
+      "properties": {
+        "osm_id": 13254462,
+        "osm_type": "relation",
+        "name": "جرير",
+        "name_en": "Jarir District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.677353,
+        "longitude": 46.7511092
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7546417,
+          24.6937606
+        ]
+      },
+      "properties": {
+        "osm_id": 13254463,
+        "osm_type": "relation",
+        "name": "الربوة",
+        "name_en": "Al Rabwah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6937606,
+        "longitude": 46.7546417
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7664618,
+          24.666854
+        ]
+      },
+      "properties": {
+        "osm_id": 13254464,
+        "osm_type": "relation",
+        "name": "الصفا",
+        "name_en": "As Safah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.666854,
+        "longitude": 46.7664618
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7732647,
+          24.6537411
+        ]
+      },
+      "properties": {
+        "osm_id": 13254465,
+        "osm_type": "relation",
+        "name": "الفاروق",
+        "name_en": "Al Faruq District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6537411,
+        "longitude": 46.7732647
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7817125,
+          24.6343619
+        ]
+      },
+      "properties": {
+        "osm_id": 13254466,
+        "osm_type": "relation",
+        "name": "الفيصلية",
+        "name_en": "Al Faisaliah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6343619,
+        "longitude": 46.7817125
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7468645,
+          24.6081233
+        ]
+      },
+      "properties": {
+        "osm_id": 13254467,
+        "osm_type": "relation",
+        "name": "المنصوره",
+        "name_en": "Al Mansurah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6081233,
+        "longitude": 46.7468645
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7283747,
+          24.5994586
+        ]
+      },
+      "properties": {
+        "osm_id": 13254468,
+        "osm_type": "relation",
+        "name": "منفوحة",
+        "name_en": "Manfuhah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5994586,
+        "longitude": 46.7283747
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7158947,
+          24.5962039
+        ]
+      },
+      "properties": {
+        "osm_id": 13254469,
+        "osm_type": "relation",
+        "name": "اليمامة",
+        "name_en": "Al Yamamah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5962039,
+        "longitude": 46.7158947
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6952857,
+          24.5894847
+        ]
+      },
+      "properties": {
+        "osm_id": 13254470,
+        "osm_type": "relation",
+        "name": "الدريهمية",
+        "name_en": "Ad Duraihimiyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5894847,
+        "longitude": 46.6952857
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6790643,
+          24.5908078
+        ]
+      },
+      "properties": {
+        "osm_id": 13254471,
+        "osm_type": "relation",
+        "name": "السويدي",
+        "name_en": "As-Suwaidi District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5908078,
+        "longitude": 46.6790643
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6680571,
+          24.5787888
+        ]
+      },
+      "properties": {
+        "osm_id": 13254472,
+        "osm_type": "relation",
+        "name": "شبرا",
+        "name_en": "Shubra District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5787888,
+        "longitude": 46.6680571
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6408019,
+          24.6050826
+        ]
+      },
+      "properties": {
+        "osm_id": 13254473,
+        "osm_type": "relation",
+        "name": "العريجاء الوسطى",
+        "name_en": "Al Urayja al Wusta District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6050826,
+        "longitude": 46.6408019
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6509616,
+          24.597134
+        ]
+      },
+      "properties": {
+        "osm_id": 13254474,
+        "osm_type": "relation",
+        "name": "ظهرة البديعة",
+        "name_en": "Zahrat al Badiah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.597134,
+        "longitude": 46.6509616
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.645746,
+          24.5786748
+        ]
+      },
+      "properties": {
+        "osm_id": 13254475,
+        "osm_type": "relation",
+        "name": "الزهرة",
+        "name_en": "Al Zahrah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5786748,
+        "longitude": 46.645746
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6247843,
+          24.5744197
+        ]
+      },
+      "properties": {
+        "osm_id": 13254476,
+        "osm_type": "relation",
+        "name": "السويدي الغربي",
+        "name_en": "As Suwaydi al Gharbi District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5744197,
+        "longitude": 46.6247843
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5995652,
+          24.5971364
+        ]
+      },
+      "properties": {
+        "osm_id": 13254477,
+        "osm_type": "relation",
+        "name": "العريجاء الغربية",
+        "name_en": "Al Uarayja al Gharbiyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5971364,
+        "longitude": 46.5995652
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.518817,
+          24.5694366
+        ]
+      },
+      "properties": {
+        "osm_id": 13254478,
+        "osm_type": "relation",
+        "name": "طويق",
+        "name_en": "Tuwayq District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5694366,
+        "longitude": 46.518817
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8112203,
+          24.7077853
+        ]
+      },
+      "properties": {
+        "osm_id": 13254479,
+        "osm_type": "relation",
+        "name": "السلام",
+        "name_en": "السلام",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.7077853,
+        "longitude": 46.8112203
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6184162,
+          24.4898089
+        ]
+      },
+      "properties": {
+        "osm_id": 13254480,
+        "osm_type": "relation",
+        "name": "الفواز",
+        "name_en": "Al Fawwaz",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.4898089,
+        "longitude": 46.6184162
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6249989,
+          24.4994054
+        ]
+      },
+      "properties": {
+        "osm_id": 13254481,
+        "osm_type": "relation",
+        "name": "ديراب",
+        "name_en": "Dirab",
+        "place": "neighbourhood",
+        "admin_level": "11",
+        "latitude": 24.4994054,
+        "longitude": 46.6249989
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6181646,
+          24.5583332
+        ]
+      },
+      "properties": {
+        "osm_id": 13254482,
+        "osm_type": "relation",
+        "name": "ظهرة نمار",
+        "name_en": "Dhrat Nemar",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5583332,
+        "longitude": 46.6181646
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6468468,
+          24.5382004
+        ]
+      },
+      "properties": {
+        "osm_id": 13254483,
+        "osm_type": "relation",
+        "name": "الحزم",
+        "name_en": "Al Hazm District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5382004,
+        "longitude": 46.6468468
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6804439,
+          24.5688707
+        ]
+      },
+      "properties": {
+        "osm_id": 13254484,
+        "osm_type": "relation",
+        "name": "نمار",
+        "name_en": "Namar District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5688707,
+        "longitude": 46.6804439
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6333184,
+          24.4870247
+        ]
+      },
+      "properties": {
+        "osm_id": 13254485,
+        "osm_type": "relation",
+        "name": "أحد",
+        "name_en": "أحد",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.4870247,
+        "longitude": 46.6333184
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6646557,
+          24.5133864
+        ]
+      },
+      "properties": {
+        "osm_id": 13254486,
+        "osm_type": "relation",
+        "name": "عكاظ",
+        "name_en": "Okaz District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5133864,
+        "longitude": 46.6646557
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6957031,
+          24.5625039
+        ]
+      },
+      "properties": {
+        "osm_id": 13254487,
+        "osm_type": "relation",
+        "name": "الشفا",
+        "name_en": "Ash Shifa District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5625039,
+        "longitude": 46.6957031
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.6736965,
+          24.538269
+        ]
+      },
+      "properties": {
+        "osm_id": 13254488,
+        "osm_type": "relation",
+        "name": "المروة",
+        "name_en": "Al Marwah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.538269,
+        "longitude": 46.6736965
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.711707,
+          24.5362158
+        ]
+      },
+      "properties": {
+        "osm_id": 13254489,
+        "osm_type": "relation",
+        "name": "بدر",
+        "name_en": "Badr District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5362158,
+        "longitude": 46.711707
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7441684,
+          24.5529517
+        ]
+      },
+      "properties": {
+        "osm_id": 13254490,
+        "osm_type": "relation",
+        "name": "المصانع",
+        "name_en": "Al Masani District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5529517,
+        "longitude": 46.7441684
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.801484,
+          24.5194399
+        ]
+      },
+      "properties": {
+        "osm_id": 13254491,
+        "osm_type": "relation",
+        "name": "المنصورية",
+        "name_en": "Al Mansuriyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5194399,
+        "longitude": 46.801484
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8305772,
+          24.5417262
+        ]
+      },
+      "properties": {
+        "osm_id": 13254492,
+        "osm_type": "relation",
+        "name": "طيبة",
+        "name_en": "Taybah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5417262,
+        "longitude": 46.8305772
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7922736,
+          24.5650115
+        ]
+      },
+      "properties": {
+        "osm_id": 13254493,
+        "osm_type": "relation",
+        "name": "الدار البيضاء",
+        "name_en": "Ad Dar Al Baida District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5650115,
+        "longitude": 46.7922736
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7946442,
+          24.6090682
+        ]
+      },
+      "properties": {
+        "osm_id": 13254494,
+        "osm_type": "relation",
+        "name": "المناخ",
+        "name_en": "Al Manakh District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.6090682,
+        "longitude": 46.7946442
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.7728511,
+          24.5867109
+        ]
+      },
+      "properties": {
+        "osm_id": 13254495,
+        "osm_type": "relation",
+        "name": "العزيزية",
+        "name_en": "Al Aziziyah District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5867109,
+        "longitude": 46.7728511
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8324312,
+          24.5926575
+        ]
+      },
+      "properties": {
+        "osm_id": 13254496,
+        "osm_type": "relation",
+        "name": "الدفاع",
+        "name_en": "Ad Difa' District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.5926575,
+        "longitude": 46.8324312
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.8477698,
+          24.573835
+        ]
+      },
+      "properties": {
+        "osm_id": 13254497,
+        "osm_type": "relation",
+        "name": "الاسكان",
+        "name_en": "Al Iskan District",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.573835,
+        "longitude": 46.8477698
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.575436,
+          24.744713
+        ]
+      },
+      "properties": {
+        "osm_id": 14187222,
+        "osm_type": "relation",
+        "name": "At Turayf Al Jadid",
+        "name_en": "At Turayf Al Jadid",
+        "place": "neighbourhood",
+        "admin_level": "10",
+        "latitude": 24.744713,
+        "longitude": 46.575436
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          46.5308796,
+          24.748754
+        ]
+      },
+      "properties": {
+        "osm_id": 14187232,
+        "osm_type": "relation",
+        "name": "Ad Diriyah Al Jadida",
+        "name_en": "Ad Diriyah Al Jadida",
+        "place": "",
+        "admin_level": "10",
+        "latitude": 24.748754,
+        "longitude": 46.5308796
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          47.1737479,
+          24.3135203
+        ]
+      },
+      "properties": {
+        "osm_id": 19523174,
+        "osm_type": "relation",
+        "name": "الرفايع",
+        "name_en": "Al Rafaye",
+        "place": "",
+        "admin_level": "10",
+        "latitude": 24.3135203,
+        "longitude": 47.1737479
+      }
+    }
+  ]
+}

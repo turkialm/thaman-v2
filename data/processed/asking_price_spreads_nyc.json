@@ -1,0 +1,41 @@
+{
+  "global_spread_pct": 14.4,
+  "source": "Redfin",
+  "boroughs": {
+    "Bronx": {
+      "redfin_median_psqm": 3574.0,
+      "tx_median_psqm": 3767.0,
+      "spread_pct": -5.1,
+      "redfin_n": 12,
+      "tx_n": 10059
+    },
+    "Brooklyn": {
+      "redfin_median_psqm": 5834.0,
+      "tx_median_psqm": 5873.0,
+      "spread_pct": -0.7,
+      "redfin_n": 101,
+      "tx_n": 27669
+    },
+    "Manhattan": {
+      "redfin_median_psqm": 9677.0,
+      "tx_median_psqm": 7112.0,
+      "spread_pct": 36.1,
+      "redfin_n": 182,
+      "tx_n": 3973
+    },
+    "Queens": {
+      "redfin_median_psqm": 6717.0,
+      "tx_median_psqm": 5703.0,
+      "spread_pct": 17.8,
+      "redfin_n": 61,
+      "tx_n": 34710
+    },
+    "Staten Island": {
+      "redfin_median_psqm": 5360.0,
+      "tx_median_psqm": 4687.0,
+      "spread_pct": 14.4,
+      "redfin_n": 59,
+      "tx_n": 15933
+    }
+  }
+}

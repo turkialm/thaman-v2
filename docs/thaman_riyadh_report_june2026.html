@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>THAMAN — Dual-City AVM Report · NYC + Riyadh · 2026</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --bg:    #f0f4ff;
+  --bg2:   #e4ecff;
+  --navy:  #0f1629;
+  --blue:  #2563eb;
+  --blue2: #3b82f6;
+  --blue3: #60a5fa;
+  --blue4: #93c5fd;
+  --text:  #1e2a45;
+  --muted: #5a6f9a;
+  --dim:   #94a3b8;
+  --line:  #c4d0ec;
+  --white: #f8faff;
+  --pos:   #16a34a;
+  --neg:   #dc2626;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Inter','IBM Plex Sans Arabic',sans-serif; font-size:14px; line-height:1.6; }
+
+.page { max-width:820px; margin:0 auto; }
+
+/* NAV */
+.top-nav {
+  position:sticky; top:0; z-index:100;
+  background:rgba(15,22,41,0.97); backdrop-filter:blur(12px);
+  padding:10px 32px; display:flex; align-items:center; justify-content:space-between;
+}
+.nav-logo { font-weight:800; font-size:15px; letter-spacing:0.15em; color:#fff; }
+.nav-links { display:flex; gap:18px; }
+.nav-links a { font-size:11px; color:#6b7fa8; text-decoration:none; letter-spacing:0.04em; cursor:pointer; }
+.nav-links a:hover { color:var(--blue3); }
+.nav-badge { font-size:10px; color:var(--blue3); letter-spacing:0.08em; }
+
+/* COVER */
+.cover {
+  background:var(--navy); color:#fff;
+  padding:56px 48px 48px; min-height:100vh;
+  display:flex; flex-direction:column; position:relative; overflow:hidden;
+}
+.cover::before {
+  content:''; position:absolute; inset:0;
+  background: radial-gradient(ellipse at 80% 20%, rgba(37,99,235,0.18) 0%, transparent 60%),
+              radial-gradient(ellipse at 10% 80%, rgba(96,165,250,0.10) 0%, transparent 50%);
+  pointer-events:none;
+}
+.cover-top { display:flex; align-items:center; justify-content:space-between; position:relative; z-index:1; }
+.logo { display:flex; align-items:center; gap:10px; }
+.logo-mark { width:38px; height:38px; background:var(--blue); border-radius:6px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:17px; color:#fff; }
+.logo-text { font-size:20px; font-weight:800; letter-spacing:0.18em; }
+.cover-tag { font-size:10px; color:var(--blue3); letter-spacing:0.15em; border:1px solid rgba(96,165,250,0.3); padding:4px 10px; border-radius:20px; }
+
+.cover-hero { position:relative; z-index:1; margin-top:auto; padding-top:60px; }
+.cover-label { font-size:10px; color:var(--blue3); letter-spacing:0.2em; text-transform:uppercase; margin-bottom:12px; }
+.cover-title { font-size:54px; font-weight:800; line-height:1.08; margin-bottom:16px; }
+.cover-title .accent { color:var(--blue2); }
+.cover-divider { width:48px; height:3px; background:var(--blue); border-radius:2px; margin-bottom:32px; }
+.cover-sub { font-size:13px; color:#8090b0; max-width:520px; line-height:1.85; margin-bottom:36px; }
+
+.kpi-strip { display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:rgba(255,255,255,0.06); border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.08); }
+.kpi { background:rgba(255,255,255,0.03); padding:18px 10px; text-align:center; }
+.kpi .num { font-size:21px; font-weight:800; color:var(--blue2); display:block; line-height:1.1; }
+.kpi .unit { font-size:9.5px; color:#5a6f9a; margin-top:2px; }
+.kpi .lbl { font-size:9.5px; color:#3a4f70; margin-top:5px; line-height:1.3; }
+
+.city-pills { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; position:relative; z-index:1; }
+.city-pill { display:flex; align-items:center; gap:8px; background:rgba(37,99,235,0.12); border:1px solid rgba(59,130,246,0.25); border-radius:8px; padding:8px 14px; font-size:11px; color:var(--blue3); }
+
+/* SECTIONS */
+.section { padding:52px 48px; border-bottom:1px solid var(--line); }
+.section-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:6px; }
+.section-label { font-size:10px; color:var(--muted); letter-spacing:0.14em; text-transform:uppercase; border-bottom:1px solid var(--line); padding-bottom:3px; }
+.section-city { font-size:10px; color:var(--blue3); }
+.h1 { font-size:38px; font-weight:800; line-height:1.1; margin-bottom:14px; }
+.h1 .accent { color:var(--blue); }
+.h2 { font-size:20px; font-weight:700; margin-bottom:12px; color:var(--navy); }
+.lead { font-size:13.5px; color:var(--text); max-width:620px; line-height:1.85; margin-bottom:24px; }
+
+.callout { background:var(--navy); color:#fff; border-radius:8px; padding:18px 22px; margin-bottom:24px; font-size:12.5px; line-height:1.85; border-left:3px solid var(--blue); }
+.callout .cl { font-size:10px; color:var(--blue3); display:block; margin-bottom:6px; letter-spacing:0.1em; }
+
+/* METRIC CARDS */
+.card-row { display:grid; gap:10px; margin-top:20px; }
+.card-row.cols2 { grid-template-columns:1fr 1fr; }
+.card-row.cols3 { grid-template-columns:1fr 1fr 1fr; }
+.card-row.cols4 { grid-template-columns:1fr 1fr 1fr 1fr; }
+.card { background:var(--white); border:1px solid var(--line); border-radius:8px; padding:18px 16px; }
+.card.dark { background:var(--navy); color:#fff; border-color:var(--navy); }
+.card .cap { font-size:10px; color:var(--muted); letter-spacing:0.08em; margin-bottom:8px; }
+.card.dark .cap { color:#4a5f88; }
+.card .val { font-size:30px; font-weight:800; line-height:1; }
+.card.dark .val { color:var(--blue2); }
+.card .sub { font-size:11px; color:var(--dim); margin-top:4px; }
+.card.dark .sub { color:#3a5070; }
+.pos { color:var(--pos) !important; }
+.neg { color:var(--neg) !important; }
+.blue-v { color:var(--blue) !important; }
+
+/* HORIZONTAL BAR */
+.bars { margin-top:8px; }
+.bar-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.bar-lbl { width:130px; text-align:right; font-size:12.5px; flex-shrink:0; direction:rtl; }
+.bar-lbl.en { direction:ltr; text-align:left; width:140px; }
+.bar-track { flex:1; height:26px; background:var(--bg2); border-radius:4px; overflow:hidden; position:relative; }
+.bar-fill { height:100%; border-radius:4px; }
+.bar-v { position:absolute; left:8px; top:50%; transform:translateY(-50%); font-size:11px; font-weight:600; color:var(--text); }
+.b-navy  { background:#1e3a5f; }
+.b-blue  { background:var(--blue); }
+.b-blue2 { background:var(--blue2); }
+.b-blue3 { background:var(--blue3); }
+.b-blue4 { background:var(--blue4); }
+
+/* REI CHART */
+.rei-chart { margin-top:20px; }
+.rei-bars-wrap { display:flex; align-items:flex-end; gap:12px; height:160px; justify-content:space-around; border-bottom:2px solid var(--line); }
+.rei-qgroup { display:flex; flex-direction:column; align-items:center; }
+.rei-pair { display:flex; gap:3px; align-items:flex-end; }
+.rei-bar { width:22px; border-radius:2px 2px 0 0; }
+.rei-qlbl { font-size:9px; color:var(--dim); margin-top:5px; text-align:center; line-height:1.3; }
+.rei-legend { display:flex; gap:16px; justify-content:center; margin-top:10px; font-size:10px; color:var(--dim); }
+
+/* TABLE */
+.tbl { width:100%; border-collapse:collapse; margin-top:14px; }
+.tbl th { font-size:10px; letter-spacing:0.08em; color:var(--muted); padding:8px 10px; text-align:left; border-bottom:2px solid var(--line); }
+.tbl td { padding:9px 10px; border-bottom:1px solid var(--bg2); font-size:12.5px; }
+.tbl tr:hover td { background:var(--bg2); }
+.tbl .rank { font-size:10px; color:var(--dim); width:24px; }
+
+/* SHAP */
+.shap-row { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+.shap-rank { width:20px; font-size:10px; color:var(--dim); text-align:center; }
+.shap-feat { width:210px; font-size:12px; font-family:monospace; color:var(--text); }
+.shap-track { flex:1; height:12px; background:var(--bg2); border-radius:6px; overflow:hidden; }
+.shap-fill { height:100%; background:var(--blue); border-radius:6px; }
+.shap-val { width:50px; font-size:11px; font-weight:600; color:var(--blue); text-align:right; }
+
+/* PILLS */
+.pills { display:flex; flex-wrap:wrap; gap:7px; margin-top:16px; }
+.pill { background:var(--bg2); border:1px solid var(--line); border-radius:20px; padding:4px 13px; font-size:11px; color:var(--muted); }
+.pill b { color:var(--text); }
+
+/* COMPARE GRID */
+.compare-grid { display:grid; grid-template-columns:auto 1fr 1fr; gap:1px; background:var(--line); border-radius:8px; overflow:hidden; border:1px solid var(--line); margin-top:20px; }
+.cg-cell { background:var(--white); padding:11px 14px; font-size:12.5px; }
+.cg-cell.header { background:var(--navy); color:#fff; font-size:11px; letter-spacing:0.08em; font-weight:700; }
+.cg-cell.metric { background:var(--bg2); font-size:11px; color:var(--muted); font-weight:600; }
+
+/* VL */
+.vl-item { display:flex; align-items:center; gap:4px; }
+.vl-dot { width:8px; height:8px; border-radius:2px; }
+
+/* SOURCE NOTE */
+.src-note { font-size:10px; color:var(--dim); margin-top:18px; line-height:1.6; border-top:1px solid var(--bg2); padding-top:10px; }
+
+/* FOOTER */
+.footer { display:flex; align-items:center; justify-content:space-between; padding:16px 48px; border-top:1px solid var(--line); font-size:10px; color:var(--dim); }
+.footer .fl { font-weight:700; letter-spacing:0.15em; color:var(--navy); }
+
+@media print { .top-nav { display:none; } .section { page-break-after:always; } }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="top-nav">
+  <span class="nav-logo">THAMAN</span>
+  <div class="nav-links">
+    <a onclick="scrollTo(0,0)">Cover</a>
+    <a onclick="document.getElementById('ryd-overview').scrollIntoView({behavior:'smooth'})">Riyadh</a>
+    <a onclick="document.getElementById('ryd-districts').scrollIntoView({behavior:'smooth'})">Districts</a>
+    <a onclick="document.getElementById('ryd-model').scrollIntoView({behavior:'smooth'})">RYD Model</a>
+    <a onclick="document.getElementById('nyc-overview').scrollIntoView({behavior:'smooth'})">NYC</a>
+    <a onclick="document.getElementById('nyc-model').scrollIntoView({behavior:'smooth'})">NYC Model</a>
+    <a onclick="document.getElementById('compare').scrollIntoView({behavior:'smooth'})">Compare</a>
+    <a onclick="document.getElementById('references').scrollIntoView({behavior:'smooth'})">Sources</a>
+  </div>
+  <span class="nav-badge">Stack v22 (NYC) · v12 (RYD)</span>
+</nav>
+
+<div class="page">
+
+<!-- ══ COVER ══ -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="logo">
+      <div class="logo-mark">ث</div>
+      <span class="logo-text">THAMAN</span>
+    </div>
+    <span class="cover-tag">DUAL-CITY AVM · JUNE 2026</span>
+  </div>
+
+  <div class="cover-hero">
+    <div class="cover-label">AI-Powered Property Valuation Report</div>
+    <div class="cover-title">NYC <span class="accent">&amp;</span><br>Riyadh<br><span class="accent">Markets</span></div>
+    <div class="cover-divider"></div>
+    <div class="cover-sub">
+      THAMAN Stack v22 (NYC) + v12 (Riyadh) — trained on 162,860 transactions,
+      validated against 29,493 holdout observations. 134 and 149 engineered features
+      across structural, spatial, temporal, and macroeconomic signals.
+    </div>
+
+    <div class="kpi-strip">
+      <div class="kpi">
+        <span class="num">162,860</span>
+        <div class="unit">transactions</div>
+        <div class="lbl">Total training rows</div>
+      </div>
+      <div class="kpi">
+        <span class="num">29,493</span>
+        <div class="unit">holdout obs.</div>
+        <div class="lbl">Out-of-sample</div>
+      </div>
+      <div class="kpi">
+        <span class="num">134/149</span>
+        <div class="unit">features</div>
+        <div class="lbl">NYC / Riyadh</div>
+      </div>
+      <div class="kpi">
+        <span class="num">0.8014</span>
+        <div class="unit">Riyadh R²</div>
+        <div class="lbl">Holdout (best)</div>
+      </div>
+      <div class="kpi">
+        <span class="num">15.59%</span>
+        <div class="unit">MedAPE</div>
+        <div class="lbl">Riyadh holdout</div>
+      </div>
+    </div>
+
+    <div class="city-pills">
+      <div class="city-pill">🗽 NYC · Stack v22 · R²=0.6495 · MedAPE 20.32%</div>
+      <div class="city-pill">🕌 Riyadh · Stack v12 · R²=0.8014 · MedAPE 15.59%</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RIYADH OVERVIEW ══ -->
+<div class="section" id="ryd-overview">
+  <div class="section-top">
+    <span class="section-label">Riyadh · Market Overview</span>
+    <span class="section-city">🕌 Stack v12</span>
+  </div>
+  <div class="h1">الرياض<br><span class="accent">نظرة عامة</span></div>
+
+  <p class="lead">
+    THAMAN trained on <strong>5,531 Suhail transactions</strong> (training) and validated against
+    <strong>1,730 holdout observations</strong> from 2025 Q1–Q3. Cross-validated with
+    <strong>1,691 Haraj listings</strong> (May 2026). Model covers <strong>200 Riyadh districts</strong>.
+  </p>
+
+  <div class="callout">
+    <span class="cl">THAMAN MODEL SIGNAL</span>
+    OOF R²=<strong>0.9348</strong> confirms strong in-sample fit. Holdout R²=<strong>0.8014</strong>
+    shows robust generalisation to 2025 unseen data. MAE of <strong>986 SAR/m²</strong> on a
+    scatter-validated median of ~4,369 SAR/m² (±22.6%). Apartments and villas outperform
+    plots — MedAPE 12.83%/12.39% vs 20.82%.
+  </div>
+
+  <div class="card-row cols4">
+    <div class="card dark">
+      <div class="cap">Holdout R²</div>
+      <div class="val">0.8014</div>
+      <div class="sub">1,730 obs · 2025</div>
+    </div>
+    <div class="card dark">
+      <div class="cap">OOF R²</div>
+      <div class="val">0.9348</div>
+      <div class="sub">5-fold GroupKFold</div>
+    </div>
+    <div class="card dark">
+      <div class="cap">Holdout MedAPE</div>
+      <div class="val">15.59%</div>
+      <div class="sub">out-of-sample</div>
+    </div>
+    <div class="card dark">
+      <div class="cap">Holdout MAE</div>
+      <div class="val">986</div>
+      <div class="sub">SAR/m²</div>
+    </div>
+  </div>
+
+  <!-- REI Trend -->
+  <div style="margin-top:36px">
+    <div class="h2">Real Estate Index Trend <span style="font-size:11px;font-weight:400;color:var(--dim)">(Saudi REI · THAMAN pipeline)</span></div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Base = 100 · Quarterly · Source: GASTAT REI embedded in THAMAN training features</p>
+
+    <div class="rei-chart">
+      <div class="rei-bars-wrap">
+        <!-- Q1 2024: villa=93.61, apt=100.34 -->
+        <div class="rei-qgroup">
+          <div class="rei-pair">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue)">93.6</span>
+              <div class="rei-bar" style="height:60px;background:#1e3a5f"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue3)">100.3</span>
+              <div class="rei-bar" style="height:80px;background:var(--blue3)"></div>
+            </div>
+          </div>
+          <div class="rei-qlbl">Q1<br>2024</div>
+        </div>
+        <!-- Q2 2024: villa=101.82, apt=101.07 -->
+        <div class="rei-qgroup">
+          <div class="rei-pair">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue)">101.8</span>
+              <div class="rei-bar" style="height:79px;background:#1e3a5f"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue3)">101.1</span>
+              <div class="rei-bar" style="height:80px;background:var(--blue3)"></div>
+            </div>
+          </div>
+          <div class="rei-qlbl">Q2<br>2024</div>
+        </div>
+        <!-- Q3 2024: villa=102.22, apt=100.93 -->
+        <div class="rei-qgroup">
+          <div class="rei-pair">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue)">102.2</span>
+              <div class="rei-bar" style="height:82px;background:#1e3a5f"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue3)">100.9</span>
+              <div class="rei-bar" style="height:79px;background:var(--blue3)"></div>
+            </div>
+          </div>
+          <div class="rei-qlbl">Q3<br>2024</div>
+        </div>
+        <!-- Q4 2024: villa=104.66, apt=101.4 — local peak -->
+        <div class="rei-qgroup">
+          <div class="rei-pair">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:700;color:var(--blue)">104.7</span>
+              <div class="rei-bar" style="height:93px;background:#1e3a5f"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue3)">101.4</span>
+              <div class="rei-bar" style="height:81px;background:var(--blue3)"></div>
+            </div>
+          </div>
+          <div class="rei-qlbl">Q4<br>2024</div>
+        </div>
+        <!-- Q1 2025: villa=103.21, apt=101.58 -->
+        <div class="rei-qgroup">
+          <div class="rei-pair">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue)">103.2</span>
+              <div class="rei-bar" style="height:88px;background:#1e3a5f"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue3)">101.6</span>
+              <div class="rei-bar" style="height:82px;background:var(--blue3)"></div>
+            </div>
+          </div>
+          <div class="rei-qlbl">Q1<br>2025</div>
+        </div>
+        <!-- Q2 2025: villa=105.03, apt=100.32 — PEAK -->
+        <div class="rei-qgroup">
+          <div class="rei-pair">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:700;color:var(--blue)">105.0</span>
+              <div class="rei-bar" style="height:100px;background:var(--blue);box-shadow:0 0 8px rgba(37,99,235,0.5)"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue3)">100.3</span>
+              <div class="rei-bar" style="height:79px;background:var(--blue3)"></div>
+            </div>
+          </div>
+          <div class="rei-qlbl" style="color:var(--blue);font-weight:700">Q2<br>2025 ★</div>
+        </div>
+        <!-- Q3 2025: villa=102.4, apt=99.25 — latest -->
+        <div class="rei-qgroup">
+          <div class="rei-pair">
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue)">102.4</span>
+              <div class="rei-bar" style="height:84px;background:#1e3a5f"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <span style="font-size:8px;font-weight:600;color:var(--blue3)">99.3</span>
+              <div class="rei-bar" style="height:76px;background:var(--blue3)"></div>
+            </div>
+          </div>
+          <div class="rei-qlbl">Q3<br>2025</div>
+        </div>
+      </div>
+      <div class="rei-legend">
+        <div class="vl-item"><div class="vl-dot" style="background:#1e3a5f"></div>Villa REI</div>
+        <div class="vl-item"><div class="vl-dot" style="background:var(--blue3)"></div>Apartment REI</div>
+        <div class="vl-item" style="color:var(--blue)">★ Villa peak Q2 2025 = 105.0</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="src-note">Source: GASTAT Real Estate Index (REI) quarterly data embedded in THAMAN v12 training pipeline. Q3 2025 is the latest quarter in training data.</p>
+</div>
+
+<!-- ══ RIYADH DISTRICTS ══ -->
+<div class="section" id="ryd-districts">
+  <div class="section-top">
+    <span class="section-label">Riyadh · District Prices</span>
+    <span class="section-city">🕌 1,691 Haraj listings · May 2026</span>
+  </div>
+  <div class="h1">District <span class="accent">Prices</span></div>
+
+  <p class="lead">
+    Derived from THAMAN's own Haraj listing database (1,691 listings, May 2026) and Suhail
+    transaction records. Median SAR/m² by district — all THAMAN data, no external estimates.
+  </p>
+
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th class="rank">#</th>
+        <th>District / حي</th>
+        <th>Median SAR/m²</th>
+        <th>Median Total (SAR)</th>
+        <th>Type</th>
+        <th>n</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="rank">1</td><td dir="rtl">النخيل</td><td><strong>26,000</strong></td><td>12.0M</td><td>Plot</td><td>3</td></tr>
+      <tr><td class="rank">2</td><td dir="rtl">الهدا</td><td><strong>20,000</strong></td><td>10.0M</td><td>Plot</td><td>1</td></tr>
+      <tr><td class="rank">3</td><td dir="rtl">الوزارات</td><td><strong>20,000</strong></td><td>—</td><td>Mixed</td><td>1</td></tr>
+      <tr><td class="rank">4</td><td dir="rtl">أم الحمام الغربي</td><td><strong>18,668</strong></td><td>3.9M</td><td>Apt · Villa</td><td>2</td></tr>
+      <tr><td class="rank">5</td><td dir="rtl">الفلاح</td><td><strong>16,387</strong></td><td>8.2M</td><td>Plot · Villa</td><td>3</td></tr>
+      <tr><td class="rank">6</td><td dir="rtl">الخزامى</td><td><strong>16,298</strong></td><td>—</td><td>Villa</td><td>5</td></tr>
+      <tr><td class="rank">7</td><td dir="rtl">العقيق</td><td><strong>14,961</strong></td><td>1.98M</td><td>Apt · Plot · Villa</td><td>10</td></tr>
+      <tr><td class="rank">8</td><td dir="rtl">قرطبه</td><td><strong>14,785</strong></td><td>1.1M</td><td>Apartment</td><td>1</td></tr>
+      <tr><td class="rank">9</td><td dir="rtl">الصحافة</td><td><strong>14,595</strong></td><td>2.0M</td><td>Apartment</td><td>2</td></tr>
+      <tr><td class="rank">10</td><td dir="rtl">العليا</td><td><strong>12,359</strong></td><td>4.25M</td><td>Apartment</td><td>12</td></tr>
+      <tr><td class="rank">11</td><td dir="rtl">النزهة</td><td><strong>11,714</strong></td><td>5.72M</td><td>Apartment</td><td>6</td></tr>
+      <tr><td class="rank">12</td><td dir="rtl">حطين</td><td><strong>11,429</strong></td><td>6.0M</td><td>Apartment</td><td>13</td></tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:32px">
+    <div class="h2">Top Apartment Districts <span style="font-size:11px;font-weight:400;color:var(--dim)">(SAR/m² · Haraj data)</span></div>
+    <div class="bars">
+      <div class="bar-row">
+        <div class="bar-lbl">أم الحمام الغربي</div>
+        <div class="bar-track"><div class="bar-fill b-navy" style="width:100%"></div><span class="bar-v">18,668</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl">العقيق</div>
+        <div class="bar-track"><div class="bar-fill b-blue2" style="width:80.1%"></div><span class="bar-v">14,961</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl">قرطبه</div>
+        <div class="bar-track"><div class="bar-fill b-blue2" style="width:79.2%"></div><span class="bar-v">14,785</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl">الصحافة</div>
+        <div class="bar-track"><div class="bar-fill b-blue" style="width:78.2%"></div><span class="bar-v">14,595</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl">العليا</div>
+        <div class="bar-track"><div class="bar-fill b-blue" style="width:66.2%"></div><span class="bar-v">12,359</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl">النزهة</div>
+        <div class="bar-track"><div class="bar-fill b-blue3" style="width:62.8%"></div><span class="bar-v">11,714</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl">حطين</div>
+        <div class="bar-track"><div class="bar-fill b-blue3" style="width:61.2%"></div><span class="bar-v">11,429</span></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="src-note">Source: THAMAN analysis of 1,691 Haraj listings (May 2026) + Suhail transaction records. Low-n districts (n=1–3) are indicative only.</p>
+</div>
+
+<!-- ══ RIYADH MODEL ══ -->
+<div class="section" id="ryd-model">
+  <div class="section-top">
+    <span class="section-label">Riyadh · Stack v12</span>
+    <span class="section-city">🕌 149 features · GroupKFold</span>
+  </div>
+  <div class="h1">Riyadh <span class="accent">Model</span></div>
+
+  <p class="lead">
+    4-model ensemble (XGBoost×2 + LightGBM + CatBoost + Ridge meta) trained on 5,531
+    district-quarter observations. GroupKFold by district prevents geographic data leakage.
+    Target: log1p(SAR/m²).
+  </p>
+
+  <div class="h2" style="margin-bottom:10px">Accuracy by Property Type</div>
+  <div class="bars">
+    <div class="bar-row">
+      <div class="bar-lbl en">Villa (n=422)</div>
+      <div class="bar-track"><div class="bar-fill b-navy" style="width:59.5%"></div><span class="bar-v">MedAPE 12.39% · R²=0.748</span></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-lbl en">Apartment (n=616)</div>
+      <div class="bar-track"><div class="bar-fill b-blue2" style="width:61.6%"></div><span class="bar-v">MedAPE 12.83% · R²=0.635</span></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-lbl en">Building (n=139)</div>
+      <div class="bar-track"><div class="bar-fill b-blue3" style="width:89.4%"></div><span class="bar-v">MedAPE 18.61% · R²=0.536</span></div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-lbl en">Res. Plot (n=553)</div>
+      <div class="bar-track"><div class="bar-fill b-blue4" style="width:100%"></div><span class="bar-v">MedAPE 20.82% · R²=0.779</span></div>
+    </div>
+  </div>
+
+  <div class="card-row cols3">
+    <div class="card"><div class="cap">Training Rows</div><div class="val blue-v">5,531</div><div class="sub">Suhail transactions</div></div>
+    <div class="card"><div class="cap">Holdout Rows</div><div class="val blue-v">1,730</div><div class="sub">2025 Q1–Q3</div></div>
+    <div class="card"><div class="cap">Features</div><div class="val blue-v">149</div><div class="sub">Spatial + temporal + macro</div></div>
+  </div>
+
+  <div style="margin-top:28px">
+    <div class="h2">REI Snapshot · Q3 2025</div>
+    <div class="card-row cols4">
+      <div class="card"><div class="cap">Villa REI</div><div class="val blue-v">102.4</div><div class="sub">Peak 105.0 (Q2 2025)</div></div>
+      <div class="card"><div class="cap">Apartment REI</div><div class="val blue-v">99.3</div><div class="sub">Below base 100</div></div>
+      <div class="card"><div class="cap">Plot REI</div><div class="val blue-v">100.4</div><div class="sub">Near-flat</div></div>
+      <div class="card"><div class="cap">Building REI</div><div class="val blue-v">98.7</div><div class="sub">Modest decline</div></div>
+    </div>
+  </div>
+
+  <div class="pills">
+    <div class="pill"><b>5,531</b> training rows</div>
+    <div class="pill"><b>1,730</b> holdout rows</div>
+    <div class="pill"><b>1,691</b> Haraj listings</div>
+    <div class="pill"><b>200</b> districts</div>
+    <div class="pill"><b>149</b> features</div>
+    <div class="pill">XGBoost ×2</div>
+    <div class="pill">LightGBM</div>
+    <div class="pill">CatBoost</div>
+    <div class="pill">Ridge meta</div>
+    <div class="pill">GroupKFold 5-fold (district)</div>
+    <div class="pill">Target: log1p(SAR/m²)</div>
+  </div>
+
+  <p class="src-note">Source: THAMAN Stack v12 training output (riyadh_meta.json). Suhail transaction data May 2025–May 2026. Haraj listing data May 2026.</p>
+</div>
+
+<!-- ══ NYC OVERVIEW ══ -->
+<div class="section" id="nyc-overview">
+  <div class="section-top">
+    <span class="section-label">NYC · Market Overview</span>
+    <span class="section-city">🗽 Stack v22</span>
+  </div>
+  <div class="h1">New York City<br><span class="accent">Market</span></div>
+
+  <p class="lead">
+    THAMAN Stack v22 trained on <strong>157,329 NYC residential sales</strong> (2022–2026),
+    validated on <strong>27,763 holdout transactions</strong> — newest 15% by sale date.
+    Covers all 5 boroughs across 212 NTA geographic units.
+  </p>
+
+  <div class="callout">
+    <span class="cl">THAMAN MODEL SIGNAL</span>
+    Baseline model achieves only R²=0.24, confirming NYC property pricing is highly non-linear.
+    Stack v22 lifts to R²=0.6495 — a <strong>+0.41 R² improvement</strong> over baseline.
+    Highest-value segments ($3M–$10M) remain hardest to predict (MedAPE=39.77%) due to
+    unobservable co-op board decisions and bespoke interior finishes.
+  </div>
+
+  <div class="card-row cols4">
+    <div class="card dark"><div class="cap">Holdout R²</div><div class="val">0.6495</div><div class="sub">27,763 obs.</div></div>
+    <div class="card dark"><div class="cap">MedAPE</div><div class="val">20.32%</div><div class="sub">all boroughs</div></div>
+    <div class="card dark"><div class="cap">Holdout MAE</div><div class="val">$1.047M</div><div class="sub">absolute USD</div></div>
+    <div class="card dark"><div class="cap">vs Baseline R²</div><div class="val pos">+0.41</div><div class="sub">baseline = 0.2382</div></div>
+  </div>
+
+  <div style="margin-top:32px">
+    <div class="h2">MedAPE by Borough <span style="font-size:11px;font-weight:400;color:var(--dim)">(lower = more accurate)</span></div>
+    <div class="bars">
+      <div class="bar-row">
+        <div class="bar-lbl en">Staten Island</div>
+        <div class="bar-track"><div class="bar-fill b-navy" style="width:36.2%"></div><span class="bar-v">14.41% · MAE $220K · n=3,052</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">Queens</div>
+        <div class="bar-track"><div class="bar-fill b-blue2" style="width:43.8%"></div><span class="bar-v">17.43% · MAE $366K · n=9,533</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">Brooklyn</div>
+        <div class="bar-track"><div class="bar-fill b-blue" style="width:51.9%"></div><span class="bar-v">20.64% · MAE $857K · n=7,032</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">Bronx</div>
+        <div class="bar-track"><div class="bar-fill b-blue3" style="width:53.0%"></div><span class="bar-v">21.08% · MAE $1.53M · n=2,735</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">Manhattan</div>
+        <div class="bar-track"><div class="bar-fill b-blue4" style="width:88.5%"></div><span class="bar-v">35.16% · MAE $2.71M · n=5,411</span></div>
+      </div>
+    </div>
+    <p style="font-size:11px;color:var(--dim);margin-top:8px">Manhattan high MedAPE = unobservable co-op discounts + luxury interior variance, not model failure.</p>
+  </div>
+
+  <div style="margin-top:32px">
+    <div class="h2">MedAPE by Price Tier</div>
+    <div class="bars">
+      <div class="bar-row">
+        <div class="bar-lbl en">&lt;$500K (n=6,497)</div>
+        <div class="bar-track"><div class="bar-fill b-blue3" style="width:68.1%"></div><span class="bar-v">27.10% · MAE $225K</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">$500K–$1M (n=10,980)</div>
+        <div class="bar-track"><div class="bar-fill b-navy" style="width:38.0%"></div><span class="bar-v">15.12% · MAE $182K ← sweet spot</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">$1M–$3M (n=7,978)</div>
+        <div class="bar-track"><div class="bar-fill b-blue2" style="width:53.5%"></div><span class="bar-v">21.30% · MAE $455K</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">$3M–$10M (n=1,707)</div>
+        <div class="bar-track"><div class="bar-fill b-blue4" style="width:100%"></div><span class="bar-v">39.77% · MAE $2.18M</span></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="src-note">Source: THAMAN Stack v22 meta.json — segment_by_borough, segment_by_tier. NYC Citywide Rolling Calendar Sales 2022–2026.</p>
+</div>
+
+<!-- ══ NYC MODEL ══ -->
+<div class="section" id="nyc-model">
+  <div class="section-top">
+    <span class="section-label">NYC · Stack v22 · Detail</span>
+    <span class="section-city">🗽 134 features · trained 2026-05-28</span>
+  </div>
+  <div class="h1">NYC <span class="accent">Model</span></div>
+
+  <div class="card-row cols3">
+    <div class="card"><div class="cap">Training Rows</div><div class="val blue-v">157,329</div><div class="sub">NYC sales 2022–2026</div></div>
+    <div class="card"><div class="cap">Holdout Rows</div><div class="val blue-v">27,763</div><div class="sub">Newest 15% by date</div></div>
+    <div class="card"><div class="cap">Features</div><div class="val blue-v">134</div><div class="sub">Engineered signals</div></div>
+  </div>
+
+  <div style="margin-top:28px">
+    <div class="h2">Base Learner vs Stack Performance</div>
+    <div class="bars">
+      <div class="bar-row">
+        <div class="bar-lbl en">Stack v22 ← ensemble</div>
+        <div class="bar-track"><div class="bar-fill b-blue" style="width:100%"></div><span class="bar-v">R²=0.6495 · MedAPE 20.32%</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">XGBoost-A</div>
+        <div class="bar-track"><div class="bar-fill b-navy" style="width:99.2%"></div><span class="bar-v">R²=0.6445 · MedAPE 20.56%</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">LightGBM</div>
+        <div class="bar-track"><div class="bar-fill b-blue2" style="width:98.9%"></div><span class="bar-v">R²=0.6432 · MedAPE 20.84%</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">XGBoost-B</div>
+        <div class="bar-track"><div class="bar-fill b-blue3" style="width:98.3%"></div><span class="bar-v">R²=0.6387 · MedAPE 20.67%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:28px">
+    <div class="h2">Top SHAP Features <span style="font-size:11px;font-weight:400;color:var(--dim)">(mean |SHAP| importance)</span></div>
+    <div class="shap-row"><div class="shap-rank">1</div><div class="shap-feat">bldgclass_encoded</div><div class="shap-track"><div class="shap-fill" style="width:100%"></div></div><div class="shap-val">0.212</div></div>
+    <div class="shap-row"><div class="shap-rank">2</div><div class="shap-feat">borough_bldg_encoded</div><div class="shap-track"><div class="shap-fill" style="width:56.0%"></div></div><div class="shap-val">0.119</div></div>
+    <div class="shap-row"><div class="shap-rank">3</div><div class="shap-feat">gross_square_feet</div><div class="shap-track"><div class="shap-fill" style="width:46.2%"></div></div><div class="shap-val">0.098</div></div>
+    <div class="shap-row"><div class="shap-rank">4</div><div class="shap-feat">prior_sale_price</div><div class="shap-track"><div class="shap-fill" style="width:35.4%"></div></div><div class="shap-val">0.075</div></div>
+    <div class="shap-row"><div class="shap-rank">5</div><div class="shap-feat">dist_downtown_manhattan_m</div><div class="shap-track"><div class="shap-fill" style="width:34.2%"></div></div><div class="shap-val">0.072</div></div>
+    <div class="shap-row"><div class="shap-rank">6</div><div class="shap-feat">latitude</div><div class="shap-track"><div class="shap-fill" style="width:27.4%"></div></div><div class="shap-val">0.058</div></div>
+    <div class="shap-row"><div class="shap-rank">7</div><div class="shap-feat">land_square_feet</div><div class="shap-track"><div class="shap-fill" style="width:25.5%"></div></div><div class="shap-val">0.054</div></div>
+    <div class="shap-row"><div class="shap-rank">8</div><div class="shap-feat">price_appreciation</div><div class="shap-track"><div class="shap-fill" style="width:17.5%"></div></div><div class="shap-val">0.037</div></div>
+  </div>
+
+  <div class="pills">
+    <div class="pill"><b>157,329</b> training rows</div>
+    <div class="pill"><b>27,763</b> holdout rows</div>
+    <div class="pill"><b>134</b> features</div>
+    <div class="pill"><b>212</b> NTA groups</div>
+    <div class="pill">XGBoost ×2</div>
+    <div class="pill">LightGBM</div>
+    <div class="pill">CatBoost</div>
+    <div class="pill">Ridge meta</div>
+    <div class="pill">GroupKFold 10-fold (NTA)</div>
+    <div class="pill">Price cap $10M</div>
+    <div class="pill">Luxury model $2.5M+</div>
+    <div class="pill">Trained 2026-05-28</div>
+  </div>
+
+  <p class="src-note">Source: THAMAN Stack v22 meta.json — shap_top20, stack metrics, sub-model results. NYC Citywide Rolling Calendar Sales, PLUTO, MTA, NYPD, ACS Census, Overture Maps.</p>
+</div>
+
+<!-- ══ COMPARE ══ -->
+<div class="section" id="compare">
+  <div class="section-top">
+    <span class="section-label">Dual-City Comparison</span>
+    <span class="section-city">NYC v22 vs Riyadh v12</span>
+  </div>
+  <div class="h1">City <span class="accent">Comparison</span></div>
+
+  <div class="compare-grid">
+    <div class="cg-cell metric">Metric</div>
+    <div class="cg-cell header">🗽 NYC Stack v22</div>
+    <div class="cg-cell header">🕌 Riyadh Stack v12</div>
+
+    <div class="cg-cell metric">Training rows</div>
+    <div class="cg-cell"><strong>157,329</strong></div>
+    <div class="cg-cell"><strong>5,531</strong></div>
+
+    <div class="cg-cell metric">Holdout rows</div>
+    <div class="cg-cell">27,763</div>
+    <div class="cg-cell">1,730</div>
+
+    <div class="cg-cell metric">Features</div>
+    <div class="cg-cell">134</div>
+    <div class="cg-cell">149</div>
+
+    <div class="cg-cell metric">Holdout R²</div>
+    <div class="cg-cell">0.6495</div>
+    <div class="cg-cell" style="color:var(--pos);font-weight:700">0.8014 ↑</div>
+
+    <div class="cg-cell metric">OOF R²</div>
+    <div class="cg-cell">—</div>
+    <div class="cg-cell">0.9348</div>
+
+    <div class="cg-cell metric">Holdout MedAPE</div>
+    <div class="cg-cell">20.32%</div>
+    <div class="cg-cell" style="color:var(--pos);font-weight:700">15.59% ↓</div>
+
+    <div class="cg-cell metric">Holdout MAE</div>
+    <div class="cg-cell">$1,047,004 USD</div>
+    <div class="cg-cell">986 SAR/m²</div>
+
+    <div class="cg-cell metric">Baseline R²</div>
+    <div class="cg-cell">0.2382</div>
+    <div class="cg-cell">—</div>
+
+    <div class="cg-cell metric">Best segment</div>
+    <div class="cg-cell">Queens (MedAPE 17.4%)</div>
+    <div class="cg-cell">Villa (MedAPE 12.4%)</div>
+
+    <div class="cg-cell metric">Hardest segment</div>
+    <div class="cg-cell">Manhattan (MedAPE 35.2%)</div>
+    <div class="cg-cell">Plot (MedAPE 20.8%)</div>
+
+    <div class="cg-cell metric">CV strategy</div>
+    <div class="cg-cell">10-fold GroupKFold (NTA)</div>
+    <div class="cg-cell">5-fold GroupKFold (district)</div>
+
+    <div class="cg-cell metric">Stack learners</div>
+    <div class="cg-cell">XGB×2 + LGB + CAT + Ridge</div>
+    <div class="cg-cell">XGB×2 + LGB + CAT + Ridge</div>
+
+    <div class="cg-cell metric">Top SHAP feature</div>
+    <div class="cg-cell">bldgclass_encoded (0.212)</div>
+    <div class="cg-cell">Metro/transit proximity</div>
+
+    <div class="cg-cell metric">Validation source</div>
+    <div class="cg-cell">NYC Rolling Sales</div>
+    <div class="cg-cell">Suhail + Haraj (1,691)</div>
+  </div>
+
+  <div style="margin-top:28px">
+    <div class="h2">R² Comparison</div>
+    <div class="bars">
+      <div class="bar-row">
+        <div class="bar-lbl en">Riyadh OOF R²</div>
+        <div class="bar-track"><div class="bar-fill b-navy" style="width:93.5%"></div><span class="bar-v">0.9348</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">Riyadh Holdout R²</div>
+        <div class="bar-track"><div class="bar-fill b-blue" style="width:80.1%"></div><span class="bar-v">0.8014</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">NYC Holdout R²</div>
+        <div class="bar-track"><div class="bar-fill b-blue3" style="width:64.9%"></div><span class="bar-v">0.6495</span></div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl en">NYC Baseline R²</div>
+        <div class="bar-track"><div class="bar-fill b-blue4" style="width:23.8%"></div><span class="bar-v">0.2382</span></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="src-note">All metrics from THAMAN Stack training outputs (meta.json + riyadh_meta.json). No external estimates used.</p>
+</div>
+
+<!-- ══ REFERENCES ══ -->
+<div class="section" id="references" style="border-bottom:none">
+  <div class="section-top">
+    <span class="section-label">Data Sources &amp; References</span>
+    <span class="section-city">All THAMAN data</span>
+  </div>
+  <div class="h1">Data <span class="accent">Sources</span></div>
+
+  <p class="lead">All analytics in this report derive exclusively from THAMAN's own training pipeline, model outputs, and collected datasets. No third-party market estimates used.</p>
+
+  <!-- NYC Data -->
+  <div class="h2" style="margin-top:8px">NYC Data Sources</div>
+  <table class="tbl">
+    <thead>
+      <tr><th>Dataset</th><th>Used For</th><th>Records / Scale</th><th>In THAMAN pipeline</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>NYC Citywide Rolling Calendar Sales</strong></td><td>Training + holdout transactions</td><td>157,329 training · 27,763 holdout</td><td>meta.json → n_train, n_holdout</td></tr>
+      <tr><td><strong>NYC PLUTO</strong></td><td>Building class, lot area, year built, zoning, FAR</td><td>~1M tax lots</td><td>features: bldgclass, gross_sqft, land_sqft</td></tr>
+      <tr><td><strong>MTA Subway Stations</strong></td><td>Subway proximity, route count, ADA, CBD connectivity</td><td>472 stations</td><td>feature: dist_subway_m, n_routes</td></tr>
+      <tr><td><strong>ACS Census (NTA level)</strong></td><td>Median income, poverty rate, race breakdown</td><td>212 NTA units</td><td>feature: nta_med_income</td></tr>
+      <tr><td><strong>NYPD Crime Data</strong></td><td>NTA-level crime density</td><td>Annual precinct data</td><td>feature: nta_crime_rate</td></tr>
+      <tr><td><strong>NYC Parks GIS</strong></td><td>Park proximity</td><td>All public parks</td><td>feature: dist_park_m</td></tr>
+      <tr><td><strong>NYC Open Data (311)</strong></td><td>Rodent/heat complaint density by NTA</td><td>Annual 311 incidents</td><td>feature: nta_311_density</td></tr>
+      <tr><td><strong>HPD Violations</strong></td><td>Building violation severity by ZIP</td><td>DOB + HPD records</td><td>feature: hpd_score</td></tr>
+      <tr><td><strong>ACRIS Sales History</strong></td><td>Prior sale price, BBL chain</td><td>Property-level history</td><td>feature: prior_sale_price</td></tr>
+      <tr><td><strong>MTA LIRR / Metro-North</strong></td><td>Commuter rail proximity</td><td>Regional stations</td><td>feature: dist_commuter_rail_m</td></tr>
+      <tr><td><strong>NYC Coastline / Waterfront</strong></td><td>Waterfront flag</td><td>GIS polygons</td><td>feature: is_waterfront</td></tr>
+      <tr><td><strong>Overture Maps POIs</strong></td><td>Local POI density buckets</td><td>All NYC POIs</td><td>feature: poi_bucket_*</td></tr>
+      <tr><td><strong>Citi Bike Stations</strong></td><td>Active mobility access</td><td>~2,000 stations</td><td>feature: dist_citibike_m</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Riyadh Data -->
+  <div class="h2" style="margin-top:32px">Riyadh Data Sources</div>
+  <table class="tbl">
+    <thead>
+      <tr><th>Dataset</th><th>Used For</th><th>Records / Scale</th><th>In THAMAN pipeline</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Suhail Transaction Data</strong></td><td>Training + holdout transactions</td><td>5,531 training · 1,730 holdout</td><td>riyadh_meta.json → train_rows, holdout_rows</td></tr>
+      <tr><td><strong>Haraj Listings</strong> (scraped May 2026)</td><td>Asking price validation, district prices</td><td>1,691 listings</td><td>district_price_summary.csv</td></tr>
+      <tr><td><strong>GASTAT Real Estate Index (REI)</strong></td><td>Quarterly price index by property type</td><td>Q1 2020–Q3 2025</td><td>rei_type_idx_lookup (riyadh_meta.json)</td></tr>
+      <tr><td><strong>Riyadh Metro Stations</strong></td><td>Metro proximity (KD-tree)</td><td>94 stations</td><td>feature: dist_metro_m</td></tr>
+      <tr><td><strong>OSM Overpass POIs</strong></td><td>Mosques, malls, schools, hospitals, parks, entertainment</td><td>All Riyadh POIs</td><td>feature: dist_mosque_m, dist_mall_m, …</td></tr>
+      <tr><td><strong>Riyadh District Polygons</strong></td><td>Spatial grouping for GroupKFold CV</td><td>200 districts</td><td>riyadh_district_polygons.geojson</td></tr>
+      <tr><td><strong>Suhail Quarterly Aggregates</strong></td><td>District-level temporal lag features</td><td>Quarterly by district</td><td>features: lag1_med_psqm, lag2_med_psqm</td></tr>
+      <tr><td><strong>Air Quality Stations (NO₂/PM₁₀)</strong></td><td>Environmental quality signal</td><td>Riyadh monitoring network</td><td>feature: air_quality_score</td></tr>
+      <tr><td><strong>Traffic Speed Data (OSM)</strong></td><td>Road-level congestion proxy</td><td>Road network</td><td>feature: traffic_score</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Analytics references -->
+  <div class="h2" style="margin-top:32px">Analytics Outputs Referenced</div>
+  <table class="tbl">
+    <thead>
+      <tr><th>File</th><th>Content</th><th>Used In This Report</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>models/meta.json</code></td><td>NYC v22 training metrics, SHAP top-20, segment breakdown by borough + tier</td><td>All NYC sections</td></tr>
+      <tr><td><code>models/riyadh_meta.json</code></td><td>Riyadh v12 metrics, REI trend, segment by property type, district encodings</td><td>All Riyadh sections</td></tr>
+      <tr><td><code>data/processed/scatter_riyadh.json</code></td><td>800-row holdout scatter (actual vs predicted), type-level MedAPE</td><td>Riyadh model section</td></tr>
+      <tr><td><code>docs/district_price_summary.csv</code></td><td>200-district Haraj + Suhail median SAR/m² summary</td><td>District prices section</td></tr>
+      <tr><td><code>docs/figures/actual_vs_predicted.png</code></td><td>NYC holdout scatter generated by generate_figures.py</td><td>(Available for appendix)</td></tr>
+      <tr><td><code>docs/figures/error_by_borough.png</code></td><td>NYC MedAPE by borough bar chart</td><td>(Available for appendix)</td></tr>
+      <tr><td><code>docs/figures/shap_importance.png</code></td><td>SHAP beeswarm plot (top-20 NYC features)</td><td>(Available for appendix)</td></tr>
+    </tbody>
+  </table>
+
+  <p class="src-note" style="margin-top:20px">
+    Report generated: June 2026 · THAMAN Stack v22 (NYC) + v12 (Riyadh) ·
+    Turki Almurahhem, Umm Al-Qura University ·
+    GitHub: github.com/turkialm/thaman-v2 ·
+    Live: huggingface.co/spaces/Turki-Almurahhem/thaman
+  </p>
+</div>
+
+<div class="footer">
+  <span class="fl">THAMAN</span>
+  <span>Dual-City AVM Report · NYC + Riyadh · June 2026</span>
+  <span>Turki Almurahhem · Umm Al-Qura University · 2026</span>
+</div>
+
+</div>
+</body>
+</html>

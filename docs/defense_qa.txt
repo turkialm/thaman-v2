@@ -1,0 +1,400 @@
+THAMAN — Defense Q&A Preparation
+===================================
+BSc Graduation Project · Umm Al-Qura University
+Prepared: 2026-05-20
+
+This document covers expected committee questions with concise, confident answers.
+Memorize the one-line answer; expand with the detail if pressed.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 1 — MODEL PERFORMANCE
+═══════════════════════════════════════════════════════════════════════
+
+Q: Why is Riyadh holdout R²=0.79 lower than OOF R²=0.93?
+
+SHORT: OOF uses district-level training data; holdout is 2025 which is new
+macro conditions the model hasn't seen.
+
+DETAIL:
+- OOF cross-validation splits BY DISTRICT (GroupKFold). Each fold holds out
+  entire districts, which avoids spatial autocorrelation leakage.
+- However, the training data is district-quarter aggregates — every row
+  already encodes the district's median price. When the model sees features
+  for district X, those features are strongly correlated with the district's
+  own target. This inflates OOF metrics compared to a truly unseen market.
+- The holdout period is 2025 Q1–Q3 — entirely new market conditions
+  including post-2024 macro shifts (REI index, salary data).
+- A gap of ~14 R² points (0.93 → 0.79) is expected and honest. The holdout
+  metric is the number to cite: R²=0.79, MedAPE=15.56%.
+
+─────────────────────────────────────────────────────────────────────
+
+Q: Your NYC model has R²=0.65 but Riyadh has R²=0.79. Doesn't that make
+   NYC worse?
+
+SHORT: Different targets. NYC predicts individual transaction price;
+Riyadh predicts district-quarter aggregates. Aggregates are smoother → higher R².
+
+DETAIL:
+- NYC: 185K individual transactions. High variance in sale price at parcel
+  level (condition, renovation, negotiation). R²=0.65 on individual sales
+  is strong — state-of-art NYC AVM models report 0.60–0.70.
+- Riyadh: 6,910 district-quarter aggregate rows. Averaging across many
+  transactions removes micro-level noise. A model that explains
+  district-level medians is an easier task than individual sales.
+- Comparing the two R² directly is misleading — apples and oranges.
+
+─────────────────────────────────────────────────────────────────────
+
+Q: MedAPE of 15.56% seems high. Is that good enough?
+
+SHORT: Industry benchmark for AVM in emerging markets is 15–25%.
+15.56% is within standard range, especially for district aggregates without
+parcel-level data.
+
+DETAIL:
+- Zillow Zestimate (US, individual parcels, 30+ years of data): ~7% MedAPE.
+- Saudi Arabia has no open parcel-level register. We use Ministry of Justice
+  quarterly summaries — district medians, not individual deeds.
+- Given the data constraint, 15.56% on 2025 holdout (new macro period) is
+  competitive. OOF MedAPE=8.28% shows the model fits well within-sample.
+- For context: apartment MedAPE=16.42%, villa=14.46%. Residential plot has
+  highest error (25.84%) because land prices are most location-sensitive and
+  plot-level features (exact shape, road frontage) are unavailable.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 2 — DATA
+═══════════════════════════════════════════════════════════════════════
+
+Q: Why didn't you use individual transaction data for Riyadh?
+
+SHORT: The Ministry of Justice real estate register (Aqarat) is not publicly
+accessible. Only quarterly district summaries are released on Saudi Open Data.
+
+DETAIL:
+- Saudi MoJ Aqarat database contains individual deed-level data but is
+  restricted to licensed valuers and financial institutions.
+- Saudi Open Data Platform (data.gov.sa) publishes aggregated quarterly
+  reports at district level: transaction count, median price per sqm, volume.
+- We used 7 quarterly CSV files (2024 Q1, Q3, Q4; 2025 Q1, Q2, Q3) plus
+  a historical XLSX baseline (2018–2023) from the quarterly reports.
+- This is not a design choice — it is the data availability constraint.
+  If individual deeds were accessible, we would use them.
+
+─────────────────────────────────────────────────────────────────────
+
+Q: How did you get NYC data? Is it reliable?
+
+SHORT: NYC publishes all property sales via ACRIS (open government data).
+185K transactions 2022–2026, verified against PLUTO building records.
+
+DETAIL:
+- ACRIS (Automated City Register Information System): all NYC property
+  transfers, legally recorded. Not scraped — official government database.
+- PLUTO (Primary Land Use Tax Lot Output): NYC DCP, covers every tax lot
+  with building characteristics (floors, units, built year, FAR, zoning).
+- Cross-validated: ACRIS sale price joined to PLUTO on BBL (borough-block-lot).
+- Dropped: transfers under $10K (likely intra-family, gift deeds),
+  commercial-coded buildings in residential analysis, records with null
+  GrossSquareFootage.
+- QoL features (311, NYPD complaints, HPD violations, subway distance)
+  all from NYC Open Data — same official source.
+
+─────────────────────────────────────────────────────────────────────
+
+Q: How do you validate your Riyadh predictions against real prices?
+
+SHORT: We compared model output to 1,615 active Haraj listings.
+Model median was 54% below asking price — consistent with asking vs.
+transacted price gap in Saudi market.
+
+DETAIL:
+- Scraped 1,615 Haraj.com listings (444 apartments, 630 villas, 526
+  residential plots, 15 buildings) with asking price and location.
+- THAMAN predicts TRANSACTED price (from MoJ quarterly data).
+  Haraj shows ASKING price. In Saudi real estate, asking price is typically
+  30–70% above transacted price (negotiation culture, inflated initial ask).
+- MedAPE of 54% between THAMAN output and Haraj asking price is expected.
+  It is NOT a model error — it is the asking-vs-transacted gap.
+- This distinction is important: the model is validated against the same
+  data distribution it was trained on (MoJ quarterly medians), not inflated
+  asking prices.
+
+─────────────────────────────────────────────────────────────────────
+
+Q: Why didn't you scrape more real-time data for Riyadh features?
+
+SHORT: Saudi platforms (Aqar, Haraj) block automated scraping. We used
+Saudi Open Data APIs which are official and stable.
+
+DETAIL:
+- SA_Aqar rental listings were used for structural medians (bedroom count,
+  property age, size) at district level — 1,615 listings, manually curated.
+- Open Data APIs used: metro stations, bus stops, commercial services,
+  traffic intersections, air quality (NO2, SO2, PM10, O3), all from
+  data.gov.sa/smart.gov.sa.
+- REI (Real Estate Price Index) from Saudi General Authority for Statistics.
+- Salary data from SAMA (Saudi Central Bank) annual statistical report.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 3 — ALGORITHMS & METHODOLOGY
+═══════════════════════════════════════════════════════════════════════
+
+Q: Why use a stacking ensemble instead of a single model?
+
+SHORT: Each base learner captures different patterns. Stacking reduces
+variance and improves generalization beyond any single model.
+
+DETAIL:
+- XGBoost: symmetric trees, good at global feature interactions, fast.
+- LightGBM: leaf-wise growth, better at sparse features, handles
+  high-cardinality district encoding well.
+- CatBoost: ordered boosting, more robust on smaller datasets (Riyadh
+  has only 6,910 rows). Dominates Riyadh meta with coefficient 0.721.
+- Ridge meta-learner: learns optimal weighted blend of base predictions.
+  In NYC: positive=True enforces non-negative weights (prevents cancellation).
+  In Riyadh: unconstrained because dataset is smaller and CatBoost dominates.
+- OOF (out-of-fold) predictions used to train meta-learner: prevents base
+  learners from "cheating" by memorizing training labels.
+
+─────────────────────────────────────────────────────────────────────
+
+Q: What is GroupKFold and why did you use it instead of regular KFold?
+
+SHORT: Regular KFold leaks spatial autocorrelation. Properties in the same
+neighborhood have correlated prices — a model can "cheat" by seeing nearby
+properties in training and predicting held-out ones.
+
+DETAIL:
+- GroupKFold groups entire geographic units (NTA codes for NYC,
+  district_ar for Riyadh) into the same fold.
+- When fold k is held out, NO property from those neighborhoods appears
+  in training. The model must generalize to unseen areas.
+- NYC uses 10 folds (311 NTAs → ~31 per fold).
+- Riyadh uses 5 folds (147 districts → ~29 per fold).
+- Regular KFold on this data would show R²>0.95 (data leakage), giving
+  false confidence. GroupKFold gives honest estimates.
+
+─────────────────────────────────────────────────────────────────────
+
+Q: What is SHAP and how does your feature explanation work?
+
+SHORT: SHAP (SHapley Additive exPlanations) decomposes a model's prediction
+into individual feature contributions. We approximate it using XGBoost's
+built-in feature importance weighted by prediction deviation.
+
+DETAIL:
+- True SHAP requires a background dataset and can be slow for real-time API.
+- We use XGBoost's `get_booster().predict(pred_contribs=True)` which returns
+  per-feature contribution values (TreeSHAP, exact for tree models).
+- Top 10 contributors displayed: direction (positive/negative) and magnitude.
+- This allows users to understand WHY a property is valued high or low
+  (e.g., "Metro proximity pushed price up", "High NO₂ pushed price down").
+
+─────────────────────────────────────────────────────────────────────
+
+Q: Why log-transform the target variable?
+
+SHORT: Property prices are right-skewed (a few luxury properties at 10×
+the median distort training). Log-transform makes the target normally
+distributed and improves model fit.
+
+DETAIL:
+- Raw sale_price has skewness > 5 in NYC, > 3 in Riyadh.
+- log1p(price) reduces skewness to near-normal, stabilizing gradient
+  descent and preventing the model from fitting outliers disproportionately.
+- At inference: prediction = expm1(model_output). MedAPE computed in
+  original price space after back-transformation.
+- This is standard practice in AVM (automated valuation model) literature.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 4 — SYSTEM / APPLICATION
+═══════════════════════════════════════════════════════════════════════
+
+Q: How does the app determine which city model to use?
+
+SHORT: Bounding box check on click coordinates. NYC bbox and Riyadh bbox
+are non-overlapping — no ambiguity possible.
+
+DETAIL:
+- NYC bbox: lat 40.47–40.92, lon -74.26 to -73.70
+- Riyadh bbox: lat 24.35–25.10, lon 46.30–47.20
+- The two cities are ~8,000 km apart. Clicking outside either bbox shows
+  an error. The city mode is set by the UI toggle (NYC/Riyadh button),
+  not automatically inferred from coordinates.
+- Two completely separate ML pipelines: NYC scorer never sees SAR data,
+  Riyadh scorer never sees USD data.
+
+─────────────────────────────────────────────────────────────────────
+
+Q: What happens if a user clicks a location in Riyadh with no nearby
+   district data?
+
+SHORT: KDTree nearest-centroid lookup always returns a district. Worst
+case is a district with sparse training data → wider confidence interval.
+
+DETAIL:
+- 147 district centroids are stored in district_centroids.csv.
+- Any coordinate in the Riyadh bbox will match the nearest centroid.
+- Districts with fewer than 10 training rows exist (rural outskirts).
+  The model uses those districts' features but the confidence interval
+  widens because the district MedAPE is not well-estimated.
+- Model returns medape_pct from global holdout (15.56%) as fallback
+  for confidence interval computation — no district-specific table.
+
+─────────────────────────────────────────────────────────────────────
+
+Q: Is this system production-ready?
+
+SHORT: No — it is a research prototype. Limitations include district-level
+granularity (not parcel), stale training data, and no legal valuation status.
+
+DETAIL:
+- Data freshness: Riyadh model trained on data through 2024, holdout 2025.
+  Needs quarterly retraining as new MoJ data becomes available.
+- Granularity: Riyadh predicts district medians, not individual property value.
+  Individual property features (condition, floor level, view) are not captured.
+- Legal: not a licensed valuation. For mortgage/legal purposes, a certified
+  valuer (مقيّم معتمد) is required under Saudi Valuers Authority regulations.
+- NYC model: individual parcel-level, more granular. Still not licensed AVM.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 5 — EDGE CASES & KNOWN ISSUES
+═══════════════════════════════════════════════════════════════════════
+
+Q: I noticed the price changed between two identical predictions. Why?
+
+SHORT: Coordinates near a district centroid boundary may match different
+districts on repeated calls due to floating-point ordering in KDTree.
+Expected variance: ±15% within boundary zones.
+
+DETAIL:
+- KDTree uses Euclidean distance on lat/lon. At exact district midpoints,
+  the tie-breaking order depends on KDTree internal structure (not guaranteed
+  stable across numpy/scipy versions).
+- The coordinates 24.7136, 46.6753 sit near the boundary of two districts
+  with similar but different median prices (2872 vs 4059 SAR/sqm observed).
+- Fix: use a larger k (k=3) and average features. Not implemented in v1
+  to keep latency low. Known limitation.
+
+─────────────────────────────────────────────────────────────────────
+
+Q: Why does the year default to 2025 even if the user is predicting now (2026)?
+
+SHORT: Model was trained on 2018–2024 data. Using 2026 extrapolates beyond
+training range, increasing prediction uncertainty. We cap at 2025 as the
+nearest in-distribution year.
+
+DETAIL:
+- Riyadh training cutoff: quarter_id < 20251 (data through end of 2024).
+- 2025 Q1–Q3 was the holdout set. 2025 is partially observed.
+- 2026 is fully out-of-distribution. Extrapolating `sale_year=2026` may
+  cause the time-trend features (REI index, salary trend) to produce
+  unreliable outputs.
+- User can override by supplying year=2024 or year=2025 explicitly.
+- NYC model trained on 2022–2026 data → current year is in-distribution.
+  No cap applied for NYC.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 6 — COMPARISON NYC vs RIYADH
+═══════════════════════════════════════════════════════════════════════
+
+Q: What are the main differences between the NYC and Riyadh models?
+
+NYC MODEL:
+- 134 features (vs 76 Riyadh)
+- Parcel-level individual transactions (185K rows)
+- 10-fold GroupKFold by NTA code
+- 4 base learners: XGB-A, XGB-B (structure-only), LGB, CatBoost
+- Ridge meta with positive=True (non-negative constraint)
+- Target: log1p(sale_price_usd)  → USD total price
+- Trained 2022–2026; holdout = newest 15% by date
+- R²=0.6509, MedAPE=20.32% on holdout
+- Features: structural (sqft, floors, age, units), spatial (subway, parks,
+  311 complaints, crime, air quality, NTA income, Airbnb density, FAR)
+
+RIYADH MODEL:
+- 140 features (vs 104 NYC)
+- District-quarter aggregate rows (6,910 rows)
+- 5-fold GroupKFold by district_ar
+- 3 base learners: XGBoost, LightGBM, CatBoost
+- Ridge meta unconstrained; CatBoost dominates (coef=0.721)
+- Target: log1p(sale_price_sar_sqm) → SAR per sqm
+- Trained 2018–2024; holdout = 2025 Q1–Q3
+- R²=0.8003, MedAPE=15.56% on holdout
+- Features: transit (metro lines, bus BRT), commercial density, air quality
+  (NO2/SO2/PM10/O3), mosques, malls, schools, hospitals, parks,
+  entertainment, REI price index, SAMA salary data, district aggregates
+
+KEY DIFFERENCES:
+1. Data granularity: NYC=parcel, Riyadh=district aggregate
+2. NYC has prior sale price imputation (PLUTO assesstot ratios, 99% coverage)
+3. Riyadh has Islamic/cultural POIs (mosques) — no NYC equivalent
+4. Riyadh has REI macro index (quarterly government price index)
+5. NYC uses walk score proxy (weighted POI count); Riyadh uses connectivity score
+6. CatBoost dominates Riyadh (small dataset); more balanced in NYC
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 7 — DEMO FLOW SCRIPT (2-minute version)
+═══════════════════════════════════════════════════════════════════════
+
+[0:00] Open app at huggingface.co/spaces/Turki-Almurahhem/thaman
+       → Loads on NYC by default, map centered on Manhattan.
+
+[0:15] "This is THAMAN — an AI property valuation system. I'll demo NYC first."
+       → Type "350 5th Ave, Manhattan" in address bar → click search
+       → Pin drops on Empire State Building area, lat/lon populated.
+
+[0:30] Fill form: Building Type=Residential Building, GrossArea=5000 sqft,
+       Built Year=1980, Floors=6, Units=4
+       → Click Estimate Price
+       → Result appears: price hero animates, SHAP bars show drivers,
+         spatial card shows subway distance, nearby sales load.
+
+[0:55] "Now let me show the Riyadh model."
+       → Click Riyadh toggle → map flies to Riyadh, district price layer loads.
+
+[1:05] "I'll click a location in Al Malqa district — one of the premium areas."
+       → Click map in northern Riyadh
+       → Pin drops, lat/lon populated in hidden fields.
+
+[1:15] Select: Property Type=Apartment (شقة), Area=150m²
+       → Click Estimate Price (تقدير السعر)
+       → Result: SAR/sqm price animates, total SAR shown,
+         spatial grid: metro ~400m, mall ~200m, air quality score.
+         SHAP drivers: district trend, connectivity score.
+
+[1:35] "Let me show the analytics dashboard."
+       → Click Analytics button
+       → Charts load: price distribution, borough/district breakdown,
+         model performance KPIs (OOF 8.28%, Holdout 15.56%, R²=0.798).
+
+[1:50] "The system covers both cities with independent models —
+        NYC for individual parcels, Riyadh for district-level estimation."
+
+[2:00] DONE.
+
+═══════════════════════════════════════════════════════════════════════
+SECTION 8 — KNOWN LIMITATIONS (say confidently, not defensively)
+═══════════════════════════════════════════════════════════════════════
+
+1. Riyadh data is district-level aggregate, not individual transactions.
+   → "This is the data availability constraint from MoJ. Future work
+      could incorporate individual deeds when access is granted."
+
+2. Riyadh model trained through 2024; predictions for 2025–2026 use
+   nearest in-distribution year (capped at 2025).
+   → "We acknowledge the temporal extrapolation. The holdout on 2025
+      data (R²=0.79) validates it remains useful one year forward."
+
+3. No property condition data (renovation quality, interior finish).
+   → "Both NYC (PLUTO has limited condition flags) and Riyadh lack this.
+      It is a universal limitation of government transaction registers."
+
+4. NYC luxury tier (>$5M) has wider confidence intervals.
+   → "Luxury transactions are sparse (< 3% of dataset) so the model
+      is less confident there — correctly communicated via a wider range."
+
+═══════════════════════════════════════════════════════════════════════
+END OF Q&A DOCUMENT
+═══════════════════════════════════════════════════════════════════════

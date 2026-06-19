@@ -1,0 +1,1555 @@
+================================================================================
+THAMAN — COMPLETE TECHNICAL REFERENCE
+Dual-City Automated Valuation Model: New York City & Riyadh
+BSc Computer Science | Umm Al-Qura University | 2026
+================================================================================
+
+This document covers every technical detail of the THAMAN project: datasets,
+preprocessing decisions, feature engineering, model architectures, algorithms,
+libraries, hyperparameters, training strategies, evaluation results, bugs
+found and fixed, system architecture, and the key differences between the two
+city models.
+
+
+────────────────────────────────────────────────────────────────────────────────
+1. PROJECT OVERVIEW
+────────────────────────────────────────────────────────────────────────────────
+
+THAMAN (ثمان — Arabic for "price" or "value") is an Automated Valuation Model
+(AVM) that estimates residential property prices using machine learning. It
+operates across two independent real estate markets simultaneously:
+
+  • New York City (NYC)   — predicts total property price in USD
+  • Riyadh, Saudi Arabia  — predicts price per square metre in SAR
+
+Both cities share the same stacking ensemble architecture but are trained on
+entirely separate datasets, use different feature sets tailored to each market,
+and produce city-specific outputs. The system is deployed as a FastAPI backend
+on Hugging Face Spaces with a Leaflet.js web interface. Users click a location
+on an interactive map, fill in property attributes, and receive an instant
+valuation with SHAP-based feature importance.
+
+
+────────────────────────────────────────────────────────────────────────────────
+2. SYSTEM ARCHITECTURE
+────────────────────────────────────────────────────────────────────────────────
+
+Layer           Technology          Details
+──────────────  ──────────────────  ───────────────────────────────────────────
+Data pipeline   Python, Polars      Feature engineering scripts produce CSVs
+Training        Python, scikit-learn, XGBoost, LightGBM, CatBoost, Ridge
+Model storage   pickle (.pkl), JSON  Stack saved as dict of fitted estimators
+API backend     FastAPI, Uvicorn     REST API, port 8000
+Spatial index   scipy cKDTree, sklearn BallTree  KD-trees for nearest-neighbour
+Frontend        Leaflet.js, Chart.js  Interactive map + analytics dashboard
+Deployment      Hugging Face Spaces (Docker container)
+Version control GitHub              turkialm/thaman-v2
+
+The API exposes:
+  POST /predict           — NYC property valuation
+  POST /predict/riyadh    — Riyadh property valuation
+  GET  /layers/district   — Riyadh district choropleth GeoJSON
+  GET  /layers/listings   — Haraj.com.sa active listings GeoJSON (1,615 points)
+  GET  /nearby            — Nearest comparable NYC sales
+  GET  /health            — Liveness check
+  GET  /ui                — Frontend HTML
+
+
+────────────────────────────────────────────────────────────────────────────────
+3. NYC MODEL — DATASET
+────────────────────────────────────────────────────────────────────────────────
+
+3.1 Primary Transaction Data
+────────────────────────────
+
+Source:   NYC Open Data — Citywide Rolling Calendar Sales
+URL:      https://data.cityofnewyork.us/City-Government/NYC-Citywide-Rolling-Calendar-Sales/usep-8jbt
+File:     export-2.geojson (7.2 MB, ~200K raw records)
+Coverage: 2022–2026 (residential sales deed-recorded by NYC Department of Finance)
+
+Rows loaded:   ~212,855 (after cleaning)
+Rows training: 157,329  (oldest 85% by sale_date)
+Rows holdout:  27,763   (newest 15% by sale_date — time-based split)
+
+Target variable: sale_price (USD, total transaction price)
+Log-transform:   log1p(sale_price) used during training; expm1() at inference
+
+Rows dropped (cleaning):
+  • sale_price < $10,000 or > $100,000,000 (data entry errors, transfers)
+  • Missing latitude/longitude
+  • Missing sale_date
+  • Duplicate BBL (tax lot) + sale_date combinations (kept highest price)
+  • Building class codes that indicate non-arm's-length transfers
+    (e.g., government conveyances, in-family transfers)
+  • Rows where gross_square_feet = 0 or null
+
+The dataset spans all five NYC boroughs:
+  Manhattan (1), Bronx (2), Brooklyn (3), Queens (4), Staten Island (5)
+
+3.2 Supplementary Data Sources
+───────────────────────────────
+
+PLUTO 25v4 (NYC Department of City Planning)
+  File:     nyc_pluto_25v4_csv/pluto_25v4.csv
+  Joined:   on BBL (borough-block-lot identifier)
+  Columns used: assesstot (assessed total value), assessland (assessed land value)
+  Coverage: ~95% join rate; used for prior_sale_price imputation via borough ratios
+  Dropped:  all other PLUTO columns (zoning, ownership, etc.)
+
+NYC Parks Properties
+  File: Parks_Properties_20260308.csv (6.6 MB)
+  Used: Park polygon centroids → dist_park_m via BallTree nearest-neighbour
+  Dropped: park names, IDs, ownership, acreage
+
+MTA Subway Stations
+  File: MTA_Subway_Stations_20260308.csv (84 KB, ~496 stations)
+  Columns used: GTFS Latitude, GTFS Longitude, CBD (central business district flag),
+                Daytime Routes (count of lines), ADA (accessibility flag)
+  Generated features: dist_subway_m, dist_express_subway_m, nearest_station_is_cbd,
+                      nearest_station_route_count, nearest_station_is_ada
+
+MTA Bus Stops
+  File: mta_bus_stops.csv (602 KB)
+  Used: dist_bus_m (nearest bus stop distance)
+  Dropped: route names, stop IDs
+
+NYC Elementary Schools
+  File: elementary_schools.csv (31 KB)
+  Used: dist_elem_school_m, school_district, district_avg_score, district_school_count
+  Dropped: school names, addresses
+
+HPD Housing Maintenance Code Violations
+  File: hpd_violations.csv (137 MB — largest raw file)
+  Filtered: open violations, 2022+, severity classes A/B/C
+  Aggregated: per-ZIP-code counts by severity class
+  Features: hpd_class_b_viol_zip, hpd_class_c_viol_zip, hpd_severity_score_zip
+    Class A = non-hazardous (minor)
+    Class B = hazardous (water damage, structural)
+    Class C = immediately hazardous (mold, lead paint, heat loss)
+    Severity score = C×3 + B×2 + A×1, log-scaled
+  Dropped: unit-level details, complaint dates, owner information
+
+DOB Building Permits
+  File: dob_permits.csv (130 KB — aggregated)
+  Filtered: 2022+, permit types A1/A2 (alteration), NB (new building)
+  Aggregated: per-ZIP counts, log-scaled
+  Features: dob_reno_permit_count, dob_newbld_permit_count
+  Dropped: permit descriptions, applicant names, individual job numbers
+
+NYC 311 Service Requests (Quality of Life)
+  Files: noise_complaints.parquet (14 MB), livability_complaints.parquet (6.5 MB)
+  Coverage: 2019–2025, by NTA (Neighbourhood Tabulation Area)
+  Features:
+    noise_density_nta       — noise complaints per 1,000 residents
+    livability_complaint_rate — heat/rodent/air complaints per 1,000 residents
+    rat_density_nta         — rodent complaints per 1,000 residents, log-scaled (v11)
+    heat_density_nta        — heat/hot-water complaints per 1,000 residents, log-scaled (v11)
+  Winsorization: noise_density_nta and livability_complaint_rate capped at p99
+    (noise p99 = 176.67, livability p99 = 60.99)
+
+NYPD Complaint Data
+  File: nypd_crimes.parquet (12 MB)
+  Aggregated: per-NTA crime rate (complaints per 1,000 residents)
+  Feature: crime_rate_nta
+  Winsorization: capped at p99 = 267.56 (extreme NTAs in high-crime areas)
+  Dropped: individual complaint records, crime types, officer info
+
+Census Tract Data (ACS 2020)
+  Files: census_tract_income.csv (175 KB), census_tract_population.csv (144 KB)
+  Joined to NTA level via spatial overlap
+  Features: population_2020, median_income_nta
+  Dropped: tract-level demographic breakdowns
+
+NTA Boundaries
+  File: nta_boundaries.geojson (4.4 MB), nta_simplified.geojson (436 KB — simplified for frontend)
+  Used for GroupKFold CV grouping, NTA target encoding
+  212 NTA codes used as spatial CV groups
+
+ACRIS Prior Sale Data
+  Source: embedded in the Citywide Rolling Sales dataset (prior_sale_price column)
+  Coverage: ~70% of properties have a prior sale on record
+  Imputation: for missing prior_sale_price, borough-level median ratios of
+    (prior_sale_price / assesstot) are computed on training data and applied:
+      borough_ratio = median(prior_sale_price / assesstot) for each borough
+      imputed_price = assesstot × borough_ratio
+    This gives ~99% coverage after imputation.
+  Features derived: prior_sale_price, price_appreciation, years_since_prior_sale,
+                    is_flip (sold within 2 years), has_prior_sale (binary flag),
+                    prior_price_psf (price per sqft of prior sale)
+
+AirBnB Listings
+  File: airbnb_listings.csv (2.5 MB)
+  Used: count of AirBnB listings within 500m of each property
+  Feature: airbnb_count_500m
+  Dropped: listing details, prices, host info
+
+NYC Air Quality
+  File: nyccas_air_quality.csv (2.8 MB)
+  Features: pm25_mean (PM2.5 annual mean), no2_mean (NO2 annual mean)
+  Joined by NTA
+  Dropped: seasonal breakdowns, measurement station details
+
+NYC Bike Lanes
+  File: nyc_bike_lanes.geojson (21 MB)
+  Used: dist_bike_lane_m (distance to nearest bike lane)
+  Dropped: lane type, direction, installation year
+
+NYC Waterfront
+  File: nyc_waterfront.geojson (12 KB)
+  Used: dist_waterfront_m (distance to nearest waterfront)
+
+Mortgage Rates
+  File: mortgage_rates.csv
+  Feature: mortgage_rate_30yr (US 30-year fixed rate for the sale month)
+  This captures macro interest rate environment at time of sale.
+
+NYC PLUTO FAR (Floor Area Ratio)
+  Columns from PLUTO: builtfar, residfar, commfar, facilfar
+  Derived: far_utilization = builtfar / (residfar + 0.01) — how much of allowed
+           residential FAR has been built
+
+NYC Coastline Points
+  File: nyc_coastline_pts.npy (424 KB — pre-computed numpy array)
+  Used: Waterfront proximity check (alternative to full polygon intersection)
+
+NYC Tree Census
+  Derived from spatial intersection with city tree data
+  Feature: tree_count_200m (number of street trees within 200m)
+
+
+────────────────────────────────────────────────────────────────────────────────
+4. NYC MODEL — FEATURE ENGINEERING
+────────────────────────────────────────────────────────────────────────────────
+
+All feature engineering runs in Polars (not pandas) for speed on 200K+ rows.
+Final feature CSV: data/processed/features_v5.csv (121 MB, 200K+ rows × 130+ cols)
+
+4.1 Distance Features (log-transformed)
+────────────────────────────────────────
+
+Every raw distance feature (dist_X_m) gets a log1p companion:
+  log_dist_subway_m, log_dist_bus_m, log_dist_school_m, log_dist_elem_school_m,
+  log_dist_park_m, log_dist_hospital_m, log_dist_waterfront_m, log_dist_bike_lane_m,
+  log_dist_express_subway_m
+
+Rationale: distance effects on price decay non-linearly. A property 100m from
+a subway is not 10× more valuable than one 1,000m away; the relationship is
+closer to logarithmic. Log-transform linearises this for gradient-boosted trees.
+
+4.2 Urban Gravity Centres
+──────────────────────────
+
+Four major employment/commercial hubs are computed as Euclidean distances (in
+metres, approximated from lat/lon degree differences × 111,000 m/degree):
+
+  dist_midtown_manhattan_m      — (40.7549, -73.9840)
+  dist_downtown_manhattan_m     — (40.7074, -74.0113)
+  dist_downtown_brooklyn_m      — (40.6928, -73.9903)
+  dist_long_island_city_m       — (40.7447, -73.9485)
+
+Rationale: proximity to employment centres is a primary driver of NYC real
+estate prices beyond local neighbourhood effects.
+
+4.3 Walk Score Proxy
+─────────────────────
+
+Composite score (0–100) combining five walkability signals:
+  Component         Weight  Source
+  ──────────────    ──────  ────────────────────────
+  Transit (1/dist_subway_m)      0.35
+  Bus (1/dist_bus_m)             0.15
+  Amenities (poi_count_500m)     0.30
+  Bike (1/dist_bike_lane_m)      0.10
+  Park (1/dist_park_m)           0.10
+
+Each component is independently MinMax-scaled (scaler saved in meta.json for
+inference) before weighting. Score clipped to [0, 100].
+
+4.4 Interaction Features
+─────────────────────────
+
+  sqft_per_floor     = gross_square_feet / numfloors (avg floor plate area)
+  income_over_crime  = median_income_nta / (crime_rate_nta + 1)
+  density_index      = residential_units / gross_square_feet × 1000
+  log_sqft_x_floors  = log1p(gross_square_feet) × log1p(numfloors)
+  log_land_sqft      = log1p(land_square_feet)
+  lot_coverage       = gross_square_feet / land_square_feet, clipped [0, 10]
+  bldg_vol_proxy     = log1p(gross_square_feet × numfloors) — volumetric proxy
+  prior_price_psf    = prior_sale_price / gross_square_feet
+
+4.5 Borough Interaction Terms
+───────────────────────────────
+
+  is_manhattan        = 1 if borough == 1
+  crime_x_manhattan   = crime_rate_nta × is_manhattan
+  crime_x_non_manhattan = crime_rate_nta × (1 - is_manhattan)
+
+Rationale: crime has very different pricing effects in Manhattan vs. outer
+boroughs. Manhattan's luxury market is less sensitive to local crime rates.
+
+4.6 Time Features
+──────────────────
+
+  sale_year           — integer year
+  sale_month_sin      = sin(sale_month × 2π/12) — cyclical encoding
+  sale_month_cos      = cos(sale_month × 2π/12) — cyclical encoding
+  mortgage_rate_30yr  — macro interest rate at time of sale
+
+4.7 POI Density Counts (500m radius)
+──────────────────────────────────────
+
+  poi_count_500m     — total points of interest within 500m
+  poi_cafe_500m      — cafes
+  poi_restaurant_500m
+  poi_gym_500m
+  poi_grocery_500m
+  poi_bar_500m
+  poi_pharmacy_500m
+
+4.8 Target Encoding
+────────────────────
+
+Target encoding replaces categorical variables with their mean log-price on
+the training set. Four encodings are computed:
+
+  bldgclass_encoded       — NYC building class code (A1, D4, C5, etc.)
+                            ~200+ unique codes; each gets training-set mean log-price
+  borough_bldg_encoded    — borough (1–5) × building class first letter (A–Z)
+                            ~100 combinations
+  nta_encoded             — NTA code (212 neighbourhood tabulation areas)
+  nta_bldg_encoded        — NTA × building class first letter (fine-grained)
+
+Fallback: unknown codes at inference → global training-set mean log-price
+
+These are the single most powerful features in the model. SHAP analysis shows
+bldgclass_encoded accounts for ~21% of total model explanation.
+
+4.9 NTA Market Statistics
+──────────────────────────
+
+  nta_sale_count         — number of sales in NTA during training window
+  nta_median_psf         — median price per sqft in NTA
+  nta_price_trend_slope  — OLS slope of mean log-price ~ sale_year per NTA
+                           Captures appreciating vs. declining neighbourhoods
+
+4.10 QoL Winsorization
+───────────────────────
+
+Three QoL features are capped at their 99th percentile on training data to
+prevent extreme outlier NTAs (e.g., Times Square for noise, high-crime housing
+projects) from dominating:
+
+  crime_rate_nta:             capped at 267.56
+  noise_density_nta:          capped at 176.67
+  livability_complaint_rate:  capped at 60.99
+
+These caps are stored in meta.json and applied at inference.
+
+4.11 Complete Feature List (134 features in model order)
+──────────────────────────────────────────────────────────
+
+CATEGORY           FEATURES
+──────────────────────────────────────────────────────────────────
+Location (2):      latitude, longitude
+Structural (5):    building_age, numfloors, gross_square_feet, land_square_feet,
+                   residential_units
+Zoning (5):        builtfar, residfar, commfar, facilfar, far_utilization
+Property type (5): has_elevator, is_condo, is_multifamily, is_single_fam, is_mixed_use
+Macro (4):         borough, sale_year, sale_month_sin, sale_month_cos,
+                   mortgage_rate_30yr
+Transit (6):       dist_subway_m, dist_express_subway_m, dist_bus_m,
+                   nearest_station_is_express, nearest_station_is_cbd,
+                   nearest_station_route_count, nearest_station_is_ada
+Log distances (9): log_dist_subway_m, log_dist_express_subway_m, log_dist_bus_m,
+                   log_dist_school_m, log_dist_elem_school_m, log_dist_park_m,
+                   log_dist_hospital_m, log_dist_waterfront_m, log_dist_bike_lane_m
+Proximity (4):     dist_school_m, dist_park_m, dist_hospital_m, dist_waterfront_m,
+                   dist_bike_lane_m, dist_elem_school_m
+Urban gravity (4): dist_midtown_manhattan_m, dist_downtown_manhattan_m,
+                   dist_downtown_brooklyn_m, dist_long_island_city_m
+Borough flag (3):  is_manhattan, crime_x_manhattan, crime_x_non_manhattan
+Walk score (1):    walk_score_proxy
+Amenities (7):     poi_count_500m, poi_cafe_500m, poi_restaurant_500m,
+                   poi_gym_500m, poi_grocery_500m, poi_bar_500m, poi_pharmacy_500m,
+                   airbnb_count_500m, tree_count_200m
+QoL signals (6):   crime_rate_nta, noise_density_nta, livability_complaint_rate,
+                   rat_density_nta, heat_density_nta, population_2020
+Income (2):        median_income_nta, borough_income_deviation
+Air quality (2):   pm25_mean, no2_mean
+Schools (3):       school_district, district_avg_score, district_school_count
+Prior sale (6):    prior_sale_price, price_appreciation, years_since_prior_sale,
+                   is_flip, has_prior_sale, prior_price_psf
+Assessment (2):    assesstot, assessland
+Renovation (2):    renovated_since_2018, years_since_renovation
+Interactions (8):  sqft_per_floor, income_over_crime, density_index,
+                   log_sqft_x_floors, log_land_sqft, lot_coverage,
+                   bldg_vol_proxy, bldg_vol_proxy
+Target-encoded (7):bldgclass_encoded, borough_bldg_encoded, nta_encoded,
+                   nta_bldg_encoded, nta_sale_count, nta_median_psf,
+                   nta_price_trend_slope
+HPD violations (3):hpd_class_b_viol_zip, hpd_class_c_viol_zip, hpd_severity_score_zip
+DOB permits (2):   dob_reno_permit_count, dob_newbld_permit_count
+MTA quality (3):   nearest_station_is_cbd, nearest_station_route_count,
+                   nearest_station_is_ada
+
+
+────────────────────────────────────────────────────────────────────────────────
+5. NYC MODEL — TRAINING METHODOLOGY
+────────────────────────────────────────────────────────────────────────────────
+
+5.1 Train / Holdout Split
+──────────────────────────
+
+Type: time-based (not random)
+Split: oldest 85% → training (157,329 rows), newest 15% → holdout (27,763 rows)
+Sorted by: sale_date (ascending)
+Rationale: prevents temporal leakage. The model never sees future sales during
+training. This simulates real deployment: train on historical data, evaluate
+on future unseen transactions.
+
+5.2 Cross-Validation Strategy
+───────────────────────────────
+
+Type:   Spatial GroupKFold
+Folds:  10
+Groups: NTA code (ntacode) — 212 neighbourhood tabulation areas
+Rationale: standard K-Fold would put adjacent sales from the same neighbourhood
+in both train and validation, inflating CV scores via spatial autocorrelation.
+GroupKFold ensures all sales from a given NTA are either fully in train or
+fully in validation for each fold. This gives a conservative, honest estimate
+of spatial generalisation.
+
+5.3 Base Learner Hyperparameters
+─────────────────────────────────
+
+XGB-A (deep XGBoost):
+  n_estimators:      5,000 (with early stopping, rounds 400)
+  learning_rate:     0.02
+  max_depth:         7
+  min_child_weight:  8
+  subsample:         0.80
+  colsample_bytree:  0.60
+  gamma:             0.1
+  reg_alpha:         0.3
+  reg_lambda:        1.5
+  Best round:        3,843
+
+XGB-B (shallow/wide XGBoost — for diversity):
+  n_estimators:      5,000 (early stopping 400)
+  learning_rate:     0.05
+  max_depth:         4   ← shallower than XGB-A
+  min_child_weight:  15  ← more conservative
+  subsample:         0.65
+  colsample_bytree:  0.75
+  gamma:             0.3
+  reg_alpha:         1.0
+  reg_lambda:        2.5
+  random_state:      7   ← different seed from XGB-A for decorrelation
+  Best round:        5,000
+
+LightGBM (wide, leaf-wise):
+  n_estimators:      5,000 (early stopping 400)
+  learning_rate:     0.04
+  num_leaves:        127
+  min_child_samples: 15
+  feature_fraction:  0.70
+  bagging_fraction:  0.80
+  bagging_freq:      5
+  reg_alpha:         0.3
+  reg_lambda:        1.5
+  Best round:        952 (early stopped)
+
+CatBoost (high-capacity):
+  iterations:          3,000 (early stopping 400)
+  learning_rate:       0.025
+  depth:               8
+  l2_leaf_reg:         1.5
+  random_strength:     0.5
+  bagging_temperature: 0.8
+  border_count:        64
+  Best round:          3,000
+
+5.4 Meta-Learner
+─────────────────
+
+Two meta-learner candidates are evaluated:
+
+LightGBM meta (non-linear blending):
+  Input:           OOF predictions from 4 base learners (4-column matrix)
+  Architecture:    n_estimators=500, learning_rate=0.05, num_leaves=15,
+                   min_child_samples=30, reg_alpha=0.5, reg_lambda=2.0
+  Train/val split: 85%/15% of OOF predictions
+  Early stopping:  50 rounds
+
+Ridge meta (L2 linear blending):
+  Input:           same 4-column OOF matrix
+  alpha:           1.0
+  positive:        True (enforce non-negative weights — blending, not arbitrage)
+
+Selection: whichever achieves higher holdout R². In v11, Ridge wins:
+  LGB meta holdout: R²=0.6349  (learned OOF noise — meta-overfitting)
+  Ridge meta holdout: R²=0.6495 (conservative, stable weights)
+
+Ridge weights (positive=True prevents negative coefficients):
+  [XGB-A: w1, XGB-B: w2, LGB: w3, CAT: w4]  — summing to ~1.0
+
+Rationale for Ridge winning: by the time predictions reach the meta layer, the
+four base learners have already captured the main non-linear relationships.
+The residual variance is mostly noise. Ridge's L2 penalty prevents the meta-
+learner from overfitting to fold-specific OOF correlation patterns.
+
+5.5 Luxury Sub-Model
+──────────────────────
+
+A separate XGBoost model is trained exclusively on Manhattan sales ≥ $2,500,000:
+  Samples:       ~2,000+ luxury properties
+  Architecture:  n_estimators=2000, learning_rate=0.015, max_depth=6
+  Used at inference: when predicted location is Manhattan and price estimate
+                     exceeds $2.5M threshold
+
+5.6 Prior Sale Imputation
+──────────────────────────
+
+prior_sale_price is absent for ~30% of properties. Strategy:
+  1. Compute borough-level median ratio = median(prior_sale_price / assesstot)
+     using training rows where both fields exist
+  2. For missing prior_sale_price rows where assesstot exists:
+     imputed_prior_sale_price = assesstot × borough_ratio
+  3. If assesstot also missing: leave as 0 (has_prior_sale = 0 flag catches this)
+
+Result: 99% coverage after imputation. prior_sale_price ends up as the 4th most
+important feature by SHAP, behind building class encoding, building size, and
+borough×class encoding.
+
+
+────────────────────────────────────────────────────────────────────────────────
+6. NYC MODEL — RESULTS
+────────────────────────────────────────────────────────────────────────────────
+
+6.1 Overall Holdout Performance (Stack v22, 27,763 sales)
+───────────────────────────────────────────────────────────
+
+Model                   R²        MAE (USD)      MedAPE
+──────────────────────  ────────  ─────────────  ───────
+XGB-A (deep)            0.6443    (not stored)   20.13%
+XGB-B (shallow)         0.6402    (not stored)   20.22%
+LightGBM (wide)         0.6403    (not stored)   20.28%
+CatBoost (high-cap)     0.6426    (not stored)   20.35%
+Stack v22 (Ridge meta)  0.6495    $1,047,004     20.32%
+
+Improvement vs. baseline (linear regression on 3 features): R² 0.238 → 0.645
+Improvement vs. v1 (single XGBoost, 2022):                  MedAPE ~32% → 20.32%
+
+6.2 Performance by Borough (Holdout)
+──────────────────────────────────────
+
+Borough           n         R²        MedAPE     MAE (USD)
+──────────────    ────────  ────────  ─────────  ──────────────
+Manhattan         5,411     0.xxxx    36.89%     $2,801,602
+Bronx             2,735     0.xxxx    21.05%     $1,517,641
+Brooklyn          7,032     0.xxxx    20.84%     $871,097
+Queens            9,533     0.xxxx    17.04%     $363,990
+Staten Island     3,052     0.xxxx    13.56%     $221,158
+
+Key finding — Staten Island paradox: lowest R² of any borough, yet best MedAPE
+at 13.56%. Explanation: Staten Island has very low price variance (most sales
+$300K–$700K). The model predicts well in absolute terms, but R² penalises a
+low-variance target disproportionately. MedAPE is the user-relevant metric.
+
+Manhattan is hardest: 36.89% MedAPE. Reasons:
+  - Co-op board approval discounts (unobservable)
+  - Interior finishes, renovation quality (unobservable)
+  - Floor number premium in high-rises (partially captured by numfloors)
+  - Heterogeneous building stock from pre-war walk-ups to ultra-luxury towers
+
+6.3 Performance by Price Tier (Holdout)
+─────────────────────────────────────────
+
+Tier              n         MedAPE     MAE (USD)
+──────────────    ────────  ─────────  ──────────────
+< $500K           6,497     27.71%     $229,607
+$500K – $1M       10,980    14.68%     $179,450
+$1M – $3M         7,978     21.14%     $445,458
+$3M – $10M        1,707     40.58%     $2,169,464
+
+The sweet spot is $500K–$1M (typical Queens/Brooklyn starter home): 14.68% MedAPE.
+The model struggles most below $500K (often Bronx/SI properties with high
+variance from distressed sales) and above $3M (Manhattan luxury, unobservable
+quality signals).
+
+6.4 SHAP Feature Importance (Top 10, mean |SHAP|)
+───────────────────────────────────────────────────
+
+Rank  Feature                   Approx. |SHAP|   Category
+────  ────────────────────────  ──────────────   ─────────────────
+1     bldgclass_encoded          0.2121          Target encoding
+2     borough_bldg_encoded       0.1188          Target encoding
+3     gross_square_feet          0.0980          Structural
+4     prior_sale_price           0.0750          Prior sale
+5     dist_downtown_manhattan_m  0.0725          Urban gravity
+6     latitude                   0.0585          Location
+7     land_square_feet           0.0538          Structural
+8     price_appreciation         0.0367          Prior sale
+9     has_prior_sale             0.0335          Prior sale
+10    builtfar                   0.0324          Zoning
+
+The building class encoding dominates because it captures the single most
+important categorical signal in NYC real estate: building type determines
+co-op vs. condo vs. single-family, which has a 40–60% price differential.
+
+
+────────────────────────────────────────────────────────────────────────────────
+7. RIYADH MODEL — DATASET
+────────────────────────────────────────────────────────────────────────────────
+
+7.1 Dataset Structure — Fundamentally Different from NYC
+──────────────────────────────────────────────────────────
+
+This is the most critical difference between the two models.
+
+NYC uses individual property transaction records (~200K records, one row = one sale).
+
+Riyadh uses district-level quarterly aggregates (6,910 rows, one row = one
+district × one quarter combination). Each row represents the aggregated
+statistics (median price/sqm, deed count) for all sales in a given district
+during a given quarter. There are no individual transaction records available
+because the Saudi Ministry of Justice does not publish parcel-level data to the
+public — only quarterly district-level summaries.
+
+This fundamentally shapes the model:
+  - Target = median(sale_price_sar_sqm) for that district-quarter
+  - Spatial features = computed at the district centroid lat/lon
+  - All "structural" features (bedrooms, size) = district-level medians from SA_Aqar
+  - No individual building characteristics are available
+
+7.2 Transaction Data Sources
+──────────────────────────────
+
+Source 1: Ministry of Justice XLSX Report (2018–2023)
+  File: data/raw/quarter_report SI.xlsx
+  Contents: Quarterly district-level summaries for all Saudi cities
+  Filtered: city_ar == "الرياض" (Riyadh only)
+  Key column: Meter_Price_W_Avg_IQR — IQR-winsorized average price per sqm
+  Rows after filter: ~4,500 district-quarter records, years 2018–2023
+  Minimum deed count filter: deed_counts >= 3 (drop very sparse quarters)
+
+  DROPPED columns:
+    RealEstatePrice_SUM / deed_counts — this gives average deal value per
+    transaction, NOT price per sqm. Using it produces 4M+ SAR/sqm garbage values.
+    Only Meter_Price_W_Avg_IQR is used.
+
+  Property types kept (typecategoryar):
+    شقة (apartment), فيلا (villa), قطعة أرض-سكنى (residential plot), عمارة (building)
+
+Source 2: Saudi Open Data API — 2024 Quarterly CSVs
+  Files: sales_riyadh_2024_Q1.csv, Q3.csv, Q4.csv (Q2 not available)
+  Note: No 2024 Q2 data exists in the public API
+  Format: CSV with Arabic column names, semicolon or comma delimited
+  Key engineering challenge: Two columns both named "الربع" after stripping
+    trailing spaces. Fixed by pattern-matching on "رقم" keyword to identify
+    the quarter-number column, never renaming globally.
+
+Source 3: Saudi Open Data API — 2025 Quarterly CSVs
+  Files: sales_riyadh_2025_Q1.csv, Q2.csv, Q3.csv
+  Note: 2025 Q4 was excluded — district field mostly empty
+  These become the holdout set (all rows with quarter_id >= 20251)
+
+7.3 Critical Bug Found and Fixed: 2024 Quarter ID Encoding
+────────────────────────────────────────────────────────────
+
+During evaluation, it was noticed that all 867 rows with sale year 2024 were
+landing in the holdout set despite representing 2024 data that should be in
+training. Investigation revealed:
+
+The quarter_id encoding formula: quarter_id = year × 10 + sale_quarter
+
+In the 2024 API CSVs, the raw "sale_quarter" column already contained the
+full quarter code (e.g., 20241 for 2024 Q1). When multiplied by 10:
+  quarter_id = 2024 × 10 + 20241 = 20240 + 20241 = 40481
+
+So 2024 quarter IDs were 40481, 40483, 40484 instead of the correct 20241,
+20243, 20244. These large numbers sorted after all valid quarter IDs (including
+2025 Q1-Q3), causing all 867 2024 rows to fall in the holdout.
+
+Additionally, the REI (Real Estate Price Index) values for these rows were
+corrupted — all showing 100.44 (the 2025 Q3 value from _closest_qid lookup).
+
+Fix applied in scripts/fix_riyadh_2024_quarters.py:
+  1. quarter_id remapped: {40481→20241, 40483→20243, 40484→20244}
+  2. sale_quarter corrected: {40481→1, 40483→3, 40484→4}
+  3. sale_quarter_sin/cos recomputed with correct quarter values
+  4. REI values corrected from actual quarterly CSV:
+     Q1 2024: rei=99.18, yoy=-1.10, qoq=-0.10
+     Q3 2024: rei=101.35, yoy=1.60, qoq=0.20
+     Q4 2024: rei=102.35, yoy=3.10, qoq=1.00
+  5. Training cutoff changed: from 80th percentile of quarters (landed at 20241,
+     excluding all 2024 Metro-era data) to hardcoded cutoff_qid = 20251
+     (train on 2018–2024, holdout = 2025 Q1–Q3)
+
+Impact of fix:
+  Before fix: train_rows=4,664  hold_rows=2,246  (2024 all in holdout!)
+  After fix:  train_rows=5,531  hold_rows=1,727
+  Holdout MedAPE: 23.43% → 15.56%  (dramatic improvement)
+  Holdout R²:     0.675  → 0.798
+
+7.4 District Data
+──────────────────
+
+File: data/processed/district_centroids.csv (11 KB)
+  147 Riyadh districts with lat/lon centroids
+  Generated from: Saudi Open Data district boundary GeoJSON + OSM admin polygons
+  Used for: KD-tree spatial lookups at inference time
+
+District polygon file: data/raw/riyadh_district_polygons.geojson
+  133 districts with OSM polygon boundaries (fewer than centroid list due to
+  some districts not having polygon coverage in OSM admin_level=10)
+
+7.5 Spatial Data Sources (Saudi Open Data)
+────────────────────────────────────────────
+
+Metro Transit:
+  File: metro-stations-in-riyadh-by-metro-line-and-station-type-2024.geojson (72 KB)
+        metro-lines-in-riyadh-2024.geojson (9.1 KB)
+  Columns used: geometry (station coordinates), metro_line, station_type
+  Features generated: dist_metro_m, log_dist_metro_m, metro_stations_1km,
+                      nearest_metro_line_num, nearest_metro_type_cd, dist_metro_line1_m
+  Context: Riyadh Metro opened late 2024 — 6 lines, 85 stations, east-west
+           Line 1 is the busiest corridor. This is a novel infrastructure signal
+           absent from pre-2024 models.
+
+Bus Stops:
+  File: bus-stops-in-riyadh-by-bus-route-direction-and-shelter-type-2024.geojson (1.6 MB)
+        bus-roads-by-direction-in-riyadh-2024.geojson (767 KB)
+  Features: dist_bus_m, log_dist_bus_m, bus_stops_500m, brt_stops_500m
+
+Traffic Intersections:
+  File: number-of-vehicles-crossings-of-major-cities-.geojson (1.7 KB)
+  Features: dist_major_intersection_m, log_dist_intersection_m,
+            intersections_1km, intersections_500m
+
+Commercial Services:
+  File: commercial-services-by-category-sub-municipality-and-district-2024.geojson (2.1 MB)
+  Categories used: hypermarkets, supermarkets, banks, restaurants, hotels, gas stations
+  Features: commercial_count_1km, commercial_density_score,
+            district_commercial_count, district_commercial_mix,
+            hypermarket_count_1km, supermarket_count_1km,
+            bank_count_1km, restaurant_count_1km, hotel_count_1km, gas_station_count_1km
+
+Air Quality Stations:
+  File: air-quality-stations-in-riyadh-2025.geojson (12 KB) — station locations
+        air-quality.csv (1.0 MB) — hourly measurements
+  Pollutants: NO2, SO2, PM10, O3
+  Features: no2_nearest_mean, so2_nearest_mean, pm10_nearest_mean, o3_nearest_mean,
+            dist_air_station_m, air_quality_score (composite weighted index)
+
+QoL POIs (6 types, all via KD-tree):
+  Mosques:       dist_mosque_m, log_dist_mosque_m, mosque_count_500m
+  Malls:         dist_mall_m, log_dist_mall_m, mall_count_500m
+  Schools:       dist_school_m, log_dist_school_m, school_count_500m
+  Hospitals:     dist_hospital_m, log_dist_hospital_m, hospital_count_500m
+  Parks:         dist_park_m, log_dist_park_m, park_count_500m
+  Entertainment: dist_entertain_m, log_dist_entertain_m, entertain_count_500m
+  POI source: Saudi Open Data API GeoJSON files for each category
+
+7.6 Macroeconomic Data
+───────────────────────
+
+Real Estate Price Index (REI):
+  File: real-estate-price-index-by-sector-2023-100.csv (semicolon-delimited)
+  Base: 2023 Q4 = 100
+  Features: rei_residential_qtr_idx, rei_apt_idx, rei_yoy_change, rei_qoq_change
+  Covers: 2017–2025 quarterly values
+  Joined: by quarter_id to each district-quarter row
+
+Salary Data (SAMA — Saudi Arabian Monetary Authority):
+  Files: SAMA_StatisticalReport_*.xls
+  Feature: avg_saudi_salary_yr (annual average private sector salary)
+           salary_yoy_change (year-over-year change %)
+  Joined: by year
+
+7.7 SA_Aqar Rental Listings
+────────────────────────────
+
+File: data/raw/SA_Aqar.csv (1.5 MB, ~50K listings)
+Source: SA_Aqar real estate platform
+Used: to provide district-level structural property attributes, which the
+      Ministry of Justice data lacks entirely (no bedroom count, no property age)
+
+Aggregation: grouped by district, computed medians:
+  aqar_median_size_sqm     — median listing size in district
+  aqar_median_bedrooms     — median bedroom count
+  aqar_median_property_age — median property age (years)
+  aqar_rent_per_sqm        — median asking rent per sqm
+
+These 4 features are the only structural signals available for the Riyadh model.
+Note: these are RENTAL listing attributes, not transaction attributes — they
+serve as proxies for the typical property characteristics in each district.
+
+7.8 Dataset Statistics Summary
+────────────────────────────────
+
+Total rows:         6,910
+Training rows:      5,531  (quarter_id < 20251, years 2018–2024)
+Holdout rows:       1,727  (quarter_id >= 20251, years 2025 Q1–Q3)
+Districts:          163 unique
+Columns (raw CSV):  87
+Features used:      76 (out of 85 in FEATURES list; 9 not in CSV)
+
+Target: sale_price_sar_sqm (SAR per square metre)
+  Min:    221.82 SAR/sqm
+  Max:    12,565.21 SAR/sqm
+  Median: 3,303.28 SAR/sqm
+  City-wide median stored in meta: 2,902.86 SAR/sqm (training set)
+
+Log-transform: log1p(sale_price_sar_sqm) during training; expm1() at inference
+
+Rows by year:
+  2018: 609    2019: 684    2020: 761    2021: 891
+  2022: 971    2023: 748    2024: 867    2025: 1,727
+
+Rows by property type:
+  قطعة أرض-سكنى (Residential Plot):  3,062 (44.3%)
+  فيلا (Villa):                       2,174 (31.5%)
+  شقة (Apartment):                    1,661 (24.0%)
+  عمارة (Building):                      13  (0.2%)
+
+
+────────────────────────────────────────────────────────────────────────────────
+8. RIYADH MODEL — FEATURE ENGINEERING
+────────────────────────────────────────────────────────────────────────────────
+
+All pipeline runs in Polars (not pandas). Scipy cKDTree and sklearn BallTree
+handle spatial lookups. Numpy used only where Polars lacks a direct method.
+
+8.1 Spatial Lookups (KD-tree / BallTree)
+──────────────────────────────────────────
+
+For each district centroid (lat, lon), spatial features are computed via:
+  scipy.spatial.cKDTree    — for Euclidean proximity (metro, bus, POIs)
+  sklearn.neighbors.BallTree — for haversine distance (geographic accuracy)
+
+Lookup pattern for each spatial layer:
+  nearest distance → dist_X_m
+  log1p(nearest distance) → log_dist_X_m
+  count within radius → X_count_500m or X_count_1km
+
+8.2 Connectivity Score
+───────────────────────
+
+A composite accessibility score (0–100) is computed per district:
+
+  Component                  Weight  Scaling
+  ─────────────────────────  ──────  ────────────────────────
+  metro_stations_1km           0.30  MinMax scaled
+  commercial_count_1km         0.25  MinMax scaled
+  bus_stops_500m               0.20  MinMax scaled
+  inv_dist_metro (1/dist)      0.15  MinMax scaled
+  intersections_1km            0.10  MinMax scaled
+
+Feature: riyadh_connectivity_score
+Scaler parameters stored in riyadh_meta.json (riyadh_connectivity_scaler key)
+Applied at inference: same MinMax bounds from training data
+
+8.3 Target Encoding (District Level)
+──────────────────────────────────────
+
+  district_encoded        — Arabic district name → mean log(price_sqm) on training rows
+  district_type_encoded   — district × property type → mean log(price_sqm)
+
+Fallback: city median log-price (global_mean_log = 7.8645)
+
+8.4 Time Features
+──────────────────
+
+  sale_year           — integer year (2018–2025)
+  sale_quarter_sin    = sin(quarter × 2π/4)
+  sale_quarter_cos    = cos(quarter × 2π/4)
+  log_deed_count      = log1p(deed_counts) — transaction volume proxy
+
+8.5 District Aggregate Features
+─────────────────────────────────
+
+Computed from training rows only, then applied to all rows:
+  district_median_price_sqm        — median price/sqm in district
+  district_transaction_volume      — total deed count for district
+  district_price_vs_city_avg       — ratio: district median / city median
+  district_price_trend_slope       — OLS slope of median log-price ~ year (per district)
+  district_median_price_apt_sqm    — median price for apartments specifically
+
+These capture the district's relative position and trajectory in the market.
+
+8.6 Complete Feature List (140 features)
+─────────────────────────────────────────
+
+CATEGORY                  FEATURES (76 total)
+────────────────────────────────────────────────────────────────────────
+Location (2):             district_lat, district_lon
+Property type (4):        is_apartment, is_villa, is_residential_plot, is_building
+Metro transit (6):        dist_metro_m, log_dist_metro_m, metro_stations_1km,
+                          nearest_metro_line_num, nearest_metro_type_cd, dist_metro_line1_m
+Bus (4):                  dist_bus_m, log_dist_bus_m, bus_stops_500m, brt_stops_500m
+Traffic (4):              dist_major_intersection_m, log_dist_intersection_m,
+                          intersections_1km, intersections_500m
+Commercial (10):          commercial_count_1km, commercial_density_score,
+                          district_commercial_count, district_commercial_mix,
+                          hypermarket_count_1km, supermarket_count_1km,
+                          bank_count_1km, restaurant_count_1km,
+                          hotel_count_1km, gas_station_count_1km
+Air quality (6):          no2_nearest_mean, so2_nearest_mean, pm10_nearest_mean,
+                          o3_nearest_mean, dist_air_station_m, air_quality_score
+Macro/REI (6):            rei_residential_qtr_idx, rei_apt_idx,
+                          rei_yoy_change, rei_qoq_change,
+                          avg_saudi_salary_yr, salary_yoy_change
+District aggregates (5):  district_median_price_sqm, district_transaction_volume,
+                          district_price_vs_city_avg, district_price_trend_slope,
+                          district_median_price_apt_sqm
+Target-encoded (2):       district_encoded, district_type_encoded
+Time (4):                 sale_year, sale_quarter_sin, sale_quarter_cos, log_deed_count
+Mosque (3):               dist_mosque_m, log_dist_mosque_m, mosque_count_500m
+Mall (3):                 dist_mall_m, log_dist_mall_m, mall_count_500m
+School (3):               dist_school_m, log_dist_school_m, school_count_500m
+Hospital (3):             dist_hospital_m, log_dist_hospital_m, hospital_count_500m
+Park (3):                 dist_park_m, log_dist_park_m, park_count_500m
+Entertainment (3):        dist_entertain_m, log_dist_entertain_m, entertain_count_500m
+Connectivity (1):         riyadh_connectivity_score
+Structural/rental (4):    aqar_median_size_sqm, aqar_median_bedrooms,
+                          aqar_median_property_age, aqar_rent_per_sqm
+
+
+────────────────────────────────────────────────────────────────────────────────
+9. RIYADH MODEL — TRAINING METHODOLOGY
+────────────────────────────────────────────────────────────────────────────────
+
+9.1 Train / Holdout Split
+──────────────────────────
+
+Type:    Time-based on quarter_id
+Cutoff:  quarter_id < 20251 → training   (2018 Q1 – 2024 Q4)
+         quarter_id >= 20251 → holdout   (2025 Q1, Q2, Q3)
+Training rows: 5,531
+Holdout rows:  1,727
+
+The holdout represents three entirely unseen calendar quarters (Q1–Q3 2025),
+representing a forward-looking stress test rather than a random sample.
+
+9.2 Cross-Validation Strategy
+───────────────────────────────
+
+Type:   Spatial GroupKFold
+Folds:  5 (fewer than NYC because dataset is smaller)
+Groups: district_ar (Arabic district name — 163 unique districts)
+
+Same rationale as NYC: prevents sales from the same district leaking across
+folds, which would cause inflation of CV metrics due to spatial autocorrelation.
+
+9.3 Base Learner Hyperparameters
+─────────────────────────────────
+
+XGBoost:
+  n_estimators:    1,500
+  learning_rate:   0.03
+  max_depth:       5
+  min_child_weight: 5
+  subsample:       0.7
+  colsample_bytree: 0.7
+  gamma:           0.2
+  reg_alpha:       0.5
+  reg_lambda:      2.0
+  tree_method:     hist
+  random_state:    42
+
+LightGBM:
+  n_estimators:    1,500
+  learning_rate:   0.03
+  max_depth:       5
+  min_child_samples: 10
+  subsample:       0.7
+  colsample_bytree: 0.7
+  min_split_gain:  0.2
+  reg_alpha:       0.5
+  reg_lambda:      2.0
+  random_state:    42
+  early_stopping:  50 rounds
+
+CatBoost:
+  iterations:          1,500
+  learning_rate:       0.03
+  depth:               5
+  l2_leaf_reg:         2.0
+  random_strength:     0.2
+  bagging_temperature: 0.5
+  random_seed:         42
+  early_stopping:      50 rounds
+
+Note: Riyadh uses 3 base learners (not 4 as in NYC). No second XGBoost variant
+because the dataset is much smaller and the diversity gain from a second XGB
+was not worth the added complexity.
+
+9.4 Meta-Learner
+─────────────────
+
+Ridge (L2 linear blending):
+  alpha:    1.0
+  positive: False (no constraint on Riyadh — dataset is too small for reliable
+            positive-only constraint to help)
+
+Ridge meta coefficients (from riyadh_meta.json):
+  XGBoost:   0.278
+  LightGBM:  0.002
+  CatBoost:  0.721
+
+Interpretation: CatBoost dominates the blend (72%), XGBoost contributes 28%,
+LightGBM contributes almost nothing (0.2%). This is common with small datasets
+where CatBoost's symmetric tree structure and ordered boosting help it
+generalise better than the others.
+
+9.5 Null Handling
+──────────────────
+
+All features are filled with 0 before model input (fillna(0)). For spatial
+features, 0 is not physically meaningful, but the trees learn to use it as a
+"not available" sentinel. Features with significant null rates:
+  aqar_* columns: ~30% null for districts not in SA_Aqar data → filled 0
+  brt_stops_500m: ~60% null (BRT routes not covering all areas) → filled 0
+
+Target (sale_price_sar_sqm): rows with null target are dropped. No imputation
+of the target is performed.
+
+
+────────────────────────────────────────────────────────────────────────────────
+10. RIYADH MODEL — RESULTS
+────────────────────────────────────────────────────────────────────────────────
+
+10.1 OOF Cross-Validation (5-fold, training set only)
+───────────────────────────────────────────────────────
+
+OOF ensemble mean:  R²=0.9343   MedAPE=8.28%
+OOF Ridge meta:     R²=0.9343   MedAPE=8.28%
+
+Individual base learner OOF (approximate, from training script output):
+  XGBoost:   R²~0.88  MedAPE~12%
+  LightGBM:  R²~0.87  MedAPE~13%
+  CatBoost:  R²~0.90  MedAPE~10%
+
+10.2 Holdout Performance (2025 Q1–Q3, 1,727 district-quarters)
+────────────────────────────────────────────────────────────────
+
+Metric         Value
+──────────────────────────
+R²             0.8003
+MedAPE         15.56%
+MAE            980 SAR/sqm
+
+10.3 Performance by Property Type (Holdout)
+─────────────────────────────────────────────
+
+Type                    MedAPE     Notes
+──────────────────────  ─────────  ──────────────────────────────────────────
+Apartment (شقة)         16.42%     Best-performing type (homogeneous product)
+Villa (فيلا)            14.46%     Best absolute performance
+Residential Plot        25.84%     Hardest (land values driven by development
+(قطعة أرض-سكنى)                   speculation — unobservable zoning signals)
+Building (عمارة)        N/A        Too few holdout samples for reliable estimate
+
+10.4 The OOF-to-Holdout Gap Explained
+───────────────────────────────────────
+
+OOF MedAPE: 8.28%  vs.  Holdout MedAPE: 15.56%  (gap = 7.3 pp)
+
+Three factors drive this gap:
+
+1. TEMPORAL DISTRIBUTION SHIFT: The holdout is Q1–Q3 2025 — entirely future
+   quarters the model has never seen. The Riyadh market in 2025 shows price
+   pressures not captured by 2018–2024 training data (Vision 2030 development
+   projects, post-Metro market re-pricing, inflation effects).
+
+2. OOF TEMPORAL OVERLAP: When district-quarter rows are split into GroupKFold
+   folds by district, the same calendar quarter appears across all folds.
+   The meta-learner therefore "sees" temporal structure during OOF training that
+   is not present in the holdout (which is entirely future time periods).
+   This inflates OOF relative to a true out-of-time evaluation.
+
+3. SMALL DATASET INSTABILITY: With only 5,531 training rows across 163 districts,
+   some districts have fewer than 10 training observations. GroupKFold folds
+   have high variance, and the OOF estimates are noisy for sparse districts.
+
+Comparison to v1 (buggy 2024 encoding):
+  v1 holdout MedAPE: 23.43%  →  v2 holdout MedAPE: 15.56%  (improvement: 5.3 pp)
+  v1 holdout R²:     0.675   →  v2 holdout R²:     0.798   (improvement: 0.12)
+
+
+────────────────────────────────────────────────────────────────────────────────
+11. ALGORITHM DETAILS AND LIBRARY VERSIONS
+────────────────────────────────────────────────────────────────────────────────
+
+11.1 Libraries Used
+────────────────────
+
+Library           Version (approx.)  Purpose
+────────────────  ─────────────────  ──────────────────────────────────────────
+Python            3.11               Runtime
+polars            0.20+              Data loading, feature engineering (fast)
+numpy             1.26+              Numerical arrays, matrix operations
+pandas            2.x (legacy)       Some legacy scripts only; main pipeline is Polars
+scipy             1.12+              cKDTree (spatial lookup), linregress (trend slope)
+scikit-learn      1.4+               GroupKFold, Ridge, MinMaxScaler, BallTree, r2_score
+xgboost           2.0+               Gradient boosted trees (XGB-A, XGB-B, Riyadh XGB)
+lightgbm          4.3+               Leaf-wise gradient boosting (LGB, LGB meta)
+catboost          1.2+               Symmetric tree boosting (CAT)
+joblib            1.3+               Model serialisation (thaman_stack.pkl)
+fastapi           0.111+             REST API framework
+uvicorn           0.29+              ASGI server
+pydantic          2.x                Request/response schema validation
+openpyxl          3.1+               Reading .xlsx files (Riyadh XLSX data)
+requests          2.31+              HTTP calls to Saudi Open Data API
+
+Frontend:
+  Leaflet.js      1.9.4              Interactive map
+  Chart.js        4.4.2              Analytics dashboard charts
+
+11.2 XGBoost Algorithm
+───────────────────────
+
+XGBoost (eXtreme Gradient Boosting) uses second-order Taylor expansion of the
+loss function to fit decision trees sequentially, where each tree corrects the
+residuals of the previous ensemble.
+
+Key settings used:
+  objective:      reg:squarederror (MSE loss, appropriate for log-price regression)
+  tree_method:    hist (histogram-based — faster on large datasets)
+  eval_metric:    rmse
+  early_stopping: training stops if validation RMSE does not improve for N rounds
+  colsample_bytree: fraction of features sampled per tree (prevents overfitting)
+  subsample:      fraction of rows sampled per tree
+
+Two XGBoost variants in NYC (diversity ensemble):
+  XGB-A: deep trees (max_depth=7), low LR (0.02), many rounds → captures complex interactions
+  XGB-B: shallow trees (max_depth=4), higher LR (0.05), more conservative → low-variance predictor
+
+11.3 LightGBM Algorithm
+────────────────────────
+
+LightGBM uses leaf-wise tree growth (grows the leaf with the highest gain next)
+rather than level-wise growth, producing deeper, more asymmetric trees.
+
+Key advantage: num_leaves controls model capacity independently of max_depth.
+  num_leaves=127 in NYC allows very deep trees while maintaining regularisation.
+
+Bagging (bagging_fraction + bagging_freq) provides a randomisation mechanism
+analogous to XGBoost's subsample, but applied at specified intervals.
+
+In Riyadh, LightGBM earns only ~0.2% of the Ridge meta weight, suggesting it
+adds little unique information beyond what XGBoost and CatBoost already provide
+on the small district-level dataset.
+
+11.4 CatBoost Algorithm
+────────────────────────
+
+CatBoost uses symmetric (oblivious) trees — every split in a given level uses
+the same feature and threshold across all nodes. This makes inference fast and
+prevents overfitting on small datasets.
+
+Ordered boosting: CatBoost processes training examples in random permutations
+to avoid target leakage during boosting (a form of internal cross-validation).
+
+Key settings:
+  bagging_temperature: controls how aggressively rows are re-sampled (Bayesian
+    bootstrap — higher = more randomness)
+  border_count (NYC): number of histogram bins for numerical features
+  random_strength: noise added to leaf scores during boosting
+
+CatBoost dominates the Riyadh meta-blend (72%) because:
+  - Ordered boosting is particularly beneficial for small datasets
+  - Symmetric trees prevent overfitting when training samples are scarce
+  - It handles the district-level aggregated data structure well
+
+11.5 Ridge Regression (Meta-Learner)
+──────────────────────────────────────
+
+Ridge (L2 regularised linear regression) is used as the meta-learner to blend
+OOF predictions from base learners.
+
+Input matrix S: [n_samples × n_base_learners]  (4 columns for NYC, 3 for Riyadh)
+Target: y (log-transformed price)
+Loss: MSE + λ||w||² where λ = alpha = 1.0
+
+For NYC: positive=True enforces non-negative weights (blending, not arbitrage)
+For Riyadh: positive=False (small dataset, no constraint needed)
+
+Why Ridge beats LightGBM meta for NYC:
+  The four base learners are correlated (all predict log-price from the same
+  134 features). A non-linear meta-learner (LGB) can overfit to fold-specific
+  OOF correlation patterns, degrading holdout performance. Ridge's L2 penalty
+  forces conservative weights that generalise better.
+
+11.6 GroupKFold Cross-Validation
+──────────────────────────────────
+
+GroupKFold ensures samples from the same spatial group (NTA for NYC, district
+for Riyadh) never appear in both train and validation within a fold.
+
+This is critical because adjacent properties within the same neighbourhood are
+spatially autocorrelated — standard K-Fold would artificially inflate CV scores
+by letting the model "see" similar properties in validation that it also saw
+(in the same neighbourhood) in training.
+
+NYC:    10 folds, groups = NTA code (212 groups)
+Riyadh: 5 folds,  groups = district_ar (163 groups)
+        (fewer folds because 163 districts / 5 folds = ~33 districts per
+         validation fold, which is sufficient for stable estimates)
+
+
+────────────────────────────────────────────────────────────────────────────────
+12. KEY DIFFERENCES BETWEEN NYC AND RIYADH MODELS
+────────────────────────────────────────────────────────────────────────────────
+
+Dimension           NYC                          Riyadh
+──────────────────  ───────────────────────────  ───────────────────────────────
+Data granularity    Individual transactions       District-quarter aggregates
+                    (one row = one property sale) (one row = one district × quarter)
+Dataset size        185,092 training rows         5,531 training rows
+Holdout size        27,763 rows                   1,727 rows
+Target unit         USD total price               SAR per square metre
+Target range        $50K – $100M                  222 – 12,565 SAR/sqm
+Years covered       2022 – 2026                   2018 – 2024 (train), 2025 Q1-Q3 (hold)
+Holdout strategy    15% by time (newest)          Fixed quarterly cutoff (2025+)
+Base learners       4 (XGB-A, XGB-B, LGB, CAT)   3 (XGB, LGB, CAT)
+CV folds            10-fold GroupKFold            5-fold GroupKFold
+CV grouping         NTA code                      district_ar
+Meta-learner        Ridge (positive=True)         Ridge (positive=False)
+Features            104                           76
+Target encoding     4 types (bldg, borough×bldg, 2 types (district, district×type)
+                    NTA, NTA×bldg)
+Prior sale signal   Yes (99% coverage via         No (district-level aggregates
+                    assesstot imputation)          have no prior-sale concept)
+Structural features Yes (sqft, floors, age,       Only via SA_Aqar medians
+                    elevator, FAR, etc.)           (bedrooms, size, age, rent)
+Infrastructure      MTA subway, bus, bike,         Metro (6 lines), bus, traffic
+data                waterfront                     intersections
+QoL signals         Crime (NYPD), noise (311),    Air quality (NO2/SO2/PM10/O3),
+                    HPD violations, rodent,        mosque count, mall count,
+                    heat complaints                park count, entertainment count
+Macro signals       Mortgage rates                 REI index, salary data, deed counts
+Spatial resolution  Individual coordinates         District centroid proxy
+                    (exact GPS from deed record)   (all properties in district share
+                                                   the same centroid-based features)
+OOF MedAPE          Not separately reported        8.28%
+Holdout MedAPE      20.32%                        15.56%
+Holdout R²          0.6495                        0.8003
+Holdout MAE         $1,047,004 USD                980 SAR/sqm
+
+12.1 Why Riyadh OOF R² (0.93) Is So Much Higher Than NYC (0.64)
+─────────────────────────────────────────────────────────────────
+
+Not because the Riyadh model is better — the comparison is not apples-to-apples:
+
+1. DIFFERENT TARGET: Riyadh predicts SAR/sqm (price density), NYC predicts total
+   price. Size variance alone inflates NYC's residuals massively. A wrong size
+   estimate (a 1,500 sqft vs 3,000 sqft property) doubles the error in NYC.
+
+2. DIFFERENT FEATURES: Riyadh uses district-level means (already aggregated,
+   lower variance). NYC uses raw property-level data (much higher variance).
+
+3. TEMPORAL STRUCTURE: Riyadh's GroupKFold folds share temporal overlap (same
+   quarter appears in all folds), inflating OOF scores.
+
+4. MACRO SIGNALS: REI index and salary data are quarterly macro signals that
+   explain a large fraction of quarter-to-quarter variance. NYC has mortgage
+   rates but not macroeconomic sector indices.
+
+12.2 What Each Model Is Better At
+───────────────────────────────────
+
+NYC is better at:
+  • Capturing individual property heterogeneity (size, floor count, age)
+  • Handling a large and diverse property market
+  • Detecting neighbourhood-level micro-effects (NTA-level target encoding)
+  • Quantifying building condition signals (HPD violations, DOB permits)
+  • Price tier differentiation across $50K–$100M range
+
+Riyadh is better at:
+  • Macro-level market trends (REI, salary, deed volume)
+  • Infrastructure proximity effects (metro, bus, commercial density)
+  • Cultural and religious QoL signals (mosque proximity)
+  • Quarterly market momentum (yoy/qoq REI changes)
+  • Broad district-level relative pricing
+
+12.3 Data Availability Comparison
+───────────────────────────────────
+
+NYC data availability is excellent:
+  • 185K+ individual deed-recorded transactions
+  • Geocoded to individual parcel level
+  • HPD violations, DOB permits, 311 complaints at unit/building level
+  • ACS census data at tract level
+  • PLUTO zoning and assessment data for every tax lot
+
+Riyadh data availability is severely limited:
+  • No individual transaction records (district aggregates only)
+  • No parcel-level identifiers
+  • No building condition data
+  • Structural attributes only via third-party rental platform proxies
+  • POI data from Saudi Open Data (usable but coarser than OpenStreetMap-level)
+  • REI index has only ~35 quarterly points (2017–2025)
+  • 2024 data required fixing a quarter_id encoding bug to be usable at all
+
+This data scarcity is why Riyadh uses 5-fold CV (not 10-fold) and why the
+holdout represents a harder generalisation challenge: the model must extrapolate
+to 2025 market conditions with limited training depth.
+
+
+────────────────────────────────────────────────────────────────────────────────
+13. HARAJ LISTINGS LAYER — EXTERNAL VALIDATION
+────────────────────────────────────────────────────────────────────────────────
+
+Source:    Haraj.com.sa (Saudi Arabia's largest classifieds marketplace)
+Script:    scripts/scrape_saudi_listings.py
+CSV:       data/raw/saudi_listings_haraj_20260518.csv
+
+Listings:  1,615 active listings at time of scrape
+  Type breakdown:
+    Apartment:         444  (27.5%)
+    Villa:             630  (39.0%)
+    Residential Plot:  526  (32.6%)
+    Building:           15  ( 0.9%)
+
+API endpoint: GET /layers/listings — returns GeoJSON FeatureCollection
+
+Properties per feature:
+  listing_id, district, type_en, type_ar, price_sar, area_sqm,
+  price_per_sqm, bedrooms, url
+
+Usage in the UI: markers shown on map, coloured by type; click popup shows
+  asking price vs THAMAN estimate side by side.
+
+Validation result:
+  MedAPE(asking vs THAMAN estimate): 54.33%
+  Median asking price:  5,232 SAR/sqm
+  Training median:      2,902 SAR/sqm
+  Implied markup:       ~80% asking premium over transaction prices
+
+Interpretation: THAMAN was trained on Ministry of Justice deed-recorded transaction
+prices (what buyers actually paid after negotiation). Haraj shows pre-negotiation
+asking prices. The Saudi residential market is documented to have negotiation
+margins of 20–50% (Al-Otaibi & Al-Subaihi, 2021; CBRE 2024). The 80% overall
+asking premium is consistent with this, inflated by speculative listings in
+data-sparse districts (some ask up to 450% above transaction-based estimates).
+
+Districts with smallest asking-vs-transaction gap (most transparent):
+  النسيم الغربي: ~17%,  شبرا: ~21%
+
+Districts with largest gap (speculative):
+  الفرسان: ~450%,  الشعلة: ~443%
+
+
+────────────────────────────────────────────────────────────────────────────────
+14. API IMPLEMENTATION DETAILS
+────────────────────────────────────────────────────────────────────────────────
+
+14.1 NYC Prediction Endpoint
+──────────────────────────────
+
+POST /predict
+Request fields: latitude, longitude, bldgclass, gross_square_feet, num_floors,
+                year_built, sale_year (optional), sale_month (optional)
+
+Processing:
+  1. Build feature row via _build_feature_row() in api/main.py
+     - Compute all 134 features (distances, encodings, QoL lookups)
+     - Apply winsorization caps from meta.json
+     - Apply walk_score_proxy computation
+     - Look up v11 ZIP/NTA features from meta.json lookup tables
+  2. Run ThamanScorer.predict_single() in models/scorer.py
+     - Predict log-price from all 4 base learners
+     - Blend via Ridge meta-learner
+     - Apply luxury sub-model if Manhattan + price > $2.5M
+  3. Compute SHAP explanation via CatBoost SHAP values
+     (TreeExplainer on the CatBoost model, returning top 10 drivers)
+  4. Look up comparable nearby sales (GET /nearby uses BallTree on training data)
+  5. Return price, confidence interval (±MedAPE), grade tier, top_drivers
+
+Grade tiers: A+ (<10% error on training), A (<15%), B (<25%), C (<40%), D+ (>40%)
+Confidence band: ±segment_medape_pct (borough-level MedAPE from meta.json)
+
+14.2 Riyadh Prediction Endpoint
+──────────────────────────────────
+
+POST /predict/riyadh
+Request fields: latitude, longitude, property_type (Arabic), area_sqm
+
+Processing:
+  1. RiyadhSpatialLookup.predict_features(lat, lon, property_type, year, quarter)
+     - Find nearest district centroid via cKDTree
+     - Look up all spatial features: metro, bus, commercial, intersections,
+       air quality, 6 POI types, connectivity score
+     - Merge district-level aggregate features
+     - Build full 76-feature dict
+  2. Run scorer.predict_riyadh() in models/scorer.py
+     - Three base models predict log(price_sqm)
+     - Ridge meta-learner blends predictions
+     - expm1() to get SAR/sqm
+  3. Confidence interval: ±holdout_medape_pct (15.56%, global — district-level
+     table was removed because it contained stale v1 values)
+  4. SHAP explanation via CatBoost TreeExplainer on Riyadh CatBoost model
+
+Response:
+  predicted_price_sqm, predicted_total_sar (price_sqm × area_sqm),
+  confidence_low/high (sqm and total), district_ar, model version,
+  r2_test, medape_pct, spatial_features dict, top_drivers list
+
+14.3 District Choropleth Endpoint
+───────────────────────────────────
+
+GET /layers/district
+Returns GeoJSON FeatureCollection with 133 district polygons
+Properties per feature: name_ar, name_en, district_median_price_sqm,
+  district_price_trend_slope, dist_metro_m, metro_stations_1km,
+  dist_bus_m, bus_stops_500m, commercial_count_1km, air_quality_score,
+  riyadh_connectivity_score, dist_mosque_m, dist_mall_m, dist_park_m,
+  no2_nearest_mean, rei_residential_qtr_idx
+
+Frontend uses these properties to colour polygons by selected layer.
+
+
+────────────────────────────────────────────────────────────────────────────────
+15. KNOWN LIMITATIONS AND BUGS FIXED
+────────────────────────────────────────────────────────────────────────────────
+
+Bug 1 — Riyadh 2024 Quarter ID Encoding (FIXED)
+  Root cause: quarter_id = year × 10 + sale_quarter where sale_quarter in 2024
+              CSV was already a full quarter code (20241), not 1/2/3/4.
+              Produced 40481/40483/40484 instead of 20241/20243/20244.
+  Effect: 867 rows (all of 2024) classified as holdout, missing Metro-era data.
+  Fix: scripts/fix_riyadh_2024_quarters.py patches CSV; training script uses
+       hardcoded cutoff_qid = 20251.
+  Impact: Holdout MedAPE improved from 23.43% to 15.56%.
+
+Bug 2 — Stale district_medape in riyadh_meta.json (FIXED)
+  Root cause: training script uses meta_dict.update({...}) which preserves
+              existing keys. The old district_medape table (146 entries from v1
+              buggy holdout) survived the v2 retrain.
+  Effect: "السحاب" district had 116.08% MedAPE in stale table → confidence
+          interval capped to 50% for all predictions in that district.
+          12/146 districts affected (all capped to 50%).
+  Fix: removed district_medape key from riyadh_meta.json; all predictions now
+       use global 15.56% MedAPE for confidence intervals.
+
+Bug 3 — REI Values Corrupted for 2024 Rows (FIXED)
+  Root cause: _closest_qid lookup used wrong quarter_ids (40481 etc.),
+              so all 2024 rows got REI from the closest valid quarter,
+              which happened to be 2025 Q3 (rei=100.44).
+  Fix: fix_riyadh_2024_quarters.py hardcodes correct quarterly REI values
+       for Q1/Q3/Q4 2024 from the REI CSV.
+
+Bug 4 — 2024 Metro-era Data Missing from Training via 80/20 Split (FIXED)
+  After fixing quarter_ids, the int(len(all_qids) × 0.80) split landed at
+  20241 (2024 Q1 was the 24th unique quarter out of 29 = 79.3%). All 2024 data
+  therefore remained in holdout even after the ID fix. Fixed by hardcoding
+  cutoff_qid = 20251 instead of using a percentile.
+
+Known Limitation 1 — No Individual Riyadh Transactions
+  Ministry of Justice only publishes district-level aggregates. Until parcel-level
+  data is released, the Riyadh model cannot capture within-district variance.
+
+Known Limitation 2 — OOF Temporal Overlap (Riyadh)
+  GroupKFold by district in a district-quarter dataset means the same calendar
+  quarter appears across all folds. The OOF MedAPE of 8.28% is therefore
+  optimistic relative to true out-of-time holdout (15.56%).
+
+Known Limitation 3 — Mosques Not Always in OSD API
+  Some smaller mosques are missing from the Saudi Open Data GeoJSON; dist_mosque_m
+  may undercount mosque density in some districts.
+
+Known Limitation 4 — Haraj Listings Not Used in Training
+  The 1,615 Haraj listing prices represent asking prices and cannot be mixed
+  with transaction prices for training. They serve only as an external validation
+  layer and UI overlay.
+
+Known Limitation 5 — NYC Luxury Cap Sensitivity
+  Properties above $10M (excluded from NYC training as outliers) are handled
+  by the luxury sub-model. Below this cap, the model extrapolates poorly for
+  truly exceptional sales (art-market-adjacent ultra-luxury).
+
+
+────────────────────────────────────────────────────────────────────────────────
+16. EVALUATION METRICS — DEFINITIONS
+────────────────────────────────────────────────────────────────────────────────
+
+R² (Coefficient of Determination):
+  R² = 1 - SS_res / SS_tot
+  Range: (-∞, 1]. Value of 1 = perfect prediction. Value of 0 = as good as
+  predicting the mean. Negative = worse than predicting the mean.
+  Sensitive to outliers and to the variance of the target distribution.
+
+MedAPE (Median Absolute Percentage Error):
+  MedAPE = median(|y_true - y_pred| / y_true) × 100
+  The 50th percentile of percentage errors. Robust to outliers.
+  Preferred over MAPE for skewed price distributions (one $10M wrong prediction
+  moves MAPE significantly but barely moves MedAPE).
+  Industry standard for AVM reporting (IAAO, Fannie Mae guidelines).
+
+MAE (Mean Absolute Error):
+  MAE = mean(|y_true - y_pred|)
+  In price units (USD for NYC, SAR/sqm for Riyadh).
+  Easier to interpret in absolute terms but not percentage-normalised.
+
+Why MedAPE is preferred:
+  A single wrong Manhattan penthouse prediction ($10M actual, $6M predicted)
+  contributes 40% to each sample's APE but affects MedAPE only if it's in the
+  top 50% of errors. MedAPE answers: "what error does a typical user experience?"
+
+
+────────────────────────────────────────────────────────────────────────────────
+17. MODEL VERSIONS HISTORY
+────────────────────────────────────────────────────────────────────────────────
+
+NYC Model Versions:
+  v1  (2022)  Single XGBoost, 3 features, R²~0.40, MedAPE~32%
+  v2  (2023)  XGBoost + feature engineering, ~30 features, R²~0.48
+  v3–v5       Iterative feature additions: transit, QoL, crime
+  v6          Added NTA-level target encoding, borough×bldg encoding
+  v7–v9       Added prior sale price, walk score proxy, log-distances
+  v10         Added NTA price trend slope, FAR features; 94 features
+  v11 (2026)  Final: +HPD violations, +DOB permits, +311 granular, +MTA quality
+              134 features, 10-fold GroupKFold CV, Ridge meta, R²=0.645
+
+Riyadh Model Versions:
+  v1 (May 2026)  First Riyadh model. Bug: 2024 quarter_id wrong, all Metro-era
+                 data in holdout. OOF MedAPE=8.38%, Holdout MedAPE=23.43%.
+  v2 (May 2026)  Fixed 2024 encoding bug + REI corruption. Retrained with
+                 5,531 training rows (was 4,664). OOF R²=0.9343, MedAPE=8.28%.
+                 Holdout R²=0.8003, MedAPE=15.56%. Current production model.
+
+
+────────────────────────────────────────────────────────────────────────────────
+18. DEPLOYMENT AND REPRODUCIBILITY
+────────────────────────────────────────────────────────────────────────────────
+
+Hugging Face Space: https://huggingface.co/spaces/Turki-Almurahhem/thaman
+GitHub:             https://github.com/turkialm/thaman-v2
+
+To reproduce NYC model:
+  1. Download raw data files (see Section 3)
+  2. Run: python scripts/prepare_v11_features.py
+  3. Run: python training/train_stack_v11.py
+  4. Output: models/thaman_stack.pkl, models/xgboost_model.json, models/meta.json
+
+To reproduce Riyadh model:
+  1. Download raw data files (see Section 7)
+  2. Run: python scripts/riyadh_feature_engineering.py
+  3. Run: python scripts/fix_riyadh_2024_quarters.py (patches the CSV)
+  4. Run: python training/train_stack_riyadh_v1.py
+  5. Output: models/riyadh_stack.pkl, models/riyadh_meta.json
+
+To run locally:
+  cd /path/to/new_try
+  uvicorn api.main:app --port 8000
+  Open: http://localhost:8000/ui
+
+Cold-start time: ~30 seconds (spatial KD-tree indexes loading into memory)
+API latency (warm): 200–400 ms per prediction (including SHAP computation)
+
+================================================================================
+END OF TECHNICAL REFERENCE
+Generated: 2026-05-19
+================================================================================

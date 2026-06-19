@@ -1,0 +1,29 @@
+# Files not needed in Hugging Face Spaces deployment
+docs/
+*.pptx
+*.docx
+notebooks/
+
+# Large model files — hosted on HF Hub (Turki-Almurahmed/thaman-models)
+models/thaman_stack.pkl
+models/riyadh_stack.pkl
+models/xgboost_model.json
+models/luxury_model.json
+models/meta.json
+models/riyadh_meta.json
+
+# Large data files — hosted on HF Hub
+data/raw/nyc_bike_lanes.geojson
+data/raw/nyc_coastline_pts.npy
+data/processed/features.csv
+data/processed/features_v3.csv
+data/processed/features_v4.csv
+data/processed/features_v5.csv
+data/processed/features_v6.csv
+
+# Dev artifacts
+.pytest_cache/
+__pycache__/
+*.pyc
+.env
+data/processed/features_v7.csv

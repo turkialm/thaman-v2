@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>THAMAN — NYC Property Valuation</title>
+  <meta name="description" content="Instant AI property valuations for NYC and Riyadh. Stacked ensemble ML, SHAP explainability, 20+ map layers. Free, no signup." />
+  <link rel="manifest" href="/ui/manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="THAMAN" />
+  <meta property="og:title" content="THAMAN — AI Property Valuation · NYC & Riyadh" />
+  <meta property="og:description" content="Instant AI valuations for NYC and Riyadh. Free, no signup." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="THAMAN — AI Property Valuation" />
+  <meta name="twitter:description" content="Instant AI valuations for NYC and Riyadh. Free, no signup." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://unpkg.com" crossorigin />
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+  <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" as="style" />
+  <link rel="preload" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" as="script" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <link rel="stylesheet" href="/ui/style.css?v=2" />
+</head>
+<body>
+
+  <!-- ── Header ─────────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-left">
+      <span class="logo">🏙️ THAMAN</span>
+      <span class="tagline" id="headerTagline">NYC Property Valuation · AI-Powered</span>
+    </div>
+    <div class="header-badges">
+      <span id="nycBadgeGroup">
+        <span id="hdrStack" class="badge badge-green">Stack v22</span>
+        <span id="hdrR2" class="badge badge-blue">R² = 0.650</span>
+        <span id="hdrMedape" class="badge badge-purple">MedAPE 20.32%</span>
+        <button class="badge badge-gray" onclick="openCompare()" style="cursor:pointer;border:none">⚖ Compare</button>
+      </span>
+      <span id="riyadhBadgeGroup" style="display:none">
+        <span class="badge badge-green">Riyadh Stack v11</span>
+        <span class="badge badge-blue">R² = 0.800</span>
+        <span class="badge badge-purple">MedAPE 15.56%</span>
+      </span>
+      <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
+      <a href="/ui/batch.html" class="badge badge-gray">📋 Batch</a>
+      <button class="badge badge-gray" onclick="openCityCompare()" style="cursor:pointer;border:none">🌍 Cities</button>
+      <a href="/docs" target="_blank" class="badge badge-gray">API Docs ↗</a>
+      <!-- Language Toggle -->
+      <div class="lang-toggle" role="group" aria-label="Language">
+        <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+        <button class="lang-btn"        id="btnAR" onclick="setLang('ar')">ع</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Main Layout ─────────────────────────────────────────────── -->
+  <main class="layout">
+
+    <!-- ── Left: Map ──────────────────────────────────────────────── -->
+    <section class="map-section">
+      <!-- Layer toggle bar -->
+      <!-- City mode toggle -->
+      <div class="city-toggle" id="cityToggle">
+        <button class="city-btn active" id="cityBtnNYC" onclick="setCityMode('nyc')">🗽 NYC</button>
+        <button class="city-btn" id="cityBtnRiyadh" onclick="setCityMode('riyadh')">🕌 Riyadh</button>
+      </div>
+
+      <div class="layer-bar" id="layerBar">
+        <!-- NYC layers -->
+        <div id="nycLayerGroup">
+          <button class="layer-btn active" data-layer="none">🗺 Default</button>
+          <button class="layer-btn" data-layer="income">💰 Income</button>
+          <button class="layer-btn" data-layer="crime">🔴 Crime</button>
+          <button class="layer-btn" data-layer="noise">🔊 Noise</button>
+          <button class="layer-btn" data-layer="air">💨 Air Quality</button>
+          <button class="layer-btn" data-layer="trees">🌳 Tree Cover</button>
+          <button class="layer-btn" data-layer="hotness">📈 Market</button>
+          <button class="layer-btn" data-layer="rats">🐀 Rodents</button>
+          <button class="layer-btn" data-layer="heat311">🌡️ Heat</button>
+          <button class="layer-btn" data-layer="hpd">🏚️ HPD Violations</button>
+          <button class="layer-btn" data-layer="livability">😤 311 Livability</button>
+          <button class="layer-btn" data-layer="transit">🚇 Transit</button>
+          <button class="layer-btn" data-layer="no2">🌫️ NO₂</button>
+          <button class="layer-btn" data-layer="population">👥 Population</button>
+          <button class="layer-btn" data-layer="bldgage">🏗️ Building Age</button>
+          <button class="layer-btn" data-layer="airbnb">🏠 Airbnb</button>
+          <button class="layer-btn" data-layer="psf">💲 Price/sqft</button>
+          <button class="layer-btn" data-layer="restaurant">🍽️ Restaurants</button>
+          <button class="layer-btn" data-layer="nightlife">☕ Cafes & Bars</button>
+          <button class="layer-btn" data-layer="grocery">🛒 Grocery</button>
+          <button class="layer-btn" data-layer="fitness">🏋️ Fitness</button>
+        </div>
+        <!-- Riyadh layers (hidden when NYC mode active) -->
+        <div id="riyadhLayerGroup" style="display:none">
+          <button class="layer-btn active" data-layer="none">🗺 Default</button>
+          <button class="layer-btn" data-layer="metro_access">🚇 Metro Access</button>
+          <button class="layer-btn" data-layer="metro_density">🚉 Metro Density</button>
+          <button class="layer-btn" data-layer="bus_access">🚌 Bus Stops</button>
+          <button class="layer-btn" data-layer="commercial">🏪 Commercial</button>
+          <button class="layer-btn" data-layer="air_no2">🌫️ NO₂ Air</button>
+          <button class="layer-btn" data-layer="air_quality">✅ Air Quality</button>
+          <button class="layer-btn" data-layer="price_index">📈 Price Index</button>
+          <button class="layer-btn" data-layer="apt_price">💰 Apt Price</button>
+          <button class="layer-btn" data-layer="price_trend">📊 Price Trend</button>
+          <button class="layer-btn" data-layer="connectivity">🔗 Connectivity</button>
+        </div>
+        <!-- Market Listings overlay button (Riyadh only) -->
+        <button class="layer-btn" id="listingsLayerBtn" onclick="toggleListingsLayer(this)" style="display:none">
+          🏠 Listings
+        </button>
+        <!-- MOJ Transaction Heatmap overlay button (Riyadh only) -->
+        <button class="layer-btn" id="heatmapLayerBtn" onclick="toggleHeatmapLayer(this)" style="display:none">
+          🔥 TX Heat
+        </button>
+        <!-- NYC Sales Heatmap overlay button (NYC only) -->
+        <button class="layer-btn" id="nycHeatmapLayerBtn" onclick="toggleNycHeatmapLayer(this)">
+          🔥 TX Heat
+        </button>
+      </div>
+      <!-- Choropleth legend -->
+      <div class="layer-legend" id="layerLegend" style="display:none">
+        <span class="legend-min" id="legendMin"></span>
+        <div class="legend-gradient" id="legendGradient"></div>
+        <span class="legend-max" id="legendMax"></span>
+        <span class="legend-label" id="legendLabel"></span>
+      </div>
+      <div id="map"></div>
+      <button id="geolocBtn" class="map-ctrl-btn" title="Zoom to my location">📍 Me</button>
+      <div class="map-hint" id="mapHint">📍 <span id="mapHintText">Click anywhere in New York City to place a pin</span></div>
+    </section>
+
+    <!-- mobile drawer backdrop -->
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+    <!-- ── Right: Sidebar ─────────────────────────────────────────── -->
+    <aside class="sidebar">
+      <!-- mobile drag handle -->
+      <div class="drawer-handle" id="drawerHandle" aria-label="Toggle panel" role="button" tabindex="0">
+        <div class="drawer-pill"></div>
+      </div>
+
+      <!-- How to use -->
+      <div class="card card-howto">
+        <h3 class="card-title" id="howToTitle">How to use</h3>
+        <ol class="steps">
+          <li><span class="step-num">1</span> <span id="step1">Click the map to set the property location</span></li>
+          <li><span class="step-num">2</span> <span id="step2">Fill in the property details below</span></li>
+          <li><span class="step-num">3</span> <span id="step3">Click <strong id="step3Btn">Estimate Price</strong></span></li>
+        </ol>
+      </div>
+
+      <!-- Property Form -->
+      <div class="card" id="formCard">
+        <h3 class="card-title" id="formTitle">Property Details</h3>
+
+        <!-- Address search -->
+        <div class="addr-search-wrap" id="addrSearchWrap">
+          <input type="text" id="addrInput" autocomplete="off"
+                 placeholder="Search address, e.g. 350 5th Ave, Manhattan…" />
+          <button type="button" id="addrBtn" class="addr-btn">🔍</button>
+          <div class="addr-error" id="addrError" style="display:none"></div>
+        </div>
+
+        <div class="location-display" id="locationDisplay">
+          <span class="location-icon">📍</span>
+          <span id="locationText" class="location-text">No location selected — click the map or search above</span>
+        </div>
+
+        <form id="predictForm" novalidate>
+          <input type="hidden" id="latitude"  name="latitude" />
+          <input type="hidden" id="longitude" name="longitude" />
+
+          <div class="field-row">
+            <div class="field field-full">
+              <label for="borough" id="lblBorough">Borough</label>
+              <select id="borough" name="borough" required>
+                <option value="">Select…</option>
+                <option value="1">Manhattan</option>
+                <option value="2">Bronx</option>
+                <option value="3">Brooklyn</option>
+                <option value="4">Queens</option>
+                <option value="5">Staten Island</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field field-full" style="margin-bottom:12px">
+            <div class="label-with-info">
+              <label id="lblBldgType">Building Type</label>
+              <button type="button" class="bldg-info-btn" id="bldgTypesInfoBtn"
+                      aria-label="Building type guide"
+                      data-tooltip="See all building codes &amp; descriptions">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+                     aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 8h.01"/>
+                  <path d="M11 12h1v4h1"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="bldgtype-grid" id="bldgTypeGrid" role="group" aria-label="Building type">
+
+              <!-- A1 · Single Family -->
+              <button type="button" class="bldgtype-card" data-code="A1">
+                <span class="bti"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11L12 4l9 7"/><polyline points="5,10.5 5,20 19,20 19,10.5"/><rect x="9" y="14" width="6" height="6" rx=".5"/></svg></span>
+                <span class="btl">Single Family</span>
+              </button>
+
+              <!-- B2 · 2-Family -->
+              <button type="button" class="bldgtype-card" data-code="B2">
+                <span class="bti"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11L12 4l9 7"/><polyline points="5,10.5 5,20 19,20 19,10.5"/><rect x="5.5" y="14" width="4.5" height="6" rx=".5"/><rect x="14" y="14" width="4.5" height="6" rx=".5"/></svg></span>
+                <span class="btl">2-Family</span>
+              </button>
+
+              <!-- C0 · 3-Family -->
+              <button type="button" class="bldgtype-card" data-code="C0">
+                <span class="bti"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5"/><line x1="3" y1="9.2" x2="21" y2="9.2"/><line x1="3" y1="14.5" x2="21" y2="14.5"/><rect x="6" y="5.5" width="4" height="2.5" rx=".5"/><rect x="14" y="5.5" width="4" height="2.5" rx=".5"/><rect x="6" y="10.5" width="4" height="2.5" rx=".5"/><rect x="14" y="10.5" width="4" height="2.5" rx=".5"/><rect x="9.5" y="16" width="5" height="4" rx=".5"/></svg></span>
+                <span class="btl">3-Family</span>
+              </button>
+
+              <!-- A5 · Row House -->
+              <button type="button" class="bldgtype-card" data-code="A5">
+                <span class="bti"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 11L4.5 6.5 8 11"/><polyline points="1.5,10.5 1.5,20 8,20 8,10.5"/><path d="M8 10L12 5l4 5"/><polyline points="8,9.5 8,20 16,20 16,9.5"/><path d="M16 11L19.5 6.5 23 11"/><polyline points="16.5,10.5 16.5,20 22.5,20 22.5,10.5"/></svg></span>
+                <span class="btl">Row House</span>
+              </button>
+
+              <!-- R1 · Condo -->
+              <button type="button" class="bldgtype-card" data-code="R1">
+                <span class="bti"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="16" height="14" rx="1.5"/><line x1="4" y1="10.5" x2="20" y2="10.5"/><line x1="4" y1="15" x2="20" y2="15"/><rect x="6" y="7" width="3.5" height="2" rx=".5"/><rect x="14.5" y="7" width="3.5" height="2" rx=".5"/><rect x="6" y="11.5" width="3.5" height="2" rx=".5"/><rect x="14.5" y="11.5" width="3.5" height="2" rx=".5"/><rect x="9.5" y="16.5" width="5" height="3.5" rx=".5"/></svg></span>
+                <span class="btl">Condo</span>
+              </button>
+
+              <!-- D4 · Elevator Apt -->
+              <button type="button" class="bldgtype-card" data-code="D4">
+                <span class="bti"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="1.5"/><line x1="7" y1="6.5" x2="17" y2="6.5"/><line x1="7" y1="10.5" x2="17" y2="10.5"/><line x1="7" y1="14.5" x2="17" y2="14.5"/><line x1="7" y1="18.5" x2="17" y2="18.5"/><line x1="12" y1="2" x2="12" y2="22"/></svg></span>
+                <span class="btl">Elevator Apt</span>
+              </button>
+
+              <!-- C1 · Walk-up Apt -->
+              <button type="button" class="bldgtype-card" data-code="C1">
+                <span class="bti"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="15" rx="1.5"/><line x1="3" y1="11" x2="21" y2="11"/><line x1="3" y1="16" x2="21" y2="16"/><rect x="5.5" y="7" width="4" height="2.5" rx=".5"/><rect x="14.5" y="7" width="4" height="2.5" rx=".5"/><path d="M9 21v-2h2v-2h2v-2h2"/></svg></span>
+                <span class="btl">Walk-up Apt</span>
+              </button>
+
+              <!-- C6 · Co-op -->
+              <button type="button" class="bldgtype-card" data-code="C6">
+                <span class="bti"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="1.5"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="5.5" y="5.5" width="4" height="3" rx=".5"/><rect x="14.5" y="5.5" width="4" height="3" rx=".5"/><circle cx="9" cy="16.5" r="2"/><circle cx="15" cy="16.5" r="2"/><line x1="11" y1="16.5" x2="13" y2="16.5"/></svg></span>
+                <span class="btl">Co-op</span>
+              </button>
+
+              <!-- S1 · Mixed Use -->
+              <button type="button" class="bldgtype-card" data-code="S1">
+                <span class="bti"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="4" width="19" height="17" rx="1.5"/><line x1="2.5" y1="13.5" x2="21.5" y2="13.5"/><rect x="5" y="5.5" width="4" height="3" rx=".5"/><rect x="15" y="5.5" width="4" height="3" rx=".5"/><rect x="10" y="5.5" width="4" height="3" rx=".5"/><rect x="6" y="15" width="5" height="6" rx=".5"/><rect x="13" y="15" width="5" height="6" rx=".5"/></svg></span>
+                <span class="btl">Mixed Use</span>
+              </button>
+
+            </div>
+
+            <button type="button" class="adv-toggle" id="bldgAdvToggle">
+              <svg class="toggle-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                   width="13" height="13" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+              <span id="bldgAdvLabel">Advanced: search all codes</span>
+            </button>
+
+            <div class="adv-panel" id="bldgAdvPanel">
+              <div class="adv-panel-inner">
+                <div class="bldg-search-wrap" id="bldgSearchWrap">
+                  <svg class="bldg-search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                       aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input type="text" id="bldgSearchInput" placeholder="Type code or name, e.g. A1, D4…" autocomplete="off" />
+                  <div class="bldg-dropdown" id="bldgDropdown"></div>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="bldgclass" name="bldgclass" />
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="gross_square_feet" id="lblSqft">Building Size (sq ft)</label>
+              <input type="number" id="gross_square_feet" name="gross_square_feet"
+                     placeholder="e.g. 1800" min="100" max="5000000" required />
+            </div>
+            <div class="field">
+              <label for="building_age" id="lblAge">Building Age (years)</label>
+              <input type="number" id="building_age" name="building_age"
+                     placeholder="e.g. 55" min="0" max="200" required />
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="numfloors" id="lblFloors">Floors</label>
+              <input type="number" id="numfloors" name="numfloors"
+                     placeholder="e.g. 2" min="1" max="200" required />
+            </div>
+            <div class="field">
+              <label for="residential_units" id="lblUnits">Residential Units</label>
+              <input type="number" id="residential_units" name="residential_units"
+                     placeholder="e.g. 1" min="0" max="10000" required />
+            </div>
+          </div>
+
+          <button type="button" class="advanced-toggle" id="advancedToggle">
+            <span id="advancedArrow">▶</span> <span id="advancedLabel">Advanced options (optional)</span>
+          </button>
+
+          <div class="advanced-panel" id="advancedPanel">
+            <div class="field-row">
+              <div class="field">
+                <label for="land_square_feet" id="lblLand">Land Size (sq ft)</label>
+                <input type="number" id="land_square_feet" name="land_square_feet"
+                       placeholder="Auto-estimated" min="0" />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="renovated_since_2018" id="lblRenov">Renovated since 2018?</label>
+                <select id="renovated_since_2018" name="renovated_since_2018">
+                  <option value="0" id="optNo">No</option>
+                  <option value="1" id="optYes">Yes</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="sale_year" id="lblYear">Valuation Year</label>
+                <select id="sale_year" name="sale_year">
+                  <option value="" id="optCurrentYear">Current year</option>
+                  <option value="2026">2026</option>
+                  <option value="2025">2025</option>
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                </select>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="sale_month" id="lblMonth">Sale Month</label>
+                <select id="sale_month" name="sale_month">
+                  <option value="">Current month</option>
+                  <option value="1">January</option><option value="2">February</option>
+                  <option value="3">March</option><option value="4">April</option>
+                  <option value="5">May</option><option value="6">June</option>
+                  <option value="7">July</option><option value="8">August</option>
+                  <option value="9">September</option><option value="10">October</option>
+                  <option value="11">November</option><option value="12">December</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="prior_sale_price_wrap" id="lblPrior">Prior Sale Price ($)
+                  <a id="acrisLink" class="acris-link" href="https://a836-acris.nyc.gov/DS/DocumentSearch/BBL" target="_blank" title="Look up prior sale on NYC ACRIS">ACRIS ↗</a>
+                </label>
+                <input type="number" id="prior_sale_price" name="prior_sale_price"
+                       placeholder="Leave blank if unknown" min="0" />
+              </div>
+            </div>
+          </div>
+
+          <div class="predict-sticky">
+            <button type="submit" class="btn-predict" id="submitBtn" disabled>
+              <span id="btnText">📍 Select a location first</span>
+              <span class="spinner" id="spinner" style="display:none">⟳</span>
+            </button>
+          </div>
+
+          <p class="disclaimer" id="disclaimer">
+            Predictions are based on NYC property sales 2022–2026.
+            Model accuracy: median error ±20.32% (MedAPE, spatial CV validated).
+          </p>
+        </form>
+
+        <!-- ── Riyadh valuation form (shown in Riyadh mode) ─────────── -->
+        <form id="riyadhForm" novalidate style="display:none">
+          <input type="hidden" id="riyadhLat" />
+          <input type="hidden" id="riyadhLon" />
+
+          <!-- Riyadh address search -->
+          <div class="addr-search-wrap" id="riyadhAddrSearchWrap">
+            <input type="text" id="riyadhAddrInput" autocomplete="off"
+                   placeholder="Search district or address / ابحث عن حي أو عنوان" />
+            <button type="button" id="riyadhAddrBtn" class="addr-btn">🔍</button>
+            <div class="addr-error" id="riyadhAddrError" style="display:none"></div>
+          </div>
+
+          <div class="field field-full" style="margin-bottom:12px">
+            <label id="lblRiyadhType" style="display:block;margin-bottom:6px">Property Type / نوع العقار</label>
+            <div class="riyadh-type-grid" id="riyadhTypeGrid" role="group" aria-label="Property type">
+              <button type="button" class="riyadh-type-card" data-value="شقة">
+                <span class="rti">🏢</span>
+                <span class="rtl-en">Apartment</span>
+                <span class="rtl-ar">شقة</span>
+              </button>
+              <button type="button" class="riyadh-type-card" data-value="فيلا">
+                <span class="rti">🏡</span>
+                <span class="rtl-en">Villa</span>
+                <span class="rtl-ar">فيلا</span>
+              </button>
+              <button type="button" class="riyadh-type-card" data-value="قطعة أرض-سكنى">
+                <span class="rti">🌐</span>
+                <span class="rtl-en">Plot</span>
+                <span class="rtl-ar">أرض سكنية</span>
+              </button>
+              <button type="button" class="riyadh-type-card" data-value="عمارة">
+                <span class="rti">🏗️</span>
+                <span class="rtl-en">Building</span>
+                <span class="rtl-ar">عمارة</span>
+              </button>
+            </div>
+            <input type="hidden" id="riyadhType" />
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="riyadhArea" id="lblRiyadhArea">Area (m²) / المساحة</label>
+              <input type="number" id="riyadhArea" min="10" max="50000" placeholder="e.g. 200" required />
+            </div>
+            <div class="field">
+              <label for="riyadhYear" id="lblRiyadhYear">Year / السنة (opt.)</label>
+              <input type="number" id="riyadhYear" min="2018" max="2030" placeholder="2025" />
+            </div>
+          </div>
+
+          <div class="predict-sticky">
+            <button type="submit" class="btn-predict" id="riyadhSubmitBtn" disabled>
+              <span id="riyadhBtnText">📍 Select a location first</span>
+              <span class="spinner" id="riyadhSpinner" style="display:none">⟳</span>
+            </button>
+          </div>
+          <p class="disclaimer">
+            Predictions based on Suhail/MOJ transactions 2018–2026 · Holdout MedAPE ±15.56%.
+            Market benchmarks: weerate · Bayut · Knight Frank · Cavendish Maxwell · GASTAT (Jun 2026).
+            تنبؤات مبنية على بيانات سهيل/وزارة العدل 2018–2026.
+          </p>
+        </form>
+
+        <!-- ── Riyadh results card ──────────────────────────────────────── -->
+        <div id="riyadhResults" style="display:none" class="card riyadh-results">
+          <div class="riyadh-price-hero">
+            <div class="riyadh-price-label" id="riyadhDistrictLabel">—</div>
+            <div class="riyadh-price-main">
+              <span id="riyadhPriceSqm">—</span>
+              <span class="riyadh-price-unit">/m²</span>
+            </div>
+            <div class="riyadh-price-total"><span class="riyadh-total-label">Total </span><span id="riyadhPriceTotal">—</span></div>
+            <div class="riyadh-confidence" id="riyadhConfidence">—</div>
+          </div>
+
+          <!-- Confidence bar (same structure as NYC) -->
+          <div class="confidence-bar-wrap" id="riyadhConfBarWrap" style="display:none">
+            <div class="conf-label">
+              <span id="riyadhConfLow">—</span>
+              <span class="conf-mid-label">Predicted</span>
+              <span id="riyadhConfHigh">—</span>
+            </div>
+            <div class="confidence-bar">
+              <div class="conf-range-fill" id="riyadhConfFill"></div>
+              <div class="conf-marker" id="riyadhConfMarker"></div>
+            </div>
+          </div>
+
+          <!-- AVM grade row -->
+          <div class="avm-qc-row" id="riyadhAvmQcRow" style="display:none">
+            <div class="avm-qc-grade-wrap">
+              <div class="conf-grade-badge" id="riyadhGradeBadge">—</div>
+            </div>
+            <div class="avm-qc-meta">
+              <div class="avm-qc-comps" id="riyadhDistrictInfo">—</div>
+              <div id="riyadhQcFlagsRow"></div>
+            </div>
+          </div>
+
+          <!-- Asking-price overlay (Bayut) -->
+          <div class="asking-overlay" id="riyadhAskingOverlay" style="display:none">
+            <div class="asking-row">
+              <span class="asking-label">📋 Bayut Asking</span>
+              <span class="asking-val" id="riyadhAskingPsqm">—</span>
+            </div>
+            <div class="asking-spread-badge" id="riyadhSpreadBadge"></div>
+          </div>
+
+          <!-- !! weerate Jun 2026 multi-source benchmark row -->
+          <div class="riyadh-benchmark-row" id="riyadhBenchmarkRow" style="display:none"></div>
+
+          <!-- Share / Copy actions -->
+          <div class="share-actions" id="riyadhShareActions">
+            <button class="share-btn" onclick="shareRiyadhEstimate()" title="Copy shareable link">🔗 Share Link</button>
+            <button class="share-btn" onclick="copyRiyadhResults()" title="Copy estimate to clipboard">📋 Copy Results</button>
+          </div>
+        </div>
+
+        <!-- ── Riyadh SHAP card (separate, like NYC) ───────────────────── -->
+        <div class="card card-shap" id="riyadhShapCard" style="display:none">
+          <h3 class="card-title">
+            <span>Price Drivers</span>
+            <span class="card-subtitle">What factors most influenced this estimate</span>
+          </h3>
+          <div id="riyadhDriversBars"></div>
+        </div>
+
+        <!-- ── Riyadh spatial card (separate, like NYC) ───────────────── -->
+        <div class="card card-spatial" id="riyadhSpatialCard" style="display:none">
+          <h3 class="card-title">Location Quality</h3>
+          <div class="spatial-grid" id="riyadhSpatialGrid"></div>
+        </div>
+      </div>
+
+      <!-- ── Skeleton cards (visible during loading) ───────────────── -->
+      <div class="card" id="skeletonResult" style="display:none">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-price"></div>
+        <div class="skel skel-line medium" style="margin:6px auto;width:55%"></div>
+        <div class="skel skel-bar" style="margin-top:14px"></div>
+      </div>
+
+      <div class="card" id="skeletonShap" style="display:none">
+        <div class="skel skel-title"></div>
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line medium"></div>
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line medium"></div>
+        <div class="skel skel-line narrow"></div>
+      </div>
+
+      <div class="card" id="skeletonSpatial" style="display:none">
+        <div class="skel skel-title"></div>
+        <div class="skel-grid">
+          <div class="skel skel-block"></div>
+          <div class="skel skel-block"></div>
+          <div class="skel skel-block"></div>
+          <div class="skel skel-block"></div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="card card-result" id="resultCard" style="display:none">
+        <h3 class="card-title" id="resultTitle">Estimated Value</h3>
+        <div class="price-block">
+          <div class="price-label-row">
+            <span class="price-label">AI Estimate</span>
+            <span class="model-tag" id="modelTag">Stack v22 · 4-Model</span>
+          </div>
+          <div class="price-main" id="priceMain">—</div>
+          <div class="price-psf-row" id="pricePsfRow" style="display:none">
+            <span id="pricePsfVal">—</span>/sqft &nbsp;·&nbsp; <span id="pricePsmVal">—</span>/m²
+          </div>
+          <div class="price-range" id="priceRange">—</div>
+          <div class="price-row-context">
+            <div class="price-context" id="priceContext">—</div>
+            <div class="tier-badge" id="tierBadge" style="display:none"></div>
+          </div>
+        </div>
+        <div class="confidence-bar-wrap" id="confBarWrap" style="display:none">
+          <div class="conf-label">
+            <span id="confLow">—</span>
+            <span class="conf-mid-label" id="confMidLabel">Predicted</span>
+            <span id="confHigh">—</span>
+          </div>
+          <div class="confidence-bar">
+            <div class="conf-range-fill" id="confFill"></div>
+            <div class="conf-marker" id="confMarker"></div>
+          </div>
+        </div>
+        <!-- AVM QC: grade badge + comparable count + quality flags -->
+        <div class="avm-qc-row" id="avmQcRow" style="display:none">
+          <div class="avm-qc-grade-wrap">
+            <div class="conf-grade-badge" id="confGradeBadge">—</div>
+          </div>
+          <div class="avm-qc-meta">
+            <div class="avm-qc-comps" id="avmCompsLine">— comparables within 800m</div>
+            <div id="avmFlagsRow"></div>
+          </div>
+        </div>
+        <!-- Asking-price overlay (Redfin) -->
+        <div class="asking-overlay" id="nycAskingOverlay" style="display:none">
+          <div class="asking-row">
+            <span class="asking-label">🏠 Redfin Asking</span>
+            <span class="asking-val" id="nycAskingPsqm">—</span>
+          </div>
+          <div class="asking-spread-badge" id="nycSpreadBadge"></div>
+        </div>
+        <!-- Share / Export actions -->
+        <div class="share-actions" id="shareActions">
+          <button class="share-btn" onclick="shareEstimate()" title="Copy shareable link">
+            🔗 Share Link
+          </button>
+          <button class="share-btn" onclick="copyResults()" title="Copy estimate to clipboard">
+            📋 Copy Results
+          </button>
+        </div>
+      </div>
+
+      <!-- SHAP Drivers -->
+      <div class="card card-shap" id="shapCard" style="display:none">
+        <h3 class="card-title">
+          <span id="shapTitle">Price Drivers</span>
+          <span class="card-subtitle" id="shapSubtitle">What factors most influenced this estimate</span>
+        </h3>
+        <div class="waterfall-toggle">
+          <button id="shapViewBars" class="active" onclick="setShapView('bars')">≡ Bars</button>
+          <button id="shapViewWaterfall" onclick="setShapView('waterfall')">≋ Waterfall</button>
+        </div>
+        <div id="shapBars"></div>
+        <div id="waterfallCard" style="display:none">
+          <div class="waterfall-wrap">
+            <canvas id="waterfallCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spatial Features -->
+      <div class="card card-spatial" id="spatialCard" style="display:none">
+        <h3 class="card-title">
+          <span id="spatialTitle">Location Details</span>
+          <span class="card-subtitle" id="spatialSubtitle">Auto-computed from coordinates</span>
+        </h3>
+        <div class="spatial-grid" id="spatialGrid"></div>
+      </div>
+
+      <!-- Market Intelligence (merged Nearby + Comps) -->
+      <div class="card card-market" id="marketCard" style="display:none">
+        <h3 class="card-title">
+          <span id="marketTitle">Market Intelligence</span>
+          <span class="card-subtitle" id="marketSubtitle">Nearby sales &amp; area comparables</span>
+        </h3>
+        <div class="market-tabs" id="marketTabs">
+          <button class="market-tab active" data-tab="nearby" id="tabNearby">📍 Nearby Sales</button>
+          <button class="market-tab" data-tab="comps" id="tabComps">🏛 Area Comps</button>
+        </div>
+        <!-- Nearby Sales panel -->
+        <div id="marketNearby">
+          <div id="nearbyCompareSummary" style="display:none"></div>
+          <div id="nearbyList"></div>
+        </div>
+        <!-- Area Comps panel -->
+        <div id="marketComps" style="display:none">
+          <div id="compsInner"></div>
+          <div id="trendChart" style="display:none">
+            <div class="trend-header" id="trendHeader">📈 Price Trend (last 24 mo)</div>
+            <canvas id="trendCanvas" height="160"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- ── Toast notification ──────────────────────────────────────────── -->
+  <div class="toast-notification" id="toastNotif"></div>
+
+  <!-- ── Property Comparison Modal ────────────────────────────────────── -->
+  <div class="compare-overlay" id="compareOverlay" style="display:none" onclick="closeCompare(event)">
+    <div class="compare-modal" id="compareModal">
+      <div class="compare-header">
+        <h2>⚖ Property Comparison</h2>
+        <button class="compare-close" onclick="closeCompare()" aria-label="Close">✕</button>
+      </div>
+      <div class="compare-delta-banner" id="compareDeltaBanner" style="display:none"></div>
+      <div class="compare-grid">
+
+        <!-- ── Property A ── -->
+        <div class="compare-col" id="compareColA">
+          <div class="compare-col-header">
+            <span class="compare-col-label compare-col-label-A">🔵 Property A</span>
+          </div>
+          <div class="compare-addr-row">
+            <input class="compare-addr-input" id="compareAddrA" type="text" placeholder="Search address in NYC…" />
+            <button class="compare-addr-btn" onclick="geocodeForCompare('A')">📍</button>
+          </div>
+          <div class="compare-mini-form">
+            <div class="compare-field">
+              <label>Borough</label>
+              <select id="compareBoroughA">
+                <option value="">—</option>
+                <option value="1">Manhattan</option>
+                <option value="2">Bronx</option>
+                <option value="3">Brooklyn</option>
+                <option value="4">Queens</option>
+                <option value="5">Staten Island</option>
+              </select>
+            </div>
+            <div class="compare-field">
+              <label>Bldg Class</label>
+              <select id="compareBldgA"><option value="">—</option></select>
+            </div>
+            <div class="compare-field">
+              <label>Sq ft</label>
+              <input type="number" id="compareSqftA" placeholder="e.g. 1800" min="1" />
+            </div>
+            <div class="compare-field">
+              <label>Age (yrs)</label>
+              <input type="number" id="compareAgeA" placeholder="e.g. 40" min="0" />
+            </div>
+            <div class="compare-field">
+              <label>Floors</label>
+              <input type="number" id="compareFloorsA" placeholder="e.g. 2" min="1" />
+            </div>
+            <div class="compare-field">
+              <label>Units</label>
+              <input type="number" id="compareUnitsA" placeholder="e.g. 1" min="0" />
+            </div>
+          </div>
+          <input type="hidden" id="compareLatA" />
+          <input type="hidden" id="compareLonA" />
+          <div class="compare-error" id="compareErrA"></div>
+          <button class="compare-estimate-btn" id="compareEstBtnA" onclick="runCompareEstimate('A')">
+            <span>🔍 Estimate A</span>
+          </button>
+          <div class="compare-result" id="compareResultA">
+            <div class="compare-result-price" id="comparePriceA"></div>
+            <div class="compare-result-range"  id="compareRangeA"></div>
+            <div class="compare-result-meta"   id="compareMetaA"></div>
+            <div class="compare-result-drivers" id="compareDriversA"></div>
+          </div>
+        </div>
+
+        <!-- ── Property B ── -->
+        <div class="compare-col" id="compareColB">
+          <div class="compare-col-header">
+            <span class="compare-col-label compare-col-label-B">🟣 Property B</span>
+          </div>
+          <div class="compare-addr-row">
+            <input class="compare-addr-input" id="compareAddrB" type="text" placeholder="Search address in NYC…" />
+            <button class="compare-addr-btn" onclick="geocodeForCompare('B')">📍</button>
+          </div>
+          <div class="compare-mini-form">
+            <div class="compare-field">
+              <label>Borough</label>
+              <select id="compareBoroughB">
+                <option value="">—</option>
+                <option value="1">Manhattan</option>
+                <option value="2">Bronx</option>
+                <option value="3">Brooklyn</option>
+                <option value="4">Queens</option>
+                <option value="5">Staten Island</option>
+              </select>
+            </div>
+            <div class="compare-field">
+              <label>Bldg Class</label>
+              <select id="compareBldgB"><option value="">—</option></select>
+            </div>
+            <div class="compare-field">
+              <label>Sq ft</label>
+              <input type="number" id="compareSqftB" placeholder="e.g. 1800" min="1" />
+            </div>
+            <div class="compare-field">
+              <label>Age (yrs)</label>
+              <input type="number" id="compareAgeB" placeholder="e.g. 40" min="0" />
+            </div>
+            <div class="compare-field">
+              <label>Floors</label>
+              <input type="number" id="compareFloorsB" placeholder="e.g. 2" min="1" />
+            </div>
+            <div class="compare-field">
+              <label>Units</label>
+              <input type="number" id="compareUnitsB" placeholder="e.g. 1" min="0" />
+            </div>
+          </div>
+          <input type="hidden" id="compareLatB" />
+          <input type="hidden" id="compareLonB" />
+          <div class="compare-error" id="compareErrB"></div>
+          <button class="compare-estimate-btn" id="compareEstBtnB" onclick="runCompareEstimate('B')">
+            <span>🔍 Estimate B</span>
+          </button>
+          <div class="compare-result" id="compareResultB">
+            <div class="compare-result-price" id="comparePriceB"></div>
+            <div class="compare-result-range"  id="compareRangeB"></div>
+            <div class="compare-result-meta"   id="compareMetaB"></div>
+            <div class="compare-result-drivers" id="compareDriversB"></div>
+          </div>
+        </div>
+
+      </div><!-- /.compare-grid -->
+    </div><!-- /.compare-modal -->
+  </div><!-- /.compare-overlay -->
+
+  <!-- Building type info popup (all types listed) -->
+  <div id="bldgInfoPopup" class="bldg-info-popup" style="display:none">
+    <button class="bldg-info-close" id="bldgInfoClose">✕</button>
+    <div class="bldg-info-popup-title" id="bldgInfoPopupTitle">Building Types Guide</div>
+    <div class="bldg-info-list" id="bldgInfoList"></div>
+  </div>
+  <div id="bldgInfoOverlay" class="bldg-info-overlay" style="display:none"></div>
+
+  <!-- ── City Comparison Modal ──────────────────────────────────────────── -->
+  <div class="cc-overlay" id="cityCompareOverlay" style="display:none" onclick="closeCityCompare(event)">
+    <div class="cc-modal" id="cityCompareModal">
+      <div class="cc-modal-header">
+        <h2>🌍 NYC vs Riyadh — Full System Comparison</h2>
+        <button class="cc-close" onclick="closeCityCompare()" aria-label="Close">✕</button>
+      </div>
+
+      <div class="cc-table">
+
+        <!-- Column headers -->
+        <div class="cc-thead">
+          <div class="cc-cell"></div>
+          <div class="cc-cell cc-head-nyc">🗽 New York City</div>
+          <div class="cc-cell cc-head-riy">🕌 Riyadh</div>
+        </div>
+
+        <!-- ── Model Performance ──────────────────── -->
+        <div class="cc-section">🤖 Model Performance</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Algorithm</div>
+          <div class="cc-cell">XGBa · XGBb · LGB · CAT → Ridge</div>
+          <div class="cc-cell">XGB · LGB · CAT → Ridge</div>
+        </div>
+
+        <div class="cc-row cc-bar-row">
+          <div class="cc-cell cc-label">R² Score (holdout)</div>
+          <div class="cc-cell">
+            <span class="cc-num cc-num-nyc">0.650</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-nyc" style="width:65.0%"></div></div>
+          </div>
+          <div class="cc-cell">
+            <span class="cc-num cc-num-riy">0.800</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:80.0%"></div></div>
+          </div>
+        </div>
+
+        <div class="cc-row cc-bar-row">
+          <div class="cc-cell cc-label">MedAPE (median error)</div>
+          <div class="cc-cell">
+            <span class="cc-num cc-num-warn">20.3%</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-warn" style="width:20.3%"></div></div>
+          </div>
+          <div class="cc-cell">
+            <span class="cc-num cc-num-good">15.6%</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:15.6%"></div></div>
+          </div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Features</div>
+          <div class="cc-cell"><span class="cc-strong">134</span> <span class="cc-chip">structural + QoL + market + temporal</span></div>
+          <div class="cc-cell"><span class="cc-strong">140</span> <span class="cc-chip">spatial + macro + POIs + temporal lags</span></div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Base learners</div>
+          <div class="cc-cell">4 models (XGBa, XGBb, LGB, CatBoost)</div>
+          <div class="cc-cell">3 models (XGB, LGB, CatBoost)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Meta-learner</div>
+          <div class="cc-cell">Ridge regression</div>
+          <div class="cc-cell">Ridge regression</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Cross-validation</div>
+          <div class="cc-cell">Spatial GroupKFold · 10 folds · by NTA</div>
+          <div class="cc-cell">Spatial GroupKFold · 5 folds · by district</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">OOF R² (in-sample)</div>
+          <div class="cc-cell">—</div>
+          <div class="cc-cell"><span class="cc-num cc-num-riy">0.934</span> <span class="cc-chip">OOF CV</span></div>
+        </div>
+
+        <!-- ── Dataset ─────────────────────────────── -->
+        <div class="cc-section">📊 Dataset</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Training rows</div>
+          <div class="cc-cell"><span class="cc-strong">185,092</span> sales records</div>
+          <div class="cc-cell"><span class="cc-strong">7,258</span> district-quarter records</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Holdout rows</div>
+          <div class="cc-cell">— (time-series split)</div>
+          <div class="cc-cell"><span class="cc-strong">1,727</span> (2025 Q1+)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Total rows</div>
+          <div class="cc-cell"><span class="cc-strong">185,092</span></div>
+          <div class="cc-cell"><span class="cc-strong">7,258</span></div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Years covered</div>
+          <div class="cc-cell">2022 – 2026</div>
+          <div class="cc-cell">2018 – 2024</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Data frequency</div>
+          <div class="cc-cell">Individual property sales</div>
+          <div class="cc-cell">Quarterly district aggregates</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Currency / unit</div>
+          <div class="cc-cell">USD · total property price ($)</div>
+          <div class="cc-cell">SAR · per square metre (﷼/m²)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Median price</div>
+          <div class="cc-cell"><span class="cc-strong">$820,000</span></div>
+          <div class="cc-cell"><span class="cc-strong">﷼3,303 / m²</span></div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Typical range (P10–P90)</div>
+          <div class="cc-cell">$304K – $2.6M</div>
+          <div class="cc-cell">﷼1,040 – ﷼7,269 / m²</div>
+        </div>
+
+        <!-- ── Geography ──────────────────────────── -->
+        <div class="cc-section">🗺 Geography</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Administrative units</div>
+          <div class="cc-cell">5 boroughs · 195 NTAs</div>
+          <div class="cc-cell">147 districts</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Primary data source</div>
+          <div class="cc-cell">NYC Open Data · PLUTO · ACRIS</div>
+          <div class="cc-cell">Saudi Open Data Portal · REGA</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Spatial enrichment</div>
+          <div class="cc-cell">OSM POIs · NTA polygons · NYPD</div>
+          <div class="cc-cell">OSM POIs · Riyadh metro/bus GTFS</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Map coverage bbox</div>
+          <div class="cc-cell">40.48°N – 40.92°N · 74.26°W – 73.70°W</div>
+          <div class="cc-cell">24.35°N – 25.10°N · 46.30°E – 47.20°E</div>
+        </div>
+
+        <!-- ── Feature Engineering ────────────────── -->
+        <div class="cc-section">🏗 Feature Engineering</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Structural</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> sq ft, age, floors, units, bldg class</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> area (m²), property type</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Transit</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> subway distance + density</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> metro dist/density · bus stops</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Air quality</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> PM2.5, NO₂ (NTA mean)</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> PM10, NO₂ (nearest sensor)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">QoL / safety</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> crime, noise, HPD, 311 livability</div>
+          <div class="cc-cell"><span class="cc-no">—</span> not available in open data</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">POIs (amenities)</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> restaurants, bars, grocery, gym, Airbnb</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> mosques, malls, schools, hospitals, parks</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Green space</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> tree count (200m), park proximity</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> park POI count</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Market / price history</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> prior sale price · appreciation rate</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> district price trend · REI index</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Macroeconomic</div>
+          <div class="cc-cell"><span class="cc-no">—</span> not included</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> CPI, GDP, oil price, interest rates</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Road connectivity</div>
+          <div class="cc-cell"><span class="cc-no">—</span></div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> intersection density · connectivity score</div>
+        </div>
+
+        <!-- ── Property Types ─────────────────────── -->
+        <div class="cc-section">🏠 Property Types</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Supported types</div>
+          <div class="cc-cell">9 classes: Single Family, 2-Family, 3-Family, Row House, Condo, Elevator Apt, Walk-up, Co-op, Mixed Use</div>
+          <div class="cc-cell">4 types: شقة (Apt) · فيلا (Villa) · قطعة أرض (Plot) · عمارة (Bldg)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Total bldg codes</div>
+          <div class="cc-cell"><span class="cc-strong">200+</span> NYC building class codes</div>
+          <div class="cc-cell"><span class="cc-strong">4</span> standardised Arabic categories</div>
+        </div>
+
+        <!-- ── Map Layers ──────────────────────────── -->
+        <div class="cc-section">🗺 Interactive Map Layers</div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Choropleth layers</div>
+          <div class="cc-cell"><span class="cc-strong">20</span> NTA layers (income, crime, noise, air…)</div>
+          <div class="cc-cell"><span class="cc-strong">10</span> district layers (metro, price, air…)</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Market overlay</div>
+          <div class="cc-cell">— (sales in result panel)</div>
+          <div class="cc-cell">🏠 Live listings cluster layer</div>
+        </div>
+
+        <div class="cc-row">
+          <div class="cc-cell cc-label">Out-of-bounds mask</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> red highlight outside NYC bbox</div>
+          <div class="cc-cell"><span class="cc-yes">✓</span> red highlight outside Riyadh bbox</div>
+        </div>
+
+      </div><!-- /.cc-table -->
+    </div><!-- /.cc-modal -->
+  </div><!-- /.cc-overlay -->
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="/ui/app.js?v=2"></script>
+</body>
+</html>
