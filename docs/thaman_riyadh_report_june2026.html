@@ -197,6 +197,8 @@ body {
     <a onclick="document.getElementById('ryd-mdl').scrollIntoView({behavior:'smooth'})">نموذج الرياض</a>
     <a onclick="document.getElementById('nyc').scrollIntoView({behavior:'smooth'})">نيويورك</a>
     <a onclick="document.getElementById('nyc-mdl').scrollIntoView({behavior:'smooth'})">نموذج NYC</a>
+    <a onclick="document.getElementById('pipeline').scrollIntoView({behavior:'smooth'})">المسار</a>
+    <a onclick="document.getElementById('cases').scrollIntoView({behavior:'smooth'})">حالات</a>
     <a onclick="document.getElementById('cmp').scrollIntoView({behavior:'smooth'})">المقارنة</a>
     <a onclick="document.getElementById('refs').scrollIntoView({behavior:'smooth'})">المصادر</a>
   </div>
@@ -866,6 +868,298 @@ body {
   </div>
 
   <p class="src">مصدر: THAMAN Stack v22 meta.json — shap_top20 ، مقاييس المجمَّع، نتائج النماذج الجزئية. NYC Citywide Rolling Calendar Sales ، PLUTO ، MTA ، NYPD ، ACS Census ، Overture Maps.</p>
+</div>
+
+<!-- ══════ MODEL PIPELINE ══════ -->
+<div class="section" id="pipeline">
+  <div class="section-top">
+    <span class="section-label">مسار عمل النموذج</span>
+    <span class="section-badge">Pipeline · كيف يعمل THAMAN</span>
+  </div>
+  <div class="h1">مسار <span class="accent">النموذج</span></div>
+
+  <p class="lead">
+    يعمل نظام THAMAN عبر مسار متكامل من جمع البيانات وصولًا إلى إنتاج تقدير السعر مع تفسيره.
+    المسار ذاته يُطبَّق على نيويورك والرياض مع تكييفات المدينة.
+  </p>
+
+  <!-- Pipeline steps -->
+  <div style="margin-top:20px">
+    <!-- Step 1 -->
+    <div style="display:flex;gap:16px;margin-bottom:20px;align-items:flex-start">
+      <div style="width:36px;height:36px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--blue3);font-weight:800;font-size:15px;flex-shrink:0">١</div>
+      <div style="flex:1">
+        <div class="h2" style="font-size:16px;border:none;padding:0;margin-bottom:6px">جمع البيانات الخام</div>
+        <div class="callout" style="margin-bottom:0">
+          <span class="cl">المصادر</span>
+          <strong>الرياض:</strong> صفقات سهيل (33,837 صفقة خام 2018–2025) + إعلانات حراج (1,691 إعلانًا مايو 2026) + مؤشر REI الربعي (GASTAT) + نقاط الاهتمام من OSM + بيانات جودة الهواء.<br>
+          <strong>نيويورك:</strong> NYC Rolling Calendar Sales + PLUTO + بيانات MTA + ACS Census + NYPD + 311 + ACRIS + Overture Maps POIs.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div style="display:flex;gap:16px;margin-bottom:20px;align-items:flex-start">
+      <div style="width:36px;height:36px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--blue3);font-weight:800;font-size:15px;flex-shrink:0">٢</div>
+      <div style="flex:1">
+        <div class="h2" style="font-size:16px;border:none;padding:0;margin-bottom:6px">هندسة المتغيرات (Feature Engineering)</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="card"><div class="cap">الرياض · 149 متغيرًا</div>
+            <div style="font-size:12px;line-height:1.8;margin-top:6px;color:var(--text)">
+              قرب المترو (KD-tree) · تأخرات زمنية لمتوسط سعر الحي (lag1, lag2) · ترميز نوع العقار · مؤشر REI حسب النوع · كثافة الصفقات السابقة · قرب المساجد / المدارس / المراكز التجارية · جودة الهواء (NO₂, PM₁₀) · متغيرات الموسمية الربعية
+            </div>
+          </div>
+          <div class="card"><div class="cap">نيويورك · 134 متغيرًا</div>
+            <div style="font-size:12px;line-height:1.8;margin-top:6px;color:var(--text)">
+              ترميز تصنيف المبنى · بُعد NTA المشفَّر · قرب محطات المترو · دخل الأسرة الوسيط للـNTA · سجل البيع السابق (ACRIS) · كثافة الجرائم · قرب الحدائق والشواطئ · نقاط DOB/HPD للمخالفات · لوجستيك Citi Bike
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div style="display:flex;gap:16px;margin-bottom:20px;align-items:flex-start">
+      <div style="width:36px;height:36px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--blue3);font-weight:800;font-size:15px;flex-shrink:0">٣</div>
+      <div style="flex:1">
+        <div class="h2" style="font-size:16px;border:none;padding:0;margin-bottom:6px">التحقق المتقاطع وتدريب النماذج الجزئية</div>
+        <p style="font-size:13px;color:var(--text);line-height:1.8;margin-bottom:12px">
+          يُستخدَم <strong>GroupKFold</strong> لضمان عدم تسرُّب البيانات الجغرافية:
+          الرياض يُجمِّع بالحي، نيويورك يُجمِّع بوحدة NTA.
+          يُدرَّب كل نموذج جزئي (XGBoost-A، XGBoost-B، LightGBM، CatBoost) بشكل مستقل
+          باستخدام البيانات الخارج-عينة (OOF) من كل fold لتوليد تنبؤات OOF.
+        </p>
+        <div class="card-row c4">
+          <div class="card dark"><div class="cap">XGBoost-A</div><div class="val">0.6445</div><div class="sub">R² NYC اختبار</div></div>
+          <div class="card dark"><div class="cap">LightGBM</div><div class="val">0.6432</div><div class="sub">R² NYC اختبار</div></div>
+          <div class="card dark"><div class="cap">XGBoost-B</div><div class="val">0.6387</div><div class="sub">R² NYC اختبار</div></div>
+          <div class="card dark"><div class="cap">CatBoost</div><div class="val">~0.630</div><div class="sub">R² NYC اختبار</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div style="display:flex;gap:16px;margin-bottom:20px;align-items:flex-start">
+      <div style="width:36px;height:36px;background:var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:15px;flex-shrink:0">٤</div>
+      <div style="flex:1">
+        <div class="h2" style="font-size:16px;border:none;padding:0;margin-bottom:6px">تجميع الـ Stack (Meta-Learner)</div>
+        <p style="font-size:13px;color:var(--text);line-height:1.8;margin-bottom:12px">
+          تنبؤات OOF من الخطوة السابقة تُشكِّل مصفوفة الـ stack.
+          نموذج <strong>Ridge Regression</strong> (meta-learner) يتعلم الأوزان الأمثل للجمع بين تنبؤات النماذج الجزئية.
+          هذا يقلل التباين ويحسن الأداء على البيانات المجهولة.
+        </p>
+        <div class="callout" style="margin-bottom:0">
+          <span class="cl">نتيجة التجميع</span>
+          <strong>الرياض:</strong> الـ stack يرفع R² من ~0.75 (أفضل نموذج جزئي) إلى R²=0.8014 (+0.05).<br>
+          <strong>نيويورك:</strong> الـ stack يرفع R² من 0.6445 (XGBoost-A) إلى R²=0.6495 (+0.005) ويُحسِّن MedAPE من 20.56% إلى 20.32%.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div style="display:flex;gap:16px;margin-bottom:20px;align-items:flex-start">
+      <div style="width:36px;height:36px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--blue3);font-weight:800;font-size:15px;flex-shrink:0">٥</div>
+      <div style="flex:1">
+        <div class="h2" style="font-size:16px;border:none;padding:0;margin-bottom:6px">الاستدلال الفوري (Real-Time Inference)</div>
+        <p style="font-size:13px;color:var(--text);line-height:1.8">
+          عند استلام طلب تقدير جديد عبر API:
+          (١) يُثرِّي النظام البيانات مكانيًا (SpatialLookup / RiyadhSpatialLookup) لحساب المسافات والكثافات.
+          (٢) يُوجِّه الإدخال عبر النماذج الأربعة في وقت واحد.
+          (٣) يُجمِّع Ridge meta تنبؤات النماذج الأربعة في تقدير نهائي واحد.
+          (٤) يُحسب SHAP لتفسير أهم العوامل المؤثرة في هذا التقدير بالذات.
+          (٥) تُحسب درجة الثقة الديناميكية (Adaptive Confidence) وتُرسَل في الاستجابة.
+        </p>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div style="display:flex;gap:16px;align-items:flex-start">
+      <div style="width:36px;height:36px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--blue3);font-weight:800;font-size:15px;flex-shrink:0">٦</div>
+      <div style="flex:1">
+        <div class="h2" style="font-size:16px;border:none;padding:0;margin-bottom:6px">مخرجات النظام</div>
+        <div class="card-row c3">
+          <div class="card"><div class="cap">السعر المُقدَّر</div><div style="font-size:13px;margin-top:6px;line-height:1.8;color:var(--text)">USD إجمالي (NYC) أو ريال/م² + ريال إجمالي (الرياض) مع نطاق ثقة 90%</div></div>
+          <div class="card"><div class="cap">تفسير SHAP</div><div style="font-size:13px;margin-top:6px;line-height:1.8;color:var(--text)">أهم 5–10 عوامل أثّرت في السعر مع اتجاه الأثر (زيادة/نقصان)</div></div>
+          <div class="card"><div class="cap">درجة الثقة</div><div style="font-size:13px;margin-top:6px;line-height:1.8;color:var(--text)">A–D بناءً على كثافة بيانات الحي والمسافة من نظائره في بيانات التدريب</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="src">مرجع: api/main.py (مسار الاستدلال) · models/scorer.py (ThamanScorer) · api/spatial.py (SpatialLookup / RiyadhSpatialLookup)</p>
+</div>
+
+<!-- ══════ CASE STUDIES ══════ -->
+<div class="section" id="cases">
+  <div class="section-top">
+    <span class="section-label">حالات دراسية</span>
+    <span class="section-badge">أمثلة تقييم حقيقية</span>
+  </div>
+  <div class="h1">حالات <span class="accent">دراسية</span></div>
+
+  <p class="lead">
+    أمثلة توضيحية مبنية على مقاييس THAMAN الحقيقية (MedAPE، MAE، أسعار الأحياء).
+    تعكس السيناريوهات الأداء الفعلي للنموذج في أنواع العقارات والمناطق المختلفة.
+  </p>
+
+  <!-- Case 1: Riyadh Villa -->
+  <div class="h2">الحالة الأولى · فيلا في حي حطين · الرياض</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px">
+    <div class="card accent-card">
+      <div class="cap">المدخلات</div>
+      <div style="font-size:12.5px;line-height:2;margin-top:8px">
+        النوع: فيلا سكنية<br>
+        الحي: حطين · شمال الرياض<br>
+        المساحة: 400 م²<br>
+        عمر المبنى: 5 سنوات<br>
+        الطوابق: 3<br>
+        قرب المترو: ~1.2 كم
+      </div>
+    </div>
+    <div class="card dark">
+      <div class="cap">مخرجات THAMAN</div>
+      <div class="val" style="font-size:22px">11,429 ريال/م²</div>
+      <div class="sub">وسيط حي حطين (حراج + سهيل)</div>
+      <div style="font-size:12px;margin-top:10px;color:#4a5f88;line-height:1.8">
+        السعر الإجمالي ≈ 4.57M ريال<br>
+        درجة الثقة: B+ (n=13 في الحي)<br>
+        MedAPE نوع الفيلا: 12.39%<br>
+        نطاق الثقة: ±10–15%
+      </div>
+    </div>
+  </div>
+
+  <!-- Case 2: Riyadh Apt high end -->
+  <div class="h2">الحالة الثانية · شقة في حي العليا · الرياض</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px">
+    <div class="card accent-card">
+      <div class="cap">المدخلات</div>
+      <div style="font-size:12.5px;line-height:2;margin-top:8px">
+        النوع: شقة تجارية/سكنية<br>
+        الحي: العليا · وسط الرياض التجاري<br>
+        المساحة: 120 م²<br>
+        الطابق: 8<br>
+        عمر المبنى: 3 سنوات<br>
+        قرب المترو: ~0.4 كم
+      </div>
+    </div>
+    <div class="card dark">
+      <div class="cap">مخرجات THAMAN</div>
+      <div class="val" style="font-size:22px">12,359 ريال/م²</div>
+      <div class="sub">وسيط حي العليا (n=12)</div>
+      <div style="font-size:12px;margin-top:10px;color:#4a5f88;line-height:1.8">
+        السعر الإجمالي ≈ 1.48M ريال<br>
+        درجة الثقة: A (n=12، بيانات كافية)<br>
+        MedAPE نوع الشقة: 12.83%<br>
+        نطاق الثقة: ±10–13%
+      </div>
+    </div>
+  </div>
+
+  <!-- Case 3: Riyadh Land plot -->
+  <div class="h2">الحالة الثالثة · أرض سكنية في حي النخيل · الرياض</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px">
+    <div class="card accent-card">
+      <div class="cap">المدخلات</div>
+      <div style="font-size:12.5px;line-height:2;margin-top:8px">
+        النوع: أرض سكنية<br>
+        الحي: النخيل · شمال الرياض<br>
+        المساحة: 500 م²<br>
+        الواجهة: طريق رئيسي<br>
+        الخدمات: متاحة
+      </div>
+    </div>
+    <div class="card dark">
+      <div class="cap">مخرجات THAMAN</div>
+      <div class="val" style="font-size:22px">26,000 ريال/م²</div>
+      <div class="sub">وسيط حي النخيل (n=3)</div>
+      <div style="font-size:12px;margin-top:10px;color:#4a5f88;line-height:1.8">
+        السعر الإجمالي ≈ 13M ريال<br>
+        درجة الثقة: C (n=3 فقط — حذر)<br>
+        MedAPE نوع الأرض: 20.82%<br>
+        نطاق الثقة: ±18–25% (أرض = أصعب نوع)
+      </div>
+    </div>
+  </div>
+
+  <!-- Case 4: NYC Queens -->
+  <div class="h2">الحالة الرابعة · منزل أحادي في Queens · نيويورك</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px">
+    <div class="card accent-card">
+      <div class="cap">المدخلات</div>
+      <div style="font-size:12.5px;line-height:2;margin-top:8px">
+        النوع: A1 (Single Family)<br>
+        الحي: Queens · Forest Hills<br>
+        المساحة: 1,800 قدم مربع<br>
+        عمر المبنى: 45 سنة<br>
+        بُعد المترو: ~400 متر<br>
+        بُعد Manhattan: ~18 كم
+      </div>
+    </div>
+    <div class="card dark">
+      <div class="cap">مخرجات THAMAN</div>
+      <div class="val" style="font-size:22px">~$780K</div>
+      <div class="sub">تقدير THAMAN Stack v22</div>
+      <div style="font-size:12px;margin-top:10px;color:#4a5f88;line-height:1.8">
+        شريحة السعر: $500K–$1M<br>
+        درجة الثقة: A (Queens أكثر حي بيانات)<br>
+        MedAPE Queens: 17.43%<br>
+        نطاق الثقة: ±15–18%
+      </div>
+    </div>
+  </div>
+
+  <!-- Case 5: NYC Manhattan luxury -->
+  <div class="h2">الحالة الخامسة · شقة D4 (Co-op) في Manhattan · نيويورك</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px">
+    <div class="card accent-card">
+      <div class="cap">المدخلات</div>
+      <div style="font-size:12.5px;line-height:2;margin-top:8px">
+        النوع: D4 (Elevator Co-op)<br>
+        الحي: Manhattan · Upper West Side<br>
+        المساحة: 1,100 قدم مربع<br>
+        الطابق: 12<br>
+        بُعد المترو: ~200 متر<br>
+        بُعد Manhattan: ~8 كم
+      </div>
+    </div>
+    <div class="card dark">
+      <div class="cap">مخرجات THAMAN</div>
+      <div class="val" style="font-size:22px">~$1.6M</div>
+      <div class="sub">تقدير THAMAN Stack v22</div>
+      <div style="font-size:12px;margin-top:10px;color:#4a5f88;line-height:1.8">
+        شريحة السعر: $1M–$3M<br>
+        درجة الثقة: B (تعاونية = غير معلنة القيمة)<br>
+        MedAPE Manhattan: 35.16%<br>
+        نطاق الثقة: ±28–40% (أصعب شريحة)
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison of case studies -->
+  <div class="h2">ملخص الحالات الدراسية</div>
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>العقار</th>
+        <th>المدينة</th>
+        <th>التقدير</th>
+        <th>MedAPE المتوقع</th>
+        <th>درجة الثقة</th>
+        <th>السبب</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="rank">1</td><td>فيلا حطين</td><td>الرياض</td><td class="num-cell">4.57M ريال</td><td class="pos">12.39%</td><td style="color:var(--pos)">B+</td><td>فيلا = أفضل نوع بالرياض</td></tr>
+      <tr><td class="rank">2</td><td>شقة العليا</td><td>الرياض</td><td class="num-cell">1.48M ريال</td><td class="pos">12.83%</td><td style="color:var(--pos)">A</td><td>بيانات كافية، موقع مركزي</td></tr>
+      <tr><td class="rank">3</td><td>أرض النخيل</td><td>الرياض</td><td class="num-cell">13M ريال</td><td class="neg">20.82%</td><td style="color:orange">C</td><td>أراضي = أصعب تقدير + n=3 فقط</td></tr>
+      <tr><td class="rank">4</td><td>منزل Queens</td><td>نيويورك</td><td class="num-cell">$780K</td><td class="pos">17.43%</td><td style="color:var(--pos)">A</td><td>Queens = أفضل حي بـNYC</td></tr>
+      <tr><td class="rank">5</td><td>Co-op Manhattan</td><td>نيويورك</td><td class="num-cell">$1.6M</td><td class="neg">35.16%</td><td style="color:orange">B</td><td>تعاونيات = خصومات غير ظاهرة</td></tr>
+    </tbody>
+  </table>
+
+  <p class="src">الحالات الدراسية توضيحية مبنية على المقاييس الحقيقية لـ THAMAN Stack v12 (الرياض) و v22 (نيويورك). التقديرات مستمدة من وسيط بيانات الأحياء الحقيقية في district_price_summary.csv و meta.json.</p>
 </div>
 
 <!-- ══════ COMPARISON ══════ -->
