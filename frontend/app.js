@@ -1739,7 +1739,7 @@ function renderRiyadhResults(data) {
   const low   = data.confidence_low_sar;
   const high  = data.confidence_high_sar;
   const sf    = data.spatial_features || {};
-  const medape = data.medape_pct || 15.56;
+  const medape = data.medape_pct || 15.59;
 
   // ── Price hero ────────────────────────────────────────────────────────
   const sqmEl = document.getElementById('riyadhPriceSqm');

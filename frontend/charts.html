@@ -488,7 +488,7 @@
   <div id="riyadhChartsLayout" style="display:none;max-width:1240px;margin:0 auto;padding:0 20px 48px;display:none">
     <div style="text-align:center;padding:8px 0 20px">
       <h1 style="font-size:1.4rem;font-weight:800;color:#111827">🕌 Riyadh Property Market — Analytics</h1>
-      <p style="font-size:.85rem;color:#6b7280;margin-top:4px">Saudi Open Data · 7,258 district-quarter observations · 2018–2024 training + 2025 Q1+ holdout · Riyadh Stack v11 · 140 features</p>
+      <p style="font-size:.85rem;color:#6b7280;margin-top:4px">Suhail transactions · 5,531 training + 1,730 holdout · 2025–2026 · Riyadh Stack v12 · 149 features</p>
     </div>
 
     <!-- Market Overview KPI cards -->
@@ -496,31 +496,31 @@
     <div id="riyadhKpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px"></div>
 
     <!-- Model Performance KPI cards (hardcoded from Stack v2 training run) -->
-    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:6px;margin-top:4px">🤖 Model Performance — Stack v11</div>
+    <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#9ca3af;margin-bottom:6px;margin-top:4px">🤖 Model Performance — Stack v12</div>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center">
         <div style="font-size:1.1rem;margin-bottom:4px">🔁</div>
-        <div style="font-size:1.4rem;font-weight:800;color:#059669">8.28%</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#059669">8.25%</div>
         <div style="font-size:.75rem;font-weight:600;color:#6b7280;margin-top:2px">OOF MedAPE</div>
-        <div style="font-size:.7rem;color:#9ca3af">5-fold GroupKFold CV · R²=0.9343</div>
+        <div style="font-size:.7rem;color:#9ca3af">5-fold GroupKFold CV · R²=0.9348</div>
       </div>
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center">
         <div style="font-size:1.1rem;margin-bottom:4px">🎯</div>
-        <div style="font-size:1.4rem;font-weight:800;color:#d97706">15.56%</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#d97706">15.59%</div>
         <div style="font-size:.75rem;font-weight:600;color:#6b7280;margin-top:2px">Holdout MedAPE</div>
-        <div style="font-size:.7rem;color:#9ca3af">2025 Q1+ · 1,727 rows unseen</div>
+        <div style="font-size:.7rem;color:#9ca3af">2025 Q1–Q3 · 1,730 rows unseen</div>
       </div>
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center">
         <div style="font-size:1.1rem;margin-bottom:4px">📈</div>
-        <div style="font-size:1.4rem;font-weight:800;color:#2563eb">0.8003</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#2563eb">0.8014</div>
         <div style="font-size:.75rem;font-weight:600;color:#6b7280;margin-top:2px">Holdout R²</div>
-        <div style="font-size:.7rem;color:#9ca3af">MAE = 980 SAR/m²</div>
+        <div style="font-size:.7rem;color:#9ca3af">MAE = 986 SAR/m²</div>
       </div>
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center">
         <div style="font-size:1.1rem;margin-bottom:4px">🗂️</div>
-        <div style="font-size:1.4rem;font-weight:800;color:#7c3aed">7,258</div>
+        <div style="font-size:1.4rem;font-weight:800;color:#7c3aed">5,531</div>
         <div style="font-size:.75rem;font-weight:600;color:#6b7280;margin-top:2px">Training Rows</div>
-        <div style="font-size:.7rem;color:#9ca3af">1,727 holdout · 140 features</div>
+        <div style="font-size:.7rem;color:#9ca3af">1,730 holdout · 149 features</div>
       </div>
     </div>
 
@@ -542,12 +542,12 @@
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
       <div class="chart-card" style="padding:16px">
         <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">🎯 MedAPE by Property Type (Holdout)</h2>
-        <div class="chart-sub">Stack v11 · 2025 Q1+ · lower = better · apt+villa both ≈12.8%</div>
+        <div class="chart-sub">Stack v12 · 2025 Q1–Q3 · lower = better · apt 12.83% · villa 12.39%</div>
         <div class="chart-wrap" style="height:220px"><canvas id="riyadhMedapeTypeChart"></canvas></div>
       </div>
       <div class="chart-card" style="padding:16px">
-        <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">⚖️ OOF vs Holdout — Stack v11</h2>
-        <div class="chart-sub">7.3 pp gap between CV and holdout — 2025 Q1+ unseen market (1,727 rows)</div>
+        <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">⚖️ OOF vs Holdout — Stack v12</h2>
+        <div class="chart-sub">7.3 pp gap between CV and holdout — 2025 Q1–Q3 unseen market (1,730 rows)</div>
         <div class="chart-wrap" style="height:220px"><canvas id="riyadhOofHoldoutChart"></canvas></div>
       </div>
     </div>
@@ -561,15 +561,15 @@
 
     <!-- Full-width: Feature importance -->
     <div class="chart-card" style="padding:16px;margin-bottom:20px">
-      <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">🔍 Top Feature Importances — Riyadh v11</h2>
-      <div class="chart-sub">LGB gain-based importance · district × type encoding dominates; rei_type_idx (v8), metro (v10), type-stratified lag (v11)</div>
+      <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">🔍 Top Feature Importances — Riyadh v12</h2>
+      <div class="chart-sub">LGB gain-based importance · district × type encoding dominates; rei_type_idx, metro proximity, type-stratified lags (v12 · 149 features)</div>
       <div class="chart-wrap" style="height:360px"><canvas id="riyadhFiChart"></canvas></div>
     </div>
 
     <!-- Full-width: Predicted vs Actual scatter (Riyadh) -->
     <div class="chart-card" style="padding:16px;margin-bottom:20px" id="riyadhScatterCard">
-      <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">🎯 Predicted vs Actual — Riyadh Holdout (v11)</h2>
-      <div class="chart-sub">800 randomly sampled holdout transactions · coloured by property type · diagonal = perfect prediction · full-stack R²=0.8003 · MedAPE=15.56%</div>
+      <h2 style="font-size:.9rem;font-weight:700;margin-bottom:4px">🎯 Predicted vs Actual — Riyadh Holdout (v12)</h2>
+      <div class="chart-sub">800 randomly sampled holdout transactions · coloured by property type · diagonal = perfect prediction · full-stack R²=0.8014 · MedAPE=15.59%</div>
       <div id="riyadhScatterLoading" style="text-align:center;padding:40px;color:#9ca3af;font-size:.85rem">Loading scatter data…</div>
       <div id="riyadhScatterWrap" style="display:none">
         <div class="chart-wrap" style="height:380px"><canvas id="riyadhScatterChart"></canvas></div>
@@ -1588,9 +1588,9 @@ function showCity(city) {
   document.getElementById('tabRiyadh').style.border     = isRiyadh ? 'none'    : '1px solid #d1d5db';
   // Swap header badges
   const rm = window._riyadhMetrics;
-  document.getElementById('hdrStack').textContent            = isRiyadh ? (rm ? rm.version : 'riyadh_v11') : 'Stack v22';
-  document.getElementById('hdrR2').textContent               = isRiyadh ? (rm ? `R² = ${rm.hold_r2.toFixed(4)}` : 'R² = 0.8003') : 'R² = 0.6495';
-  document.getElementById('chartsFeaturesBadge').textContent = isRiyadh ? (rm ? `${rm.n_features} Features` : '140 Features') : '134 Features';
+  document.getElementById('hdrStack').textContent            = isRiyadh ? (rm ? rm.version : 'riyadh_v12') : 'Stack v22';
+  document.getElementById('hdrR2').textContent               = isRiyadh ? (rm ? `R² = ${rm.hold_r2.toFixed(4)}` : 'R² = 0.8014') : 'R² = 0.6495';
+  document.getElementById('chartsFeaturesBadge').textContent = isRiyadh ? (rm ? `${rm.n_features} Features` : '149 Features') : '134 Features';
   if (isRiyadh) loadRiyadhCharts();
 }
 
@@ -1610,7 +1610,7 @@ async function loadRiyadhCharts() {
       { label: 'Transactions', value: (ov.total_rows || 0).toLocaleString(), sub: ov.year_range || '' },
       { label: 'Districts', value: (ov.districts || 0).toString(), sub: 'Riyadh districts' },
       { label: 'Median Price', value: '﷼' + Math.round(ov.median_price_sqm || 0).toLocaleString(), sub: 'SAR/m²' },
-      { label: 'Model MedAPE', value: (ov.model_medape || 15.56).toFixed(1) + '%', sub: 'Holdout 2025 Q1+ · v11' },
+      { label: 'Model MedAPE', value: (ov.model_medape || 15.59).toFixed(1) + '%', sub: 'Holdout 2025 Q1–Q3 · v12' },
     ];
     document.getElementById('riyadhKpis').innerHTML = kpis.map(k => `
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px;text-align:center">
@@ -1703,7 +1703,7 @@ async function loadRiyadhCharts() {
       }
     });
 
-    // OOF vs Holdout comparison (Stack v11) — dual y-axis: MedAPE left, R² right
+    // OOF vs Holdout comparison (Stack v12) — dual y-axis: MedAPE left, R² right
     new Chart(document.getElementById('riyadhOofHoldoutChart'), {
       type: 'bar',
       data: {
@@ -1719,7 +1719,7 @@ async function loadRiyadhCharts() {
           },
           {
             label: 'Holdout',
-            data: [15.56, null],
+            data: [15.59, null],
             backgroundColor: 'rgba(217,119,6,.18)',
             borderColor: '#d97706',
             borderWidth: 2, borderRadius: 6,
@@ -1727,7 +1727,7 @@ async function loadRiyadhCharts() {
           },
           {
             label: 'OOF R² (CV)',
-            data: [null, 0.9343],
+            data: [null, 0.9348],
             backgroundColor: 'rgba(37,99,235,.18)',
             borderColor: '#2563eb',
             borderWidth: 2, borderRadius: 6,
@@ -1735,7 +1735,7 @@ async function loadRiyadhCharts() {
           },
           {
             label: 'Holdout R²',
-            data: [null, 0.8003],
+            data: [null, 0.8014],
             backgroundColor: 'rgba(124,58,237,.18)',
             borderColor: '#7c3aed',
             borderWidth: 2, borderRadius: 6,
@@ -2025,7 +2025,8 @@ const RIYADH_VERSIONS = [
   { ver: 'v8',           desc: 'Type-matched REI (apt/villa/plot/bldg fixed)',   r2: 0.7677, medape: 18.02, feats: 125 },
   { ver: 'v9',           desc: 'Hub distances: KAFD, old city, airport (≈flat)', r2: 0.7646, medape: 18.36, feats: 133 },
   { ver: 'v10',          desc: 'Riyadh Metro 94 stations, 6 lines (Dec 2024)',   r2: 0.7634, medape: 18.45, feats: 136 },
-  { ver: 'v11 ✓',        desc: 'Type-stratified lag + price std + suhail density', r2: 0.8003, medape: 15.56, feats: 140 },
+  { ver: 'v11',          desc: 'Type-stratified lag + price std + suhail density', r2: 0.8003, medape: 15.56, feats: 140 },
+  { ver: 'v12 ✓',        desc: 'Suhail 2025–2026 refresh + 9 new spatial features', r2: 0.8014, medape: 15.59, feats: 149 },
 ];
 
 function renderVersionTable(data, tbodyId) {

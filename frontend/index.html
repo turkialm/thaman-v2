@@ -44,9 +44,9 @@
         <button class="badge badge-gray" onclick="openCompare()" style="cursor:pointer;border:none">⚖ Compare</button>
       </span>
       <span id="riyadhBadgeGroup" style="display:none">
-        <span class="badge badge-green">Riyadh Stack v11</span>
-        <span class="badge badge-blue">R² = 0.800</span>
-        <span class="badge badge-purple">MedAPE 15.56%</span>
+        <span class="badge badge-green">Riyadh Stack v12</span>
+        <span class="badge badge-blue">R² = 0.8014</span>
+        <span class="badge badge-purple">MedAPE 15.59%</span>
       </span>
       <a href="/ui/charts.html" class="badge badge-gray">📊 <span id="analyticsLabel">Analytics</span></a>
       <a href="/ui/batch.html" class="badge badge-gray">📋 Batch</a>
@@ -441,9 +441,9 @@
             </button>
           </div>
           <p class="disclaimer">
-            Predictions based on Suhail/MOJ transactions 2018–2026 · Holdout MedAPE ±15.56%.
-            Market benchmarks: weerate · Bayut · Knight Frank · Cavendish Maxwell · GASTAT (Jun 2026).
-            تنبؤات مبنية على بيانات سهيل/وزارة العدل 2018–2026.
+            Predictions based on Suhail/MOJ transactions 2025–2026 · Holdout MedAPE ±15.59% · Stack v12.
+            GASTAT REI indices embedded in feature pipeline (Jun 2026).
+            تنبؤات مبنية على بيانات سهيل/وزارة العدل 2025–2026.
           </p>
         </form>
 
@@ -824,12 +824,12 @@
         <div class="cc-row cc-bar-row">
           <div class="cc-cell cc-label">R² Score (holdout)</div>
           <div class="cc-cell">
-            <span class="cc-num cc-num-nyc">0.650</span>
-            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-nyc" style="width:65.0%"></div></div>
+            <span class="cc-num cc-num-nyc">0.6495</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-nyc" style="width:64.95%"></div></div>
           </div>
           <div class="cc-cell">
-            <span class="cc-num cc-num-riy">0.800</span>
-            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:80.0%"></div></div>
+            <span class="cc-num cc-num-riy">0.8014</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:80.14%"></div></div>
           </div>
         </div>
 
@@ -840,21 +840,21 @@
             <div class="cc-bar-wrap"><div class="cc-bar cc-bar-warn" style="width:20.3%"></div></div>
           </div>
           <div class="cc-cell">
-            <span class="cc-num cc-num-good">15.6%</span>
-            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:15.6%"></div></div>
+            <span class="cc-num cc-num-good">15.59%</span>
+            <div class="cc-bar-wrap"><div class="cc-bar cc-bar-riy" style="width:15.59%"></div></div>
           </div>
         </div>
 
         <div class="cc-row">
           <div class="cc-cell cc-label">Features</div>
           <div class="cc-cell"><span class="cc-strong">134</span> <span class="cc-chip">structural + QoL + market + temporal</span></div>
-          <div class="cc-cell"><span class="cc-strong">140</span> <span class="cc-chip">spatial + macro + POIs + temporal lags</span></div>
+          <div class="cc-cell"><span class="cc-strong">149</span> <span class="cc-chip">spatial + macro + POIs + temporal lags</span></div>
         </div>
 
         <div class="cc-row">
           <div class="cc-cell cc-label">Base learners</div>
           <div class="cc-cell">4 models (XGBa, XGBb, LGB, CatBoost)</div>
-          <div class="cc-cell">3 models (XGB, LGB, CatBoost)</div>
+          <div class="cc-cell">4 models (XGBa, XGBb, LGB, CatBoost)</div>
         </div>
 
         <div class="cc-row">
@@ -872,7 +872,7 @@
         <div class="cc-row">
           <div class="cc-cell cc-label">OOF R² (in-sample)</div>
           <div class="cc-cell">—</div>
-          <div class="cc-cell"><span class="cc-num cc-num-riy">0.934</span> <span class="cc-chip">OOF CV</span></div>
+          <div class="cc-cell"><span class="cc-num cc-num-riy">0.9348</span> <span class="cc-chip">OOF CV</span></div>
         </div>
 
         <!-- ── Dataset ─────────────────────────────── -->
@@ -880,26 +880,26 @@
 
         <div class="cc-row">
           <div class="cc-cell cc-label">Training rows</div>
-          <div class="cc-cell"><span class="cc-strong">185,092</span> sales records</div>
-          <div class="cc-cell"><span class="cc-strong">7,258</span> district-quarter records</div>
+          <div class="cc-cell"><span class="cc-strong">157,329</span> sales records</div>
+          <div class="cc-cell"><span class="cc-strong">5,531</span> Suhail transactions</div>
         </div>
 
         <div class="cc-row">
           <div class="cc-cell cc-label">Holdout rows</div>
-          <div class="cc-cell">— (time-series split)</div>
-          <div class="cc-cell"><span class="cc-strong">1,727</span> (2025 Q1+)</div>
+          <div class="cc-cell"><span class="cc-strong">27,763</span> (newest 15% by date)</div>
+          <div class="cc-cell"><span class="cc-strong">1,730</span> (2025 Q1–Q3)</div>
         </div>
 
         <div class="cc-row">
           <div class="cc-cell cc-label">Total rows</div>
-          <div class="cc-cell"><span class="cc-strong">185,092</span></div>
-          <div class="cc-cell"><span class="cc-strong">7,258</span></div>
+          <div class="cc-cell"><span class="cc-strong">157,329</span></div>
+          <div class="cc-cell"><span class="cc-strong">5,531</span></div>
         </div>
 
         <div class="cc-row">
           <div class="cc-cell cc-label">Years covered</div>
           <div class="cc-cell">2022 – 2026</div>
-          <div class="cc-cell">2018 – 2024</div>
+          <div class="cc-cell">2025 – 2026</div>
         </div>
 
         <div class="cc-row">
