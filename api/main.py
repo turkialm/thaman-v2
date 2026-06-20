@@ -1069,10 +1069,6 @@ def sitemap_xml(request: Request):
 
 @app.get("/", tags=["Info"], include_in_schema=False)
 def root():
-    """Serve the landing page at root."""
-    landing_path = os.path.join(_FRONTEND_DIR, "landing.html")
-    if os.path.exists(landing_path):
-        return FileResponse(landing_path, media_type="text/html")
     index_path = os.path.join(_FRONTEND_DIR, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path, media_type="text/html")
