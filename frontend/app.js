@@ -655,6 +655,18 @@ function setCityMode(mode) {
   document.getElementById('headerTagline').textContent = isRiyadh ? _T.taglineRiyadh : _T.tagline;
   document.title = isRiyadh ? 'THAMAN — Riyadh Property Valuation' : 'THAMAN — NYC Property Valuation';
 
+  // Update sidebar hero strip
+  const heroCity   = document.getElementById('heroCity');
+  const heroSub    = document.getElementById('heroSub');
+  const heroR2     = document.getElementById('heroR2');
+  const heroMedape = document.getElementById('heroMedape');
+  if (heroCity) heroCity.textContent   = isRiyadh ? 'Riyadh Valuation' : 'NYC Valuation';
+  if (heroSub)  heroSub.textContent    = isRiyadh
+    ? 'Stack v12 · 149 features · GroupKFold CV'
+    : 'Stack v22 · 134 features · GroupKFold CV';
+  if (heroR2)     heroR2.textContent   = isRiyadh ? 'R² 0.8014' : 'R² 0.650';
+  if (heroMedape) heroMedape.textContent = isRiyadh ? 'MedAPE 15.59%' : 'MedAPE 20.32%';
+
   // Red out-of-bounds mask — each city masks areas outside its limits
   _setNycOutOfBoundsMask(!isRiyadh);
   _ensureRiyadhMask();
