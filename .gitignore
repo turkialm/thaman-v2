@@ -97,3 +97,4 @@ data/raw/nyc_coastline_pts.npy
 models/*.png
 docs/figures/
 docs/*.png
+data/raw/overture_poi_buckets.npz
