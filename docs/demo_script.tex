@@ -282,9 +282,9 @@ you can see Line 1, the busiest east--west corridor, cutting across the city.''
 
 \begin{tcolorbox}[colback=blue!5,colframe=blue!60,title=\textbf{Metrics to highlight}]
 \begin{itemize}
-  \item OOF (training folds): $R^2 = 0.9343$, MedAPE $= 8.28\%$ ---
+  \item OOF (training folds): $R^2 = 0.9348$, MedAPE $= 8.25\%$ ---
         ``The model genuinely learned the Saudi market structure.''
-  \item Holdout Q1--Q3 2025: $R^2 = 0.8003$, MedAPE $= 15.56\%$ ---
+  \item Holdout Q1--Q3 2025: $R^2 = 0.8014$, MedAPE $= 15.59\%$ ---
         ``A new-quarter stress test, not a random sample.''
 \end{itemize}
 \end{tcolorbox}
@@ -421,11 +421,11 @@ uvicorn api.main:app --port 8000
     Riyadh total rows       & 6,910      & District-quarter obs., 2018--2025 \\
     Riyadh training rows    & 5,531      & 2018--2024 (incl.\ Metro-era) \\
     Riyadh features         & 76         & Transit, QoL, macro, rental \\
-    Riyadh OOF $R^2$        & \textbf{0.9343} & 5-fold spatial GroupKFold \\
-    Riyadh OOF MedAPE       & \textbf{8.28\%} & In-sample cross-validation \\
-    Riyadh holdout $R^2$    & 0.8003     & 2025 Q1--Q3, $n=1{,}727$ \\
-    Riyadh holdout MedAPE   & 15.56\%    & Out-of-sample stress test \\
-    Riyadh holdout MAE      & 991 SAR/m$^2$ & Out-of-sample \\
+    Riyadh OOF $R^2$        & \textbf{0.9348} & 5-fold spatial GroupKFold \\
+    Riyadh OOF MedAPE       & \textbf{8.25\%} & In-sample cross-validation \\
+    Riyadh holdout $R^2$    & 0.8014     & 2025 Q1--Q3, $n=1{,}730$ \\
+    Riyadh holdout MedAPE   & 15.59\%    & Out-of-sample stress test \\
+    Riyadh holdout MAE      & 986 SAR/m$^2$ & Out-of-sample \\
     \midrule
     Haraj validation MedAPE & 54.33\%    & Asking vs.\ transaction (expected) \\
     Haraj listings scraped  & 1,615      & 444 apts, 630 villas, 526 plots \\

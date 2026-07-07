@@ -120,7 +120,7 @@ def build_paper(path):
     doc.add_paragraph(
         "Trained on 185,092 NYC property sales from 2022 to 2026, the final model "
         "(Stack v11) achieves R² = 0.6450 and Median Absolute Percentage Error (MedAPE) "
-        "of 20.24% on a time-based holdout set of 27,763 unseen sales across 104 features, "
+        "of 20.32% on a time-based holdout set of 27,763 unseen sales across 104 features, "
         "including a novel NTA price trend slope feature and ten new building health and "
         "mobility indicators (HPD violations, DOB permits, 311 complaint density, MTA "
         "station quality)."
@@ -128,8 +128,8 @@ def build_paper(path):
     doc.add_paragraph(
         "The system is extended to Riyadh, Saudi Arabia, as a parallel AVM trained on "
         "6,910 district-level real estate transactions (2018–2025). The Riyadh stack "
-        "achieves OOF R² = 0.9252 / MedAPE = 9.03% and holdout R² = 0.7981 / "
-        "MedAPE = 18.16% on a 2025 Q1–Q3 out-of-sample test set of 1,379 "
+        "achieves OOF R² = 0.9348 / MedAPE = 8.25% and holdout R² = 0.8014 / "
+        "MedAPE = 15.59% on a 2025 Q1–Q3 out-of-sample test set of 1,730 "
         "district-quarter observations."
     )
     kw = doc.add_paragraph()
@@ -172,11 +172,11 @@ def build_paper(path):
     for c in [
         "A full end-to-end AVM pipeline from raw NYC open data to deployed web application.",
         "A 104-feature dataset combining structural, spatial, temporal, neighbourhood momentum, building health, and transit quality signals.",
-        "Stack v11: a 4-model ensemble achieving R² = 0.6450 / MedAPE = 20.24% on 27,763 holdout sales.",
+        "Stack v11: a 4-model ensemble achieving R² = 0.6450 / MedAPE = 20.32% on 27,763 holdout sales.",
         "Segment-adaptive confidence intervals per borough × price tier.",
         "A formal AVM QC block with four risk flags.",
         "A bilingual (English/Arabic) interactive valuation interface with SHAP waterfall plots.",
-        "Riyadh Stack v1: holdout R² = 0.7981 / MedAPE = 18.16% on 2025 Q1–Q3 out-of-sample test.",
+        "Riyadh Stack v12: holdout R² = 0.8014 / MedAPE = 15.59% on 2025 Q1–Q3 out-of-sample test.",
     ]:
         p = doc.add_paragraph(style="List Bullet")
         p.add_run(c)
@@ -337,7 +337,7 @@ def build_paper(path):
             ("v7a", "0.571", "26.7%",  "In-fold encoding disaster"),
             ("v9",  "0.647", "20.12%", "10-fold OOF + 5000 rounds"),
             ("v10", "0.646", "20.30%", "NTA price trend slope (94th feature)"),
-            ("v11", "0.645", "20.24%", "10 new building health & mobility features"),
+            ("v11", "0.645", "20.32%", "10 new building health & mobility features"),
         ],
         caption="NYC model version history",
     )
@@ -353,7 +353,7 @@ def build_paper(path):
             ("XGB-B",    "0.6429", "20.35%", "—"),
             ("LGB",      "0.6419", "20.40%", "—"),
             ("CatBoost", "0.6430", "20.22%", "—"),
-            ("Stack v11","0.6450", "20.24%", "$1,065,470"),
+            ("Stack v11","0.6450", "20.32%", "$1,065,470"),
         ],
         caption="NYC holdout performance (27,763 sales)",
     )
@@ -411,7 +411,7 @@ def build_paper(path):
         "6,910 district-quarter observations covering 163 Riyadh districts, "
         "Q1 2018–Q3 2025. Sources: Saudi Open Data Portal quarterly reports (2018–2025) "
         "and SA_Aqar rental platform (district-level medians). Price range: "
-        "222–12,565 SAR/m². Training: 5,531 rows (2018–2024); holdout: 1,379 rows "
+        "222–12,565 SAR/m². Training: 5,531 rows (2018–2024); holdout: 1,730 rows "
         "(2025 Q1–Q3)."
     )
 
@@ -429,8 +429,8 @@ def build_paper(path):
         doc,
         headers=["Evaluation", "R²", "MedAPE", "MAE"],
         rows=[
-            ("OOF (5-fold spatial GroupKFold)",       "0.9252",  "9.03%", "—"),
-            ("Holdout (2025 Q1–Q3, n=1,379)",         "0.7981", "18.16%", "991 SAR/m²"),
+            ("OOF (5-fold spatial GroupKFold)",       "0.9348",  "8.25%", "—"),
+            ("Holdout (2025 Q1–Q3, n=1,730)",         "0.8014", "15.59%", "986 SAR/m²"),
         ],
         caption="Riyadh model performance",
     )
@@ -498,7 +498,7 @@ def build_paper(path):
         headers=["QC Standard", "THAMAN Implementation"],
         rows=[
             ("1. Credibility & accuracy",
-             "MedAPE=20.24% on 27,763 holdout transactions (NYC); borough and "
+             "MedAPE=20.32% on 27,763 holdout transactions (NYC); borough and "
              "tier breakdowns published. Confidence score 0–100 with letter grade."),
             ("2. Data integrity protection",
              "All data from official government sources (NYC Open Data/PLUTO; "
@@ -508,7 +508,7 @@ def build_paper(path):
              "lender affiliation. Full audit trail."),
             ("4. Random sample testing",
              "15% time-based holdout (NYC, n=27,763) and fully out-of-sample "
-             "2025 holdout (Riyadh, n=1,379). Spatial GroupKFold CV."),
+             "2025 holdout (Riyadh, n=1,730). Spatial GroupKFold CV."),
             ("5. Nondiscrimination",
              "No protected-class attributes in feature set. SHAP enables "
              "post-hoc fairness auditing."),
@@ -562,10 +562,10 @@ def build_paper(path):
     set_heading(doc, "11. Conclusion", level=1)
     doc.add_paragraph(
         "THAMAN is a production-deployed AVM for NYC residential property valuation "
-        "achieving R² = 0.6450 and MedAPE = 20.24% on 27,763 unseen holdout sales "
+        "achieving R² = 0.6450 and MedAPE = 20.32% on 27,763 unseen holdout sales "
         "through a 4-model diverse stacking ensemble across 104 features. A parallel "
         "Riyadh extension demonstrates cross-market generalisability, achieving holdout "
-        "R² = 0.7981 / MedAPE = 18.16% on a 2025 Q1–Q3 out-of-sample horizon with "
+        "R² = 0.8014 / MedAPE = 15.59% on a 2025 Q1–Q3 out-of-sample horizon with "
         "no architectural changes."
     )
     doc.add_paragraph(
@@ -710,7 +710,7 @@ def build_technical_report(path):
         doc,
         headers=["Evaluation", "R²", "MedAPE", "MAE (USD)"],
         rows=[
-            ("Stack v11 (holdout, 27,763 sales)", "0.6450", "20.24%", "$1,065,470"),
+            ("Stack v11 (holdout, 27,763 sales)", "0.6450", "20.32%", "$1,065,470"),
         ],
         caption="NYC overall performance",
     )
@@ -732,7 +732,7 @@ def build_technical_report(path):
         "6,910 district-quarter aggregates; 163 Riyadh districts; Q1 2018–Q3 2025. "
         "Target: median(sale_price_sar_sqm) per district-quarter. "
         "Training: 5,531 rows (cutoff: quarter_id < 20251 = end of 2024). "
-        "Holdout: 1,379 rows (2025 Q1–Q3). Price range: 221.82–12,565.21 SAR/m²."
+        "Holdout: 1,730 rows (2025 Q1–Q3). Price range: 221.82–12,565.21 SAR/m²."
     )
 
     set_heading(doc, "Critical Bug Fixed: 2024 Quarter ID Encoding", level=2)
@@ -778,8 +778,8 @@ def build_technical_report(path):
         doc,
         headers=["Evaluation", "R²", "MedAPE", "MAE"],
         rows=[
-            ("OOF (5-fold GroupKFold)",         "0.9252",  "9.03%", "—"),
-            ("Holdout (2025 Q1–Q3, n=1,379)",   "0.7981", "18.16%", "991 SAR/m²"),
+            ("OOF (5-fold GroupKFold)",         "0.9348",  "8.25%", "—"),
+            ("Holdout (2025 Q1–Q3, n=1,730)",   "0.8014", "15.59%", "986 SAR/m²"),
         ],
         caption="Riyadh model performance",
     )
@@ -802,8 +802,8 @@ def build_technical_report(path):
             ("CV folds",          "10-fold GroupKFold",         "5-fold GroupKFold"),
             ("Meta-learner",      "Ridge (positive=True)",      "Ridge (positive=False)"),
             ("Features",          "104",                        "76"),
-            ("Holdout MedAPE",    "20.24%",                     "18.16%"),
-            ("Holdout R²",        "0.6450",                     "0.7981"),
+            ("Holdout MedAPE",    "20.32%",                     "15.59%"),
+            ("Holdout R²",        "0.6450",                     "0.8014"),
         ],
         caption="NYC vs. Riyadh comparison",
     )
@@ -859,7 +859,7 @@ def build_defense_qa(path):
                     "OOF cross-validation splits BY DISTRICT (GroupKFold). Each fold holds out entire districts, avoiding spatial autocorrelation leakage.",
                     "The training data is district-quarter aggregates — every row already encodes the district's median price. This inflates OOF metrics compared to a truly unseen market.",
                     "The holdout period is 2025 Q1–Q3 — entirely new market conditions including post-2024 macro shifts (REI index, salary data).",
-                    "A gap of ~14 R² points (0.93 → 0.79) is expected and honest. The holdout metric is the number to cite: R²=0.79, MedAPE=18.16%.",
+                    "A gap of ~14 R² points (0.93 → 0.79) is expected and honest. The holdout metric is the number to cite: R²=0.79, MedAPE=15.59%.",
                 ],
             },
             {
@@ -872,12 +872,12 @@ def build_defense_qa(path):
                 ],
             },
             {
-                "q": "MedAPE of 18.16% seems high. Is that good enough?",
-                "short": "Industry benchmark for AVM in emerging markets is 15–25%. 18.16% is within standard range for district aggregates without parcel-level data.",
+                "q": "MedAPE of 15.59% seems high. Is that good enough?",
+                "short": "Industry benchmark for AVM in emerging markets is 15–25%. 15.59% is within standard range for district aggregates without parcel-level data.",
                 "detail": [
                     "Zillow Zestimate (US, individual parcels, 30+ years of data): ~7% MedAPE.",
                     "Saudi Arabia has no open parcel-level register. We use MoJ quarterly summaries.",
-                    "By property type: apartment MedAPE=16.42%, villa=14.46%, plot=25.84%.",
+                    "By property type: apartment MedAPE=12.83%, villa=12.39%, plot=20.82%.",
                 ],
             },
         ]),
@@ -967,10 +967,10 @@ def build_defense_qa(path):
                 "q": "Is THAMAN compliant with the 2025 AVM Quality Control Rule?",
                 "short": "THAMAN addresses all five standards of the Dodd-Frank AVM QC Rule (effective Oct 2025): accuracy evidence, data integrity, conflict-of-interest avoidance, sample testing, and nondiscrimination.",
                 "detail": [
-                    "Standard 1 — Accuracy: MedAPE=20.24% on 27,763 holdout transactions (NYC); borough and price-tier breakdowns published. Confidence score 0–100 with letter grade at inference.",
+                    "Standard 1 — Accuracy: MedAPE=20.32% on 27,763 holdout transactions (NYC); borough and price-tier breakdowns published. Confidence score 0–100 with letter grade at inference.",
                     "Standard 2 — Data integrity: all training data from official government sources (NYC Open Data/PLUTO; Saudi Open Data Portal). No crowd-sourced or user-submitted prices influence training.",
                     "Standard 3 — Conflict of interest: open-source academic prototype (MIT licence, GitHub). No commercial lender affiliation.",
-                    "Standard 4 — Sample testing: 15% time-based holdout (NYC, n=27,763) and fully out-of-sample 2025 holdout (Riyadh, n=1,379); Spatial GroupKFold prevents geographic leakage.",
+                    "Standard 4 — Sample testing: 15% time-based holdout (NYC, n=27,763) and fully out-of-sample 2025 holdout (Riyadh, n=1,730); Spatial GroupKFold prevents geographic leakage.",
                     "Standard 5 — Nondiscrimination: no protected-class attributes in feature set; NTA/district encodings use sale price only; SHAP enables fairness auditing.",
                     "THAMAN is a research prototype — the rule targets lending institutions. But these design choices reflect 2026 best practices.",
                 ],
@@ -983,7 +983,7 @@ def build_defense_qa(path):
                     "Foreign ownership reform (Jan 2026): expanded GCC/international ownership rights in Riyadh urban zones. Drives premium district appreciation: Al Nakheel asking 26,000 SAR/m², Al Hada 20,000 SAR/m² — vs. THAMAN predictions of ~2,800–3,100 SAR/m² (transaction-price reference).",
                     "57,000-unit pipeline: northern/western corridors (Al Qirawan, Al Yasmin, Al Narjis). May moderate outer-ring appreciation; inner-ring supply-constrained districts maintain upward pressure.",
                     "REI yields: 8.5–9.5% gross rental yields in prime Riyadh — among highest in GCC. THAMAN's quarterly REI features will absorb these when retrained.",
-                    "For 2026 predictions: acknowledge the policy-shift caveat. The 18.16% holdout MedAPE is expected to widen slightly until retrained on 2025–2026 data.",
+                    "For 2026 predictions: acknowledge the policy-shift caveat. The 15.59% holdout MedAPE is expected to widen slightly until retrained on 2025–2026 data.",
                 ],
             },
         ]),
@@ -1085,7 +1085,7 @@ def build_demo_script(path):
               "\"اخترت نوع البناء: شقة بمصعد، المساحة 1200 قدم مربع، 15 طابقاً، بُني عام 1985.\"\n\n"
               "\"النظام يعطينا سعراً تقديرياً، نطاق ثقة، درجة تقييم، وأهم العوامل المؤثرة.\""),
              ("Metric to highlight",
-              "\"Our NYC model achieves MedAPE of 20.24% on 27,763 holdout sales — competitive with "
+              "\"Our NYC model achieves MedAPE of 20.32% on 27,763 holdout sales — competitive with "
               "commercial AVMs like Zillow Zestimate.\""),
          ]),
         ("Step 2 — City Switch to Riyadh (30 seconds)",
@@ -1116,8 +1116,8 @@ def build_demo_script(path):
               "\"النموذج يُعطينا التقدير بالريال السعودي لكل متر مربع. في تحليل SHAP: القرب من المترو، "
               "الكثافة التجارية، جودة الهواء، والتاريخ السعري للحي.\""),
              ("Metrics to highlight",
-              "OOF (training folds): R²=0.9252, MedAPE=9.03% — model genuinely learned Saudi market structure.\n"
-              "Holdout Q1–Q3 2025: R²=0.7981, MedAPE=18.16% — new-quarter stress test, not a random sample."),
+              "OOF (training folds): R²=0.9348, MedAPE=8.25% — model genuinely learned Saudi market structure.\n"
+              "Holdout Q1–Q3 2025: R²=0.8014, MedAPE=15.59% — new-quarter stress test, not a random sample."),
          ]),
         ("Step 4 — Listings Layer (30 seconds)",
          "Toggle on the Haraj active listings layer.",
@@ -1200,15 +1200,15 @@ def build_demo_script(path):
             ("NYC features",            "104",          "Structural + spatial + QoL"),
             ("NYC holdout rows",        "27,763",       "Newest 15% by date"),
             ("NYC R² (holdout)",        "0.6450",       "Stack v11"),
-            ("NYC MedAPE (holdout)",    "20.24%",       "Stack v11"),
+            ("NYC MedAPE (holdout)",    "20.32%",       "Stack v11"),
             ("Riyadh total rows",       "6,910",        "District-quarter obs., 2018–2025"),
             ("Riyadh training rows",    "5,531",        "2018–2024 (incl. Metro-era)"),
             ("Riyadh features",         "76",           "Transit, QoL, macro, rental"),
-            ("Riyadh OOF R²",           "0.9252",       "5-fold spatial GroupKFold"),
-            ("Riyadh OOF MedAPE",       "9.03%",        "In-sample cross-validation"),
-            ("Riyadh holdout R²",       "0.7981",       "2025 Q1–Q3, n=1,379"),
-            ("Riyadh holdout MedAPE",   "18.16%",       "Out-of-sample stress test"),
-            ("Riyadh holdout MAE",      "991 SAR/m²",   "Out-of-sample stress test"),
+            ("Riyadh OOF R²",           "0.9348",       "5-fold spatial GroupKFold"),
+            ("Riyadh OOF MedAPE",       "8.25%",        "In-sample cross-validation"),
+            ("Riyadh holdout R²",       "0.8014",       "2025 Q1–Q3, n=1,730"),
+            ("Riyadh holdout MedAPE",   "15.59%",       "Out-of-sample stress test"),
+            ("Riyadh holdout MAE",      "986 SAR/m²",   "Out-of-sample stress test"),
             ("Haraj validation MedAPE", "54.33%",       "Asking vs. transaction (expected)"),
             ("Haraj listings",          "1,615",        "444 apts, 630 villas, 526 plots"),
             ("NYC NTA groups",          "212",          "Neighbourhood spatial units"),

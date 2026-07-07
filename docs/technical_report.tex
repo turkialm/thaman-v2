@@ -115,7 +115,7 @@
         Dept.\ of Computer Science and Artificial Intelligence\\
         Faculty of Computer and Information Systems\\
         Umm Al-Qura University, KSA\\[0.3cm]
-        {\small Generated: 2026-05-29 --- NYC Stack v22 · Riyadh Stack v11}
+        {\small Generated: 2026-05-29 --- NYC Stack v22 · Riyadh Stack v12}
     \end{flushleft}
 \end{titlepage}
 
@@ -563,7 +563,7 @@ These become the holdout set (all rows with \texttt{quarter\_id} $\geq$ 20251).
   values. Training cutoff changed to hardcoded \texttt{cutoff\_qid = 20251}.
 
   \medskip
-  \textbf{Impact:} Holdout MedAPE improved from 23.43\% $\to$ 15.56\% (via v11).
+  \textbf{Impact:} Holdout MedAPE improved from 23.43\% $\to$ 15.59\% (via v12).
   Holdout $R^2$ improved from 0.675 $\to$ 0.800.
 \end{tcolorbox}
 
@@ -577,7 +577,7 @@ These become the holdout set (all rows with \texttt{quarter\_id} $\geq$ 20251).
     \midrule
     Total rows      & 6,910 \\
     Training rows   & 5,531 (quarter\_id $<$ 20251) \\
-    Holdout rows    & 1,727 (quarter\_id $\geq$ 20251) \\
+    Holdout rows    & 1,730 (quarter\_id $\geq$ 20251) \\
     Districts       & 163 unique \\
     Features used   & 140 \\
     Target (median) & 3,303 SAR/m$^2$ \\
@@ -658,9 +658,9 @@ Scaler parameters stored in \texttt{riyadh\_meta.json}.
 \end{description}
 Fallback: city median log-price (\texttt{global\_mean\_log} = 7.8645).
 
-\section{Complete Feature List (140 features)}
+\section{Complete Feature List (149 features)}
 \begin{longtable}{lp{10cm}}
-  \caption{Riyadh model: all 140 features by category} \\
+  \caption{Riyadh model: all 149 features by category} \\
   \toprule Category & Features \\ \midrule \endfirsthead
   \midrule Category & Features \\ \midrule \endhead \bottomrule \endfoot
   Location (2)            & \texttt{district\_lat, district\_lon} \\
@@ -692,7 +692,7 @@ Fallback: city median log-price (\texttt{global\_mean\_log} = 7.8645).
 Time-based on \texttt{quarter\_id}:
 \begin{description}
   \item[Training] \texttt{quarter\_id} $< 20251$ $\to$ 2018 Q1--2024 Q4 (5,531 rows)
-  \item[Holdout]  \texttt{quarter\_id} $\geq 20251$ $\to$ 2025 Q1--Q3 (1,727 rows)
+  \item[Holdout]  \texttt{quarter\_id} $\geq 20251$ $\to$ 2025 Q1--Q3 (1,730 rows)
 \end{description}
 
 \section{Cross-Validation}
@@ -744,11 +744,11 @@ benefiting small datasets.
     \toprule
     Evaluation & $R^2$ & MedAPE \\
     \midrule
-    OOF (5-fold spatial GroupKFold)       & 0.9343 &  8.28\% \\
-    Holdout (2025 Q1--Q3, $n=1{,}727$)   & 0.8003 & 15.56\% \\
+    OOF (5-fold spatial GroupKFold)       & 0.9348 &  8.25\% \\
+    Holdout (2025 Q1--Q3, $n=1{,}730$)   & 0.8014 & 15.59\% \\
     \bottomrule
   \end{tabular}
-  \par\small Holdout MAE: 980 SAR/m$^2$.
+  \par\small Holdout MAE: 986 SAR/m$^2$.
 \end{table}
 
 \section{Performance by Property Type}
@@ -758,16 +758,16 @@ benefiting small datasets.
     \toprule
     Type & MedAPE & Notes \\
     \midrule
-    Apartment (شقة)  & 12.70\% & Best-performing \\
-    Villa (فيلا)     & 12.83\% & Best absolute \\
-    Plot (قطعة أرض)  & 21.20\% & Hardest; land speculation \\
-    Building (عمارة) & 21.45\% & \\
+    Apartment (شقة)  & 12.83\% & Best-performing \\
+    Villa (فيلا)     & 12.39\% & Best absolute \\
+    Plot (قطعة أرض)  & 20.82\% & Hardest; land speculation \\
+    Building (عمارة) & 18.61\% & \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \section{OOF-to-Holdout Gap}
-OOF MedAPE: 8.28\% vs. Holdout MedAPE: 15.56\% (gap = 7.3\,pp). Three factors:
+OOF MedAPE: 8.25\% vs. Holdout MedAPE: 15.59\% (gap = 7.3\,pp). Three factors:
 \begin{enumerate}
   \item \textbf{Temporal shift}: holdout is Q1--Q3 2025 (post-Metro, new market
         conditions).
@@ -785,7 +785,7 @@ OOF MedAPE: 8.28\% vs. Holdout MedAPE: 15.56\% (gap = 7.3\,pp). Three factors:
     Version & Holdout MedAPE & Holdout $R^2$ \\
     \midrule
     v1 (buggy 2024 encoding) & 23.43\% & 0.675 \\
-    v11 (current)            & 15.56\% & 0.800 \\
+    v11 (current)            & 15.59\% & 0.800 \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -867,7 +867,7 @@ with $\alpha = 1.0$. For NYC: \texttt{positive=True} (blending, not arbitrage).
   \midrule Dimension & NYC & Riyadh \\ \midrule \endhead \bottomrule \endfoot
   Data granularity  & Individual transactions & District-quarter aggregates \\
   Dataset size      & 185,092 train rows      & 5,531 train rows \\
-  Holdout size      & 27,763 rows             & 1,727 rows \\
+  Holdout size      & 27,763 rows             & 1,730 rows \\
   Target unit       & USD total price         & SAR per m$^2$ \\
   Target range      & \$50K -- \$100M         & 222 -- 12,565 SAR/m$^2$ \\
   Years covered     & 2022--2026              & 2018--2025 \\
@@ -882,10 +882,10 @@ with $\alpha = 1.0$. For NYC: \texttt{positive=True} (blending, not arbitrage).
   Infrastructure    & MTA subway, bus, bike   & Metro (6 lines), bus, traffic \\
   QoL signals       & Crime, noise, HPD, 311  & Air quality, mosques, malls \\
   Macro signals     & Mortgage rates          & REI index, salary data \\
-  OOF MedAPE        & ---                     & 8.28\% \\
-  Holdout MedAPE    & 20.32\%                 & 15.56\% \\
-  Holdout $R^2$     & 0.6495                  & 0.8003 \\
-  Holdout MAE       & \$1,047,004 USD         & 980 SAR/m$^2$ \\
+  OOF MedAPE        & ---                     & 8.25\% \\
+  Holdout MedAPE    & 20.32\%                 & 15.59\% \\
+  Holdout $R^2$     & 0.6495                  & 0.8014 \\
+  Holdout MAE       & \$1,047,004 USD         & 986 SAR/m$^2$ \\
 \end{longtable}
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -944,11 +944,11 @@ Request fields: \texttt{latitude}, \texttt{longitude}, \texttt{property\_type}
 Processing steps:
 \begin{enumerate}
   \item \texttt{RiyadhSpatialLookup.predict\_features(lat, lon, type, year, quarter)}:
-        find nearest centroid via cKDTree, look up 140 features
+        find nearest centroid via cKDTree, look up 149 features
   \item \texttt{scorer.predict\_riyadh()}: 3 base models $\to$ Ridge meta $\to$
         expm1() $\to$ SAR/m$^2$
   \item Multiply by \texttt{area\_sqm} for \texttt{predicted\_total\_sar}
-  \item Confidence: $\pm$ 15.56\% (global holdout MedAPE)
+  \item Confidence: $\pm$ 15.59\% (global holdout MedAPE)
   \item SHAP via CatBoost TreeExplainer
 \end{enumerate}
 
@@ -966,13 +966,13 @@ Response: \texttt{predicted\_price\_sqm}, \texttt{predicted\_total\_sar},
         in 2024 CSV was already a full quarter code (20241). Produced 40481
         instead of 20241. Effect: 867 rows (all of 2024) classified as holdout.
         Fix: \texttt{scripts/fix\_riyadh\_2024\_quarters.py}.
-        Impact: MedAPE $23.43\% \to 15.56\%$ (via v11).
+        Impact: MedAPE $23.43\% \to 15.59\%$ (via v12).
 
   \item[Bug 2 --- Stale district\_medape in riyadh\_meta.json (FIXED)]
         \texttt{meta\_dict.update(\{\ldots\})} preserved the old district\_medape
         table from buggy v1 training. 12/146 districts were capped at 50\%
         confidence. Fix: removed \texttt{district\_medape} key; all predictions
-        use global 15.56\% MedAPE.
+        use global 15.59\% MedAPE.
 
   \item[Bug 3 --- REI Values Corrupted for 2024 Rows (FIXED)] Wrong quarter\_ids
         caused \_closest\_qid lookup to assign 2025 Q3 REI (100.44) to all 2024
@@ -982,8 +982,8 @@ Response: \texttt{predicted\_price\_sqm}, \texttt{predicted\_total\_sar},
         only publishes district-level aggregates. Until parcel-level data is
         released, the Riyadh model cannot capture within-district variance.
 
-  \item[Limitation 2 --- OOF Temporal Overlap (Riyadh)] The OOF MedAPE of 8.28\%
-        is optimistic relative to the true out-of-time holdout (15.56\%) because
+  \item[Limitation 2 --- OOF Temporal Overlap (Riyadh)] The OOF MedAPE of 8.25\%
+        is optimistic relative to the true out-of-time holdout (15.59\%) because
         the same calendar quarter appears across all GroupKFold folds.
 
   \item[Limitation 3 --- NYC Luxury Cap Sensitivity] Properties above \$10M
@@ -1022,7 +1022,7 @@ Response: \texttt{predicted\_price\_sqm}, \texttt{predicted\_total\_sar},
     Version & Date & Holdout MedAPE / $R^2$ & Key change \\
     \midrule
     v1 & May 2026 & 23.43\% / 0.675 & First Riyadh model; 2024 quarter\_id bug \\
-    v11 & May 2026 & \textbf{15.56\% / 0.800} & Type-stratified lags + metro + hub distances; 140 features \\
+    v11 & May 2026 & \textbf{15.59\% / 0.800} & Type-stratified lags + metro + hub distances; 149 features \\
     \bottomrule
   \end{tabular}
 \end{table}
