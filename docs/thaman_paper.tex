@@ -143,14 +143,14 @@ index. The complete system is deployed on Hugging Face Spaces and open-sourced
 on GitHub.
 
 The system is extended to Riyadh, Saudi Arabia as a parallel AVM trained on
-6,910 district-level real estate transactions (2018--2025). Across 140 features
+6,910 district-level real estate transactions (2018--2025). Across 149 features
 covering metro and bus transit, commercial density, air quality
 (NO$_2$, SO$_2$, PM$_{10}$, O$_3$), QoL proximity to mosques, malls,
 schools, hospitals, parks and entertainment venues, macroeconomic indices (REI
 quarterly index, Saudi average salary), district price aggregates, and rental
-market signals (SA\_Aqar), the Riyadh stack achieves OOF $R^2 = 0.9343$ /
-MedAPE~$= 8.28\%$ and holdout $R^2 = 0.8003$ / MedAPE~$= 15.56\%$ on a 2025
-Q1--Q3 out-of-sample test set of 1,727 district-quarter observations.
+market signals (SA\_Aqar), the Riyadh stack achieves OOF $R^2 = 0.9348$ /
+MedAPE~$= 8.25\%$ and holdout $R^2 = 0.8014$ / MedAPE~$= 15.59\%$ on a 2025
+Q1--Q3 out-of-sample test set of 1,730 district-quarter observations.
 
 \medskip\noindent
 \textbf{Keywords:} automated valuation model, ensemble learning, XGBoost,
@@ -236,10 +236,10 @@ This project addresses four gaps:
   \item A bilingual (English/Arabic) interactive valuation interface with SHAP
         waterfall plots, natural-language explanations, and 11-layer NTA
         choropleth.
-  \item Riyadh Stack v11: a dual-city extension to Saudi Arabia using 6,910
-        district-quarter observations, 140 features, and the identical stacking
-        architecture. Achieves holdout $R^2 = 0.8003$ / MedAPE $= 15.56\%$ on
-        a fully out-of-sample 2025 Q1--Q3 test set (1,727 rows).
+  \item Riyadh Stack v12: a dual-city extension to Saudi Arabia using 6,910
+        district-quarter observations, 149 features, and the identical stacking
+        architecture. Achieves holdout $R^2 = 0.8014$ / MedAPE $= 15.59\%$ on
+        a fully out-of-sample 2025 Q1--Q3 test set (1,730 rows).
 \end{itemize}
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -906,9 +906,9 @@ Riyadh districts across Q1 2018--Q3 2025, sourced from:
 Price range: 222--12,565 SAR/m$^2$; median 3,303 SAR/m$^2$. Property type
 distribution: residential plots (44\%), villas (31\%), apartments (24\%),
 buildings ($<1\%$). Training: Q1 2018--Q4 2024 (5,531 rows); holdout:
-Q1--Q3 2025 (1,727 rows).
+Q1--Q3 2025 (1,730 rows).
 
-\subsection{Feature Engineering (140 features)}
+\subsection{Feature Engineering (149 features)}
 Eleven feature categories:
 \begin{enumerate}
   \item \textbf{Location} --- district centroid lat/lon
@@ -953,8 +953,8 @@ Target: $\log_1p(\text{SAR/m}^2)$.
     \toprule
     Evaluation & $R^2$ & MedAPE \\
     \midrule
-    OOF (5-fold spatial GroupKFold) & 0.9343 & 8.28\% \\
-    Holdout (Q1--Q3 2025, $n=1{,}727$) & 0.8003 & 15.56\% \\
+    OOF (5-fold spatial GroupKFold) & 0.9348 & 8.25\% \\
+    Holdout (Q1--Q3 2025, $n=1{,}730$) & 0.8014 & 15.59\% \\
     \bottomrule
   \end{tabular}
   \par\smallskip\small Holdout MAE: 980 SAR/m$^2$.
@@ -1135,8 +1135,8 @@ standards. The table below maps each standard to THAMAN's implementation:
     QC Standard & THAMAN Implementation \\
     \midrule
     1.\ Credibility \& accuracy &
-      MedAPE$=20.32\%$ on 27,763 holdout transactions (NYC); MedAPE$=15.56\%$
-      on 1,727 out-of-sample observations (Riyadh). Borough- and
+      MedAPE$=20.32\%$ on 27,763 holdout transactions (NYC); MedAPE$=15.59\%$
+      on 1,730 out-of-sample observations (Riyadh). Borough- and
       type-level breakdowns publicly reported. Confidence score (0--100)
       with letter grade at inference time. \\[4pt]
     2.\ Data integrity protection &
@@ -1148,7 +1148,7 @@ standards. The table below maps each standard to THAMAN's implementation:
       lender affiliation. Full audit trail from raw data to deployed model. \\[4pt]
     4.\ Random sample testing &
       15\% time-based holdout ($n=27{,}763$, NYC) and fully out-of-sample
-      Q1--Q3 2025 holdout ($n=1{,}727$, Riyadh). Spatial GroupKFold CV
+      Q1--Q3 2025 holdout ($n=1{,}730$, Riyadh). Spatial GroupKFold CV
       (10-fold NYC, 5-fold Riyadh) prevents geographic leakage. \\[4pt]
     5.\ Nondiscrimination &
       No protected-class attributes in the feature set. NTA/district
@@ -1251,9 +1251,9 @@ The key technical contributions are:
 
 A parallel Riyadh extension demonstrates cross-market generalisability of the
 stacking architecture. Trained on 6,910 Saudi Open Data district-quarter
-observations (2018--2025) across 140 features, the Riyadh stack achieves OOF
-$R^2 = 0.9343$ / MedAPE $= 8.28\%$ and holdout $R^2 = 0.8003$ / MedAPE
-$= 15.56\%$ on a fully out-of-sample 2025 Q1--Q3 horizon (1,727 rows). The identical
+observations (2018--2025) across 149 features, the Riyadh stack achieves OOF
+$R^2 = 0.9348$ / MedAPE $= 8.25\%$ and holdout $R^2 = 0.8014$ / MedAPE
+$= 15.59\%$ on a fully out-of-sample 2025 Q1--Q3 horizon (1,730 rows). The identical
 pipeline---GroupKFold CV, Ridge meta-learner, KD-tree spatial lookups, FastAPI
 inference endpoint---required no architectural changes to operate on a
 data-scarce emerging market with district-aggregate data.

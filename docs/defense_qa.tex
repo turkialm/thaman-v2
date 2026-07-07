@@ -136,7 +136,7 @@
 \section{Model Performance}
 \label{sec:perf}
 
-\begin{question}{Why is Riyadh holdout $R^2=0.79$ lower than OOF $R^2=0.93$?}
+\begin{question}{Why is Riyadh holdout $R^2=0.80$ lower than OOF $R^2=0.93$?}
 \begin{shortanswer}
 OOF uses district-level training data; holdout is 2025 which is new macro
 conditions the model hasn't seen.
@@ -154,16 +154,16 @@ conditions the model hasn't seen.
         truly unseen market.
   \item The holdout period is 2025 Q1--Q3 --- entirely new market conditions
         including post-2024 macro shifts (REI index, salary data).
-  \item A gap of $\approx 14\,R^2$ points ($0.93 \to 0.79$) is expected and
-        honest. The holdout metric is the number to cite: $R^2=0.79$,
-        MedAPE$=15.56\%$.
+  \item A gap of $\approx 13\,R^2$ points ($0.93 \to 0.80$) is expected and
+        honest. The holdout metric is the number to cite: $R^2=0.80$,
+        MedAPE$=15.59\%$.
 \end{itemize}
 \end{detail}
 \end{question}
 
 \bigskip
 
-\begin{question}{Your NYC model has $R^2=0.65$ but Riyadh has $R^2=0.79$.
+\begin{question}{Your NYC model has $R^2=0.65$ but Riyadh has $R^2=0.80$.
                   Doesn't that make NYC worse?}
 \begin{shortanswer}
 Different targets. NYC predicts individual transaction price; Riyadh predicts
@@ -186,9 +186,9 @@ district-quarter aggregates. Aggregates are smoother $\to$ higher $R^2$.
 
 \bigskip
 
-\begin{question}{MedAPE of 15.56\% seems high. Is that good enough?}
+\begin{question}{MedAPE of 15.59\% seems high. Is that good enough?}
 \begin{shortanswer}
-Industry benchmark for AVM in emerging markets is 15--25\%. 15.56\% is within
+Industry benchmark for AVM in emerging markets is 15--25\%. 15.59\% is within
 standard range, especially for district aggregates without parcel-level data.
 \end{shortanswer}
 
@@ -198,11 +198,11 @@ standard range, especially for district aggregates without parcel-level data.
         $\approx 7\%$ MedAPE.
   \item Saudi Arabia has no open parcel-level register. We use Ministry of
         Justice quarterly summaries --- district medians, not individual deeds.
-  \item Given the data constraint, 15.56\% on 2025 holdout (new macro period)
-        is competitive. OOF MedAPE = 8.28\% shows the model fits well
+  \item Given the data constraint, 15.59\% on 2025 holdout (new macro period)
+        is competitive. OOF MedAPE = 8.25\% shows the model fits well
         within-sample.
-  \item By property type: apartment MedAPE = 16.42\%, villa = 14.46\%.
-        Residential plot has highest error (25.84\%) because land prices are
+  \item By property type: apartment MedAPE = 12.83\%, villa = 12.39\%.
+        Residential plot has highest error (20.82\%) because land prices are
         most location-sensitive and plot-level features (shape, road frontage)
         are unavailable.
 \end{itemize}
@@ -485,8 +485,8 @@ range. Capped at 2025 as the nearest in-distribution year.
     Meta-learner      & Ridge (positive=True) & Ridge (positive=False) \\
     Target            & USD total price & SAR/m$^2$ \\
     Holdout split     & Newest 15\% by date & 2025 Q1--Q3 \\
-    $R^2$             & 0.6495 & 0.8003 \\
-    MedAPE            & 20.32\% & 15.56\% \\
+    $R^2$             & 0.6495 & 0.8014 \\
+    MedAPE            & 20.32\% & 15.59\% \\
     Unique features   & Prior sale price, HPD violations, 311 complaints, MTA quality, walk score & Metro (2024), air quality, mosque proximity, REI macro index, salary data \\
     \bottomrule
   \end{tabular}
@@ -553,7 +553,7 @@ accuracy in premium districts.
         Riyadh --- among highest in GCC. THAMAN's quarterly REI features
         will absorb these when retrained.
   \item For 2026 predictions: acknowledge the policy-shift caveat.
-        The 15.56\% holdout MedAPE is expected to widen slightly until
+        The 15.59\% holdout MedAPE is expected to widen slightly until
         the model is retrained on 2025--2026 data.
 \end{itemize}
 \end{detail}
@@ -575,7 +575,7 @@ Three factors: (1) Holdout covers 2025 Q1--Q3 --- entirely future quarters.
 folds, so the meta-learner sees some temporal structure during CV. (3) 5,531
 training rows across 163 districts gives sparse per-district coverage. The
 gap has narrowed significantly vs.\ v1 (8.28\% OOF vs.\ 23.45\% holdout $\to$
-8.28\% vs.\ 15.56\%), confirming that adding 2024 Metro-era data was the right
+8.25\% vs.\ 15.59\%), confirming that adding 2024 Metro-era data was the right
 call.
 \end{detail}
 \end{question}
@@ -675,7 +675,7 @@ driving any given estimate.
   \item \textbf{Riyadh model trained through 2024; predictions for 2025--2026
         use nearest in-distribution year (capped at 2025).}\\
         \textit{``We acknowledge the temporal extrapolation. The holdout on 2025
-        data ($R^2=0.79$) validates it remains useful one year forward.''}
+        data ($R^2=0.80$) validates it remains useful one year forward.''}
 
   \item \textbf{No property condition data (renovation quality, interior finish).}\\
         \textit{``Both NYC (PLUTO has limited condition flags) and Riyadh lack

@@ -17,6 +17,7 @@ FILES = [
     "data/raw/nyc_coastline_pts.npy",
     "data/raw/nyc_bike_lanes.geojson",
     "data/processed/features.csv",   # NYC sales index for nearby lookup (84MB)
+    "data/processed/features_riyadh.csv",  # Riyadh district stats — required for /predict/riyadh accuracy
 ]
 
 

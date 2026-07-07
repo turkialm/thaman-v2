@@ -16,7 +16,7 @@ open frontend/index.html                  # open UI (or use API /ui)
 
 ```
 api/main.py          FastAPI v2 — /predict (NYC), /predict/riyadh, /nearby, /batch, /health
-models/scorer.py     ThamanScorer — loads NYC stack (v22, 134 features) + Riyadh stack (v11, 140 features)
+models/scorer.py     ThamanScorer — loads NYC stack (v22, 134 features) + Riyadh stack (v12, 149 features)
 models/spatial.py    SpatialLookup — NTA, subway, parks, waterfront, commuter rail, income, etc.
 frontend/            index.html + app.js + style.css — bilingual (EN/AR) map UI
 frontend/charts.html Analytics dashboard — model versions, borough breakdown, feature importance
@@ -32,9 +32,9 @@ tests/               100 tests across 8 files — api, scorer, feature parity, s
 - Key features: NTA encoding, subway proximity, school scores, park distance, waterfront, BBL history, income, flood zone, landmarks, NTA×bldgtype temporal lags
 - Spatial 10-fold GroupKFold CV by NTA
 
-### Riyadh Stack v11
-- Holdout R² = 0.8003, MedAPE = 15.56%, 140 features
-- OOF R² = 0.9343, MedAPE = 8.28%
+### Riyadh Stack v12
+- Holdout R² = 0.8014, MedAPE = 15.59%, 149 features
+- OOF R² = 0.9348, MedAPE = 8.25%
 - Stack: XGB-A + XGB-B + LGB + CatBoost + Ridge meta
 - Key features: district encoding, type-stratified temporal lags, metro proximity, hub distances, Haraj asking prices, Suhail transaction density
 - 5-fold GroupKFold CV by district
@@ -43,7 +43,7 @@ tests/               100 tests across 8 files — api, scorer, feature parity, s
 | File | Purpose |
 |---|---|
 | `models/thaman_stack.pkl` | NYC v22 trained stack (134 features) |
-| `models/riyadh_stack.pkl` | Riyadh v11 trained stack (140 features) |
+| `models/riyadh_stack.pkl` | Riyadh v12 trained stack (149 features) |
 | `models/meta.json` | NYC feature names, NTA encodings, BBL lookup, income lookup |
 | `models/riyadh_meta.json` | Riyadh feature names, district encodings, metro lookup, Haraj lookup |
 | `api/main.py` | FastAPI endpoints — feature engineering at inference time |

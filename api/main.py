@@ -258,6 +258,12 @@ def _startup_nearby_df():
     global _nearby_df, _nearby_tree
     try:
         _nearby_path = os.path.join(BASE, "data", "processed", "features.csv")
+        if not os.path.exists(_nearby_path):
+            import glob as _glob
+            candidates = sorted(_glob.glob(
+                os.path.join(BASE, "data", "processed", "features_v*.csv")))
+            if candidates:
+                _nearby_path = candidates[-1]
         available = [c for c in _NEARBY_COLS
                      if c in pl.read_csv(_nearby_path, n_rows=0).columns]
         _nearby_df = (
@@ -1069,10 +1075,6 @@ def sitemap_xml(request: Request):
 
 @app.get("/", tags=["Info"], include_in_schema=False)
 def root():
-    """Serve the landing page at root."""
-    landing_path = os.path.join(_FRONTEND_DIR, "landing.html")
-    if os.path.exists(landing_path):
-        return FileResponse(landing_path, media_type="text/html")
     index_path = os.path.join(_FRONTEND_DIR, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path, media_type="text/html")

@@ -14,7 +14,7 @@ import pytest
 from fastapi.testclient import TestClient
 from api.main import app
 
-# ── Pinned baselines (captured 2026-05-28, NYC v22 / Riyadh v11) ──────
+# ── Pinned baselines (NYC v22 captured 2026-05-28 / Riyadh v12 re-pinned 2026-07-07) ──────
 # NYC — raw scorer via API /predict endpoint
 _NYC_PINS = [
     {
@@ -57,22 +57,22 @@ _RYD_PINS = [
     {
         "desc": "Al-Wurud villa 300m²",
         "req":  {"latitude": 24.7136, "longitude": 46.6753, "property_type": "villa",     "area_sqm": 300},
-        "expected_psqm":  3987,
-        "expected_total": 1_196_100,
+        "expected_psqm":  3800,
+        "expected_total": 1_140_000,
         "tolerance_pct":  5.0,
     },
     {
         "desc": "Al-Dubbat apartment 150m²",
         "req":  {"latitude": 24.6877, "longitude": 46.7219, "property_type": "apartment", "area_sqm": 150},
-        "expected_psqm":  2909,
-        "expected_total": 436_350,
+        "expected_psqm":  2709,
+        "expected_total": 406_350,
         "tolerance_pct":  5.0,
     },
     {
         "desc": "Northern Riyadh plot 600m²",
         "req":  {"latitude": 24.7743, "longitude": 46.7382, "property_type": "plot",      "area_sqm": 600},
-        "expected_psqm":  3527,
-        "expected_total": 2_116_200,
+        "expected_psqm":  3281,
+        "expected_total": 1_968_600,
         "tolerance_pct":  5.0,
     },
 ]
