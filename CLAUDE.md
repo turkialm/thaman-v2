@@ -8,7 +8,7 @@ BSc graduation project — Umm Al-Qura University, 2026.
 ```bash
 cd /Users/totam/Desktop/new_try
 uvicorn api.main:app --port 8000          # start API
-python -m pytest tests/ -v               # run all 100 tests
+python -m pytest tests/ -v               # run all 109 tests
 open frontend/index.html                  # open UI (or use API /ui)
 ```
 
@@ -21,7 +21,7 @@ models/spatial.py    SpatialLookup — NTA, subway, parks, waterfront, commuter 
 frontend/            index.html + app.js + style.css — bilingual (EN/AR) map UI
 frontend/charts.html Analytics dashboard — model versions, borough breakdown, feature importance
 training/            train_stack_v12.py (NYC), train_stack_riyadh_v2.py (Riyadh)
-tests/               100 tests across 8 files — api, scorer, feature parity, shap, regression, golden, distribution, load
+tests/               109 tests across 9 files — api, scorer, feature parity, shap, regression, golden, distribution, load
 ```
 
 ## Models
@@ -61,7 +61,7 @@ tests/               100 tests across 8 files — api, scorer, feature parity, s
 7. Update `frontend/charts.html` — NYC_VERSIONS array, baseline chart, stack compare chart.
 8. Update `tests/test_regression.py` — re-pin expected_price values.
 9. Update `tests/test_scorer.py` and `tests/test_feature_parity.py` — feature count assertions.
-10. Run `pytest tests/ -v` — confirm 100/100.
+10. Run `pytest tests/ -v` — confirm 109/109.
 
 ## Inference Pipeline (NYC)
 

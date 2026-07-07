@@ -64,7 +64,7 @@ Key v11 additions: HPD violation severity by ZIP, DOB permit activity, 311 roden
 | Metric | Value |
 |---|---|
 | OOF R² | 0.9427 |
-| OOF MedAPE | 8.28% |
+| OOF MedAPE | 8.25% |
 | Holdout R² | 0.6747 |
 | Holdout MedAPE | 23.45% |
 | Holdout MAE | 1,206 SAR/sqm |

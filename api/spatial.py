@@ -382,8 +382,19 @@ class SpatialLookup:
 
     def _load_poi_buckets(self):
         import json as _json
-        op_path = os.path.join(RAW, "overture_places.geojson")
+        op_path  = os.path.join(RAW, "overture_places.geojson")
+        npz_path = os.path.join(RAW, "overture_poi_buckets.npz")
         self._poi_balltrees: dict[str, BallTree | None] = {}
+        if os.path.exists(npz_path):
+            # compact precomputed bucket points (1.2 MB vs 619 MB geojson)
+            data = np.load(npz_path)
+            for bname in OVERTURE_BUCKETS:
+                arr = data[bname] if bname in data.files else np.zeros((0, 2))
+                self._poi_balltrees[bname] = (
+                    BallTree(np.radians(arr), metric="haversine") if len(arr) else None
+                )
+                print(f"  POI {bname}: {len(arr):,}")
+            return
         if not os.path.exists(op_path):
             print("  POI buckets: overture_places.geojson missing — counts will be 0")
             for bname in OVERTURE_BUCKETS:
@@ -469,6 +480,10 @@ class SpatialLookup:
         )
         feats["airbnb_count_500m"] = int(cnt[0])
 
+        # ── NTA lookup (needed by fallbacks below) ─────────────────────
+        ntacode  = self._nta_for_point(lat, lon)
+        nta_data = self._nta_stats.get(ntacode, {}) if ntacode else {}
+
         # ── Citi Bike stations within 500m + nearest distance ──────────
         if self._citibike_tree is not None:
             pt_rad = np.radians([[lat, lon]])
@@ -492,9 +507,6 @@ class SpatialLookup:
             feats["commuter_rail_1km"]    = 0
 
         # ── Waterfront distance (real per-point) ───────────────────────
-        ntacode  = self._nta_for_point(lat, lon)
-        nta_data = self._nta_stats.get(ntacode, {}) if ntacode else {}
-
         if self._waterfront_tree is not None:
             feats["dist_waterfront_m"] = self._kdtree_dist_m(self._waterfront_tree, lat, lon)
         else:

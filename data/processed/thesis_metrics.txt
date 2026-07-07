@@ -6,7 +6,7 @@ THAMAN — Thesis Model Performance Tables
 City         Version      R² Holdout     MedAPE              MAE   Features
 -----------------------------------------------------------------
 NYC          v22              0.6495     20.32%           $1047K        134
-Riyadh       v11              0.8003     15.56%         ﷼980/m²         140
+Riyadh       v12              0.8014     15.59%         ﷼986/m²         149
 
 ### Table 2: NYC — MedAPE by Borough (v22) ###
 Borough                MedAPE        MAE ($)        N
@@ -17,13 +17,13 @@ Brooklyn               20.64%        857,322    7,032
 Queens                 17.43%        366,226    9,533
 Staten Island          14.41%        220,216    3,052
 
-### Table 3: Riyadh — MedAPE by Property Type (v11) ###
+### Table 3: Riyadh — MedAPE by Property Type (v12) ###
 Type                       MedAPE       R²        N
 ----------------------------------------------------
-apartment                  12.70%   0.6324      617
-villa                      12.83%   0.7455      422
-residential_plot           21.20%   0.7761      551
-building                   21.45%   0.5395      137
+apartment                  12.83%   0.6345      616
+villa                      12.39%   0.7481      422
+residential_plot           20.82%   0.7786      553
+building                   18.61%   0.5364      139
 
 ### Table 4: NYC — MedAPE by Price Tier ###
 Tier                 MedAPE        MAE ($)        N
@@ -42,7 +42,7 @@ lightgbm               0.6432     20.84%
 catboost               0.6482     20.60%
 Stack (Ridge meta)     0.6495     20.32%
 
-### Additional Riyadh Metrics (v11) ###
-OOF R²: 0.9343   OOF MedAPE: 8.28%
-Holdout R²: 0.8003   Holdout MedAPE: 15.56%
-Train rows: 5,531   Holdout rows: 1,727   Total: 7,258
+### Additional Riyadh Metrics (v12) ###
+OOF R²: 0.9348   OOF MedAPE: 8.25%
+Holdout R²: 0.8014   Holdout MedAPE: 15.59%
+Train rows: 5,531   Holdout rows: 1,730   Total: 7,261
