@@ -1671,14 +1671,14 @@ async function loadRiyadhCharts() {
         scales: { x: { ticks: { callback: v => '﷼' + v.toLocaleString() } } } }
     });
 
-    // MedAPE by property type (Stack v11 holdout values)
+    // MedAPE by property type (Stack v12 holdout values)
     new Chart(document.getElementById('riyadhMedapeTypeChart'), {
       type: 'bar',
       data: {
         labels: ['Apartment\nشقة', 'Villa\nفيلا', 'Residential Plot\nقطعة أرض', 'Building\nعمارة'],
         datasets: [{
           label: 'Holdout MedAPE (%)',
-          data: [12.70, 12.83, 21.20, 21.45],
+          data: [12.83, 12.39, 20.82, 18.61],
           backgroundColor: ['rgba(37,99,235,.15)', 'rgba(5,150,105,.15)', 'rgba(245,158,11,.15)', 'rgba(139,92,246,.15)'],
           borderColor:     ['#2563eb', '#059669', '#d97706', '#7c3aed'],
           borderWidth: 2,
@@ -1711,7 +1711,7 @@ async function loadRiyadhCharts() {
         datasets: [
           {
             label: 'OOF (CV)',
-            data: [8.28, null],
+            data: [8.25, null],
             backgroundColor: 'rgba(5,150,105,.18)',
             borderColor: '#059669',
             borderWidth: 2, borderRadius: 6,
