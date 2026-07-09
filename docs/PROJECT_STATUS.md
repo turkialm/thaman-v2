@@ -1,177 +1,114 @@
 # THAMAN — Project Status
 > Dual-City AI-Powered AVM (NYC + Riyadh)
-> Last updated: 2026-05-18
+> Last updated: 2026-07-10
 
 ---
 
-## ✅ Project Complete — All Phases Done
+## ✅ Project Complete — Deployed & Verified
 
-The system is fully deployed at:
-- **HuggingFace:** https://huggingface.co/spaces/Turki-Almurahhem/thaman
+- **HuggingFace Space:** https://huggingface.co/spaces/Turki-Almurahhem/thaman
 - **GitHub:** https://github.com/turkialm/thaman-v2
+- **Model hub (runtime artifacts):** https://huggingface.co/Turki-Almurahhem/thaman-models
 
 ### Launch Locally
 
 ```bash
-cd /Users/totam/Desktop/new_try
+cd /Users/totam/Desktop/THAMAN/new_try
 uvicorn api.main:app --port 8000
 # Open: http://localhost:8000/ui
 ```
 
----
-
-## Phase 1 — NYC Data Pipeline ✅
-
-| Item | Detail |
-|---|---|
-| Training rows | 185,092 NYC sales (2022–2026) |
-| Feature matrix | `data/processed/features_v4.csv` — 185K × 104 cols |
-| Key sources | NYC Open Data sales, PLUTO, MTA, NYPD, 311, NTA, FRED, Airbnb |
-| Feature groups | Structural, zoning/FAR, transit, QoL amenities, NTA encoding, ACRIS price history, building health (HPD/DOB), macro |
+Large files (models, feature CSVs) are gitignored and fetched at startup from
+the `thaman-models` hub repo via `download_models.py`. **Any new data file the
+API needs must be added to `download_models.py` FILES and uploaded to that
+repo** — otherwise the live Space silently degrades. A startup integrity check
+(`/health` → `integrity` block) now catches this at boot.
 
 ---
 
-## Phase 2 — Riyadh Data Pipeline ✅
+## Current Models (canonical — source of truth: `models/meta.json` / `models/riyadh_meta.json`)
 
-| Item | Detail |
-|---|---|
-| Training rows | 6,910 district-quarter observations (2018–2025) |
-| Districts | 163 unique Riyadh districts |
-| Feature matrix | `data/processed/features_riyadh.csv` — 6,910 × 87 cols |
-| Key sources | Saudi Open Data Portal quarterly reports, SA_Aqar rentals, OSM Overpass polygons |
-| Feature groups | Location, property type, metro/bus transit, traffic, commercial, air quality (NO₂/SO₂/PM₁₀/O₃), macro (REI + salary), district aggregates, QoL POIs (6 types), rental signals, temporal |
-
----
-
-## Phase 3 — NYC Model (Stack v11) ✅
+### NYC — Stack v22
 
 | Metric | Value |
 |---|---|
-| R² (holdout) | 0.6450 |
-| MedAPE (holdout) | 20.24% |
+| R² (holdout) | 0.6495 |
+| MedAPE (holdout) | 20.32% |
+| MAE (holdout) | $1,047,004 |
 | Holdout rows | 27,763 |
-| Features | 104 |
-| CV | 5-fold Spatial GroupKFold (by NTA) |
-| Stack | XGBoost + LightGBM + CatBoost + Ridge meta |
-| Model files | `models/xgboost_model.json`, `models/thaman_stack.pkl`, `models/meta.json` |
+| Features | 134 |
+| CV | 10-fold Spatial GroupKFold (by NTA) |
+| Stack | XGB-A + XGB-B + LightGBM + CatBoost + Ridge meta |
 
-Key v11 additions: HPD violation severity by ZIP, DOB permit activity, 311 rodent/heat density by NTA, MTA station quality (CBD connectivity, route count, ADA).
-
----
-
-## Phase 4 — Riyadh Model (Stack v1) ✅
+### Riyadh — Stack v12
 
 | Metric | Value |
 |---|---|
-| OOF R² | 0.9427 |
-| OOF MedAPE | 8.25% |
-| Holdout R² | 0.6747 |
-| Holdout MedAPE | 23.45% |
-| Holdout MAE | 1,206 SAR/sqm |
-| Holdout period | 2025 Q1–Q3 (fully out-of-sample) |
-| Features | 76 |
-| Training rows | 4,664 |
-| Holdout rows | 2,246 |
+| R² (holdout) | 0.8014 |
+| MedAPE (holdout) | 15.59% |
+| MAE (holdout) | 986 SAR/m² |
+| OOF R² / MedAPE | 0.9348 / 8.25% |
+| Train / holdout rows | 5,531 / 1,730 |
+| Features | 149 |
 | CV | 5-fold Spatial GroupKFold (by district_ar) |
-| Stack | XGBoost + LightGBM + CatBoost + Ridge meta |
-| Model files | `models/riyadh_stack.pkl`, `models/riyadh_meta.json` |
+| Stack | XGB-A + XGB-B + LightGBM + CatBoost + Ridge meta |
 
-Note: large OOF-to-holdout gap explained by temporal distribution shift (2025 post-Metro market) + district-aggregate granularity inflating OOF R².
+Per-type holdout MedAPE: apartment 12.83%, villa 12.39%, plot 20.82%, building 18.61%.
 
 ---
 
-## Phase 5 — Backend API ✅
+## API (FastAPI, `api/main.py`)
 
 | Endpoint | Description |
 |---|---|
-| `GET /health` | Model + spatial status |
+| `GET /health` | Model + spatial status + **data-integrity check** |
+| `GET /metrics` | Live model metrics (feeds analytics dashboard) |
 | `GET /bldgclasses` | NYC building class codes |
 | `POST /predict` | NYC price (USD) + SHAP drivers + QC flags |
-| `POST /predict/riyadh` | Riyadh price (SAR/sqm + total) + spatial features |
-| `GET /layers/nta` | NYC NTA choropleth GeoJSON (21 layers) |
-| `GET /layers/district` | Riyadh district polygon GeoJSON (12 layers, 133 polygons) |
-| `GET /nearby` | Nearby comparable NYC sales |
-| `GET /sales/tile` | Tile-based NYC sales bubble layer |
-
-NYC spatial features: KD-tree lookups for subway, bus, parks, schools, hospital, waterfront, bike lanes; BallTree for Airbnb density; NTA polygon lookup for income/crime/noise.
-
-Riyadh spatial features: KD-tree lookups for metro, bus, commercial POIs, air quality stations, mosques, malls, schools, hospitals, parks, entertainment; composite connectivity score.
+| `POST /predict/riyadh` | Riyadh price (SAR/m² + total) + spatial features |
+| `POST /batch`, `/batch/riyadh` | Batch predictions (up to 50) |
+| `GET /layers/nta`, `/layers/district` | Choropleth GeoJSON layers |
+| `GET /nearby`, `/sales/tile` | NYC comparable sales |
+| `GET /riyadh/stats` | Riyadh market analytics |
+| `GET /ui` | Bilingual (EN/AR) map interface |
 
 ---
 
-## Phase 6 — Frontend ✅
+## Tests — 109 total (`pytest tests/ -v`)
 
-**Dual-city UI** with city toggle (🗽 NYC ↔ 🕌 Riyadh):
-
-| Feature | NYC | Riyadh |
-|---|---|---|
-| Map center | New York City | Riyadh (24.71°N, 46.68°E) |
-| Pin validation | NYC boundary GeoJSON | Riyadh bbox |
-| Form fields | type, size, age, floors, units, borough | type, area_sqm |
-| Price display | USD total | SAR/sqm + SAR total |
-| Result panel | SHAP drivers + spatial grid | Spatial grid (12 metrics) |
-| Choropleth | 21-layer NTA choropleth | 12-layer district polygon choropleth |
-| Geocoder | NYC-constrained Nominatim | Riyadh-constrained Nominatim |
-| Header badges | Stack v11, R²=0.647, MedAPE, Analytics | Stack v1, R²=0.675, MedAPE 23.45% |
-| Language | EN / عربي | EN / عربي |
-
-Performance fixes: NTA simplified 4.4 MB → 436 KB; sales debounce 250 ms → 600 ms; Riyadh mode skips NYC sales fetch; layers lazy-loaded on first click.
+api (22) · scorer (17) · feature parity (15) · SHAP (14) · regression pins (6) ·
+golden ranges (9) · distribution (12) · load (5) + others.
+Regression pins re-pinned 2026-07-10 (`python tests/update_regression_pins.py`
+prints old→new values; apply manually to `tests/test_regression.py`).
 
 ---
 
-## Phase 7 — Deployment ✅
+## Incident Log (production bug classes — all fixed, all guarded)
 
-| Item | Detail |
-|---|---|
-| Platform | Hugging Face Spaces (Docker) |
-| Port | 7860 (HF) / 8000 (local) |
-| Dockerfile | `python:3.11-slim` + GDAL + all model + data files |
-| GitHub | https://github.com/turkialm/thaman-v2 |
-| Paper | `docs/thaman_paper.txt` — 1,334 lines, dual-city BSc paper |
+1. **2026-06→07** — `features_riyadh.csv` missing from hub download list →
+   all Riyadh districts collapsed to ~2,500 SAR/m² fallback.
+2. **2026-07-07** — `overture_places.geojson` (619MB) never shipped → all 13
+   NYC POI features zero live. Fixed with compact `overture_poi_buckets.npz`
+   (1.2MB). Also fixed NYC `/predict` crash (UnboundLocalError in citibike
+   fallback).
+3. **2026-07-10** — Riyadh v10/v11 feature injection read `district_ar` from a
+   dict that never contains it → metro + type-lag features dead for every
+   request (5 km metro fallback). Fixed; regression pins re-pinned.
+
+Guard: `_startup_integrity_check()` in `api/main.py` verifies all hub files +
+non-empty POI/district lookups at boot; `/health` reports `status: degraded`
+with issue list on failure.
 
 ---
 
-## Current File Tree
+## Docs
 
-```
-thaman-v2/
-├── api/
-│   ├── main.py          # FastAPI (NYC + Riyadh endpoints)
-│   ├── spatial.py       # SpatialLookup + RiyadhSpatialLookup
-│   └── models.py        # Pydantic schemas
-├── models/
-│   ├── scorer.py
-│   ├── xgboost_model.json      # NYC XGBoost
-│   ├── thaman_stack.pkl        # NYC stack
-│   ├── meta.json               # NYC meta
-│   ├── luxury_model.json       # NYC luxury segment
-│   ├── riyadh_stack.pkl        # Riyadh stack
-│   └── riyadh_meta.json        # Riyadh meta
-├── frontend/
-│   ├── index.html
-│   ├── app.js
-│   ├── style.css
-│   ├── charts.html
-│   └── nyc_boundary.geojson
-├── training/
-│   ├── train_stack_v2.py
-│   └── train_stack_riyadh_v1.py
-├── scripts/
-│   ├── riyadh_feature_engineering.py
-│   └── download_more_sales.py
-├── data/
-│   ├── processed/
-│   │   ├── features_v4.csv
-│   │   ├── features_riyadh.csv
-│   │   ├── nta_simplified.geojson
-│   │   ├── riyadh_district_polygons.geojson
-│   │   └── district_centroids.csv
-│   └── raw/  (spatial reference files)
-├── docs/
-│   ├── thaman_paper.txt
-│   ├── DATA_CATALOG.md
-│   └── PROJECT_STATUS.md
-├── tests/
-├── Dockerfile
-└── requirements.txt
-```
+- `docs/{thaman_paper, technical_report, defense_qa, demo_script}` in
+  .tex/.txt/.md + .docx. **The .docx files are generated by
+  `docs/generate_docx.py` whose content is hardcoded — editing .tex does NOT
+  update .docx; edit the script and re-run it.**
+- Official report: root `THAMAN_Graduation_Project_2_Final_Report.tex`
+  (compile on Overleaf).
+- Historic metrics that must stay in version-history tables only:
+  Riyadh v1 23.43%/0.675 (buggy), v2 18.16%/0.798, v11 0.8003/15.56%;
+  NYC v11 0.6450/20.24%.

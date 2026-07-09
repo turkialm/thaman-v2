@@ -221,7 +221,7 @@ Print this section and keep it in your pocket.
 
 > **Short answer:** LightGBM at the meta level overfits to OOF noise. Ridge prevents this and gives better holdout performance despite a lower OOF score.
 
-> **Long answer:** We empirically tested both. LightGBM meta achieved OOF R²=0.6376 but holdout R²=0.6349. Ridge meta achieved OOF R²=0.5995 but holdout R²=0.6450. The LightGBM meta learned to exploit residual noise and correlation patterns in OOF predictions rather than the true signal — meta-level overfitting. By the time predictions reach the meta-stage, the four base models have already exhausted the non-linear relationships in 104 features. The remaining variance is largely noise, and Ridge's L2 regularisation — with positive=True to enforce blending, not arbitrage — produces conservative, stable weights. This is a concrete, empirically validated architectural decision in the paper.
+> **Long answer:** We empirically tested both. LightGBM meta achieved OOF R²=0.6376 but holdout R²=0.6349. Ridge meta achieved OOF R²=0.5995 but holdout R²=0.6495. The LightGBM meta learned to exploit residual noise and correlation patterns in OOF predictions rather than the true signal — meta-level overfitting. By the time predictions reach the meta-stage, the four base models have already exhausted the non-linear relationships in 134 features. The remaining variance is largely noise, and Ridge's L2 regularisation — with positive=True to enforce blending, not arbitrage — produces conservative, stable weights. This is a concrete, empirically validated architectural decision in the paper.
 
 ---
 

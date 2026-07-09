@@ -119,8 +119,8 @@ def build_paper(path):
     )
     doc.add_paragraph(
         "Trained on 185,092 NYC property sales from 2022 to 2026, the final model "
-        "(Stack v11) achieves R² = 0.6450 and Median Absolute Percentage Error (MedAPE) "
-        "of 20.32% on a time-based holdout set of 27,763 unseen sales across 104 features, "
+        "(Stack v22) achieves R² = 0.6495 and Median Absolute Percentage Error (MedAPE) "
+        "of 20.32% on a time-based holdout set of 27,763 unseen sales across 134 features, "
         "including a novel NTA price trend slope feature and ten new building health and "
         "mobility indicators (HPD violations, DOB permits, 311 complaint density, MTA "
         "station quality)."
@@ -171,8 +171,8 @@ def build_paper(path):
     set_heading(doc, "1.3 Contributions", level=2)
     for c in [
         "A full end-to-end AVM pipeline from raw NYC open data to deployed web application.",
-        "A 104-feature dataset combining structural, spatial, temporal, neighbourhood momentum, building health, and transit quality signals.",
-        "Stack v11: a 4-model ensemble achieving R² = 0.6450 / MedAPE = 20.32% on 27,763 holdout sales.",
+        "A 134-feature dataset combining structural, spatial, temporal, neighbourhood momentum, building health, and transit quality signals.",
+        "Stack v22: a 4-model ensemble achieving R² = 0.6495 / MedAPE = 20.32% on 27,763 holdout sales.",
         "Segment-adaptive confidence intervals per borough × price tier.",
         "A formal AVM QC block with four risk flags.",
         "A bilingual (English/Arabic) interactive valuation interface with SHAP waterfall plots.",
@@ -320,7 +320,7 @@ def build_paper(path):
         headers=["Meta-learner", "OOF R²", "OOF MedAPE", "Holdout R²", "Holdout MAE"],
         rows=[
             ("LightGBM", "0.6376", "22.17%", "0.6349", "$1,105,269"),
-            ("Ridge",    "0.5995", "22.73%", "0.6450", "$1,065,470"),
+            ("Ridge",    "0.5995", "22.73%", "0.6495", "$1,047,004"),
         ],
         caption="Ridge selected despite lower OOF score (prevents meta-level overfitting)",
     )
@@ -337,7 +337,7 @@ def build_paper(path):
             ("v7a", "0.571", "26.7%",  "In-fold encoding disaster"),
             ("v9",  "0.647", "20.12%", "10-fold OOF + 5000 rounds"),
             ("v10", "0.646", "20.30%", "NTA price trend slope (94th feature)"),
-            ("v11", "0.645", "20.32%", "10 new building health & mobility features"),
+            ("v22", "0.6495", "20.32%", "10 new building health & mobility features"),
         ],
         caption="NYC model version history",
     )
@@ -349,11 +349,11 @@ def build_paper(path):
         doc,
         headers=["Model", "R²", "MedAPE", "MAE"],
         rows=[
-            ("XGB-A",    "0.6441", "20.21%", "—"),
-            ("XGB-B",    "0.6429", "20.35%", "—"),
-            ("LGB",      "0.6419", "20.40%", "—"),
-            ("CatBoost", "0.6430", "20.22%", "—"),
-            ("Stack v11","0.6450", "20.32%", "$1,065,470"),
+            ("XGB-A",    "0.6445", "20.56%", "—"),
+            ("XGB-B",    "0.6387", "20.67%", "—"),
+            ("LGB",      "0.6432", "20.84%", "—"),
+            ("CatBoost", "0.6482", "20.60%", "—"),
+            ("Stack v22","0.6495", "20.32%", "$1,047,004"),
         ],
         caption="NYC holdout performance (27,763 sales)",
     )
@@ -562,8 +562,8 @@ def build_paper(path):
     set_heading(doc, "11. Conclusion", level=1)
     doc.add_paragraph(
         "THAMAN is a production-deployed AVM for NYC residential property valuation "
-        "achieving R² = 0.6450 and MedAPE = 20.32% on 27,763 unseen holdout sales "
-        "through a 4-model diverse stacking ensemble across 104 features. A parallel "
+        "achieving R² = 0.6495 and MedAPE = 20.32% on 27,763 unseen holdout sales "
+        "through a 4-model diverse stacking ensemble across 134 features. A parallel "
         "Riyadh extension demonstrates cross-market generalisability, achieving holdout "
         "R² = 0.8014 / MedAPE = 15.59% on a 2025 Q1–Q3 out-of-sample horizon with "
         "no architectural changes."
@@ -649,7 +649,7 @@ def build_technical_report(path):
         "Airbnb listings, Air quality, Bike lanes, Mortgage rates."
     )
 
-    set_heading(doc, "4. NYC Feature Engineering (104 features)", level=1)
+    set_heading(doc, "4. NYC Feature Engineering (134 features)", level=1)
     doc.add_paragraph(
         "All engineering runs in Polars (not pandas). Features include: "
         "(1) Distance features with log1p companions (8 spatial indexes), "
@@ -694,7 +694,7 @@ def build_technical_report(path):
     set_heading(doc, "5.3 Meta-Learner", level=2)
     doc.add_paragraph(
         "Ridge (alpha=1.0, positive=True). LightGBM meta holdout R²=0.6349 vs "
-        "Ridge meta holdout R²=0.6450. Ridge selected to prevent meta-level overfitting "
+        "Ridge meta holdout R²=0.6495. Ridge selected to prevent meta-level overfitting "
         "to OOF noise. positive=True enforces blending (not arbitrage)."
     )
 
@@ -710,7 +710,7 @@ def build_technical_report(path):
         doc,
         headers=["Evaluation", "R²", "MedAPE", "MAE (USD)"],
         rows=[
-            ("Stack v11 (holdout, 27,763 sales)", "0.6450", "20.32%", "$1,065,470"),
+            ("Stack v22 (holdout, 27,763 sales)", "0.6495", "20.32%", "$1,047,004"),
         ],
         caption="NYC overall performance",
     )
@@ -801,9 +801,9 @@ def build_technical_report(path):
             ("Base learners",     "4 (XGB-A, XGB-B, LGB, CAT)", "3 (XGB, LGB, CAT)"),
             ("CV folds",          "10-fold GroupKFold",         "5-fold GroupKFold"),
             ("Meta-learner",      "Ridge (positive=True)",      "Ridge (positive=False)"),
-            ("Features",          "104",                        "76"),
+            ("Features",          "134",                        "149"),
             ("Holdout MedAPE",    "20.32%",                     "15.59%"),
-            ("Holdout R²",        "0.6450",                     "0.8014"),
+            ("Holdout R²",        "0.6495",                     "0.8014"),
         ],
         caption="NYC vs. Riyadh comparison",
     )
@@ -925,7 +925,7 @@ def build_defense_qa(path):
                 "q": "Why use Ridge as the meta-learner instead of another gradient boosted model?",
                 "short": "LightGBM at the meta level overfits to OOF noise. Ridge prevents this and gives better holdout performance despite a lower OOF score.",
                 "detail": [
-                    "Empirical test: LightGBM meta holdout R²=0.6349 vs Ridge meta holdout R²=0.6450.",
+                    "Empirical test: LightGBM meta holdout R²=0.6349 vs Ridge meta holdout R²=0.6495.",
                     "By the meta-stage, the four base learners have already exhausted non-linear relationships. Remaining variance is mostly noise.",
                     "Ridge L2 regularisation with positive=True enforces blending, not arbitrage.",
                 ],
@@ -1197,10 +1197,10 @@ def build_demo_script(path):
         headers=["Metric", "Value", "Context"],
         rows=[
             ("NYC training rows",       "185,092",     "Sales 2022–2026"),
-            ("NYC features",            "104",          "Structural + spatial + QoL"),
+            ("NYC features",            "134",          "Structural + spatial + QoL"),
             ("NYC holdout rows",        "27,763",       "Newest 15% by date"),
-            ("NYC R² (holdout)",        "0.6450",       "Stack v11"),
-            ("NYC MedAPE (holdout)",    "20.32%",       "Stack v11"),
+            ("NYC R² (holdout)",        "0.6495",       "Stack v22"),
+            ("NYC MedAPE (holdout)",    "20.32%",       "Stack v22"),
             ("Riyadh total rows",       "6,910",        "District-quarter obs., 2018–2025"),
             ("Riyadh training rows",    "5,531",        "2018–2024 (incl. Metro-era)"),
             ("Riyadh features",         "76",           "Transit, QoL, macro, rental"),

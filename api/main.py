@@ -77,6 +77,8 @@ _COMPS_TTL   = 86_400   # 24 h
 _v11_zip_fallbacks: dict = {}   # pre-computed fallback medians by col (ZIP features)
 _v11_nta_fallbacks: dict = {}   # pre-computed fallback medians by col (NTA features)
 
+_integrity: dict = {"checked": False, "ok": None, "missing_files": [], "issues": []}
+
 # ── Asking-price spread tables ────────────────────────────────────────
 _riyadh_spreads: dict = {}      # district_ar → {bayut_median_psqm, spread_pct, …}
 _nyc_spreads:    dict = {}      # borough_name → {redfin_median_psqm, spread_pct, …}
@@ -580,6 +582,54 @@ def _startup_v11_fallbacks():
     _build_v11_fallbacks()
 
 
+def _startup_integrity_check():
+    """Guard against silent degradation: every hub-fetched file must exist and the
+    feature lookups built from them must be non-empty. A missing file doesn't crash
+    the API — predictions fall back to city-wide medians — so without this check the
+    Space serves quietly degraded results (happened twice: features_riyadh.csv and
+    overture_poi_buckets.npz)."""
+    global _integrity
+    missing, issues = [], []
+
+    try:
+        from download_models import FILES
+        missing = [f for f in FILES if not os.path.exists(os.path.join(BASE, f))]
+    except Exception as e:
+        issues.append(f"could not import download_models.FILES: {e}")
+
+    if _spatial is not None:
+        poi_loaded = sum(1 for t in getattr(_spatial, "_poi_balltrees", {}).values() if t is not None)
+        if poi_loaded == 0:
+            issues.append("NYC POI BallTrees empty — all poi_* features will be zero")
+    else:
+        issues.append("NYC SpatialLookup not loaded")
+
+    if _riyadh_spatial is not None:
+        n_districts = len(getattr(_riyadh_spatial, "_district_stats", {}) or {})
+        if n_districts == 0:
+            issues.append("Riyadh district stats empty — /predict/riyadh will collapse to city-wide fallback")
+    else:
+        issues.append("Riyadh SpatialLookup not loaded")
+
+    for f in missing:
+        issues.append(f"missing data file: {f}")
+
+    _integrity = {
+        "checked": True,
+        "ok": not issues,
+        "missing_files": missing,
+        "issues": issues,
+    }
+    if issues:
+        print("!" * 60)
+        print("INTEGRITY CHECK FAILED — API is serving DEGRADED predictions:")
+        for msg in issues:
+            print(f"  - {msg}")
+        print("!" * 60)
+    else:
+        print(f"  Integrity check: OK ({len(FILES)} hub files present, POI + district stats loaded)")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load model + spatial data in parallel at startup (two dependency waves)."""
@@ -608,6 +658,9 @@ async def lifespan(app: FastAPI):
         asyncio.to_thread(_startup_district_geojson),
         asyncio.to_thread(_startup_v11_fallbacks),
     )
+
+    # Wave 3: integrity guard — needs everything above loaded
+    _startup_integrity_check()
 
     print("=" * 60)
     print("THAMAN API — Ready at http://localhost:8000")
@@ -1130,12 +1183,19 @@ def health():
     if _scorer and _scorer.meta:
         last_trained  = _scorer.meta.get("trained_at") or _scorer.meta.get("timestamp")
         model_version = _scorer.meta.get("stack", {}).get("version")
+    if not (_scorer and _spatial):
+        status = "loading"
+    elif _integrity["checked"] and not _integrity["ok"]:
+        status = "degraded"
+    else:
+        status = "ok"
     return {
-        "status":            "ok" if (_scorer and _spatial) else "loading",
+        "status":            status,
         "model_loaded":      _scorer  is not None,
         "spatial_loaded":    _spatial is not None,
         "model_version":     model_version,
         "last_trained_date": last_trained,
+        "integrity":         _integrity,
         "timestamp":         datetime.datetime.now().isoformat(),
     }
 
@@ -1840,8 +1900,10 @@ def predict_riyadh(req: RiyadhPredictRequest):
             feat_dict[f"log_dist_{_hub}_m"] = _math.log1p(_d)
 
         # v10: metro + bus transit features from district lookup
+        # (predict_features() strips district_ar from feat_dict — use the
+        # resolved variable, else the lookup always misses → 5 km fallback)
         _metro_lu = _scorer._riyadh_meta.get("metro_district_lookup", {})
-        _district_ar = feat_dict.get("district_ar", "")
+        _district_ar = district_ar or ""
         _metro_entry = _metro_lu.get(_district_ar, {})
         _dm = _metro_entry.get("dist_metro_m", 5000.0)  # default 5km (outside metro reach)
         feat_dict["dist_metro_m"]       = _dm

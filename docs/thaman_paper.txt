@@ -731,14 +731,14 @@ trend slope), v11 added building health and transit quality signals. The combine
 ΔR²=+0.0007 and ΔMedAPE=−0.07pp over v10 confirms that the new indicators add
 genuine predictive signal rather than noise.
 
-7.3 Base Learner Comparison (v11 holdout)
+7.3 Base Learner Comparison (v22 holdout)
 -----------------------------------------
   Model       R²      MedAPE
   -----       ------  -------
-  XGB-A       0.6441  20.21%
-  XGB-B       0.6429  20.35%
-  LGB         0.6419  20.40%
-  CatBoost    0.6430  20.22%
+  XGB-A       0.6445  20.56%
+  XGB-B       0.6387  20.67%
+  LGB         0.6432  20.84%
+  CatBoost    0.6482  20.60%
   Stack v22   0.6495  20.32%   ← ensemble always best
 
 The ensemble outperforms every individual base learner, confirming sufficient

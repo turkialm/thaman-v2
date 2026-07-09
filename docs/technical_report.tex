@@ -579,7 +579,7 @@ These become the holdout set (all rows with \texttt{quarter\_id} $\geq$ 20251).
     Training rows   & 5,531 (quarter\_id $<$ 20251) \\
     Holdout rows    & 1,730 (quarter\_id $\geq$ 20251) \\
     Districts       & 163 unique \\
-    Features used   & 140 \\
+    Features used   & 149 \\
     Target (median) & 3,303 SAR/m$^2$ \\
     Target (range)  & 221.82 -- 12,565.21 SAR/m$^2$ \\
     \midrule
@@ -875,7 +875,7 @@ with $\alpha = 1.0$. For NYC: \texttt{positive=True} (blending, not arbitrage).
   CV folds          & 10-fold GroupKFold      & 5-fold GroupKFold \\
   CV grouping       & NTA code                & district\_ar \\
   Meta-learner      & Ridge (positive=True)   & Ridge (positive=False) \\
-  Features          & 134                     & 140 \\
+  Features          & 134                     & 149 \\
   Target encoding   & 4 types                 & 2 types \\
   Prior sale signal & Yes (99\% via assesstot)& No \\
   Structural feats  & sqft, floors, age, etc. & SA\_Aqar medians only \\
