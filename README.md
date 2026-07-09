@@ -95,7 +95,7 @@ Key features: type-stratified district lag prices, Suhail transaction density, R
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/health` | Model load status |
+| `GET` | `/health` | Model load status + data-integrity check |
 | `POST` | `/predict` | NYC single estimate (USD) |
 | `POST` | `/predict/riyadh` | Riyadh single estimate (SAR/m²) |
 | `POST` | `/batch` | NYC batch — up to 50 properties |
@@ -110,7 +110,7 @@ Key features: type-stratified district lag prices, Suhail transaction density, R
 
 ### NYC Example
 ```bash
-curl -X POST https://huggingface.co/spaces/Turki-Almurahhem/thaman/predict \
+curl -X POST https://turki-almurahhem-thaman.hf.space/predict \
   -H "Content-Type: application/json" \
   -d '{"latitude":40.6892,"longitude":-73.9442,"gross_square_feet":1800,
        "building_age":55,"bldgclass":"A1","borough":3,"numfloors":2,"residential_units":1}'
@@ -118,14 +118,14 @@ curl -X POST https://huggingface.co/spaces/Turki-Almurahhem/thaman/predict \
 
 ### Riyadh Example
 ```bash
-curl -X POST https://huggingface.co/spaces/Turki-Almurahhem/thaman/predict/riyadh \
+curl -X POST https://turki-almurahhem-thaman.hf.space/predict/riyadh \
   -H "Content-Type: application/json" \
   -d '{"latitude":24.7136,"longitude":46.6753,"property_type":"شقة","area_sqm":150}'
 ```
 
 ### Embed Widget
 ```html
-<iframe src="https://huggingface.co/spaces/Turki-Almurahhem/thaman/ui/embed.html"
+<iframe src="https://turki-almurahhem-thaman.hf.space/ui/embed.html"
         width="340" height="560" frameborder="0"></iframe>
 ```
 
@@ -228,4 +228,4 @@ python -m pytest tests/ -v   # 109 tests
 
 ## Author
 
-**Turki Almurahhem**
+**Turki Almurahhem** — BSc graduation project, Umm Al-Qura University, 2026
