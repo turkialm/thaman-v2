@@ -255,9 +255,9 @@
       </div>
       <div class="metric-card">
         <div class="metric-icon">🎲</div>
-        <div class="metric-value teal-val">71.1%</div>
-        <div class="metric-label" id="kpi4Label">Tier Accuracy</div>
-        <div class="metric-sub" id="kpi4Sub">Within-1-tier: 96.7%</div>
+        <div class="metric-value teal-val">157K</div>
+        <div class="metric-label" id="kpi4Label">Training Sales</div>
+        <div class="metric-sub" id="kpi4Sub">27,763 held out (newest 15%)</div>
       </div>
       <div class="metric-card">
         <div class="metric-icon">🌳</div>
@@ -1448,7 +1448,7 @@
       kpi1: 'R² Stack Holdout',
       kpi2: 'Median APE',       kpi2s: '±20.32% on 27,763 holdout sales',
       kpi3: 'Mean Abs Error',   kpi3s: 'holdout set (27,763 rows)',
-      kpi4: 'Tier Accuracy',    kpi4s: 'Within-1-tier: 96.7%',
+      kpi4: 'Training Sales',   kpi4s: '27,763 held out (newest 15%)',
       kpi5: 'Boosting Rounds',  kpi5s: 'v22: 5,000 rounds · early stopping 50',
       kpi6: 'Features',         kpi6s: 'v22: 134 features (NTA×bldgtype temporal lag added v22)',
       c0t: '⚖️ Stack v22 — Base Learner Comparison (XGB + LGB + CatBoost)',
@@ -1489,10 +1489,10 @@
       pageSub:    'XGBoost + LightGBM + CatBoost + Ridge · 134 ميزة · تحقق مكاني · 157,329 صفقة عقارية',
       kpi1: 'دقة النموذج R²',
       kpi2: 'متوسط الخطأ المئوي',  kpi2s: 'فاصل ثقة ±20.32%',
-      kpi3: 'متوسط الخطأ المطلق',  kpi3s: 'مجموعة الاختبار (185 ألف صف)',
-      kpi4: 'دقة فئة السعر',       kpi4s: 'ضمن فئة واحدة: 96.7%',
+      kpi3: 'متوسط الخطأ المطلق',  kpi3s: 'مجموعة الاختبار (27,763 صف)',
+      kpi4: 'عينات التدريب',       kpi4s: '27,763 محجوزة للاختبار (أحدث 15%)',
       kpi5: 'جولات التدريب',       kpi5s: 'النموذج القديم: 917 جولة',
-      kpi6: 'الميزات',             kpi6s: 'النموذج القديم: 50 ميزة (+20 جديدة)',
+      kpi6: 'الميزات',             kpi6s: 'الإصدار v22: 134 ميزة',
       c0t: '⚖️ مقارنة نماذج التكديس v22 (XGB + LGB + CatBoost)',
       c0s: 'R² ومتوسط الخطأ لكل نموذج أساسي مقارنة بنموذج Ridge المُجمَّع — CatBoost يضيف تنوعاً ويقلل الخطأ بـ 0.19%',
       c1t: '🔍 أهمية المتغيرات (SHAP) — أعلى 20 ميزة',
