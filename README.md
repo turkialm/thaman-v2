@@ -170,7 +170,7 @@ First startup ~30 sec — loads both ML stacks + spatial data.
 │   └── sw.js             # Service worker (cache-first static)
 ├── training/
 │   ├── train_stack_v12.py        # NYC v22+ training pipeline
-│   └── train_stack_riyadh_v4.py  # Riyadh v11+ training pipeline
+│   └── train_stack_riyadh_v2.py  # Riyadh v12 training pipeline (NOTE: file v2 = model v12)
 ├── scripts/
 │   ├── fetch_suhail_transactions.py   # Pull fresh Suhail MOJ data
 │   ├── aggregate_suhail_quarterly.py  # District-quarter aggregation

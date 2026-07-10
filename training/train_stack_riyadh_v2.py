@@ -730,6 +730,17 @@ for ptype in ["apartment", "villa", "residential_plot", "building"]:
             print(f"  [{ptype:>18}] R²={t_r2:.4f} | MedAPE={t_medape:.2f}% | n={hmask.sum()}")
             _seg_by_type[ptype] = {"r2": round(t_r2, 4), "medape": round(t_medape, 2), "n": int(hmask.sum())}
 
+# Per-row holdout prediction dump — error-analysis artifact
+_dump = hold[["district_ar", "quarter_id", "is_apartment", "is_villa",
+              "is_residential_plot", "is_building", "deed_counts"]].copy()
+_dump["y_true_psqm"] = np.expm1(y_hold)
+_dump["y_pred_psqm"] = np.expm1(hold_meta_preds)
+_dump["ape_pct"] = (np.abs(_dump["y_true_psqm"] - _dump["y_pred_psqm"])
+                    / _dump["y_true_psqm"] * 100)
+_dump_path = PROC / "holdout_preds_riyadh.csv"
+_dump.to_csv(_dump_path, index=False, encoding="utf-8-sig")
+print(f"  Holdout predictions dumped: {_dump_path} ({len(_dump)} rows)")
+
 # ── Save models ───────────────────────────────────────────────────────────────
 
 print("\nSaving models...")

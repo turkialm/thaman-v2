@@ -98,3 +98,4 @@ models/*.png
 docs/figures/
 docs/*.png
 data/raw/overture_poi_buckets.npz
+holdout_preds_riyadh.csv
