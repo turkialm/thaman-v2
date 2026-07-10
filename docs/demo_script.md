@@ -39,7 +39,9 @@ Riyadh click target:  24.6877,  46.7219   (Downtown Riyadh / King Fahd Road)
 
 > [Submit prediction — pause for result to load]
 
-> "THAMAN returns a predicted price, a confidence band, a letter grade, and the top features driving this estimate. On the right you can see the SHAP waterfall — building class and neighbourhood encoding are the top two features. That's consistent with NYC real estate: where you are and what type of building matter more than size alone."
+> "THAMAN returns a predicted price, a confidence band, a letter grade, and the top features driving this estimate. On the right you can see the SHAP waterfall — for this condo, neighbourhood encoding, renovation age, and unit count are among the top drivers. That's consistent with NYC real estate: where you are matters more than size alone."
+
+> "Notice the grade is a C with a ±35% band — Manhattan is the hardest segment in the data, and the system reports that honestly instead of pretending to be confident. Confidence is segment-adaptive: a Staten Island prediction would show ±14%."
 
 > "The comparable sales bubbles on the map show the nearest actual recorded sales — green means our estimate is close, red means we're further off. These are real deed-recorded transactions from 185,000 NYC sales, 2022 to 2026."
 
@@ -80,7 +82,7 @@ Riyadh click target:  24.6877,  46.7219   (Downtown Riyadh / King Fahd Road)
 
 > [Submit prediction — wait for result]
 
-> "The model returns a prediction in SAR per square metre. You can see the SHAP breakdown: metro access, commercial density, air quality, and district price history are the top drivers here."
+> "The model returns a prediction in SAR per square metre. You can see the SHAP breakdown: district price history, the district-type encoding, and the Bayut asking-price signal are the top drivers here — and the spatial grid shows this location sits about 575 metres from a metro station."
 
 > "The Riyadh Metro opened in 2024 and is a novel infrastructure signal — the model captures the premium for proximity to metro stations, which is entirely absent from pre-2024 models."
 
@@ -89,7 +91,7 @@ Riyadh click target:  24.6877,  46.7219   (Downtown Riyadh / King Fahd Road)
 **Arabic:**
 > "أضغط على منطقة طريق الملك فهد — إحدى أهم مناطق الرياض. سأختار فيلا، 400 متر مربع."
 
-> "النموذج يُعطينا التقدير بالريال السعودي لكل متر مربع. في تحليل SHAP: القرب من المترو، الكثافة التجارية، جودة الهواء، والتاريخ السعري للحي هي أبرز العوامل."
+> "النموذج يُعطينا التقدير بالريال السعودي لكل متر مربع. في تحليل SHAP: التاريخ السعري للحي، ترميز نوع العقار بالحي، وإشارة أسعار العرض من بيوت هي أبرز العوامل — والموقع يبعد نحو 575 متراً عن محطة مترو."
 
 > "مترو الرياض افتُتح عام 2024 وهو إشارة بنية تحتية جديدة يلتقطها النموذج — ما كان موجوداً في النماذج السابقة."
 
@@ -141,10 +143,10 @@ Riyadh click target:  24.6877,  46.7219   (Downtown Riyadh / King Fahd Road)
 Use this minute as a buffer. If the committee has not started asking questions, summarise:
 
 **English closing:**
-> "To summarise: THAMAN is a production-deployed AVM across two cities — New York and Riyadh — using a four-model stacking ensemble across 104 and 76 features respectively. It achieves competitive accuracy on NYC's 185,000-sale holdout and demonstrates cross-market generalisability on Saudi Arabia's data-scarce district-aggregate market. The full system — data pipelines, training code, API, and web interface — is deployed on Hugging Face and open-sourced on GitHub. Thank you."
+> "To summarise: THAMAN is a production-deployed AVM across two cities — New York and Riyadh — using a four-model stacking ensemble across 134 and 149 features respectively. It achieves competitive accuracy on 27,763 held-out NYC sales and demonstrates cross-market generalisability on Saudi Arabia's data-scarce district-aggregate market. The full system — data pipelines, training code, API, and web interface — is deployed on Hugging Face and open-sourced on GitHub. Thank you."
 
 **Arabic closing:**
-> "خلاصة القول: ثمان نظام تقييم عقاري منتشر فعلياً لمدينتين، يستخدم مجموعة من أربعة نماذج ذكاء اصطناعي عبر مئة وأربع ميزات في نيويورك، وستة وسبعين ميزة في الرياض. يحقق دقة تنافسية على 27,763 مبيعة اختبارية في نيويورك، ويُثبت قابلية التعميم على السوق السعودية ذات البيانات المحدودة. النظام كاملاً — البيانات، الكود، الـ API، والواجهة — منشور على Hugging Face ومفتوح المصدر على GitHub. شكراً."
+> "خلاصة القول: ثمان نظام تقييم عقاري منتشر فعلياً لمدينتين، يستخدم مجموعة من أربعة نماذج ذكاء اصطناعي عبر 134 ميزة في نيويورك، و149 ميزة في الرياض. يحقق دقة تنافسية على 27,763 مبيعة اختبارية في نيويورك، ويُثبت قابلية التعميم على السوق السعودية ذات البيانات المحدودة. النظام كاملاً — البيانات، الكود، الـ API، والواجهة — منشور على Hugging Face ومفتوح المصدر على GitHub. شكراً."
 
 ---
 
@@ -157,7 +159,7 @@ If the HF Space is still cold-starting (spinning/loading > 30 sec):
 3. Keep refreshing the HF tab in the background — it typically loads in 45–90 seconds.
 4. **If HF is completely unavailable:** Start the local API — open Terminal and run:
    ```
-   cd /Users/totam/Desktop/new_try && uvicorn api.main:app --port 8000
+   cd /Users/totam/Desktop/THAMAN/new_try && uvicorn api.main:app --port 8000
    ```
    Then open: `http://localhost:8000/ui` in the browser.
    The local version is identical to the deployed version.
@@ -193,7 +195,7 @@ Print this section and keep it in your pocket.
 | NYC CV strategy | 10-fold Spatial GroupKFold | Groups = NTA code |
 | Riyadh CV strategy | 5-fold Spatial GroupKFold | Groups = district_ar |
 | API latency | 200–400 ms | Including SHAP computation |
-| Automated tests | 37 | 15 scorer + 22 API tests |
+| Automated tests | 109 | api, scorer, parity, SHAP, regression pins, golden, distribution, load |
 
 ---
 

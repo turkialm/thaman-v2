@@ -194,9 +194,14 @@ Manhattan to get an instant property valuation.''
 
 ``THAMAN returns a predicted price, a confidence band, a letter grade, and the
 top features driving this estimate. On the right you can see the SHAP waterfall
---- building class and neighbourhood encoding are the top two features. That's
-consistent with NYC real estate: where you are and what type of building matter
-more than size alone.''
+--- for this condo, neighbourhood encoding, renovation age, and unit count are
+among the top drivers. That's consistent with NYC real estate: where you are
+matters more than size alone.''
+
+``Notice the grade is a C with a $\pm$35\% band --- Manhattan is the hardest
+segment in the data, and the system reports that honestly instead of pretending
+to be confident. Confidence is segment-adaptive: a Staten Island prediction
+would show $\pm$14\%.''
 
 ``The comparable sales bubbles on the map show the nearest actual recorded
 sales --- green means our estimate is close, red means we're further off. These
@@ -256,8 +261,9 @@ Let's select Villa, 400 square metres.''
 \textit{[Submit prediction --- wait for result]}
 
 ``The model returns a prediction in SAR per square metre. You can see the SHAP
-breakdown: metro access, commercial density, air quality, and district price
-history are the top drivers here.''
+breakdown: district price history, the district-type encoding, and the Bayut
+asking-price signal are the top drivers here --- and the spatial grid shows this
+location sits about 575 metres from a metro station.''
 
 ``The Riyadh Metro opened in 2024 and is a novel infrastructure signal --- the
 model captures the premium for proximity to metro stations, which is entirely
@@ -355,9 +361,9 @@ questions, summarise:
 
 \begin{narration}{English closing}
 ``To summarise: THAMAN is a production-deployed AVM across two cities --- New
-York and Riyadh --- using a four-model stacking ensemble across 104 and 76
-features respectively. It achieves competitive accuracy on NYC's 185,000-sale
-holdout and demonstrates cross-market generalisability on Saudi Arabia's
+York and Riyadh --- using a four-model stacking ensemble across 134 and 149
+features respectively. It achieves competitive accuracy on 27,763 held-out
+NYC sales and demonstrates cross-market generalisability on Saudi Arabia's
 data-scarce district-aggregate market. The full system --- data pipelines,
 training code, API, and web interface --- is deployed on Hugging Face and
 open-sourced on GitHub. Thank you.''
@@ -388,7 +394,7 @@ open-sourced on GitHub. Thank you.''
   \item \textbf{If HF is completely unavailable:} Start the local API ---
         open Terminal and run:
         \begin{lstlisting}[language=bash]
-cd /Users/totam/Desktop/new_try
+cd /Users/totam/Desktop/THAMAN/new_try
 uvicorn api.main:app --port 8000
         \end{lstlisting}
         Then open: \url{http://localhost:8000/ui} in the browser.
@@ -436,7 +442,7 @@ uvicorn api.main:app --port 8000
     NYC CV strategy         & 10-fold GroupKFold & Groups = NTA code \\
     Riyadh CV strategy      & 5-fold GroupKFold  & Groups = district\_ar \\
     API latency             & 200--400 ms & Including SHAP computation \\
-    Automated tests         & 37          & 15 scorer + 22 API tests \\
+    Automated tests         & 109         & api, scorer, parity, SHAP, pins, golden, distribution, load \\
     \bottomrule
   \end{tabular}
 \end{table}

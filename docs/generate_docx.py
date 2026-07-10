@@ -1075,8 +1075,10 @@ def build_demo_script(path):
               "\"I'll select building type — Elevator Condo, D4 — and enter 1,200 square feet, 15 floors, built in 1985.\"\n\n"
               "[Submit prediction — pause for result to load]\n\n"
               "\"THAMAN returns a predicted price, a confidence band, a letter grade, and the top features driving "
-              "this estimate. Building class and neighbourhood encoding are the top two features — consistent with NYC "
-              "real estate: where you are and what type of building matter more than size alone.\"\n\n"
+              "this estimate. For this condo, neighbourhood encoding, renovation age, and unit count are among the top "
+              "drivers — consistent with NYC real estate: where you are matters more than size alone.\"\n\n"
+              "\"Notice the grade is a C with a ±35% band — Manhattan is the hardest segment in the data, and the "
+              "system reports that honestly. Confidence is segment-adaptive: Staten Island would show ±14%.\"\n\n"
               "\"The comparable sales bubbles show the nearest actual recorded sales — green means our estimate is "
               "close, red means we're further off. These are real deed-recorded transactions from 185,000 NYC sales, "
               "2022 to 2026.\""),
@@ -1107,8 +1109,9 @@ def build_demo_script(path):
               "\"I'll click on the King Fahd Road corridor — one of Riyadh's prime districts. "
               "Let's select Villa, 400 square metres.\"\n\n"
               "[Submit prediction — wait for result]\n\n"
-              "\"The model returns a prediction in SAR per square metre. The SHAP breakdown: metro access, "
-              "commercial density, air quality, and district price history are the top drivers.\"\n\n"
+              "\"The model returns a prediction in SAR per square metre. The SHAP breakdown: district price history, "
+              "the district-type encoding, and the Bayut asking-price signal are the top drivers — and the spatial "
+              "grid shows this location sits about 575 metres from a metro station.\"\n\n"
               "\"The Riyadh Metro opened in 2024 — a novel infrastructure signal the model captures, "
               "entirely absent from pre-2024 models.\""),
              ("Arabic",
@@ -1150,8 +1153,8 @@ def build_demo_script(path):
          [
              ("English closing",
               "\"To summarise: THAMAN is a production-deployed AVM across two cities — New York and Riyadh — "
-              "using a four-model stacking ensemble across 104 and 76 features respectively. It achieves competitive "
-              "accuracy on NYC's 185,000-sale holdout and demonstrates cross-market generalisability on Saudi Arabia's "
+              "using a four-model stacking ensemble across 134 and 149 features respectively. It achieves competitive "
+              "accuracy on 27,763 held-out NYC sales and demonstrates cross-market generalisability on Saudi Arabia's "
               "data-scarce district-aggregate market. The full system — data pipelines, training code, API, and web "
               "interface — is deployed on Hugging Face and open-sourced on GitHub. Thank you.\""),
              ("Arabic closing",
@@ -1180,7 +1183,7 @@ def build_demo_script(path):
         "Switch to showing the paper/slides and explain the model architecture verbally.",
         "Keep refreshing the HF tab in the background — typically loads in 45–90 seconds.",
         "If HF completely unavailable: open Terminal and run:\n"
-        "    cd /Users/totam/Desktop/new_try && uvicorn api.main:app --port 8000\n"
+        "    cd /Users/totam/Desktop/THAMAN/new_try && uvicorn api.main:app --port 8000\n"
         "    Then open: http://localhost:8000/ui",
         "API startup time: ~30 seconds (spatial KD-tree indexes loading).",
     ]:
@@ -1214,7 +1217,7 @@ def build_demo_script(path):
             ("NYC NTA groups",          "212",          "Neighbourhood spatial units"),
             ("Riyadh district polygons","133",          "From OSM admin_level=10"),
             ("API latency",             "200–400 ms",   "Including SHAP computation"),
-            ("Automated tests",         "37",           "15 scorer + 22 API tests"),
+            ("Automated tests",         "109",          "api, scorer, parity, SHAP, pins, golden, distribution, load"),
         ],
         caption="Key metrics",
     )
