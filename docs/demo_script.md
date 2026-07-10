@@ -125,9 +125,9 @@ Riyadh click target:  24.6877,  46.7219   (Downtown Riyadh / King Fahd Road)
 **English:**
 > "Finally, the analytics dashboard. This shows model performance broken down by NYC borough and price tier."
 
-> "Notice the Staten Island paradox: lowest R² in the dataset — 0.41 — but the best MedAPE at 13.5%. That's because Staten Island has very low price variance; the model's absolute errors are small, but R² penalises a low-variance target. MedAPE is the right metric for a user-facing AVM."
+> "Notice the Staten Island paradox: the worst per-borough R² but the best MedAPE at 14.4%. That's because Staten Island has very low price variance; the model's absolute errors are small, but R² penalises a low-variance target. MedAPE is the right metric for a user-facing AVM."
 
-> "Manhattan is the hardest market at 36.7% MedAPE. Co-op board approval discounts and unobservable interior finishes create heterogeneity that no tabular dataset can capture."
+> "Manhattan is the hardest market at 35.2% MedAPE. Co-op board approval discounts and unobservable interior finishes create heterogeneity that no tabular dataset can capture."
 
 **Arabic:**
 > "لوحة التحليلات تُظهر أداء النموذج مقسّماً حسب منطقة نيويورك وشريحة السعر."

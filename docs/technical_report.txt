@@ -537,26 +537,27 @@ LightGBM (wide)         0.6403    (not stored)   20.28%
 CatBoost (high-cap)     0.6426    (not stored)   20.35%
 Stack v22 (Ridge meta)  0.6495    $1,047,004     20.32%
 
-Improvement vs. baseline (linear regression on 3 features): R² 0.238 → 0.645
+Improvement vs. baseline (linear regression on 3 features): R² 0.238 → 0.6495
 Improvement vs. v1 (single XGBoost, 2022):                  MedAPE ~32% → 20.32%
 
 6.2 Performance by Borough (Holdout)
 ──────────────────────────────────────
 
-Borough           n         R²        MedAPE     MAE (USD)
-──────────────    ────────  ────────  ─────────  ──────────────
-Manhattan         5,411     0.xxxx    36.89%     $2,801,602
-Bronx             2,735     0.xxxx    21.05%     $1,517,641
-Brooklyn          7,032     0.xxxx    20.84%     $871,097
-Queens            9,533     0.xxxx    17.04%     $363,990
-Staten Island     3,052     0.xxxx    13.56%     $221,158
+Borough           n         MedAPE     MAE (USD)
+──────────────    ────────  ─────────  ──────────────
+Manhattan         5,411     35.16%     $2,714,327
+Bronx             2,735     21.08%     $1,531,532
+Brooklyn          7,032     20.64%     $857,322
+Queens            9,533     17.43%     $366,226
+Staten Island     3,052     14.41%     $220,216
 
-Key finding — Staten Island paradox: lowest R² of any borough, yet best MedAPE
-at 13.56%. Explanation: Staten Island has very low price variance (most sales
-$300K–$700K). The model predicts well in absolute terms, but R² penalises a
-low-variance target disproportionately. MedAPE is the user-relevant metric.
+Key finding — Staten Island paradox: lowest R² of any borough (v11 evaluation),
+yet best MedAPE at 14.41%. Explanation: Staten Island has very low price variance
+(most sales $300K–$700K). The model predicts well in absolute terms, but R²
+penalises a low-variance target disproportionately. MedAPE is the user-relevant
+metric.
 
-Manhattan is hardest: 36.89% MedAPE. Reasons:
+Manhattan is hardest: 35.16% MedAPE. Reasons:
   - Co-op board approval discounts (unobservable)
   - Interior finishes, renovation quality (unobservable)
   - Floor number premium in high-rises (partially captured by numfloors)
@@ -567,12 +568,12 @@ Manhattan is hardest: 36.89% MedAPE. Reasons:
 
 Tier              n         MedAPE     MAE (USD)
 ──────────────    ────────  ─────────  ──────────────
-< $500K           6,497     27.71%     $229,607
-$500K – $1M       10,980    14.68%     $179,450
-$1M – $3M         7,978     21.14%     $445,458
-$3M – $10M        1,707     40.58%     $2,169,464
+< $500K           6,497     27.10%     $225,470
+$500K – $1M       10,980    15.12%     $182,149
+$1M – $3M         7,978     21.30%     $454,712
+$3M – $10M        1,707     39.77%     $2,180,172
 
-The sweet spot is $500K–$1M (typical Queens/Brooklyn starter home): 14.68% MedAPE.
+The sweet spot is $500K–$1M (typical Queens/Brooklyn starter home): 15.12% MedAPE.
 The model struggles most below $500K (often Bronx/SI properties with high
 variance from distressed sales) and above $3M (Manhattan luxury, unobservable
 quality signals).

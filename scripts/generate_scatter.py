@@ -290,6 +290,26 @@ medape_val = float(np.median(np.abs(y_actual - y_pred) / np.maximum(y_actual, 1.
 r2_val     = r2_score(np.log1p(y_actual), pred_log)
 print(f"  Scatter: R²={r2_val:.4f} | MedAPE={medape_val:.2f}%")
 
+# Per-borough + per-tier diagnostics (same holdout predictions)
+_BM = {1: "Manhattan", 2: "Bronx", 3: "Brooklyn", 4: "Queens", 5: "Staten Island"}
+_boro_arr = np.array(df_hold["borough"].to_list())
+_ape = np.abs(y_actual - y_pred) / np.maximum(y_actual, 1.0) * 100
+print("  ── Per-borough (holdout) ──")
+for _bn, _bname in _BM.items():
+    _m = _boro_arr == _bn
+    if _m.sum() == 0:
+        continue
+    _r2 = r2_score(np.log1p(y_actual[_m]), pred_log[_m])
+    print(f"    {_bname:<14} n={_m.sum():>6,}  R²={_r2:.4f}  MedAPE={np.median(_ape[_m]):.2f}%")
+print("  ── Per-tier (holdout) ──")
+for _lo, _hi, _tname in [(0, 5e5, "<$500K"), (5e5, 1e6, "$500K–1M"),
+                         (1e6, 3e6, "$1M–3M"), (3e6, 1e7, "$3M–10M")]:
+    _m = (y_actual >= _lo) & (y_actual < _hi)
+    if _m.sum() == 0:
+        continue
+    _r2 = r2_score(np.log1p(y_actual[_m]), pred_log[_m])
+    print(f"    {_tname:<10} n={_m.sum():>6,}  R²={_r2:.4f}  MedAPE={np.median(_ape[_m]):.2f}%")
+
 # ── 8. Sample for scatter plot (2000 pts, stratified by borough) ──
 BOROUGH_MAP = {1:"Manhattan",2:"Bronx",3:"Brooklyn",4:"Queens",5:"Staten Island"}
 boros       = df_hold["borough"].to_list()

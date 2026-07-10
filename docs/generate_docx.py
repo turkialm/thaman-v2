@@ -361,13 +361,13 @@ def build_paper(path):
     set_heading(doc, "7.2 Performance by Borough", level=2)
     add_table_style(
         doc,
-        headers=["Borough", "n", "R²", "MedAPE", "MAE"],
+        headers=["Borough", "n", "MedAPE", "MAE"],
         rows=[
-            ("Staten Island", "3,052", "0.4103", "13.46%", "$221,158"),
-            ("Queens",        "9,533", "0.6851", "17.06%", "$363,990"),
-            ("Bronx",         "2,735", "0.6195", "20.93%", "$1,517,641"),
-            ("Brooklyn",      "7,032", "0.6206", "20.89%", "$871,097"),
-            ("Manhattan",     "5,411", "0.6141", "36.66%", "$2,801,602"),
+            ("Staten Island", "3,052", "14.41%", "$220,216"),
+            ("Queens",        "9,533", "17.43%", "$366,226"),
+            ("Bronx",         "2,735", "21.08%", "$1,531,532"),
+            ("Brooklyn",      "7,032", "20.64%", "$857,322"),
+            ("Manhattan",     "5,411", "35.16%", "$2,714,327"),
         ],
         caption="Borough-level holdout performance",
     )
@@ -716,13 +716,13 @@ def build_technical_report(path):
     )
     add_table_style(
         doc,
-        headers=["Borough", "n", "R²", "MedAPE"],
+        headers=["Borough", "n", "MedAPE", "MAE"],
         rows=[
-            ("Staten Island", "3,052", "0.4103", "13.46%"),
-            ("Queens",        "9,533", "0.6851", "17.06%"),
-            ("Bronx",         "2,735", "0.6195", "20.93%"),
-            ("Brooklyn",      "7,032", "0.6206", "20.89%"),
-            ("Manhattan",     "5,411", "0.6141", "36.66%"),
+            ("Staten Island", "3,052", "14.41%", "$220,216"),
+            ("Queens",        "9,533", "17.43%", "$366,226"),
+            ("Bronx",         "2,735", "21.08%", "$1,531,532"),
+            ("Brooklyn",      "7,032", "20.64%", "$857,322"),
+            ("Manhattan",     "5,411", "35.16%", "$2,714,327"),
         ],
         caption="Borough-level performance",
     )
@@ -1136,10 +1136,10 @@ def build_demo_script(path):
          [
              ("English",
               "\"The analytics dashboard shows model performance broken down by NYC borough and price tier.\"\n\n"
-              "\"Notice the Staten Island paradox: lowest R²=0.41 but best MedAPE=13.5%. Staten Island has very "
+              "\"Notice the Staten Island paradox: the worst per-borough R² but the best MedAPE (14.4%). Staten Island has very "
               "low price variance; the model's absolute errors are small, but R² penalises a low-variance target. "
               "MedAPE is the right metric for a user-facing AVM.\"\n\n"
-              "\"Manhattan is hardest at 36.7% MedAPE. Co-op board approval discounts and unobservable interior "
+              "\"Manhattan is hardest at 35.2% MedAPE. Co-op board approval discounts and unobservable interior "
               "finishes create heterogeneity that no tabular dataset can capture.\""),
              ("Arabic",
               "\"لوحة التحليلات تُظهر أداء النموذج مقسّماً حسب منطقة نيويورك وشريحة السعر.\"\n\n"

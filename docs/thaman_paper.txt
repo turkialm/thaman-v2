@@ -746,17 +746,19 @@ diversity for blending to produce a net benefit.
 
 7.4 Performance by Borough
 ---------------------------
-  Borough        n       R²      MedAPE    Notes
-  -------        ----    ------  -------   -----
-  Staten Island  3,052   0.4103  13.46%    Best accuracy; uniform housing stock
-  Queens         9,533   0.6851  17.06%    Highest volume; best R²
-  Bronx          2,735   0.6195  20.93%    Mixed housing stock
-  Brooklyn       7,032   0.6206  20.89%    Wide price range across NTAs
-  Manhattan      5,411   0.6141  36.66%    Worst; extreme luxury heterogeneity
+  Borough        n       MedAPE   MAE          Notes
+  -------        ----    -------  ----------   -----
+  Staten Island  3,052   14.41%   $220,216     Best accuracy; uniform housing stock
+  Queens         9,533   17.43%   $366,226     Highest volume
+  Bronx          2,735   21.08%   $1,531,532   Mixed housing stock
+  Brooklyn       7,032   20.64%   $857,322     Wide price range across NTAs
+  Manhattan      5,411   35.16%   $2,714,327   Worst; extreme luxury heterogeneity
 
 7.4.1 The Staten Island Statistical Paradox
-Staten Island presents the most instructive diagnostic anomaly: the worst R²
-(0.4103) combined with the best MedAPE (13.46%). This divergence highlights a
+Staten Island presents the most instructive diagnostic anomaly: in the v11
+evaluation it recorded the worst per-borough R² (0.4103) combined with the best
+MedAPE (13.46%) — and it retains the best MedAPE (14.41%) in the final v22
+model. This divergence highlights a
 fundamental mathematical reality of regression evaluation in homogeneous datasets.
 
 R² measures the proportion of variance explained:
@@ -779,8 +781,8 @@ while keeping absolute predictive errors tight.
 
 7.4.2 Manhattan Luxury Sub-Market and Co-Op Complexity
 Manhattan exposes the fundamental limitations of administrative tabular datasets
-for luxury AVM. While maintaining a moderate R² (0.6141), predictive precision
-degrades to a MedAPE of 36.66%.
+for luxury AVM: predictive precision degrades to a MedAPE of 35.16%, the worst
+of any borough.
 
 In the Manhattan luxury market, value is dictated by subjective, opaque variables
 entirely absent from municipal tax datasets: exact floor level, unobstructed
@@ -803,10 +805,10 @@ maintenance fees, leading to systematic pricing inaccuracies in this segment.
 ------------------------------
   Tier           n        MedAPE    Notes
   ----           ------   -------   -----
-  Under $500K    6,497    28.21%    Distressed sales, foreclosures
-  $500K – $1M    10,980   14.53%    Best accuracy; highest data volume
-  $1M – $3M      7,978    20.83%    Mid-luxury; reasonable accuracy
-  Over $3M       1,707    40.26%    Luxury; unique properties, sparse comps
+  Under $500K    6,497    27.10%    Distressed sales, foreclosures
+  $500K – $1M    10,980   15.12%    Best accuracy; highest data volume
+  $1M – $3M      7,978    21.30%    Mid-luxury; reasonable accuracy
+  Over $3M       1,707    39.77%    Luxury; unique properties, sparse comps
 
 The $500K–$1M tier is the "sweet spot" — highest volume and most consistent
 property characteristics. Below $500K, distressed sales introduce noise the
@@ -846,8 +848,8 @@ The naive approach assigns a single confidence interval to all predictions:
 
 With global MedAPE = 20.32%, a Staten Island $600K property and a Manhattan
 $3M condo both receive ±20.32% intervals. This is dishonest: the Staten Island
-estimate is likely within ±13.5%, while the Manhattan estimate could easily be
-off by ±37%.
+estimate is likely within ±14.4%, while the Manhattan estimate could easily be
+off by ±35%.
 
 8.2 Segment-Adaptive Confidence
 ---------------------------------
@@ -857,7 +859,7 @@ For each prediction, the segment MedAPE is computed as:
 
 Taking the maximum of the two risk dimensions gives the most conservative
 (widest) interval when both risk factors coincide — e.g. Manhattan luxury
-(borough=36.66%, tier=40.26%) → segment_medape = 40.26%.
+(borough=35.16%, tier=39.77%) → segment_medape = 39.77%.
 
   confidence_low  = price × (1 − segment_medape / 100)
   confidence_high = price × (1 + segment_medape / 100)
@@ -885,11 +887,11 @@ index, executing in under 5ms.
 --------------------------------------
   Property                            Grade  Score  Interval
   --------                            -----  -----  --------
-  Queens, 2-family, $700K             A      83     ±17.1%
-  Brooklyn, walk-up, $900K            B      79     ±20.9%
-  Bronx, elevator condo, $400K        C      72     ±28.2%
-  Manhattan, D4, $1.5M                D      63     ±36.7%
-  Manhattan, luxury, $4M              D      60     ±40.3%
+  Queens, 2-family, $700K             A      83     ±17.4%
+  Brooklyn, walk-up, $900K            B      79     ±20.6%
+  Bronx, elevator condo, $400K        C      73     ±27.1%
+  Manhattan, D4, $1.5M                D      65     ±35.2%
+  Manhattan, luxury, $4M              D      60     ±39.8%
 
 ================================================================================
 9. SYSTEM ARCHITECTURE
@@ -1208,7 +1210,7 @@ market friction (CBRE, 2024).
      MedAPE measure fundamentally different aspects of model quality. For a
      user-facing AVM, MedAPE is the correct optimisation target.
 
-  7. Manhattan is the hardest borough (MedAPE=36.66%). Co-op board approval
+  7. Manhattan is the hardest borough (MedAPE=35.16%). Co-op board approval
      discounts, unobservable interior finishes, and view premiums create
      heterogeneity that no tabular dataset can capture.
 

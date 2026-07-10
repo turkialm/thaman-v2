@@ -725,20 +725,22 @@ diversity for blending to produce a net benefit.
   \label{tab:borough_perf}
   \begin{tabular}{lrrrp{5.5cm}}
     \toprule
-    Borough & $n$ & $R^2$ & MedAPE & Notes \\
+    Borough & $n$ & MedAPE & MAE & Notes \\
     \midrule
-    Staten Island &  3,052 & 0.4103 & 13.46\% & Best accuracy; uniform housing stock \\
-    Queens        &  9,533 & 0.6851 & 17.06\% & Highest volume; best $R^2$ \\
-    Bronx         &  2,735 & 0.6195 & 20.93\% & Mixed housing stock \\
-    Brooklyn      &  7,032 & 0.6206 & 20.89\% & Wide price range across NTAs \\
-    Manhattan     &  5,411 & 0.6141 & 36.66\% & Worst; extreme luxury heterogeneity \\
+    Staten Island &  3,052 & 14.41\% & \$220,216 & Best accuracy; uniform housing stock \\
+    Queens        &  9,533 & 17.43\% & \$366,226 & Highest volume \\
+    Bronx         &  2,735 & 21.08\% & \$1,531,532 & Mixed housing stock \\
+    Brooklyn      &  7,032 & 20.64\% & \$857,322 & Wide price range across NTAs \\
+    Manhattan     &  5,411 & 35.16\% & \$2,714,327 & Worst; extreme luxury heterogeneity \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \subsubsection{The Staten Island Statistical Paradox}
-Staten Island presents the most instructive diagnostic anomaly: the worst
-$R^2$ (0.4103) combined with the best MedAPE (13.46\%). This divergence
+Staten Island presents the most instructive diagnostic anomaly: in the v11
+evaluation it recorded the worst per-borough $R^2$ (0.4103) combined with the
+best MedAPE (13.46\%) --- and it retains the best MedAPE (14.41\%) in the
+final v22 model. This divergence
 highlights a fundamental mathematical reality. $R^2$ measures:
 \begin{equation}
   R^2 = 1 - \frac{SS_\text{res}}{SS_\text{tot}}
@@ -752,7 +754,7 @@ MedAPE is the correct optimisation target.
 
 \subsubsection{Manhattan Luxury Sub-Market and Co-Op Complexity}
 Manhattan exposes the fundamental limitations of administrative tabular datasets
-for luxury AVM (MedAPE = 36.66\%). Value in the Manhattan luxury market is
+for luxury AVM (MedAPE = 35.16\%). Value in the Manhattan luxury market is
 dictated by subjective, opaque variables entirely absent from municipal tax
 datasets: exact floor level, unobstructed park views, ceiling heights, and
 bespoke interior finishes. Furthermore, co-op buyers do not purchase real
@@ -770,10 +772,10 @@ pricing 10--50\% per square foot below equivalent condominiums.
     \toprule
     Tier & $n$ & MedAPE & Notes \\
     \midrule
-    Under \$500K  &  6,497 & 28.21\% & Distressed sales, foreclosures \\
-    \$500K--\$1M  & 10,980 & 14.53\% & Best accuracy; highest data volume \\
-    \$1M--\$3M    &  7,978 & 20.83\% & Mid-luxury; reasonable accuracy \\
-    Over \$3M     &  1,707 & 40.26\% & Luxury; unique properties, sparse comps \\
+    Under \$500K  &  6,497 & 27.10\% & Distressed sales, foreclosures \\
+    \$500K--\$1M  & 10,980 & 15.12\% & Best accuracy; highest data volume \\
+    \$1M--\$3M    &  7,978 & 21.30\% & Mid-luxury; reasonable accuracy \\
+    Over \$3M     &  1,707 & 39.77\% & Luxury; unique properties, sparse comps \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -1112,7 +1114,7 @@ prices---consistent with documented Saudi residential market friction
         localised failure invisible to random cross-validation.
   \item The Staten Island paradox demonstrates that $R^2$ and MedAPE measure
         fundamentally different aspects of model quality.
-  \item Manhattan is the hardest borough (MedAPE = 36.66\%). Co-op board approval
+  \item Manhattan is the hardest borough (MedAPE = 35.16\%). Co-op board approval
         discounts, unobservable interior finishes, and view premiums create
         heterogeneity that no tabular dataset can capture.
 \end{enumerate}
