@@ -1548,7 +1548,7 @@ To run locally:
   Open: http://localhost:8000/ui
 
 Cold-start time: ~30 seconds (spatial KD-tree indexes loading into memory)
-API latency (warm): 200–400 ms per prediction (including SHAP computation)
+API latency (warm): 200–400 ms per prediction locally (including SHAP computation); ~0.7–1.2 s on the live Space (free-tier CPU + network overhead)
 
 ================================================================================
 END OF TECHNICAL REFERENCE

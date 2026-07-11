@@ -441,7 +441,7 @@ uvicorn api.main:app --port 8000
     Meta-learner            & Ridge (L2) & positive=True for NYC \\
     NYC CV strategy         & 10-fold GroupKFold & Groups = NTA code \\
     Riyadh CV strategy      & 5-fold GroupKFold  & Groups = district\_ar \\
-    API latency             & 200--400 ms & Including SHAP computation \\
+    API latency             & 200--400 ms local $\cdot$ $\sim$1 s live & Incl.\ SHAP; live adds free-tier CPU + network \\
     Automated tests         & 109         & api, scorer, parity, SHAP, pins, golden, distribution, load \\
     \bottomrule
   \end{tabular}

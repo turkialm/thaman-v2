@@ -194,7 +194,7 @@ Print this section and keep it in your pocket.
 | Meta-learner | Ridge (L2) | positive=True, alpha=1.0 |
 | NYC CV strategy | 10-fold Spatial GroupKFold | Groups = NTA code |
 | Riyadh CV strategy | 5-fold Spatial GroupKFold | Groups = district_ar |
-| API latency | 200–400 ms | Including SHAP computation |
+| API latency | 200–400 ms local · ~0.7–1.2 s live | Incl. SHAP; live adds free-tier CPU + network |
 | Automated tests | 109 | api, scorer, parity, SHAP, regression pins, golden, distribution, load |
 
 ---

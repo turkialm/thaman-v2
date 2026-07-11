@@ -829,7 +829,7 @@ def build_technical_report(path):
     doc.add_paragraph("GitHub: https://github.com/turkialm/thaman-v2")
     doc.add_paragraph(
         "To run locally: cd /path/to/new_try && uvicorn api.main:app --port 8000. "
-        "Cold-start time: ~30s. API latency (warm): 200–400ms."
+        "Cold-start time: ~30s. API latency (warm): 200–400ms local; ~0.7–1.2s on the live Space (free-tier CPU + network)."
     )
 
     doc.save(str(path))
@@ -1224,7 +1224,7 @@ def build_demo_script(path):
             ("Haraj listings",          "1,615",        "444 apts, 630 villas, 526 plots"),
             ("NYC NTA groups",          "212",          "Neighbourhood spatial units"),
             ("Riyadh district polygons","133",          "From OSM admin_level=10"),
-            ("API latency",             "200–400 ms",   "Including SHAP computation"),
+            ("API latency",             "200–400 ms local · ~1 s live", "Incl. SHAP; live adds free-tier CPU + network"),
             ("Automated tests",         "109",          "api, scorer, parity, SHAP, pins, golden, distribution, load"),
         ],
         caption="Key metrics",

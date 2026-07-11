@@ -908,7 +908,7 @@ Startup sequence:
   3. Load _nearby_df — 185K-sale index for comparables + NTA lookup
   4. Build NTA GeoJSON cache — for map choropleth layer
 
-End-to-end prediction latency: 200–400ms
+End-to-end prediction latency: 200–400 ms locally; ~0.7–1.2 s on the deployed Space (free-tier CPU + network)
   Spatial lookup:    ~5ms  |  NTA lookup:  ~1ms
   Feature assembly:  ~10ms |  Model inference: ~50ms
   SHAP computation:  ~100–200ms (dominates)

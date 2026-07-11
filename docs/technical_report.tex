@@ -1059,7 +1059,7 @@ uvicorn api.main:app --port 8000
 \end{lstlisting}
 
 Cold-start time: $\approx 30\,\text{s}$ (spatial KD-tree indexes loading).
-API latency (warm): 200--400\,ms per prediction (including SHAP computation).
+API latency (warm): 200--400\,ms per prediction locally (including SHAP computation); $\sim$0.7--1.2\,s on the live Space (free-tier CPU + network overhead).
 
 \vfill
 \begin{center}

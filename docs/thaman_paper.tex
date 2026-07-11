@@ -861,7 +861,7 @@ For each prediction, the segment MedAPE is computed as:
 The API is implemented with FastAPI (Python) and deployed on port 8000. All
 spatial indexes are loaded into memory at startup ($\approx 30\,\text{s}$).
 
-End-to-end prediction latency: 200--400\,ms
+End-to-end prediction latency: 200--400\,ms locally; $\sim$0.7--1.2\,s on the deployed Space (free-tier CPU + network)
 \begin{description}
   \item[Spatial lookup] $\approx 5\,\text{ms}$
   \item[NTA lookup] $\approx 1\,\text{ms}$
