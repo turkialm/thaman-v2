@@ -637,6 +637,13 @@ Three improvements would have the most impact:
         expanding to individual listing attributes (floor number, exact interior
         size, renovation year) would add unobservable structural quality signals.
 \end{enumerate}
+If pressed on the plots segment specifically: error analysis shows plot MedAPE
+(20.8\%) is systematic underprediction --- median signed error $-15\%$, reaching
+$-20\%$ in 2025~Q1 --- because plot prices surged in 2025 faster than the lagged
+district features could track, especially in illiquid districts (3--5 deeds per
+quarter: 33\% MedAPE). Citywide per-type lag and momentum features were
+empirically tested and did not improve the plot segment; the fix is a dedicated
+plots model or post-hoc bias calibration, documented as future work.
 \end{detail}
 \end{question}
 

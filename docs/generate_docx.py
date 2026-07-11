@@ -551,6 +551,9 @@ def build_paper(path):
         "Uncertainty quantification: quantile regression or conformal prediction for full predictive distributions.",
         "Co-op discount model: binary classifier + learned discount factor.",
         "Riyadh parcel-level data: when Ministry of Justice individual deed data becomes accessible.",
+        "Residential-plot segment model: dedicated plots model or per-type post-hoc bias calibration, "
+        "targeting the documented −15% median underprediction under the 2025 plot-price surge "
+        "(city-level per-type lag features were empirically tested and did not recover the shift).",
         "Scheduled retraining pipeline: Riyadh's ~57,000-unit pipeline delivers 2026–2027, creating "
         "district-level supply shocks. Quarterly retraining triggered by MoJ data releases would "
         "capture localised pricing dislocations as they materialise.",
@@ -1016,6 +1019,11 @@ def build_defense_qa(path):
          "'Both NYC and Riyadh lack this. It is a universal limitation of government transaction registers.'"),
         ("NYC luxury tier (>$5M) has wider confidence intervals.",
          "'Luxury transactions are sparse (<3% of dataset) so the model is less confident there — correctly communicated via a wider range.'"),
+        ("Riyadh residential plots are the weakest segment (MedAPE 20.8%).",
+         "'We did the error analysis: it is systematic underprediction (median −15%) because plot prices "
+         "surged in 2025 faster than lagged district features track — worst in illiquid districts. We "
+         "empirically tested citywide per-type lag features; they did not fix it, so the documented path "
+         "is a dedicated plots model or bias calibration.'"),
     ]:
         p = doc.add_paragraph()
         p.add_run(limit).bold = True

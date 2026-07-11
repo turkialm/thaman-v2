@@ -241,6 +241,8 @@ Print this section and keep it in your pocket.
 
 > **Long answer:** Three improvements would have the most impact. First, individual transaction data (not district-level aggregates) — if the Ministry of Justice publishes parcel-level records, the training set could expand from 6,910 to potentially hundreds of thousands of rows. Second, as more 2025 quarters are published, retraining on the expanded dataset will close the OOF-to-holdout gap as the Metro-era market becomes better represented. Third, SA_Aqar rental data currently provides 4 district-level medians — expanding this to individual listing attributes (floor number, exact interior size, renovation year) would add the unobservable structural quality signals that currently limit the model in luxury tiers.
 
+> **If pressed on the plots segment specifically:** We did the error analysis. Plot MedAPE of 20.8% is systematic underprediction — median signed error of −15%, reaching −20% in 2025 Q1 — because plot prices surged in 2025 faster than the lagged district features could track, especially in illiquid districts (3–5 deeds a quarter: 33% MedAPE). We empirically tested citywide per-type lag and momentum features; they did not improve the plot segment, which tells us the fix is a dedicated plots model or post-hoc bias calibration, not more lag features. That's documented as future work.
+
 ---
 
 **Q6: "Why did you use a time-based split instead of random split for evaluation?"**

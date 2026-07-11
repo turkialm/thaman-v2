@@ -1204,6 +1204,14 @@ collateral values.
         equivalent condos) cannot be quantified from public records.
   \item \textbf{Riyadh granularity}: district-level aggregates cannot capture within-district
         variance.
+  \item \textbf{Residential-plot temporal shift}: plots are the weakest Riyadh segment
+        (holdout MedAPE 20.82\% vs 12.4\% for villas). Error analysis shows this is
+        systematic underprediction (median signed error $-15\%$, reaching $-20\%$ in
+        2025~Q1): plot prices surged in 2025 faster than the lagged district features
+        could track. The effect is amplified in illiquid districts (3--5 deeds per
+        quarter: 33\% MedAPE) and the top price quartile (28\%). Adding citywide
+        per-type lag and momentum features was tested and did not improve the plot
+        segment, indicating the shift is not recoverable from lag features alone.
   \item \textbf{assesstot imputation}: assumes stable assessment ratios.
 \end{enumerate}
 
@@ -1218,6 +1226,9 @@ collateral values.
         discount factor.
   \item Riyadh parcel-level data: as Ministry of Justice individual deed data becomes
         accessible.
+  \item Residential-plot segment model: either a dedicated plots model or per-type
+        post-hoc bias calibration against recent quarters, targeting the documented
+        $-15\%$ underprediction under the 2025 price surge.
   \item \textbf{Scheduled retraining pipeline}: Riyadh's $\approx$57,000-unit
         development pipeline is expected to transition from construction to delivery
         across 2026--2027, creating district-level supply shocks and localised

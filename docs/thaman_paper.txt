@@ -1231,6 +1231,15 @@ market friction (CBRE, 2024).
      appreciating markets the cap-induced assessment lag introduces systematic
      bias.
 
+  6. Residential-plot temporal shift (Riyadh): plots are the weakest segment
+     (holdout MedAPE 20.82% vs 12.4% for villas). Error analysis shows
+     systematic underprediction (median signed error −15%, reaching −20% in
+     2025 Q1): plot prices surged in 2025 faster than the lagged district
+     features could track. Amplified in illiquid districts (3–5 deeds/quarter:
+     33% MedAPE) and the top price quartile (28%). Citywide per-type lag and
+     momentum features were tested and did not improve the plot segment — the
+     shift is not recoverable from lag features alone.
+
 11.3 Future Work
 -----------------
   1. Interior features: partner with StreetEasy / Zillow API for floor number,
@@ -1244,6 +1253,10 @@ market friction (CBRE, 2024).
 
   4. Co-op discount model: train a separate binary classifier to identify co-ops
      and apply a learned discount factor.
+
+  5. Residential-plot segment model: a dedicated plots model or per-type
+     post-hoc bias calibration against recent quarters, targeting the
+     documented −15% underprediction under the 2025 price surge.
 
 ================================================================================
 12. CONCLUSION
